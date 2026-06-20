@@ -12,12 +12,17 @@ import { RouterLink } from 'src/routes/components';
 
 import { Logo } from 'src/components/logo';
 
+import { useAuthContext } from 'src/auth/hooks';
+
+import { _account } from '../nav-config-account';
+import { AccountPopover } from '../components/account-popover';
+
 // ----------------------------------------------------------------------
 
 const HEADER_NAV_ITEMS = [
   { label: 'หน้าแรก', path: '/' },
-  { label: 'แผนที่', path: '/#culture-map' },
-  { label: 'เรื่องราว', path: '/#stories' },
+  // { label: 'แผนที่', path: '/#culture-map' },
+  // { label: 'เรื่องราว', path: '/#stories' },
   { label: 'เกี่ยวกับเรา', path: paths.about },
   { label: 'ติดต่อสอบถาม', path: paths.contact },
 ];
@@ -40,6 +45,7 @@ function isActivePath(pathname: string, path: string) {
 
 export function CultureHeader({ pathname }: CultureHeaderProps) {
   const theme = useTheme();
+  const { user } = useAuthContext();
 
   return (
     <Box
@@ -117,7 +123,8 @@ export function CultureHeader({ pathname }: CultureHeaderProps) {
         spacing={1}
         sx={{ display: { xs: 'none', md: 'flex' } }}
       >
-        <Typography>Thailand Cultural Hub</Typography>
+        <Typography variant="subtitle1">Thailand Cultural Hub</Typography>
+        {user && user?.access_token && <AccountPopover data={_account} />}
       </Stack>
     </Box>
   );

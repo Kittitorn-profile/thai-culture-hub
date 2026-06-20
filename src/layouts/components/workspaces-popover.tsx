@@ -6,7 +6,6 @@ import type { ButtonBaseProps } from '@mui/material/ButtonBase';
 import { useState, useCallback } from 'react';
 import { usePopover } from 'minimal-shared/hooks';
 
-import Box from '@mui/material/Box';
 import Avatar from '@mui/material/Avatar';
 import Divider from '@mui/material/Divider';
 import MenuList from '@mui/material/MenuList';
@@ -81,7 +80,7 @@ export function WorkspacesPopover({ data = [], sx, ...other }: WorkspacesPopover
       ]}
       {...other}
     >
-      <Box
+      {/* <Box
         component="img"
         alt={workspace?.name}
         src={workspace?.logo}
@@ -93,9 +92,9 @@ export function WorkspacesPopover({ data = [], sx, ...other }: WorkspacesPopover
         sx={{ typography: 'subtitle2', display: { xs: 'none', [mediaQuery]: 'inline-flex' } }}
       >
         {workspace?.name}
-      </Box>
+      </Box> */}
 
-      <Label
+      {/* <Label
         color={workspace?.plan === 'Free' ? 'default' : 'info'}
         sx={{
           height: 22,
@@ -106,7 +105,7 @@ export function WorkspacesPopover({ data = [], sx, ...other }: WorkspacesPopover
         {workspace?.plan}
       </Label>
 
-      <Iconify width={16} icon="carbon:chevron-sort" sx={{ color: 'text.disabled' }} />
+      <Iconify width={16} icon="carbon:chevron-sort" sx={{ color: 'text.disabled' }} /> */}
     </ButtonBase>
   );
 

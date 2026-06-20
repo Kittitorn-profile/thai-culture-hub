@@ -38,6 +38,7 @@ export type CulturalPlace = {
     | 'local'
     | 'tat'
     | 'culture_catalog'
+    | 'thailand_cultural_hub'
     | 'finearts_monument'
     | 'finearts_archeology'
     | 'finearts_buddha'

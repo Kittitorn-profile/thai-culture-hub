@@ -17,6 +17,7 @@ import Typography from '@mui/material/Typography';
 import FormControlLabel from '@mui/material/FormControlLabel';
 
 import { Iconify } from 'src/components/iconify';
+import { trackAnalyticsEvent } from 'src/components/analytics';
 
 import { getSourceLabel, toggleFilterValue } from './province-detail-utils';
 import { CULTURE_CATEGORY_LABELS, CULTURE_CATEGORY_COLORS } from '../province-data';
@@ -129,6 +130,14 @@ export function ProvinceFilterDrawer({
     setOpenSections((prev) => ({ ...prev, [section]: !prev[section] }));
   };
 
+  const trackFilterClick = (filterType: string, value: string, checked: boolean) => {
+    trackAnalyticsEvent('filter_option_click', value, {
+      filterType,
+      value,
+      checked,
+    });
+  };
+
   return (
     <Drawer
       anchor="left"
@@ -179,9 +188,10 @@ export function ProvinceFilterDrawer({
                 control={
                   <Checkbox
                     checked={selectedSources.includes(source)}
-                    onChange={() =>
-                      onSelectedSourcesChange((prev) => toggleFilterValue(prev, source))
-                    }
+                    onChange={() => {
+                      trackFilterClick('source', source, !selectedSources.includes(source));
+                      onSelectedSourcesChange((prev) => toggleFilterValue(prev, source));
+                    }}
                   />
                 }
                 label={getSourceLabel(source as CulturalPlace['source'])}
@@ -206,9 +216,14 @@ export function ProvinceFilterDrawer({
                 control={
                   <Checkbox
                     checked={selectedCategories.includes(category)}
-                    onChange={() =>
-                      onSelectedCategoriesChange((prev) => toggleFilterValue(prev, category))
-                    }
+                    onChange={() => {
+                      trackFilterClick(
+                        'category',
+                        category,
+                        !selectedCategories.includes(category)
+                      );
+                      onSelectedCategoriesChange((prev) => toggleFilterValue(prev, category));
+                    }}
                   />
                 }
                 label={
@@ -245,9 +260,10 @@ export function ProvinceFilterDrawer({
                 control={
                   <Checkbox
                     checked={selectedDistricts.includes(district)}
-                    onChange={() =>
-                      onSelectedDistrictsChange((prev) => toggleFilterValue(prev, district))
-                    }
+                    onChange={() => {
+                      trackFilterClick('district', district, !selectedDistricts.includes(district));
+                      onSelectedDistrictsChange((prev) => toggleFilterValue(prev, district));
+                    }}
                   />
                 }
                 label={district}

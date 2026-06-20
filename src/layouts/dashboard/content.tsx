@@ -40,6 +40,7 @@ export function DashboardContent({
         (theme) => ({
           display: 'flex',
           flex: '1 1 auto',
+          mt: '100px',
           flexDirection: 'column',
           pt: 'var(--layout-dashboard-content-pt)',
           pb: 'var(--layout-dashboard-content-pb)',

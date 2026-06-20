@@ -1,6 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import type { IconifyName } from 'src/components/iconify/register-icons';
+
+import dynamic from 'next/dynamic';
+import { useState, useEffect } from 'react';
 
 import { Box } from '@mui/material';
 import Stack from '@mui/material/Stack';
@@ -8,6 +11,8 @@ import Dialog from '@mui/material/Dialog';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import DialogContent from '@mui/material/DialogContent';
+
+import { fNumber } from 'src/utils/format-number';
 
 import { HomeFooter } from 'src/layouts/main/footer';
 
@@ -18,10 +23,10 @@ import ThailandMap from './thailand-map';
 
 // ----------------------------------------------------------------------
 
-// const ReactPlayer = dynamic(() => import('react-player'), {
-//   ssr: false,
-//   loading: () => null,
-// });
+const ReactPlayer = dynamic(() => import('react-player'), {
+  ssr: false,
+  loading: () => null,
+});
 
 const HOME_BG_TOP = '#6f8790';
 const HOME_BG_MIDDLE = '#7b8476';
@@ -80,7 +85,99 @@ const highlights = [
   },
 ];
 
-const ROYAL_IMAGE_ITEMS = [
+type CultureCategoryCard = {
+  title: string;
+  description: string;
+  icon: IconifyName;
+  src: string;
+  color: string;
+};
+
+type HomeVideoItem = {
+  title: string;
+  src: string;
+  cover: string;
+};
+
+type StoryContent = {
+  title: string;
+  actionLabel: string;
+  body: string;
+};
+
+type LocalWisdomContent = {
+  title: string;
+  body: string;
+  quote: string;
+  caption: string;
+  mediaUrl: string;
+  coverUrl: string;
+};
+
+type CultureCategoriesContent = {
+  title: string;
+  description: string;
+};
+
+type StoredHomeContent = {
+  story?: StoryContent;
+  mediaItems?: Array<{
+    title: string;
+    description?: string;
+    url: string;
+    coverUrl: string;
+    isActive?: boolean;
+  }>;
+};
+
+type StoredCultureCategoriesContent = {
+  content?: CultureCategoriesContent;
+  items?: Array<{
+    title: string;
+    description: string;
+    imageUrl: string;
+    icon: IconifyName;
+    color: string;
+    isActive?: boolean;
+  }>;
+};
+
+type HomeAnalyticsSummary = {
+  days: number;
+  pageViews: number;
+  visitors: number;
+  sessions: number;
+  topSearches: Array<{ name: string; count: number; visitors: number }>;
+  topProvinces: Array<{ name: string; count: number; visitors: number }>;
+  topDistricts: Array<{ name: string; count: number; visitors: number }>;
+};
+
+const STORY_MEDIA_SECTION_KEY = 'story-media';
+const LOCAL_WISDOM_SECTION_KEY = 'local-wisdom';
+const CULTURE_CATEGORIES_SECTION_KEY = 'culture-categories';
+
+const DEFAULT_STORY_CONTENT: StoryContent = {
+  title: 'เรื่องเล่า ภาพ และสื่อประกอบ',
+  actionLabel: 'เปิดดูรายละเอียด',
+  body: 'รายการวัฒนธรรมไม่ได้มีแค่ชื่อและพิกัด แต่ยังมีคำอธิบาย ไฮไลต์ หมวดหมู่ และลิงก์แหล่งข้อมูลต้นทาง เพื่อให้การสำรวจบนหน้าเว็บต่อยอดไปสู่การเรียนรู้จริงได้',
+};
+
+const DEFAULT_LOCAL_WISDOM_CONTENT: LocalWisdomContent = {
+  title: 'ข้อมูลพื้นที่และภูมิปัญญาท้องถิ่น',
+  body: 'ระบบรวบรวมข้อมูลจากหลายแหล่ง แล้วจัดให้เชื่อมโยงกับจังหวัด อำเภอ หมวดวัฒนธรรม และพิกัดที่ใช้งานได้จริง ข้อมูลที่ระบุพื้นที่ชัดเจนจะถูกนำไปแสดงบนแผนที่ ส่วนข้อมูลระดับจังหวัดยังคงอยู่ในรายการเพื่อให้ค้นหาและอ่านรายละเอียดต่อได้',
+  quote: '"เริ่มจากพื้นที่ แล้วค่อยเห็นเรื่องราวของผู้คน"',
+  caption: 'มองวัฒนธรรมผ่านข้อมูล พิกัด และบริบทของแต่ละจังหวัด',
+  mediaUrl: 'https://www.youtube.com/watch?v=76jSHW8-Sug&t=5s',
+  coverUrl: 'https://img.youtube.com/vi/76jSHW8-Sug/maxresdefault.jpg',
+};
+
+const DEFAULT_CULTURE_CATEGORIES_CONTENT: CultureCategoriesContent = {
+  title: 'สำรวจวัฒนธรรมไทยผ่านหมวดข้อมูล',
+  description:
+    'ข้อมูลแต่ละรายการถูกจัดให้อ่านง่ายขึ้นตามหมวดวัฒนธรรมและพื้นที่ เพื่อช่วยให้เห็นทั้งสถานที่ท่องเที่ยว แหล่งเรียนรู้ อาหารพื้นบ้าน งานช่าง การแสดง ประเพณี และภูมิปัญญาที่กระจายอยู่ในแต่ละจังหวัด',
+};
+
+const ROYAL_IMAGE_ITEMS: CultureCategoryCard[] = [
   {
     title: 'สถานที่ท่องเที่ยว',
     description: 'แหล่งท่องเที่ยว วัด เมืองเก่า และจุดหมายสำคัญทางวัฒนธรรม',
@@ -139,7 +236,7 @@ const ROYAL_IMAGE_ITEMS = [
   },
 ] as const;
 
-const VIDEO_ITEMS = [
+const VIDEO_ITEMS: HomeVideoItem[] = [
   {
     title: 'ดนตรีพื้นบ้านและการแสดงร่วมสมัย',
     src: 'https://www.youtube.com/watch?v=hZB0LIYLSgM&list=RDhZB0LIYLSgM&start_radio=1',
@@ -182,6 +279,16 @@ const DATA_FEATURES = [
   },
 ];
 
+const DEFAULT_HOME_ANALYTICS: HomeAnalyticsSummary = {
+  days: 30,
+  pageViews: 0,
+  visitors: 0,
+  sessions: 0,
+  topSearches: [],
+  topProvinces: [],
+  topDistricts: [],
+};
+
 function PlayButton({ small = false }: { small?: boolean }) {
   return (
     <Box
@@ -211,9 +318,141 @@ function PlayButton({ small = false }: { small?: boolean }) {
 }
 
 export function HomeView() {
-  const [selectedImage, setSelectedImage] = useState<(typeof ROYAL_IMAGE_ITEMS)[number] | null>(
-    null
+  const [selectedImage, setSelectedImage] = useState<CultureCategoryCard | null>(null);
+  const [selectedVideo, setSelectedVideo] = useState<HomeVideoItem | null>(null);
+  const [videoPreviewKey, setVideoPreviewKey] = useState(0);
+  const [storyContent, setStoryContent] = useState<StoryContent>(DEFAULT_STORY_CONTENT);
+  const [localWisdomContent, setLocalWisdomContent] = useState<LocalWisdomContent>(
+    DEFAULT_LOCAL_WISDOM_CONTENT
   );
+  const [cultureCategoriesContent, setCultureCategoriesContent] =
+    useState<CultureCategoriesContent>(DEFAULT_CULTURE_CATEGORIES_CONTENT);
+  const [cultureCategoryCards, setCultureCategoryCards] =
+    useState<CultureCategoryCard[]>(ROYAL_IMAGE_ITEMS);
+  const [videoItems, setVideoItems] = useState<HomeVideoItem[]>(VIDEO_ITEMS);
+  const [homeAnalytics, setHomeAnalytics] = useState<HomeAnalyticsSummary>(DEFAULT_HOME_ANALYTICS);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    async function loadHomeContent() {
+      try {
+        const response = await fetch('/api/home-content', { signal: controller.signal });
+        const json = (await response.json()) as {
+          data?: Record<string, unknown>;
+        };
+        const sections = json.data ?? {};
+        const homeContent = sections[STORY_MEDIA_SECTION_KEY] as StoredHomeContent | undefined;
+
+        if (homeContent?.story) {
+          setStoryContent({
+            title: homeContent.story.title || DEFAULT_STORY_CONTENT.title,
+            actionLabel: homeContent.story.actionLabel || DEFAULT_STORY_CONTENT.actionLabel,
+            body: homeContent.story.body || DEFAULT_STORY_CONTENT.body,
+          });
+        }
+
+        if (Array.isArray(homeContent?.mediaItems)) {
+          const nextVideoItems = homeContent.mediaItems
+            .filter((item) => item.isActive !== false && item.title && item.url)
+            .map((item) => ({
+              title: item.title,
+              src: item.url,
+              cover: item.coverUrl || item.url,
+            }));
+
+          if (nextVideoItems.length) {
+            setVideoItems(nextVideoItems);
+          }
+        }
+
+        const localWisdomDraft = sections[LOCAL_WISDOM_SECTION_KEY] as
+          | LocalWisdomContent
+          | undefined;
+
+        if (localWisdomDraft) {
+          setLocalWisdomContent({
+            title: localWisdomDraft.title || DEFAULT_LOCAL_WISDOM_CONTENT.title,
+            body: localWisdomDraft.body || DEFAULT_LOCAL_WISDOM_CONTENT.body,
+            quote: localWisdomDraft.quote || DEFAULT_LOCAL_WISDOM_CONTENT.quote,
+            caption: localWisdomDraft.caption || DEFAULT_LOCAL_WISDOM_CONTENT.caption,
+            mediaUrl: localWisdomDraft.mediaUrl || DEFAULT_LOCAL_WISDOM_CONTENT.mediaUrl,
+            coverUrl: localWisdomDraft.coverUrl || DEFAULT_LOCAL_WISDOM_CONTENT.coverUrl,
+          });
+        }
+
+        const cultureCategoriesDraft = sections[CULTURE_CATEGORIES_SECTION_KEY] as
+          | StoredCultureCategoriesContent
+          | undefined;
+
+        if (cultureCategoriesDraft?.content) {
+          setCultureCategoriesContent({
+            title: cultureCategoriesDraft.content.title || DEFAULT_CULTURE_CATEGORIES_CONTENT.title,
+            description:
+              cultureCategoriesDraft.content.description ||
+              DEFAULT_CULTURE_CATEGORIES_CONTENT.description,
+          });
+        }
+
+        if (Array.isArray(cultureCategoriesDraft?.items)) {
+          const nextCultureCategoryCards = cultureCategoriesDraft.items
+            .filter((item) => item.isActive !== false && item.title && item.imageUrl)
+            .map((item) => ({
+              title: item.title,
+              description: item.description,
+              icon: item.icon,
+              src: item.imageUrl,
+              color: item.color,
+            }));
+
+          if (nextCultureCategoryCards.length) {
+            setCultureCategoryCards(nextCultureCategoryCards);
+          }
+        }
+      } catch (caughtError) {
+        if (caughtError instanceof Error && caughtError.name !== 'AbortError') {
+          console.warn('Unable to load home content', caughtError);
+        }
+      }
+    }
+
+    loadHomeContent();
+
+    return () => controller.abort();
+  }, []);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    async function loadHomeAnalytics() {
+      try {
+        const response = await fetch('/api/analytics/summary', { signal: controller.signal });
+
+        if (!response.ok) {
+          return;
+        }
+
+        const json = (await response.json()) as { data?: HomeAnalyticsSummary };
+
+        if (json.data) {
+          setHomeAnalytics(json.data);
+        }
+      } catch (caughtError) {
+        if (caughtError instanceof Error && caughtError.name !== 'AbortError') {
+          console.warn('Unable to load home analytics', caughtError);
+        }
+      }
+    }
+
+    loadHomeAnalytics();
+
+    return () => controller.abort();
+  }, []);
+
+  const handleCloseVideo = () => {
+    setSelectedVideo(null);
+    setVideoPreviewKey((currentValue) => currentValue + 1);
+  };
 
   return (
     <Box
@@ -467,6 +706,91 @@ export function HomeView() {
         sx={{
           px: HOME_SECTION_PX,
           py: { xs: 7, md: 10 },
+          position: 'relative',
+          overflow: 'hidden',
+          zIndex: 1,
+        }}
+      >
+        <Box sx={{ mx: 'auto', maxWidth: HOME_SECTION_MAX_WIDTH }}>
+          <Box
+            sx={{
+              p: { xs: 2.5, md: 4 },
+              borderRadius: 1.5,
+              color: HOME_TEXT,
+              bgcolor: 'rgba(42,55,54,0.34)',
+              border: '1px solid rgba(248,246,238,0.22)',
+              boxShadow: '0 28px 70px rgba(31,40,38,0.2)',
+              backdropFilter: 'blur(8px)',
+            }}
+          >
+            <Stack
+              direction={{ xs: 'column', md: 'row' }}
+              spacing={3}
+              justifyContent="space-between"
+              alignItems={{ xs: 'flex-start', md: 'flex-end' }}
+            >
+              <Box>
+                <Typography
+                  component="p"
+                  sx={{
+                    color: 'rgba(234,215,161,0.92)',
+                    fontSize: 13,
+                    fontWeight: 900,
+                    letterSpacing: 1.2,
+                    textTransform: 'uppercase',
+                  }}
+                >
+                  Live usage insights
+                </Typography>
+                <Typography
+                  component="h2"
+                  sx={{
+                    mt: 1,
+                    color: HOME_TEXT,
+                    fontSize: { xs: 34, md: 52 },
+                    fontWeight: 900,
+                    lineHeight: 1.1,
+                  }}
+                >
+                  สถิติการสำรวจวัฒนธรรมบนเว็บไซต์
+                </Typography>
+                <Typography sx={{ mt: 1.5, maxWidth: 620, color: 'rgba(248,246,238,0.76)' }}>
+                  ภาพรวม {homeAnalytics.days} วันล่าสุดจากการเข้าชม คำค้นหา จังหวัด
+                  และอำเภอที่ผู้ใช้สนใจ
+                </Typography>
+              </Box>
+
+              <Box
+                sx={{
+                  mt: 4,
+                  display: 'grid',
+                  gap: 1.5,
+                  width: '300px',
+                }}
+              >
+                <Box
+                  sx={{
+                    p: { xs: 2, md: 2.5 },
+                    borderRadius: 1,
+                    bgcolor: 'rgba(248,246,238,0.12)',
+                    border: '1px solid rgba(248,246,238,0.18)',
+                    textAlign: 'center',
+                  }}
+                >
+                  <Typography sx={{ mt: 1, fontSize: { xs: 30, md: 42 }, fontWeight: 950 }}>
+                    {fNumber(homeAnalytics.visitors)}
+                  </Typography>
+                </Box>
+              </Box>
+            </Stack>
+          </Box>
+        </Box>
+      </Box>
+
+      <Box
+        sx={{
+          px: HOME_SECTION_PX,
+          py: { xs: 7, md: 10 },
           minHeight: 800,
           position: 'relative',
           overflow: 'hidden',
@@ -484,147 +808,134 @@ export function HomeView() {
           }}
         >
           <Typography variant="h3" sx={{ color: HOME_TEXT }}>
-            สำรวจวัฒนธรรมไทยผ่านหมวดข้อมูล
+            {cultureCategoriesContent.title}
           </Typography>
           <Typography
             variant="subtitle1"
             sx={{ mt: 1.4, color: 'rgba(248,246,238,0.82)', textAlign: 'center' }}
           >
-            ข้อมูลแต่ละรายการถูกจัดให้อ่านง่ายขึ้นตามหมวดวัฒนธรรมและพื้นที่
-            เพื่อช่วยให้เห็นทั้งสถานที่ท่องเที่ยว แหล่งเรียนรู้ อาหารพื้นบ้าน งานช่าง การแสดง
-            ประเพณี และภูมิปัญญาที่กระจายอยู่ในแต่ละจังหวัด
+            {cultureCategoriesContent.description}
           </Typography>
 
           <Box
             sx={{
-              mt: { xs: 4, md: 6 },
+              mt: { xs: 4, md: 5 },
               display: 'grid',
-              gap: { xs: 1.8, md: 2 },
+              gap: { xs: 1.8, md: 2.2 },
               gridTemplateColumns: {
                 xs: '1fr',
                 sm: 'repeat(2, minmax(0, 1fr))',
-                lg: 'repeat(4, minmax(0, 1fr))',
+                lg: 'repeat(7, minmax(0, 1fr))',
               },
             }}
           >
-            {ROYAL_IMAGE_ITEMS.map((image) => (
+            {cultureCategoryCards.map((image) => (
               <Box
-                key={image.src}
+                key={`${image.title}-${image.src}`}
                 component="button"
                 type="button"
-                aria-label={`ดูภาพ ${image.title}`}
+                aria-label={`ดูรายละเอียด ${image.title}`}
                 onClick={() => setSelectedImage(image)}
                 sx={{
-                  p: 0,
+                  px: 2.2,
+                  py: 2.4,
                   m: 0,
                   width: 1,
-                  minHeight: 230,
-                  display: 'grid',
+                  minHeight: 180,
+                  display: 'flex',
                   cursor: 'pointer',
                   overflow: 'hidden',
-                  borderRadius: 1.5,
-                  color: HOME_DEEP,
-                  gridTemplateRows: '100px 1fr',
-                  bgcolor: 'rgba(250,244,232,0.94)',
+                  textAlign: 'left',
+                  borderRadius: 1,
+                  color: HOME_TEXT,
+                  alignItems: 'flex-start',
+                  flexDirection: 'column',
+                  justifyContent: 'flex-end',
+                  bgcolor: image.color,
                   position: 'relative',
-                  boxShadow: '0 18px 44px rgba(44,35,21,0.2)',
-                  border: '1px solid rgba(255,255,255,0.64)',
-                  transition: 'transform 180ms ease, box-shadow 180ms ease',
+                  boxShadow: '0 18px 34px rgba(38,34,24,0.22)',
+                  border: '1px solid rgba(255,255,255,0.16)',
+                  transition: 'transform 180ms ease, box-shadow 180ms ease, filter 180ms ease',
+                  backgroundImage: `
+                    radial-gradient(circle at 82% 18%, rgba(255,255,255,0.22) 0 1px, transparent 1.5px),
+                    radial-gradient(circle at 16% 74%, rgba(255,255,255,0.13) 0 1px, transparent 1.5px),
+                    linear-gradient(145deg, rgba(255,255,255,0.16), rgba(255,255,255,0) 44%)
+                  `,
+                  backgroundSize: '22px 22px, 28px 28px, 100% 100%',
+                  '&::before': {
+                    content: '""',
+                    position: 'absolute',
+                    inset: 0,
+                    opacity: 0.2,
+                    background:
+                      'repeating-linear-gradient(160deg, transparent 0 22px, rgba(255,255,255,0.5) 23px 24px, transparent 25px 48px)',
+                  },
+                  '&::after': {
+                    content: '""',
+                    right: -34,
+                    bottom: -44,
+                    width: 132,
+                    height: 132,
+                    borderRadius: '50%',
+                    position: 'absolute',
+                    border: '1px solid rgba(255,255,255,0.24)',
+                  },
                   '&:focus-visible': {
                     outline: `2px solid ${HOME_TEXT}`,
                     outlineOffset: 4,
                   },
                   '&:hover, &:focus-visible': {
                     transform: 'translateY(-4px)',
-                    boxShadow: '0 24px 56px rgba(44,35,21,0.28)',
+                    filter: 'saturate(1.06)',
+                    boxShadow: '0 24px 48px rgba(38,34,24,0.3)',
                   },
-                  '&:hover .culture-category-image, &:focus-visible .culture-category-image': {
-                    transform: 'scale(1.06)',
+                  '&:hover .culture-category-icon, &:focus-visible .culture-category-icon': {
+                    transform: 'translateY(-4px) scale(1.04)',
                   },
                 }}
               >
                 <Box
                   sx={{
-                    width: 1,
-                    height: 100,
-                    overflow: 'hidden',
-                    position: 'relative',
-                    '&::after': {
-                      content: '""',
-                      position: 'absolute',
-                      inset: 0,
-                      background:
-                        'linear-gradient(180deg, rgba(42,55,54,0.02) 0%, rgba(42,55,54,0.28) 100%)',
-                    },
-                  }}
-                >
-                  <Image
-                    alt={image.title}
-                    src={image.src}
-                    className="culture-category-image"
-                    ratio="16/9"
-                    sx={{
-                      width: 1,
-                      height: 1,
-                      transition: 'transform 240ms ease',
-                      '& img': { objectFit: 'cover' },
-                    }}
-                  />
-                </Box>
-
-                <Box
-                  sx={{
-                    top: 76,
-                    left: '50%',
-                    width: 56,
-                    height: 56,
+                    top: 18,
+                    right: 18,
                     zIndex: 1,
-                    display: 'grid',
-                    borderRadius: '50%',
-                    placeItems: 'center',
+                    opacity: 0.72,
                     position: 'absolute',
-                    color: HOME_TEXT,
-                    bgcolor: image.color,
-                    transform: 'translateX(-50%)',
-                    border: '3px solid rgba(250,244,232,0.95)',
-                    boxShadow: '0 12px 28px rgba(49,35,20,0.22)',
+                    color: 'rgba(255,255,255,0.92)',
+                    transition: 'transform 220ms ease',
                   }}
+                  className="culture-category-icon"
                 >
-                  <Iconify icon={image.icon} width={27} />
+                  <Iconify icon={image.icon} width={50} />
                 </Box>
 
                 <Box
                   sx={{
-                    px: 2,
-                    pt: 4.8,
-                    pb: 2,
+                    zIndex: 1,
                     display: 'flex',
-                    minHeight: 130,
-                    textAlign: 'center',
-                    alignItems: 'center',
                     flexDirection: 'column',
-                    justifyContent: 'center',
-                    background:
-                      'linear-gradient(180deg, rgba(255,251,242,0.98) 0%, rgba(241,232,214,0.96) 100%)',
+                    justifyContent: 'flex-end',
+                    maxWidth: '90%',
                   }}
                 >
                   <Typography
                     sx={{
-                      color: '#4b3523',
-                      fontSize: 18,
-                      fontWeight: 800,
+                      color: 'inherit',
+                      fontSize: { xs: 19, md: 20 },
+                      fontWeight: 900,
                       lineHeight: 1.2,
+                      textShadow: '0 2px 10px rgba(37,30,20,0.18)',
                     }}
                   >
                     {image.title}
                   </Typography>
                   <Typography
                     sx={{
-                      mt: 0.8,
-                      color: 'rgba(75,53,35,0.78)',
-                      fontSize: 12,
-                      fontWeight: 600,
-                      lineHeight: 1.45,
+                      mt: 1,
+                      color: 'rgba(255,255,255,0.84)',
+                      fontSize: 12.5,
+                      fontWeight: 700,
+                      lineHeight: 1.5,
                     }}
                   >
                     {image.description}
@@ -690,15 +1001,21 @@ export function HomeView() {
                   },
                 }}
               >
-                {/* <ReactPlayer
-                  src="https://www.youtube.com/watch?v=76jSHW8-Sug&t=5s"
-                  light="https://img.youtube.com/vi/76jSHW8-Sug/maxresdefault.jpg"
+                <ReactPlayer
+                  src={localWisdomContent.mediaUrl}
+                  light={localWisdomContent.coverUrl}
                   width="100%"
                   height="100%"
                   playIcon={<PlayButton small />}
-                  // previewAriaLabel={`ดูวิดีโอ ${video.title}`}
-                  // onClickPreview={() => setSelectedVideo(video)}
-                /> */}
+                  previewAriaLabel={`ดูวิดีโอ ${localWisdomContent.title}`}
+                  onClickPreview={() =>
+                    setSelectedVideo({
+                      title: localWisdomContent.title,
+                      src: localWisdomContent.mediaUrl,
+                      cover: localWisdomContent.coverUrl,
+                    })
+                  }
+                />
               </Box>
             </Box>
           </Box>
@@ -715,7 +1032,7 @@ export function HomeView() {
                 textTransform: 'uppercase',
               }}
             >
-              ข้อมูลพื้นที่และภูมิปัญญาท้องถิ่น
+              {localWisdomContent.title}
             </Typography>
 
             <Typography
@@ -726,9 +1043,7 @@ export function HomeView() {
                 lineHeight: 1.75,
               }}
             >
-              ระบบรวบรวมข้อมูลจากหลายแหล่ง แล้วจัดให้เชื่อมโยงกับจังหวัด อำเภอ หมวดวัฒนธรรม
-              และพิกัดที่ใช้งานได้จริง ข้อมูลที่ระบุพื้นที่ชัดเจนจะถูกนำไปแสดงบนแผนที่
-              ส่วนข้อมูลระดับจังหวัดยังคงอยู่ในรายการเพื่อให้ค้นหาและอ่านรายละเอียดต่อได้
+              {localWisdomContent.body}
             </Typography>
 
             <Typography
@@ -738,7 +1053,7 @@ export function HomeView() {
                 mt: 3,
               }}
             >
-              &quot;เริ่มจากพื้นที่ แล้วค่อยเห็นเรื่องราวของผู้คน&quot;
+              {localWisdomContent.quote}
             </Typography>
             <Typography
               variant="caption"
@@ -747,7 +1062,7 @@ export function HomeView() {
                 mt: 3,
               }}
             >
-              มองวัฒนธรรมผ่านข้อมูล พิกัด และบริบทของแต่ละจังหวัด
+              {localWisdomContent.caption}
             </Typography>
           </Box>
         </Box>
@@ -787,13 +1102,13 @@ export function HomeView() {
                 textTransform: 'uppercase',
               }}
             >
-              เรื่องเล่า ภาพ และสื่อประกอบ
+              {storyContent.title}
             </Typography>
 
             <Stack direction="row" spacing={2} alignItems="center" sx={{ mt: 4.5 }}>
               <PlayButton small />
               <Typography variant="h5" sx={{ fontWeight: 800, textTransform: 'uppercase' }}>
-                เปิดดูรายละเอียด
+                {storyContent.actionLabel}
               </Typography>
             </Stack>
 
@@ -806,8 +1121,7 @@ export function HomeView() {
                 lineHeight: 1.75,
               }}
             >
-              รายการวัฒนธรรมไม่ได้มีแค่ชื่อและพิกัด แต่ยังมีคำอธิบาย ไฮไลต์ หมวดหมู่
-              และลิงก์แหล่งข้อมูลต้นทาง เพื่อให้การสำรวจบนหน้าเว็บต่อยอดไปสู่การเรียนรู้จริงได้
+              {storyContent.body}
             </Typography>
           </Box>
 
@@ -818,7 +1132,7 @@ export function HomeView() {
               gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' },
             }}
           >
-            {VIDEO_ITEMS.map((video, index) => (
+            {videoItems.map((video, index) => (
               <Box
                 key={`${video.title}-${index}`}
                 sx={{
@@ -845,7 +1159,7 @@ export function HomeView() {
                     },
                   }}
                 >
-                  {/* <ReactPlayer
+                  <ReactPlayer
                     key={`${video.title}-${videoPreviewKey}`}
                     src={video.src}
                     light={video.cover}
@@ -854,7 +1168,7 @@ export function HomeView() {
                     playIcon={<PlayButton small />}
                     previewAriaLabel={`ดูวิดีโอ ${video.title}`}
                     onClickPreview={() => setSelectedVideo(video)}
-                  /> */}
+                  />
                 </Box>
 
                 <Typography
@@ -1032,7 +1346,7 @@ export function HomeView() {
         </DialogContent>
       </Dialog>
 
-      {/* <Dialog
+      <Dialog
         fullWidth
         maxWidth="lg"
         open={!!selectedVideo}
@@ -1073,7 +1387,7 @@ export function HomeView() {
             )}
           </Box>
         </DialogContent>
-      </Dialog> */}
+      </Dialog>
     </Box>
   );
 }

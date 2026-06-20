@@ -16,6 +16,9 @@ create table if not exists public.cultural_places (
   updated_at timestamptz not null default now()
 );
 
+alter table public.cultural_places
+  add column if not exists map_url text;
+
 create index if not exists cultural_places_province_code_idx
   on public.cultural_places (province_code);
 

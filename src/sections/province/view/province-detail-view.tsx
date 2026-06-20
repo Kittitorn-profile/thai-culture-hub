@@ -11,6 +11,7 @@ import Button from '@mui/material/Button';
 import { alpha, useTheme } from '@mui/material/styles';
 
 import { Iconify } from 'src/components/iconify';
+import { trackAnalyticsEvent } from 'src/components/analytics';
 
 import { ProvinceShapeMap } from './province-shape-map';
 import { getPlaceImages } from './province-detail-utils';
@@ -141,6 +142,11 @@ export function ProvinceDetailView() {
   const [isPlacesDrawerOpen, setIsPlacesDrawerOpen] = useState(false);
   const [selectedDistrictDetail, setSelectedDistrictDetail] = useState<string | null>(null);
   const [selectedPlace, setSelectedPlace] = useState<CulturalPlace | null>(null);
+  const filterEventKey = [
+    selectedSources.join('|'),
+    selectedCategories.join('|'),
+    selectedDistricts.join('|'),
+  ].join('::');
 
   const allCulturalPlaces = useMemo(
     () =>
@@ -239,6 +245,12 @@ export function ProvinceDetailView() {
   };
 
   const openAllPlacesDrawer = () => {
+    trackAnalyticsEvent('province_places_open', provinceDisplayName, {
+      provinceId,
+      provinceName: provinceDisplayName,
+      totalCount: allCulturalPlaces.length,
+      filteredCount: culturalPlaces.length,
+    });
     setSelectedDistrictDetail(null);
     setIsPlacesDrawerOpen(true);
   };
@@ -280,6 +292,80 @@ export function ProvinceDetailView() {
       controller.abort();
     };
   }, [provinceId]);
+
+  useEffect(() => {
+    const query = searchQuery.trim();
+
+    if (!query) {
+      return undefined;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      trackAnalyticsEvent('province_place_search', query, {
+        query,
+        provinceId,
+        provinceName: provinceDisplayName,
+        resultCount: culturalPlaces.length,
+      });
+    }, 800);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [culturalPlaces.length, provinceDisplayName, provinceId, searchQuery]);
+
+  useEffect(() => {
+    if (!filterEventKey.replace(/:/g, '')) {
+      return undefined;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      trackAnalyticsEvent('province_filter_change', provinceDisplayName, {
+        provinceId,
+        provinceName: provinceDisplayName,
+        sources: selectedSources.join(','),
+        categories: selectedCategories.join(','),
+        districts: selectedDistricts.join(','),
+        resultCount: culturalPlaces.length,
+      });
+    }, 500);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [
+    culturalPlaces.length,
+    filterEventKey,
+    provinceDisplayName,
+    provinceId,
+    selectedCategories,
+    selectedDistricts,
+    selectedSources,
+  ]);
+
+  const handleDistrictSelect = (district: string) => {
+    trackAnalyticsEvent('district_select', district, {
+      district,
+      provinceId,
+      provinceName: provinceDisplayName,
+    });
+    setSelectedDistrictDetail(district);
+  };
+
+  const handlePlaceSelect = (place: CulturalPlace | null) => {
+    if (place) {
+      trackAnalyticsEvent('place_select', place.name, {
+        placeId: place.id,
+        placeName: place.name,
+        district: place.district,
+        category: place.category,
+        provinceId,
+        provinceName: provinceDisplayName,
+      });
+    }
+
+    setSelectedPlace(place);
+  };
 
   return (
     <Box
@@ -346,7 +432,7 @@ export function ProvinceDetailView() {
               places={culturalPlaces}
               provinceId={provinceId}
               provinceName={provinceDisplayName}
-              onDistrictSelect={setSelectedDistrictDetail}
+              onDistrictSelect={handleDistrictSelect}
             />
           )}
         </Box>
@@ -394,7 +480,7 @@ export function ProvinceDetailView() {
           allPlacesCount={allCulturalPlaces.length}
           culturalPlaces={culturalPlaces}
           onClose={closePlacesDrawer}
-          onPlaceSelect={setSelectedPlace}
+          onPlaceSelect={handlePlaceSelect}
         />
 
         <ProvincePlaceDialog

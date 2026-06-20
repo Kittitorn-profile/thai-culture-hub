@@ -19,6 +19,7 @@ import { useRouter } from 'src/routes/hooks';
 import provinces from 'src/data/thailand-culture/provinces';
 
 import { Iconify } from 'src/components/iconify';
+import { trackAnalyticsEvent } from 'src/components/analytics';
 
 import { rewindGeoJson, useThailandProvincesGeoJson } from 'src/sections/province/thailand-geojson';
 import {
@@ -410,19 +411,42 @@ export default function ThailandMap() {
     }
   }, [isProvinceSummarySuccess, provinceCategorySummaries, provinceIds]);
 
+  useEffect(() => {
+    const query = searchQuery.trim();
+
+    if (!query) {
+      return undefined;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      trackAnalyticsEvent('province_search', query, {
+        query,
+        resultCount: matchedProvinceSearchOptions.length,
+      });
+    }, 800);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [matchedProvinceSearchOptions.length, searchQuery]);
+
   const handleToggleProvincePopover = useCallback(
     (event: React.SyntheticEvent<SVGPathElement>, province: ThailandProvince) => {
       const anchor = event.currentTarget;
 
       setPopoverAnchor((currentAnchor) => {
         if (currentAnchor === anchor) {
-          setPopoverProvince(null);
-          return null;
-        }
+        setPopoverProvince(null);
+        return null;
+      }
 
-        setPopoverProvince(province);
-        return anchor;
+      trackAnalyticsEvent('province_map_click', getProvinceDisplayName(province), {
+        provinceId: getProvinceId(province),
+        provinceName: getProvinceDisplayName(province),
       });
+      setPopoverProvince(province);
+      return anchor;
+    });
     },
     []
   );
@@ -440,6 +464,11 @@ export default function ThailandMap() {
     const provinceId = getProvinceId(popoverProvince);
 
     if (provinceId) {
+      trackAnalyticsEvent('province_select', getProvinceDisplayName(popoverProvince), {
+        provinceId,
+        provinceName: getProvinceDisplayName(popoverProvince),
+        source: 'map_popover',
+      });
       handleCloseProvincePopover();
       router.push(paths.province.details(provinceId, getProvinceDisplayName(popoverProvince)));
     }
@@ -454,10 +483,16 @@ export default function ThailandMap() {
       }
 
       setSearchQuery('');
+      trackAnalyticsEvent('province_select', getProvinceDisplayName(province), {
+        provinceId,
+        provinceName: getProvinceDisplayName(province),
+        query: searchQuery.trim(),
+        source: 'province_search',
+      });
       handleCloseProvincePopover();
       router.push(paths.province.details(provinceId, getProvinceDisplayName(province)));
     },
-    [handleCloseProvincePopover, router]
+    [handleCloseProvincePopover, router, searchQuery]
   );
 
   const handleSearchKeyDown = useCallback(

@@ -48,6 +48,10 @@ export function getSourceLabel(source?: CulturalPlace['source']) {
     return 'ข้อมูลวัฒนธรรม';
   }
 
+  if (source === 'thailand_cultural_hub') {
+    return 'ข้อมูลจาก Thailand Cultural Hub';
+  }
+
   return 'ข้อมูลในระบบ';
 }
 

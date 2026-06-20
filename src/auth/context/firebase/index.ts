@@ -1,3 +1,15 @@
-export * from './action';
+const unavailable = () => {
+  throw new Error('Firebase auth is not configured for this app.');
+};
 
-export * from './auth-provider';
+export const signInWithPassword = async (..._args: any[]) => unavailable();
+
+export const signInWithGoogle = async (..._args: any[]) => unavailable();
+
+export const signInWithGithub = async (..._args: any[]) => unavailable();
+
+export const signInWithTwitter = async (..._args: any[]) => unavailable();
+
+export const signUp = async (..._args: any[]) => unavailable();
+
+export const sendPasswordResetEmail = async (..._args: any[]) => unavailable();

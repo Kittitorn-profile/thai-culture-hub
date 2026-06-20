@@ -7,6 +7,7 @@ import Box from '@mui/material/Box';
 import { styled } from '@mui/material/styles';
 
 import { Logo } from 'src/components/logo';
+import { Image } from 'src/components/image';
 import { Scrollbar } from 'src/components/scrollbar';
 import { NavSectionMini, NavSectionVertical } from 'src/components/nav-section';
 
@@ -42,8 +43,8 @@ export function NavVertical({
   const renderNavVertical = () => (
     <>
       {slots?.topArea ?? (
-        <Box sx={{ pl: 3.5, pt: 2.5, pb: 1 }}>
-          <Logo />
+        <Box sx={{ pl: 3.5, pt: 2.5, pb: 1, textAlign: 'center' }}>
+          <Image alt="" src="/logo/logo-full.png" sx={{ height: 90, width: 'auto' }} />
         </Box>
       )}
 

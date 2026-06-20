@@ -2,9 +2,9 @@ import type { NextRequest } from 'next/server';
 import type { Feature, Geometry, GeoJsonProperties, FeatureCollection } from 'geojson';
 
 import path from 'node:path';
+import { geoCentroid } from 'd3-geo';
 import { NextResponse } from 'next/server';
 import { readFile } from 'node:fs/promises';
-import { geoCentroid } from 'd3-geo';
 
 import provinces from 'src/data/thailand-culture/provinces';
 import { getSupabaseAdmin } from 'src/server/supabase-admin';
