@@ -178,7 +178,8 @@ export const revalidate = 3600;
 
 export async function GET(request: NextRequest) {
   const provinceCode = request.nextUrl.searchParams.get('provinceCode');
-  const limit = Number(request.nextUrl.searchParams.get('limit') ?? 5);
+  const limitParam = request.nextUrl.searchParams.get('limit');
+  const limit = limitParam == null ? null : Number(limitParam);
   const province = provinces.find((item) => item.code === provinceCode);
 
   if (!provinceCode || !province) {
@@ -210,27 +211,49 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const placesResponse = await tatFetch('/places', {
-    page: 1,
-    limit: Math.min(Math.max(limit, 1), 50),
-    status: 'approved',
-    province_id: tatProvinceId,
-    has_name: 'true',
-    has_introduction: 'true',
-  });
+  const pageSize = 50;
+  const requestedLimit = limit != null && Number.isFinite(limit) ? Math.max(limit, 1) : null;
+  const tatPlaces: TatPlace[] = [];
+  let placesResponse:
+    | Awaited<ReturnType<typeof tatFetch>>
+    | null = null;
 
-  if (!placesResponse.ok) {
+  for (let page = 1; ; page += 1) {
+    placesResponse = await tatFetch('/places', {
+      page,
+      limit: requestedLimit == null ? pageSize : Math.min(requestedLimit - tatPlaces.length, pageSize),
+      status: 'approved',
+      province_id: tatProvinceId,
+      has_name: 'true',
+      has_introduction: 'true',
+    });
+
+    if (!placesResponse.ok) {
+      break;
+    }
+
+    const pagePlaces = Array.isArray(placesResponse.json?.data) ? placesResponse.json.data : [];
+
+    tatPlaces.push(...pagePlaces);
+
+    if (
+      pagePlaces.length < pageSize ||
+      (requestedLimit != null && tatPlaces.length >= requestedLimit)
+    ) {
+      break;
+    }
+  }
+
+  if (!placesResponse?.ok) {
     return NextResponse.json(
-      { data: [], message: placesResponse.json.message ?? 'Failed to load TAT places' },
-      { status: placesResponse.status }
+      { data: [], message: placesResponse?.json.message ?? 'Failed to load TAT places' },
+      { status: placesResponse?.status ?? 500 }
     );
   }
 
-  const tatPlaces = Array.isArray(placesResponse.json?.data) ? placesResponse.json.data : [];
   const data = tatPlaces
     .map((item: TatPlace) => mapTatPlaceToCulturalPlace(item, provinceCode))
-    .filter((item: CulturalPlace | null): item is CulturalPlace => Boolean(item))
-    .slice(0, Math.min(Math.max(limit, 1), 50));
+    .filter((item: CulturalPlace | null): item is CulturalPlace => Boolean(item));
 
   return NextResponse.json({
     data,

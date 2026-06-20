@@ -13,11 +13,12 @@ import { alpha, useTheme } from '@mui/material/styles';
 import { Iconify } from 'src/components/iconify';
 
 import { ProvinceShapeMap } from './province-shape-map';
+import { getPlaceImages } from './province-detail-utils';
 import { ProvincePlaceDialog } from './province-place-dialog';
 import { ProvinceFilterDrawer } from './province-filter-drawer';
 import { ProvincePlacesDrawer } from './province-places-drawer';
 import { ProvinceDetailHeader } from './province-detail-header';
-import { getPlaceImages, mergeCulturalPlaces } from './province-detail-utils';
+import { useThailandDistrictCenters } from '../thailand-geojson';
 import {
   getCultureMetrics,
   getProvinceDisplayName,
@@ -26,6 +27,24 @@ import {
 } from '../province-data';
 
 // ----------------------------------------------------------------------
+
+type RemoteSourceCounts = Partial<
+  Record<
+    | 'tat'
+    | 'finearts_monument'
+    | 'finearts_archeology'
+    | 'finearts_buddha'
+    | 'finearts_museum'
+    | 'culture_catalog',
+    { count?: number }
+  >
+>;
+
+type DistrictCenter = {
+  name: string;
+  lat: number;
+  lng: number;
+};
 
 const PROVINCE_BG_TOP = '#6f8790';
 const PROVINCE_BG_MIDDLE = '#7b8476';
@@ -46,6 +65,58 @@ const PROVINCE_POSTER_PATTERN = `
 
 // ----------------------------------------------------------------------
 
+function normalizeDistrictName(value?: string | null) {
+  return (value ?? '')
+    .replace(/^อำเภอ/, '')
+    .replace(/^เขต/, '')
+    .replace(/\s+District$/i, '')
+    .replace(/\s+/g, '')
+    .trim()
+    .toLowerCase();
+}
+
+function getNearestDistrictName(place: CulturalPlace, districtCenters: DistrictCenter[]) {
+  const placeLat = Number(place.lat);
+  const placeLng = Number(place.lng);
+
+  if (!Number.isFinite(placeLat) || !Number.isFinite(placeLng) || !districtCenters.length) {
+    return place.district;
+  }
+
+  let nearestDistrict = '';
+  let nearestDistance = Infinity;
+
+  districtCenters.forEach((district) => {
+    const distance = Math.hypot(placeLat - district.lat, placeLng - district.lng);
+
+    if (distance < nearestDistance) {
+      nearestDistance = distance;
+      nearestDistrict = district.name;
+    }
+  });
+
+  return nearestDistrict || place.district;
+}
+
+function resolvePlaceDistricts(places: CulturalPlace[], districtCenters: DistrictCenter[]) {
+  if (!districtCenters.length) {
+    return places;
+  }
+
+  const districtNameMap = new Map(
+    districtCenters.map((district) => [normalizeDistrictName(district.name), district.name])
+  );
+
+  return places.map((place) => {
+    const districtName = districtNameMap.get(normalizeDistrictName(place.district));
+    const resolvedDistrict = districtName ?? getNearestDistrictName(place, districtCenters);
+
+    return resolvedDistrict && resolvedDistrict !== place.district
+      ? { ...place, district: resolvedDistrict }
+      : place;
+  });
+}
+
 export function ProvinceDetailView() {
   const theme = useTheme();
   const params = useParams<{ provinceId?: string | string[] }>();
@@ -58,9 +129,9 @@ export function ProvinceDetailView() {
     () => getProvinceCulturalPlaces(provinceId, provinceName),
     [provinceId, provinceName]
   );
-  const [catalogCulturalPlaces, setCatalogCulturalPlaces] = useState<CulturalPlace[]>([]);
-  const [tatCulturalPlaces, setTatCulturalPlaces] = useState<CulturalPlace[]>([]);
-  const [fineArtsCulturalPlaces, setFineArtsCulturalPlaces] = useState<CulturalPlace[]>([]);
+  const { data: districtCentersData } = useThailandDistrictCenters(provinceId);
+  const [remoteCulturalPlaces, setRemoteCulturalPlaces] = useState<CulturalPlace[]>([]);
+  const [remoteSourceCounts, setRemoteSourceCounts] = useState<RemoteSourceCounts>({});
   const [isRemoteLoading, setIsRemoteLoading] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
@@ -71,15 +142,14 @@ export function ProvinceDetailView() {
   const [selectedDistrictDetail, setSelectedDistrictDetail] = useState<string | null>(null);
   const [selectedPlace, setSelectedPlace] = useState<CulturalPlace | null>(null);
 
-  const allCulturalPlaces = useMemo(() => {
-    const mergedRemotePlaces = mergeCulturalPlaces(
-      tatCulturalPlaces,
-      fineArtsCulturalPlaces,
-      catalogCulturalPlaces
-    );
-
-    return mergedRemotePlaces.length ? mergedRemotePlaces : localCulturalPlaces;
-  }, [catalogCulturalPlaces, fineArtsCulturalPlaces, localCulturalPlaces, tatCulturalPlaces]);
+  const allCulturalPlaces = useMemo(
+    () =>
+      resolvePlaceDistricts(
+        remoteCulturalPlaces.length ? remoteCulturalPlaces : localCulturalPlaces,
+        districtCentersData?.districts ?? []
+      ),
+    [districtCentersData?.districts, localCulturalPlaces, remoteCulturalPlaces]
+  );
 
   const categoryOptions = useMemo(
     () => Array.from(new Set(allCulturalPlaces.map((place) => place.category))),
@@ -96,36 +166,32 @@ export function ProvinceDetailView() {
       ),
     [allCulturalPlaces]
   );
-  const culturalPlaces = useMemo(
-    () => {
-      const normalizedSearchQuery = searchQuery.trim().toLocaleLowerCase('th');
+  const culturalPlaces = useMemo(() => {
+    const normalizedSearchQuery = searchQuery.trim().toLocaleLowerCase('th');
 
-      return allCulturalPlaces.filter((place) => {
-        const source = place.source ?? 'local';
-        const district = place.district || 'ไม่ระบุอำเภอ';
-        const isCategoryMatched =
-          selectedCategories.length === 0 || selectedCategories.includes(place.category);
-        const isSourceMatched = selectedSources.length === 0 || selectedSources.includes(source);
-        const isDistrictMatched =
-          selectedDistricts.length === 0 || selectedDistricts.includes(district);
-        const searchText = [
-          place.name,
-          district,
-          place.highlight,
-          place.description,
-          CULTURE_CATEGORY_LABELS[place.category],
-        ]
-          .filter(Boolean)
-          .join(' ')
-          .toLocaleLowerCase('th');
-        const isSearchMatched =
-          !normalizedSearchQuery || searchText.includes(normalizedSearchQuery);
+    return allCulturalPlaces.filter((place) => {
+      const source = place.source ?? 'local';
+      const district = place.district || 'ไม่ระบุอำเภอ';
+      const isCategoryMatched =
+        selectedCategories.length === 0 || selectedCategories.includes(place.category);
+      const isSourceMatched = selectedSources.length === 0 || selectedSources.includes(source);
+      const isDistrictMatched =
+        selectedDistricts.length === 0 || selectedDistricts.includes(district);
+      const searchText = [
+        place.name,
+        district,
+        place.highlight,
+        place.description,
+        CULTURE_CATEGORY_LABELS[place.category],
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .toLocaleLowerCase('th');
+      const isSearchMatched = !normalizedSearchQuery || searchText.includes(normalizedSearchQuery);
 
-        return isCategoryMatched && isSourceMatched && isDistrictMatched && isSearchMatched;
-      });
-    },
-    [allCulturalPlaces, searchQuery, selectedCategories, selectedDistricts, selectedSources]
-  );
+      return isCategoryMatched && isSourceMatched && isDistrictMatched && isSearchMatched;
+    });
+  }, [allCulturalPlaces, searchQuery, selectedCategories, selectedDistricts, selectedSources]);
   const activeFilterCount =
     selectedCategories.length + selectedSources.length + selectedDistricts.length;
   const cultureMetrics = useMemo(() => getCultureMetrics(culturalPlaces), [culturalPlaces]);
@@ -155,9 +221,14 @@ export function ProvinceDetailView() {
       ? `${selectedPlaceLat}, ${selectedPlaceLng}`
       : 'ไม่พบพิกัด';
   const dataSourceLabel = [
-    tatCulturalPlaces.length ? 'ททท.' : null,
-    fineArtsCulturalPlaces.length ? 'กรมศิลป์' : null,
-    catalogCulturalPlaces.length ? 'ข้อมูลวัฒนธรรม' : null,
+    remoteSourceCounts.tat?.count ? 'ททท.' : null,
+    remoteSourceCounts.finearts_monument?.count ||
+    remoteSourceCounts.finearts_archeology?.count ||
+    remoteSourceCounts.finearts_buddha?.count ||
+    remoteSourceCounts.finearts_museum?.count
+      ? 'กรมศิลป์'
+      : null,
+    remoteSourceCounts.culture_catalog?.count ? 'ข้อมูลวัฒนธรรม' : null,
   ]
     .filter(Boolean)
     .join(' + ');
@@ -180,52 +251,23 @@ export function ProvinceDetailView() {
     const controller = new AbortController();
 
     setIsRemoteLoading(true);
-    setCatalogCulturalPlaces([]);
-    setTatCulturalPlaces([]);
-    setFineArtsCulturalPlaces([]);
+    setRemoteCulturalPlaces([]);
+    setRemoteSourceCounts({});
 
-    Promise.all([
-      fetch(`/api/culture/places?provinceCode=${provinceId}&limit=50`, {
-        signal: controller.signal,
-      }),
-      fetch(`/api/tat/places?provinceCode=${provinceId}&limit=50`, {
-        signal: controller.signal,
-      }),
-      fetch(`/api/finearts/archeology?provinceCode=${provinceId}&limit=50`, {
-        signal: controller.signal,
-      }),
-    ])
-      .then(async ([cultureResponse, tatResponse, fineArtsResponse]) => {
-        const cultureJson = cultureResponse.ok ? await cultureResponse.json() : { data: [] };
-        const tatJson = tatResponse.ok ? await tatResponse.json() : { data: [] };
-        const fineArtsJson = fineArtsResponse.ok ? await fineArtsResponse.json() : { data: [] };
-
-        return { cultureJson, tatJson, fineArtsJson };
-      })
-      .then(
-        (response: {
-          cultureJson?: { data?: CulturalPlace[] };
-          tatJson?: { data?: CulturalPlace[] };
-          fineArtsJson?: { data?: CulturalPlace[] };
-        }) => {
-          if (!controller.signal.aborted) {
-            setCatalogCulturalPlaces(
-              Array.isArray(response.cultureJson?.data) ? response.cultureJson.data : []
-            );
-            setTatCulturalPlaces(
-              Array.isArray(response.tatJson?.data) ? response.tatJson.data : []
-            );
-            setFineArtsCulturalPlaces(
-              Array.isArray(response.fineArtsJson?.data) ? response.fineArtsJson.data : []
-            );
-          }
+    fetch(`/api/culture/province-places?provinceCode=${provinceId}`, {
+      signal: controller.signal,
+    })
+      .then((response) => (response.ok ? response.json() : { data: [], sources: {} }))
+      .then((response: { data?: CulturalPlace[]; sources?: RemoteSourceCounts }) => {
+        if (!controller.signal.aborted) {
+          setRemoteCulturalPlaces(Array.isArray(response.data) ? response.data : []);
+          setRemoteSourceCounts(response.sources ?? {});
         }
-      )
+      })
       .catch((error) => {
         if (error?.name !== 'AbortError') {
-          setCatalogCulturalPlaces([]);
-          setTatCulturalPlaces([]);
-          setFineArtsCulturalPlaces([]);
+          setRemoteCulturalPlaces([]);
+          setRemoteSourceCounts({});
         }
       })
       .finally(() => {

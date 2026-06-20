@@ -7,7 +7,7 @@ import { useMemo } from 'react';
 import { geoPath, geoMercator } from 'd3-geo';
 
 import Box from '@mui/material/Box';
-import { alpha, useTheme } from '@mui/material/styles';
+import { alpha, lighten, useTheme } from '@mui/material/styles';
 
 import { CULTURE_CATEGORY_COLORS } from '../province-data';
 import { mergeCulturalPlaces } from './province-detail-utils';
@@ -66,6 +66,10 @@ const CLUSTER_CARD_CENTER_X = CLUSTER_CARD_MIN_WIDTH / 2;
 const CLUSTER_CARD_CENTER_Y = CLUSTER_CARD_HEIGHT / 2;
 const CLUSTER_CARD_GAP = 10;
 
+function getConnectorColor(color: string) {
+  return alpha(lighten(color, 0.28), 0.82);
+}
+
 function getClusterCardWidth(label: string) {
   const labelLength = Array.from(label).length;
 
@@ -122,7 +126,13 @@ function getNearestDistrictCenter(
 function getMapCalloutPlaces(places: CulturalPlace[]) {
   const tatPlaces = places.filter((place) => place.source === 'tat').slice(0, 2);
   const fineArtsPlaces = places
-    .filter((place) => place.source === 'finearts_archeology')
+    .filter(
+      (place) =>
+        place.source === 'finearts_monument' ||
+        place.source === 'finearts_archeology' ||
+        place.source === 'finearts_buddha' ||
+        place.source === 'finearts_museum'
+    )
     .slice(0, 2);
   const culturePlaces = places.filter((place) => place.source === 'culture_catalog').slice(0, 2);
   const localPlaces = places.filter((place) => !place.source || place.source === 'local');
@@ -210,13 +220,17 @@ function getDistrictClusters(
 
   const baseCardSlots = [
     { x: 18, y: 32 },
+    { x: 18, y: 92 },
     { x: 150, y: 22 },
     { x: 286, y: 22 },
     { x: 490, y: 32 },
+    { x: 490, y: 92 },
     { x: 18, y: 156 },
     { x: 490, y: 156 },
     { x: 18, y: 284 },
     { x: 490, y: 284 },
+    { x: 18, y: 354 },
+    { x: 490, y: 354 },
     { x: 18, y: 430 },
     { x: 150, y: 438 },
     { x: 286, y: 438 },
@@ -391,8 +405,6 @@ export function ProvinceShapeMap({
   const { data: provincesGeoJson } = useThailandProvincesGeoJson();
   const { data: districtCentersData } = useThailandDistrictCenters(provinceId);
 
-  console.log('districtCentersData', districtCentersData);
-
   const provinceFeatures = useMemo(
     () => (Array.isArray(provincesGeoJson?.features) ? provincesGeoJson.features : []),
     [provincesGeoJson]
@@ -453,7 +465,7 @@ export function ProvinceShapeMap({
         return {
           id: place.id,
           name: place.name,
-          district: place.district,
+          district: place.district || 'ไม่ระบุอำเภอ',
           highlight: place.highlight,
           category: place.category,
           number: index + 1,
@@ -555,104 +567,102 @@ export function ProvinceShapeMap({
                 opacity={0.82}
               />
             </g>
-            {mapData.clusters
-              .filter((cluster) => cluster.count > 1)
-              .map((cluster) => {
-                const clusterColor = CULTURE_CATEGORY_COLORS[cluster.category];
+            {mapData.clusters.map((cluster) => {
+              const clusterColor = CULTURE_CATEGORY_COLORS[cluster.category];
 
-                return (
-                  <g
-                    key={cluster.id}
-                    role="button"
-                    tabIndex={0}
-                    onMouseDown={(event) => event.preventDefault()}
-                    onClick={() => onDistrictSelect?.(cluster.label)}
-                    onKeyDown={(event) => {
-                      if (event.key === 'Enter' || event.key === ' ') {
-                        onDistrictSelect?.(cluster.label);
-                      }
-                    }}
-                    style={{ cursor: 'pointer', outline: 'none' }}
-                  >
-                    <title>{cluster.title}</title>
-                    {cluster.variant === 'dot' && (
+              return (
+                <g
+                  key={cluster.id}
+                  role="button"
+                  tabIndex={0}
+                  onMouseDown={(event) => event.preventDefault()}
+                  onClick={() => onDistrictSelect?.(cluster.label)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      onDistrictSelect?.(cluster.label);
+                    }
+                  }}
+                  style={{ cursor: 'pointer', outline: 'none' }}
+                >
+                  <title>{cluster.title}</title>
+                  {cluster.variant === 'dot' && (
+                    <circle
+                      cx={cluster.x}
+                      cy={cluster.y}
+                      r={3.5}
+                      fill={clusterColor}
+                      stroke="#fff7df"
+                      strokeWidth={1.8}
+                      opacity={0.95}
+                      vectorEffect="non-scaling-stroke"
+                    />
+                  )}
+                  {cluster.variant === 'card' && (
+                    <>
+                      <path
+                        d={getClusterConnectorPath(cluster)}
+                        fill="none"
+                        stroke={getConnectorColor(clusterColor)}
+                        strokeWidth={3.4}
+                        strokeDasharray="3 6"
+                        strokeLinecap="round"
+                        vectorEffect="non-scaling-stroke"
+                      />
                       <circle
                         cx={cluster.x}
                         cy={cluster.y}
-                        r={3.5}
+                        r={3}
                         fill={clusterColor}
                         stroke="#fff7df"
-                        strokeWidth={1.8}
-                        opacity={0.95}
+                        strokeWidth={2}
                         vectorEffect="non-scaling-stroke"
                       />
-                    )}
-                    {cluster.variant === 'card' && (
-                      <>
-                        <path
-                          d={getClusterConnectorPath(cluster)}
-                          fill="none"
-                          stroke={alpha(clusterColor, 0.58)}
-                          strokeWidth={3}
-                          strokeDasharray="3 6"
-                          strokeLinecap="round"
-                          vectorEffect="non-scaling-stroke"
-                        />
-                        <circle
-                          cx={cluster.x}
-                          cy={cluster.y}
-                          r={3}
-                          fill={clusterColor}
-                          stroke="#fff7df"
-                          strokeWidth={2}
-                          vectorEffect="non-scaling-stroke"
-                        />
-                        <rect
-                          x={cluster.cardX}
-                          y={cluster.cardY}
-                          width={cluster.cardWidth}
-                          height={CLUSTER_CARD_HEIGHT}
-                          rx="14"
-                          fill="#fffaf0"
-                          stroke={alpha('#5b4630', 0.1)}
-                          strokeWidth="1"
-                          filter="drop-shadow(0 7px 10px rgba(69,50,31,0.18))"
-                        />
-                        <circle
-                          cx={cluster.cardX + 13}
-                          cy={cluster.cardY + 13}
-                          r={13}
-                          fill={clusterColor}
-                          stroke="#ffffff"
-                          strokeWidth={3}
-                          filter="drop-shadow(0 2px 3px rgba(71,45,22,0.22))"
-                          vectorEffect="non-scaling-stroke"
-                        />
-                        <text
-                          x={cluster.cardX + 13}
-                          y={cluster.cardY + 19}
-                          fill="#fff6e4"
-                          fontSize={14}
-                          fontWeight={900}
-                          textAnchor="middle"
-                        >
-                          {cluster.count}
-                        </text>
-                        <text
-                          x={cluster.cardX + CLUSTER_CARD_TEXT_X}
-                          y={cluster.cardY + 18}
-                          fill={clusterColor}
-                          fontSize={13}
-                          fontWeight={900}
-                          textAnchor="start"
-                        >
-                          {cluster.label}
-                        </text>
-                      </>
-                    )}
-                  </g>
-                );
-              })}
+                      <rect
+                        x={cluster.cardX}
+                        y={cluster.cardY}
+                        width={cluster.cardWidth}
+                        height={CLUSTER_CARD_HEIGHT}
+                        rx="14"
+                        fill="#fffaf0"
+                        stroke={alpha('#5b4630', 0.1)}
+                        strokeWidth="1"
+                        filter="drop-shadow(0 7px 10px rgba(69,50,31,0.18))"
+                      />
+                      <circle
+                        cx={cluster.cardX + 13}
+                        cy={cluster.cardY + 13}
+                        r={13}
+                        fill={clusterColor}
+                        stroke="#ffffff"
+                        strokeWidth={3}
+                        filter="drop-shadow(0 2px 3px rgba(71,45,22,0.22))"
+                        vectorEffect="non-scaling-stroke"
+                      />
+                      <text
+                        x={cluster.cardX + 13}
+                        y={cluster.cardY + 19}
+                        fill="#fff6e4"
+                        fontSize={14}
+                        fontWeight={900}
+                        textAnchor="middle"
+                      >
+                        {cluster.count}
+                      </text>
+                      <text
+                        x={cluster.cardX + CLUSTER_CARD_TEXT_X}
+                        y={cluster.cardY + 18}
+                        fill={clusterColor}
+                        fontSize={13}
+                        fontWeight={900}
+                        textAnchor="start"
+                      >
+                        {cluster.label}
+                      </text>
+                    </>
+                  )}
+                </g>
+              );
+            })}
 
             {mapData.markers
               .filter((marker) => marker.hasCallout && mapData.clusters.length === 0)

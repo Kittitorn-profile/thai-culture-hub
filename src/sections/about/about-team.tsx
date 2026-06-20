@@ -6,14 +6,11 @@ import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
-import Divider from '@mui/material/Divider';
-import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 
 import { CONFIG } from 'src/global-config';
 import { HomeFooter } from 'src/layouts/main/footer';
 
-import { Image } from 'src/components/image';
 import { Iconify } from 'src/components/iconify';
 import { varFade, MotionViewport } from 'src/components/animate';
 
@@ -26,49 +23,49 @@ const SOCIALS = [
 ] as const;
 
 const FEATURED_MEMBER = {
-  name: 'Code For Cat Team',
-  role: 'Product & Development Team',
+  name: 'Thai Culture Hub',
+  role: 'Culture Data Platform',
   image: `${CONFIG.assetsDir}/assets/images/mock/portrait/portrait-1.webp`,
 };
 
 const EXPERIENCE = [
-  'วางแผน scope, sitemap และ user flow ให้ชัดก่อนเริ่มพัฒนา',
-  'ออกแบบ UI/UX ให้ตรงแบรนด์ ใช้งานง่าย และรองรับทุกอุปกรณ์',
-  'พัฒนาระบบจริงพร้อมดูแลหลังส่งมอบ เพื่อให้ทีมเดินงานต่อได้สบาย',
+  'รวบรวมข้อมูลจากแหล่งภาครัฐและชุดข้อมูลสาธารณะที่เกี่ยวข้องกับวัฒนธรรมไทย',
+  'ปรับชื่อพื้นที่ หมวดหมู่ และพิกัดให้ค้นหาและแสดงผลบนแผนที่ได้สอดคล้องกัน',
+  'ออกแบบประสบการณ์สำรวจข้อมูลรายจังหวัดให้ใช้งานง่ายทั้งบนเดสก์ท็อปและมือถือ',
 ];
 
 const VISION_MISSION = [
   {
     title: 'Vision',
-    eyebrow: 'ภาพที่เราอยากไปให้ถึง',
+    eyebrow: 'ภาพที่อยากเห็น',
     icon: 'solar:eye-bold',
     description:
-      'เป็นทีมเทคโนโลยีที่ช่วยให้ธุรกิจเริ่มต้นและเติบโตบนโลกดิจิทัลได้ง่ายขึ้น ด้วยเว็บไซต์ แอป และระบบที่เข้าใจคนใช้งานจริง',
+      'ทำให้ข้อมูลวัฒนธรรมไทยเข้าถึงง่าย เห็นความเชื่อมโยงกับพื้นที่จริง และช่วยให้ผู้คนเริ่มสำรวจเรื่องราวของแต่ละจังหวัดได้จากจุดเดียว',
   },
   {
     title: 'Mission',
-    eyebrow: 'สิ่งที่เราทำในทุกโปรเจกต์',
+    eyebrow: 'สิ่งที่ระบบนี้ทำ',
     icon: 'solar:flag-bold',
     description:
-      'ออกแบบ พัฒนา และดูแลระบบอย่างเป็นขั้นตอน ตั้งแต่ฟังโจทย์ วางแผน สร้างประสบการณ์ใช้งาน ไปจนถึงส่งมอบงานที่ทีมลูกค้าดูแลต่อได้',
+      'รวบรวม จัดกลุ่ม และนำเสนอข้อมูลสถานที่ วัฒนธรรม ประเพณี อาหารพื้นถิ่น หัตถกรรม และภูมิปัญญา ผ่านแผนที่และหน้ารายละเอียดจังหวัด',
   },
 ] as const;
 
 const HIGHLIGHTS = [
   {
-    title: 'เริ่มจากโจทย์ธุรกิจ',
+    title: 'เริ่มจากพื้นที่',
     icon: 'solar:chat-round-dots-bold',
-    description: 'ฟังเป้าหมายและข้อจำกัดก่อนเลือก solution เพื่อให้งานที่ทำตอบโจทย์จริง',
+    description: 'ใช้จังหวัดและอำเภอเป็นแกนหลัก เพื่อให้ข้อมูลวัฒนธรรมไม่ลอยออกจากบริบทจริง',
   },
   {
-    title: 'ออกแบบให้ใช้งานง่าย',
+    title: 'จัดข้อมูลให้อ่านง่าย',
     icon: 'solar:like-bold',
-    description: 'วาง flow และ UI ให้ทีมกับลูกค้าเข้าใจเร็ว ลดขั้นตอนซ้ำซ้อนในงานประจำ',
+    description: 'แยกหมวด แหล่งข้อมูล และรายละเอียดสำคัญ เพื่อให้ค้นหาและเปรียบเทียบได้เร็วขึ้น',
   },
   {
-    title: 'พร้อมดูแลต่อ',
+    title: 'พร้อมต่อยอด',
     icon: 'solar:shield-check-bold',
-    description: 'ส่งมอบพร้อมคำแนะนำ ดูแลหลังขึ้นระบบ และช่วยปรับปรุงเมื่อต้องขยายต่อ',
+    description: 'โครงสร้างข้อมูลรองรับการเพิ่มจังหวัด แหล่งข้อมูล และมุมมองใหม่ในอนาคต',
   },
 ] as const;
 
@@ -138,16 +135,12 @@ export function AboutTeam({ sx, ...other }: BoxProps) {
           sx={{
             pt: { xs: 2, md: 7 },
             pb: { xs: 8, md: 12 },
-            backgroundImage: `
-              linear-gradient(90deg, rgba(248,246,238,0.08) 1px, transparent 1px),
-              linear-gradient(180deg, rgba(248,246,238,0.08) 1px, transparent 1px)
-            `,
             backgroundSize: { xs: '72px 72px', md: '120px 120px' },
           }}
         >
           <Box sx={{ mx: 'auto', mt: { xs: 7, md: 10 }, maxWidth: 760, textAlign: 'center' }}>
             <m.div variants={varFade('inDown')}>
-              <SectionPill>About CODE FOR CAT</SectionPill>
+              <SectionPill>About Thai Culture Hub</SectionPill>
             </m.div>
 
             <m.div variants={varFade('inUp')}>
@@ -163,7 +156,7 @@ export function AboutTeam({ sx, ...other }: BoxProps) {
                   textShadow: '0 5px 22px rgba(32,42,43,0.36)',
                 }}
               >
-                ทีมเล็กที่ออกแบบและพัฒนาระบบให้ธุรกิจใช้งานได้จริง
+                พื้นที่กลางสำหรับสำรวจข้อมูลวัฒนธรรมไทยรายจังหวัด
                 <Box
                   component="span"
                   sx={{
@@ -178,7 +171,7 @@ export function AboutTeam({ sx, ...other }: BoxProps) {
                     boxShadow: '0 14px 28px rgba(80,63,13,0.18)',
                   }}
                 >
-                  Design + Development
+                  Map + Culture Data
                 </Box>
               </Typography>
             </m.div>
@@ -194,8 +187,8 @@ export function AboutTeam({ sx, ...other }: BoxProps) {
                   lineHeight: 1.75,
                 }}
               >
-                เราช่วยวางแผน ออกแบบ และพัฒนาเว็บไซต์ แอปพลิเคชัน
-                ไปจนถึงระบบหลังบ้านให้ตอบโจทย์ธุรกิจ พร้อมดูแลต่อหลังส่งมอบ
+                เรารวบรวมข้อมูลสถานที่และวัฒนธรรมจากหลายแหล่ง แล้วจัดให้อยู่ในรูปแบบที่ค้นหา กรอง
+                และสำรวจผ่านแผนที่ได้ง่ายขึ้น โดยยังคงแหล่งอ้างอิงของข้อมูลแต่ละรายการ
               </Typography>
             </m.div>
           </Box>
@@ -237,7 +230,7 @@ export function AboutTeam({ sx, ...other }: BoxProps) {
             </Grid>
           </Box>
 
-          <Box
+          {/* <Box
             sx={{
               mx: 'auto',
               maxWidth: 1040,
@@ -295,8 +288,9 @@ export function AboutTeam({ sx, ...other }: BoxProps) {
                     </Typography>
 
                     <Typography sx={{ mt: 2, color: 'rgba(42,55,54,0.76)', lineHeight: 1.8 }}>
-                      เราทำงานแบบพาร์ตเนอร์ เริ่มจากเข้าใจเป้าหมายของธุรกิจ
-                      แล้วค่อยออกแบบหน้าจอและระบบที่ทีมของคุณใช้ต่อได้จริง ไม่ใช่แค่สวยในวันส่งมอบ
+                      Thai Culture Hub ตั้งใจทำให้ข้อมูลวัฒนธรรมที่กระจายอยู่หลายระบบ
+                      กลับมาเชื่อมกับพื้นที่ หมวดหมู่ และแหล่งอ้างอิงอย่างเป็นระเบียบ
+                      เพื่อให้คนทั่วไป นักเรียน นักวิจัย และคนทำงานท้องถิ่นเริ่มสำรวจต่อได้ง่าย
                     </Typography>
                   </Box>
 
@@ -332,7 +326,7 @@ export function AboutTeam({ sx, ...other }: BoxProps) {
                         fontWeight: 900,
                       }}
                     >
-                      วิธีทำงานของเรา
+                      วิธีจัดการข้อมูลของเรา
                     </Typography>
 
                     <Stack spacing={1.5}>
@@ -368,7 +362,7 @@ export function AboutTeam({ sx, ...other }: BoxProps) {
                 </Stack>
               </Grid>
             </Grid>
-          </Box>
+          </Box> */}
         </Box>
       </Box>
 

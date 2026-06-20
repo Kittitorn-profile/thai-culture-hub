@@ -34,6 +34,15 @@ function normalizeText(value?: string | null) {
   return (value ?? '').replace(/\s+/g, '').trim();
 }
 
+function normalizeDistrictText(value?: string | null) {
+  return (value ?? '')
+    .replace(/^อำเภอ/, '')
+    .replace(/^อ\./, '')
+    .replace(/^เขต/, '')
+    .replace(/\s+/g, '')
+    .trim();
+}
+
 function slugifyThai(value: string) {
   return value
     .trim()
@@ -48,11 +57,29 @@ function toNumber(value?: number | string | null) {
   return Number.isFinite(numberValue) ? numberValue : null;
 }
 
-function getDistrict(practice?: string | null) {
-  const text = practice ?? '';
-  const district = text.match(/อำเภอ([^,\s]+)/)?.[1] ?? text.match(/อ\.([^,\s]+)/)?.[1];
+function normalizeDistrictName(district: string, provinceName: string) {
+  const normalizedDistrict = normalizeDistrictText(district);
+  const normalizedProvince = normalizeDistrictText(provinceName);
 
-  return district ? district.replace(/^เมือง$/, 'เมือง') : '';
+  if (!normalizedDistrict || normalizedDistrict === normalizedProvince) {
+    return '';
+  }
+
+  if (normalizedDistrict === 'เมือง') {
+    return `เมือง${provinceName}`;
+  }
+
+  return normalizedDistrict;
+}
+
+function getDistrict(practice: string | null | undefined, provinceName: string) {
+  const text = practice ?? '';
+  const district =
+    text.match(/อำเภอ([^,\s]+)/)?.[1] ??
+    text.match(/อ\.([^,\s]+)/)?.[1] ??
+    text.match(/เขต([^,\s]+)/)?.[1];
+
+  return district ? normalizeDistrictName(district, provinceName) : '';
 }
 
 function getCategory(record: CultureCatalogRecord): CulturalCategory {
@@ -127,7 +154,8 @@ function getHighlight(record: CultureCatalogRecord) {
 
 function mapCultureRecordToPlace(
   record: CultureCatalogRecord,
-  provinceCode: string
+  provinceCode: string,
+  provinceName: string
 ): CulturalPlace | null {
   const lat = toNumber(record.Latitude);
   const lng = toNumber(record.Longitude);
@@ -147,7 +175,7 @@ function mapCultureRecordToPlace(
   return {
     id: `culture-${record._id}-${slugifyThai(name)}`,
     name,
-    district: getDistrict(practice) || record.Province || '',
+    district: getDistrict(practice, provinceName),
     category: getCategory(record),
     lat,
     lng,
@@ -163,7 +191,8 @@ export const revalidate = 86400;
 
 export async function GET(request: NextRequest) {
   const provinceCode = request.nextUrl.searchParams.get('provinceCode');
-  const limit = Number(request.nextUrl.searchParams.get('limit') ?? 5);
+  const limitParam = request.nextUrl.searchParams.get('limit');
+  const limit = limitParam == null ? null : Number(limitParam);
   const isSummary = request.nextUrl.searchParams.get('summary') === 'true';
   const province = provinces.find((item) => item.code === provinceCode);
 
@@ -191,15 +220,19 @@ export async function GET(request: NextRequest) {
   const json = await response.json();
   const records = Array.isArray(json?.result?.records) ? json.result.records : [];
   const targetProvinceName = normalizeText(province.name);
-  const responseLimit = isSummary ? 10000 : Math.min(Math.max(limit, 1), 50);
   const data = records
     .filter((record: CultureCatalogRecord) => normalizeText(record.Province) === targetProvinceName)
-    .map((record: CultureCatalogRecord) => mapCultureRecordToPlace(record, provinceCode))
-    .filter((item: CulturalPlace | null): item is CulturalPlace => Boolean(item))
-    .slice(0, responseLimit);
+    .map((record: CultureCatalogRecord) =>
+      mapCultureRecordToPlace(record, provinceCode, province.name)
+    )
+    .filter((item: CulturalPlace | null): item is CulturalPlace => Boolean(item));
+  const limitedData =
+    limit != null && Number.isFinite(limit) && !isSummary
+      ? data.slice(0, Math.min(Math.max(limit, 1), 50))
+      : data;
 
   return NextResponse.json({
-    data,
+    data: limitedData,
     source: 'culture.gdcatalog.go.th',
   });
 }

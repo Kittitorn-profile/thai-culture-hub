@@ -44,6 +44,19 @@ function getCoordinatesText(place: CulturalPlace) {
     : 'ไม่พบพิกัด';
 }
 
+function getGoogleMapsUrl(place: CulturalPlace) {
+  if (place.mapUrl) {
+    return place.mapUrl;
+  }
+
+  const placeLat = Number(place.lat);
+  const placeLng = Number(place.lng);
+
+  return Number.isFinite(placeLat) && Number.isFinite(placeLng)
+    ? `https://www.google.com/maps/search/?api=1&query=${placeLat},${placeLng}`
+    : null;
+}
+
 function ProvincePlaceCard({
   place,
   placeIndex,
@@ -56,6 +69,7 @@ function ProvincePlaceCard({
   const theme = useTheme();
   const accentColor = CULTURE_CATEGORY_COLORS[place.category];
   const cardImage = place.imageUrls?.[0];
+  const googleMapsUrl = getGoogleMapsUrl(place);
 
   return (
     <Box
@@ -192,24 +206,51 @@ function ProvincePlaceCard({
             </Typography>
           </Box>
 
-          <Button
-            onClick={() => onPlaceSelect(place)}
-            sx={{
-              m: 0,
-              px: 2,
-              py: 1,
-              border: 0,
-              color: 'white',
-              cursor: 'pointer',
-              fontWeight: 900,
-              borderRadius: 1.2,
-              bgcolor: '#f48b2a',
-              whiteSpace: 'nowrap',
-              boxShadow: `0 10px 22px ${alpha('#f48b2a', 0.26)}`,
-            }}
-          >
-            ดูรายละเอียด
-          </Button>
+          <Stack direction="row" spacing={0.8} sx={{ flexShrink: 0 }}>
+            {googleMapsUrl && (
+              <Button
+                component="a"
+                href={googleMapsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                startIcon={<Iconify icon="custom:location-fill" />}
+                sx={{
+                  m: 0,
+                  px: 1.4,
+                  py: 1,
+                  border: 0,
+                  color: accentColor,
+                  cursor: 'pointer',
+                  fontWeight: 900,
+                  borderRadius: 1.2,
+                  bgcolor: alpha(accentColor, 0.1),
+                  whiteSpace: 'nowrap',
+                  minWidth: 'auto',
+                }}
+              >
+                Google Map
+              </Button>
+            )}
+
+            <Button
+              onClick={() => onPlaceSelect(place)}
+              sx={{
+                m: 0,
+                px: 2,
+                py: 1,
+                border: 0,
+                color: 'white',
+                cursor: 'pointer',
+                fontWeight: 900,
+                borderRadius: 1.2,
+                bgcolor: '#f48b2a',
+                whiteSpace: 'nowrap',
+                boxShadow: `0 10px 22px ${alpha('#f48b2a', 0.26)}`,
+              }}
+            >
+              ดูรายละเอียด
+            </Button>
+          </Stack>
         </Stack>
       </Box>
     </Box>

@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
   }
 
   const result = await fetchFineArtsPlaces({
-    source: 'archeology',
+    source: 'monument',
     provinceCode,
     limit,
     apiKey,

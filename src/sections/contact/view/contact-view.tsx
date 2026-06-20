@@ -1,6 +1,10 @@
 'use client';
 
+import { useState } from 'react';
+import emailjs from '@emailjs/browser';
+
 import Box from '@mui/material/Box';
+import Alert from '@mui/material/Alert';
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
@@ -35,29 +39,112 @@ const posterPattern = `
 `;
 
 const contactItems = [
+  // {
+  //   icon: 'solar:letter-bold',
+  //   label: 'อีเมล',
+  //   value: 'codeforcat.official@gmail.com',
+  // },
   {
-    icon: 'solar:phone-bold',
-    label: 'โทร',
-    value: '082-954-9263 (คุณฟลุ๊ค)',
-  },
-  {
-    icon: 'solar:letter-bold',
-    label: 'อีเมล',
-    value: 'codeforcat.official@gmail.com',
-  },
-  {
-    icon: 'solar:letter-bold',
-    label: 'LINE',
-    value: 'fluketoselnwza',
+    icon: 'solar:notebook-bold-duotone',
+    label: 'เรื่องข้อมูล',
+    value: 'แจ้งแก้ไข เพิ่มแหล่งข้อมูล หรือเสนอชุดข้อมูลใหม่',
   },
   {
     icon: 'solar:flag-bold',
-    label: 'พื้นที่ให้บริการ',
-    value: 'รับงานทั่วไทย / Online meeting',
+    label: 'พื้นที่ครอบคลุม',
+    value: 'ข้อมูลวัฒนธรรมและสถานที่รายจังหวัดทั่วประเทศไทย',
+  },
+  {
+    icon: 'solar:list-bold',
+    label: 'การใช้งาน',
+    value: 'รับข้อเสนอแนะเรื่องแผนที่ ตัวกรอง และรายละเอียดรายการ',
   },
 ] as const;
 
+const reportExamples = [
+  'พิกัดหรืออำเภอของรายการไม่ตรงกับพื้นที่จริง',
+  'ชื่อสถานที่ ประเพณี หรือหมวดวัฒนธรรมควรปรับแก้',
+  'มีแหล่งข้อมูลวัฒนธรรมเพิ่มเติมที่ควรนำเข้าระบบ',
+] as const;
+
+const initialFormValues = {
+  name: '',
+  contact: '',
+  area: '',
+  message: '',
+};
+
+const emailJsConfig = {
+  serviceId: process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID ?? '',
+  templateId: process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID ?? '',
+  publicKey: process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY ?? '',
+};
+
 export function ContactView() {
+  const [formValues, setFormValues] = useState(initialFormValues);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<{
+    type: 'success' | 'error';
+    message: string;
+  } | null>(null);
+
+  const isEmailJsConfigured = Boolean(
+    emailJsConfig.serviceId && emailJsConfig.templateId && emailJsConfig.publicKey
+  );
+
+  const handleFieldChange =
+    (field: keyof typeof initialFormValues) => (event: React.ChangeEvent<HTMLInputElement>) => {
+      setFormValues((prev) => ({ ...prev, [field]: event.target.value }));
+    };
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setSubmitStatus(null);
+
+    if (!isEmailJsConfigured) {
+      setSubmitStatus({
+        type: 'error',
+        message: 'ยังไม่ได้ตั้งค่า EmailJS ใน environment variables',
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      await emailjs.send(
+        emailJsConfig.serviceId,
+        emailJsConfig.templateId,
+        {
+          from_name: formValues.name,
+          reply_to: formValues.contact,
+          contact: formValues.contact,
+          area: formValues.area,
+          message: formValues.message,
+          submitted_at: new Date().toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' }),
+          source: 'Thai Culture Hub contact form',
+        },
+        { publicKey: emailJsConfig.publicKey }
+      );
+
+      setFormValues(initialFormValues);
+      setSubmitStatus({
+        type: 'success',
+        message: 'ส่งข้อมูลเรียบร้อยแล้ว ขอบคุณสำหรับการช่วยปรับปรุงข้อมูลวัฒนธรรมไทย',
+      });
+    } catch (error) {
+      setSubmitStatus({
+        type: 'error',
+        message:
+          error instanceof Error && error.message
+            ? `ส่งไม่สำเร็จ: ${error.message}`
+            : 'ส่งไม่สำเร็จ กรุณาลองใหม่อีกครั้ง',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <Box
       component="main"
@@ -97,10 +184,7 @@ export function ContactView() {
           sx={{
             px: { xs: 2.25, md: 5 },
             py: { xs: 2.25, md: 10 },
-            backgroundImage: `
-              linear-gradient(90deg, rgba(248,246,238,0.08) 1px, transparent 1px),
-              linear-gradient(180deg, rgba(248,246,238,0.08) 1px, transparent 1px)
-            `,
+
             backgroundSize: { xs: '72px 72px', md: '120px 120px' },
           }}
         >
@@ -125,7 +209,7 @@ export function ContactView() {
                     fontWeight: 800,
                   }}
                 >
-                  Contact us
+                  Contact Thai Culture Hub
                 </Typography>
 
                 <Typography
@@ -140,7 +224,7 @@ export function ContactView() {
                     textShadow: '0 5px 22px rgba(32,42,43,0.36)',
                   }}
                 >
-                  มาคุยเรื่องเว็บไซต์และแอปของคุณ
+                  ติดต่อเรื่องข้อมูลและข้อเสนอแนะ
                 </Typography>
 
                 <Typography
@@ -152,8 +236,8 @@ export function ContactView() {
                     lineHeight: 1.8,
                   }}
                 >
-                  ส่งรายละเอียดโปรเจกต์ งบประมาณคร่าว ๆ หรือสิ่งที่อยากทำมาได้เลย
-                  เราจะช่วยสรุปแนวทางและประเมินขั้นตอนเริ่มต้นให้ชัดเจน
+                  หากพบข้อมูลคลาดเคลื่อน พิกัดไม่ตรง ชื่ออำเภอไม่ถูกต้อง
+                  หรือมีแหล่งข้อมูลวัฒนธรรมที่อยากแนะนำ สามารถส่งรายละเอียดให้เราตรวจสอบต่อได้
                 </Typography>
 
                 <Stack spacing={1.5} sx={{ mt: 4 }}>
@@ -200,6 +284,8 @@ export function ContactView() {
               </Box>
 
               <Box
+                component="form"
+                onSubmit={handleSubmit}
                 sx={{
                   flex: 1,
                   p: { xs: 2.5, md: 4 },
@@ -210,30 +296,82 @@ export function ContactView() {
                 }}
               >
                 <Typography sx={{ color: tone.deep, fontSize: 28, fontWeight: 950 }}>
-                  ส่งข้อความถึงเรา
+                  ส่งข้อมูลให้ทีมตรวจสอบ
                 </Typography>
                 <Typography
                   sx={{ mt: 1, color: 'rgba(42,55,54,0.74)', fontSize: 13, lineHeight: 1.7 }}
                 >
-                  กรอกข้อมูลสั้น ๆ แล้วทีม Code for Cat จะติดต่อกลับพร้อมแนวทางเริ่มต้น
+                  ระบุจังหวัด รายการที่พบ และแหล่งอ้างอิงถ้ามี
+                  เพื่อให้เราตรวจสอบและปรับปรุงข้อมูลได้เร็วขึ้น
                 </Typography>
 
+                <Stack spacing={1} sx={{ mt: 2.5 }}>
+                  {reportExamples.map((item) => (
+                    <Stack key={item} direction="row" spacing={1} sx={{ alignItems: 'flex-start' }}>
+                      <Iconify
+                        icon="solar:check-circle-bold"
+                        width={17}
+                        sx={{ mt: 0.25, color: tone.deep }}
+                      />
+                      <Typography sx={{ color: 'rgba(42,55,54,0.74)', fontSize: 13 }}>
+                        {item}
+                      </Typography>
+                    </Stack>
+                  ))}
+                </Stack>
+
                 <Stack spacing={2} sx={{ mt: 3 }}>
-                  <TextField fullWidth label="ชื่อของคุณ" sx={fieldSx} />
-                  <TextField fullWidth label="อีเมล / เบอร์โทร" sx={fieldSx} />
-                  <TextField fullWidth label="งบประมาณโดยประมาณ" sx={fieldSx} />
                   <TextField
+                    required
                     fullWidth
-                    label="เล่าโปรเจกต์ที่อยากทำ"
+                    name="name"
+                    label="ชื่อของคุณ / หน่วยงาน"
+                    value={formValues.name}
+                    onChange={handleFieldChange('name')}
+                    sx={fieldSx}
+                  />
+                  <TextField
+                    required
+                    fullWidth
+                    name="contact"
+                    label="อีเมล / เบอร์โทร"
+                    value={formValues.contact}
+                    onChange={handleFieldChange('contact')}
+                    sx={fieldSx}
+                  />
+                  <TextField
+                    required
+                    fullWidth
+                    name="area"
+                    label="จังหวัดหรือพื้นที่ที่เกี่ยวข้อง"
+                    value={formValues.area}
+                    onChange={handleFieldChange('area')}
+                    sx={fieldSx}
+                  />
+                  <TextField
+                    required
+                    fullWidth
+                    name="message"
+                    label="รายละเอียดข้อมูลหรือข้อเสนอแนะ"
                     multiline
                     rows={5}
+                    value={formValues.message}
+                    onChange={handleFieldChange('message')}
                     sx={fieldSx}
                   />
                 </Stack>
 
+                {submitStatus && (
+                  <Alert severity={submitStatus.type} sx={{ mt: 2 }}>
+                    {submitStatus.message}
+                  </Alert>
+                )}
+
                 <Button
                   fullWidth
+                  type="submit"
                   variant="contained"
+                  disabled={isSubmitting}
                   sx={{
                     mt: 3,
                     py: 1.2,
@@ -246,7 +384,7 @@ export function ContactView() {
                     '&:hover': { bgcolor: '#f2dfaa', boxShadow: '0 16px 32px rgba(80,63,13,0.24)' },
                   }}
                 >
-                  ส่งข้อมูลโปรเจกต์
+                  {isSubmitting ? 'กำลังส่งข้อมูล...' : 'ส่งข้อมูลให้ตรวจสอบ'}
                 </Button>
               </Box>
             </Stack>
@@ -261,6 +399,7 @@ export function ContactView() {
 
 const fieldSx = {
   '& .MuiOutlinedInput-root': {
+    color: '#000',
     bgcolor: 'rgba(255,255,255,0.72)',
     borderRadius: 1,
     '& fieldset': { borderColor: 'rgba(42,55,54,0.18)' },

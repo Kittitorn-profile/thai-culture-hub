@@ -3,8 +3,8 @@
 import type { Feature, Geometry, GeoJsonProperties, FeatureCollection } from 'geojson';
 import type { CulturalPlace, CulturalCategory } from 'src/sections/province/province-data';
 
-import { geoPath, geoMercator } from 'd3-geo';
 import { useQuery } from '@tanstack/react-query';
+import { geoPath, geoCentroid, geoMercator } from 'd3-geo';
 import { useMemo, useState, useEffect, useCallback } from 'react';
 
 import Popover from '@mui/material/Popover';
@@ -42,6 +42,10 @@ type ThailandProvinceMapItem = {
   id: string;
   pathData: string;
   province: ThailandProvince;
+  provinceCenter: {
+    lat: number;
+    lng: number;
+  };
   provinceFill: string;
 };
 
@@ -199,10 +203,12 @@ function getMapItems(
     }
 
     const province = getProvinceFromGeography(geo);
+    const [lng, lat] = geoCentroid(geo);
 
     provinceItems.push({
       pathData,
       province,
+      provinceCenter: { lat, lng },
       provinceFill: getProvinceColor(province, provinceCategorySummaries),
       id: String(geo.id ?? geo.properties?.shapeID ?? province.iso ?? index),
     });
@@ -291,22 +297,13 @@ function fetchProvincePlacesApi(url: string, signal: AbortSignal) {
 }
 
 async function fetchProvinceApiPlaces(provinceId: string, signal: AbortSignal) {
-  const responses = await Promise.all([
-    fetchProvincePlacesApi(
-      `/api/culture/places?provinceCode=${provinceId}&limit=10000&summary=true`,
-      signal
-    ),
-    fetchProvincePlacesApi(`/api/tat/places?provinceCode=${provinceId}&limit=50`, signal),
-    fetchProvincePlacesApi(`/api/finearts/archeology?provinceCode=${provinceId}&limit=50`, signal),
-  ]);
-
-  const jsonList = await Promise.all(
-    responses.map(async (response) => (response?.ok ? response.json() : { data: [] }))
+  const response = await fetchProvincePlacesApi(
+    `/api/culture/province-places?provinceCode=${provinceId}&limit=100&summary=true`,
+    signal
   );
+  const json = response?.ok ? await response.json() : { data: [] };
 
-  return jsonList.flatMap((json) =>
-    Array.isArray(json?.data) ? (json.data as CulturalPlace[]) : []
-  );
+  return Array.isArray(json?.data) ? (json.data as CulturalPlace[]) : [];
 }
 
 async function fetchProvinceCategorySummaries(provinceIds: string[], signal: AbortSignal) {
@@ -394,6 +391,18 @@ export default function ThailandMap() {
   const isMapLoading = isMapGeoJsonLoading || isProvinceSummaryLoading;
   const hasMapContent = mapItems.length > 0;
   const showProvinceSearchResults = Boolean(normalizedSearchQuery);
+  const popoverProvinceId = popoverProvince ? getProvinceId(popoverProvince) : '';
+  const popoverProvinceDisplayName = popoverProvince ? getProvinceDisplayName(popoverProvince) : '';
+  const popoverProvinceSummary = popoverProvinceId
+    ? provinceCategorySummaries[popoverProvinceId]
+    : undefined;
+  const popoverProvinceCenter = popoverProvinceId
+    ? mapItems.find((item) => getProvinceId(item.province) === popoverProvinceId)?.provinceCenter
+    : undefined;
+  const popoverProvinceCoordinate = popoverProvinceCenter
+    ? `Lat ${popoverProvinceCenter.lat.toFixed(7)}, Lng ${popoverProvinceCenter.lng.toFixed(7)}`
+    : 'Lat / Lng';
+  const popoverAccentColor = popoverProvinceSummary?.color ?? '#d98b35';
 
   useEffect(() => {
     if (isProvinceSummarySuccess) {
@@ -485,8 +494,8 @@ export default function ThailandMap() {
             aria-label={`Select ${displayName}`}
             tabIndex={0}
             fill={isSelected ? selectedFill : isMatched ? matchedFill : provinceFill}
-            stroke={isSelected ? '#feecdc' : alpha('#6d4b2c', 0.42)}
-            strokeWidth={isSelected ? 1.8 : 0.9}
+            stroke={isSelected ? '#ffffff' : alpha('#ffffff', 0.68)}
+            strokeWidth={isSelected ? 2 : 2}
             strokeLinecap="round"
             strokeLinejoin="round"
             vectorEffect="non-scaling-stroke"
@@ -514,7 +523,7 @@ export default function ThailandMap() {
       mapItems,
       normalizedSearchQuery,
       popoverProvince,
-      theme.palette.primary.light,
+      theme.palette.secondary.main,
     ]
   );
 
@@ -764,7 +773,7 @@ export default function ThailandMap() {
               <rect
                 width="960"
                 height="760"
-                fill="#7b6032"
+                fill="#ffffff"
                 filter="url(#paper-noise)"
                 opacity="0.22"
               />
@@ -868,69 +877,127 @@ export default function ThailandMap() {
           paper: {
             onMouseLeave: handleCloseProvincePopover,
             sx: {
-              mt: 1.6,
-              width: 280,
-              p: 1.2,
-              borderRadius: 3,
+              mt: 1.8,
+              width: { xs: 272, sm: 310 },
+              p: 1,
+              borderRadius: 3.2,
               overflow: 'visible',
-              bgcolor: alpha(theme.palette.common.white, 0.94),
-              boxShadow: `0 24px 70px ${alpha(theme.palette.grey[900], 0.22)}`,
+              color: '#263331',
+              bgcolor: alpha('#fbfaf3', 0.97),
+              border: `1px solid ${alpha('#fff8e6', 0.86)}`,
+              boxShadow: `0 28px 80px ${alpha('#2f2418', 0.28)}, inset 0 1px 0 ${alpha(
+                '#ffffff',
+                0.72
+              )}`,
+              backdropFilter: 'blur(16px)',
               '&::before': {
                 content: '""',
                 position: 'absolute',
-                top: -9,
+                top: -10,
                 left: '50%',
-                width: 18,
-                height: 18,
-                bgcolor: alpha(theme.palette.common.white, 0.94),
+                width: 20,
+                height: 20,
+                bgcolor: alpha('#fbfaf3', 0.97),
                 transform: 'translateX(-50%) rotate(45deg)',
                 borderRadius: 0.4,
+                borderTop: `1px solid ${alpha('#fff8e6', 0.86)}`,
+                borderLeft: `1px solid ${alpha('#fff8e6', 0.86)}`,
               },
             },
           },
         }}
       >
         {popoverProvince && (
-          <Box sx={{ position: 'relative' }}>
+          <Box sx={{ position: 'relative', overflow: 'hidden', borderRadius: 2.4 }}>
             <Box
               sx={{
-                p: 1.2,
+                position: 'absolute',
+                top: -42,
+                right: -48,
+                width: 124,
+                height: 124,
+                borderRadius: '50%',
+                bgcolor: alpha(popoverAccentColor, 0.13),
+              }}
+            />
+            <Box
+              sx={{
+                p: 1.3,
                 display: 'flex',
                 gap: 1.2,
                 alignItems: 'center',
-                borderRadius: 2,
-                bgcolor: alpha('#ead49a', 0.34),
+                position: 'relative',
+                borderRadius: 2.2,
+                background:
+                  'linear-gradient(135deg, rgba(244,237,208,0.98), rgba(231,228,204,0.88))',
+                border: `1px solid ${alpha('#ffffff', 0.82)}`,
               }}
             >
               <Box
                 sx={{
-                  width: 40,
-                  height: 40,
+                  width: 46,
+                  height: 46,
                   display: 'grid',
                   flexShrink: 0,
                   borderRadius: '50%',
                   placeItems: 'center',
-                  color: '#7b3d27',
-                  bgcolor: '#f5d266',
-                  border: '2px solid #7b4b24',
+                  color: '#7a311f',
+                  bgcolor: '#f8d36a',
+                  border: `3px solid ${alpha('#7b3d27', 0.94)}`,
+                  boxShadow: `0 10px 22px ${alpha('#6f3d24', 0.18)}`,
                 }}
               >
-                <Iconify icon="custom:location-fill" width={19} />
+                <Iconify icon="custom:location-fill" width={22} />
               </Box>
-              <Box sx={{ minWidth: 0 }}>
-                <Typography sx={{ color: '#1b2b2a', fontSize: 17, fontWeight: 900 }}>
-                  {getProvinceDisplayName(popoverProvince)}
+              <Box sx={{ minWidth: 0, flex: 1 }}>
+                <Typography
+                  sx={{
+                    color: '#1f2e2c',
+                    fontSize: 18,
+                    fontWeight: 950,
+                    lineHeight: 1.14,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {popoverProvinceDisplayName}
                 </Typography>
-                <Typography sx={{ color: 'text.secondary', fontSize: 12, fontWeight: 700 }}>
+                <Typography sx={{ mt: 0.15, color: '#64716f', fontSize: 12, fontWeight: 800 }}>
                   จังหวัด
                 </Typography>
               </Box>
             </Box>
 
-            <Box sx={{ px: 1.2, py: 1.4 }}>
-              {['สถานที่สำคัญ', 'วัฒนธรรมท้องถิ่น', 'พิกัดและเรื่องเล่า'].map((item) => (
-                <Box key={item} sx={{ display: 'flex', alignItems: 'center', gap: 1, py: 0.45 }}>
-                  <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: '#d98b35' }} />
+            <Box
+              sx={{
+                px: 1.4,
+                pt: 1.5,
+                pb: 1.2,
+                position: 'relative',
+                '&::before': {
+                  content: '""',
+                  position: 'absolute',
+                  left: 1.6,
+                  top: 20,
+                  bottom: 18,
+                  width: 1,
+                },
+              }}
+            >
+              {[popoverProvinceCoordinate].map((item) => (
+                <Box key={item} sx={{ display: 'flex', alignItems: 'center', gap: 1.1, py: 0.5 }}>
+                  <Box
+                    sx={{
+                      width: 6,
+                      height: 6,
+                      zIndex: 1,
+                      flexShrink: 0,
+                      borderRadius: '50%',
+                      bgcolor: popoverAccentColor,
+                      boxShadow: `0 0 0 3px ${alpha(popoverAccentColor, 0.13)}`,
+                    }}
+                  />
                   <Typography sx={{ color: '#233331', fontSize: 13, fontWeight: 800 }}>
                     {item}
                   </Typography>
@@ -945,12 +1012,22 @@ export default function ThailandMap() {
               sx={{
                 width: 1,
                 m: 0,
+                py: 1.05,
+                px: 1.5,
                 cursor: 'pointer',
                 display: 'flex',
-                borderRadius: 2,
+                borderRadius: 2.2,
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                boxShadow: `0 12px 28px ${alpha('#d98b35', 0.28)}`,
+                color: '#fffdf6',
+                bgcolor: '#827568',
+                fontSize: 14,
+                fontWeight: 900,
+                boxShadow: `0 14px 30px ${alpha('#4a3525', 0.22)}`,
+                '&:hover': {
+                  bgcolor: '#6f6257',
+                  boxShadow: `0 18px 36px ${alpha('#4a3525', 0.28)}`,
+                },
               }}
               endIcon={<Iconify icon="eva:arrow-ios-forward-fill" width={16} />}
             >

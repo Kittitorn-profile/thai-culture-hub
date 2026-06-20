@@ -122,7 +122,7 @@ export function getProvinceCulturalPlaces(
 
 export function getCultureMetrics(places: CulturalPlace[]): CultureMetric[] {
   const categoryCount = new Set(places.map((place) => place.category)).size;
-  const districtCount = new Set(places.map((place) => place.district)).size;
+  const districtCount = new Set(places.map((place) => place.district).filter(Boolean)).size;
 
   return [
     { label: 'สถานที่แนะนำ', value: `${places.length}` },

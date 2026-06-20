@@ -31,6 +31,7 @@
     "@atlaskit/pragmatic-drag-and-drop-auto-scroll": "^2.1.2",
     "@atlaskit/pragmatic-drag-and-drop-hitbox": "^1.1.0",
     "@auth0/auth0-react": "^2.11.0",
+    "@emailjs/browser": "^4.4.1",
     "@emotion/cache": "^11.14.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
