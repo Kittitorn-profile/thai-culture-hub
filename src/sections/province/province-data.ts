@@ -34,7 +34,14 @@ export type CulturalPlace = {
   imageUrls?: string[];
   sourceUrl?: string;
   mapUrl?: string;
-  source?: 'local' | 'tat' | 'culture_catalog' | 'finearts_archeology';
+  source?:
+    | 'local'
+    | 'tat'
+    | 'culture_catalog'
+    | 'finearts_monument'
+    | 'finearts_archeology'
+    | 'finearts_buddha'
+    | 'finearts_museum';
 };
 
 export type CultureMetric = {

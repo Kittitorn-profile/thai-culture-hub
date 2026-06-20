@@ -6,6 +6,8 @@ import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
+import InputBase from '@mui/material/InputBase';
+import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import { alpha, useTheme } from '@mui/material/styles';
 
@@ -19,8 +21,10 @@ type ProvinceDetailHeaderProps = {
   dataSourceLabel: string;
   isRemoteLoading: boolean;
   activeFilterCount: number;
+  searchQuery: string;
   onFilterOpen: () => void;
   onPlacesOpen: () => void;
+  onSearchQueryChange: (value: string) => void;
 };
 
 type ProvinceCultureMetricsProps = {
@@ -83,8 +87,10 @@ export function ProvinceDetailHeader({
   dataSourceLabel,
   isRemoteLoading,
   activeFilterCount,
+  searchQuery,
   onFilterOpen,
   onPlacesOpen,
+  onSearchQueryChange,
 }: ProvinceDetailHeaderProps) {
   const theme = useTheme();
 
@@ -95,7 +101,7 @@ export function ProvinceDetailHeader({
         mx: 'auto',
         p: { xs: 2, sm: 3 },
         width: 1,
-        maxWidth: 980,
+        maxWidth: '100%',
         overflow: 'visible',
         position: 'relative',
         textAlign: 'center',
@@ -155,14 +161,87 @@ export function ProvinceDetailHeader({
             สำรวจมรดก วัด ธรรมชาติ หัตถกรรม และเรื่องเล่าท้องถิ่นของจังหวัด
           </Typography>
         </Box>
+
         <Stack
           direction="row"
           spacing={1}
           justifyContent="center"
           alignItems="center"
-          sx={{ flexWrap: 'wrap', rowGap: 1 }}
+          sx={{ flex: 1 }}
         >
-          <Chip
+          <Box
+            sx={{
+              px: 1.1,
+              py: 0.6,
+              gap: 1,
+              width: 1,
+              maxWidth: 400,
+              minHeight: 46,
+              display: 'flex',
+              borderRadius: 99,
+              alignItems: 'center',
+              color: '#11343a',
+              bgcolor: alpha('#f8f6ee', 0.94),
+              border: `1px solid ${alpha('#f2d28b', 0.7)}`,
+              boxShadow: `0 14px 30px ${alpha(theme.palette.grey[900], 0.14)}`,
+            }}
+          >
+            <Iconify icon="eva:search-fill" width={22} sx={{ flexShrink: 0, color: '#1f7b8e' }} />
+            <InputBase
+              value={searchQuery}
+              placeholder="ค้นหาสถานที่"
+              onChange={(event) => onSearchQueryChange(event.target.value)}
+              sx={{
+                flex: 1,
+                minWidth: 0,
+                color: '#11343a',
+                fontSize: 14,
+                fontWeight: 800,
+                textAlign: 'left',
+                '& input::placeholder': {
+                  color: alpha('#11343a', 0.56),
+                  opacity: 1,
+                },
+              }}
+            />
+            {!!searchQuery && (
+              <IconButton
+                size="small"
+                aria-label="ล้างคำค้นหา"
+                onClick={() => onSearchQueryChange('')}
+                sx={{
+                  width: 28,
+                  height: 28,
+                  flexShrink: 0,
+                  color: '#11343a',
+                  bgcolor: alpha('#11343a', 0.08),
+                  '&:hover': { bgcolor: alpha('#11343a', 0.14) },
+                }}
+              >
+                <Iconify icon="mingcute:close-line" width={16} />
+              </IconButton>
+            )}
+          </Box>
+
+          <Button
+            size="medium"
+            variant="contained"
+            startIcon={<Iconify icon="solar:list-bold" />}
+            onClick={onFilterOpen}
+            sx={{
+              height: 48,
+              width: 180,
+              borderRadius: 99,
+              fontWeight: 900,
+              color: '#11343a',
+              bgcolor: alpha('#f8f6ee', 0.94),
+              boxShadow: `0 10px 24px ${alpha(theme.palette.grey[900], 0.14)}`,
+              '&:hover': { bgcolor: '#fff' },
+            }}
+          >
+            ตัวกรอง {activeFilterCount ? ` (${activeFilterCount})` : ''}
+          </Button>
+          {/* <Chip
             label={`${filteredCount}/${totalCount} สถานที่สำคัญ`}
             sx={{
               height: 38,
@@ -174,33 +253,17 @@ export function ProvinceDetailHeader({
               border: `1px solid ${alpha('#f2d28b', 0.84)}`,
               boxShadow: `0 10px 24px ${alpha(theme.palette.grey[900], 0.14)}`,
             }}
-          />
-          <Button
-            size="medium"
-            variant="contained"
-            startIcon={<Iconify icon="solar:list-bold" />}
-            onClick={onFilterOpen}
-            sx={{
-              height: 38,
-              px: 1.8,
-              borderRadius: 99,
-              fontWeight: 900,
-              color: '#11343a',
-              bgcolor: alpha('#f8f6ee', 0.94),
-              boxShadow: `0 10px 24px ${alpha(theme.palette.grey[900], 0.14)}`,
-              '&:hover': { bgcolor: '#fff' },
-            }}
-          >
-            ตัวกรอง {activeFilterCount ? ` (${activeFilterCount})` : ''}
-          </Button>
-          <Button
+          /> */}
+
+          {/* <Button
             size="medium"
             variant="contained"
             startIcon={<Iconify icon="custom:location-fill" />}
             onClick={onPlacesOpen}
             sx={{
-              height: 38,
+              height: 48,
               px: 1.8,
+              width: 250,
               borderRadius: 99,
               fontWeight: 900,
               color: '#fff',
@@ -211,7 +274,7 @@ export function ProvinceDetailHeader({
             }}
           >
             สถานที่และวัฒนธรรม
-          </Button>
+          </Button> */}
         </Stack>
         <ProvinceCultureMetrics cultureMetrics={cultureMetrics} />
       </Stack>

@@ -34,7 +34,7 @@ type FineArtsRecord = {
 };
 
 function getFineArtsApiKey() {
-  return process.env.FINE_ARTS_API_KEY ?? process.env.NEXT_PRIVATE_FINE_ARTS_API_KEY;
+  return (process.env.FINE_ARTS_API_KEY ?? process.env.NEXT_PRIVATE_FINE_ARTS_API_KEY)?.trim();
 }
 
 function fineArtsUnavailableResponse(message: string, upstreamStatus?: number) {

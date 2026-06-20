@@ -11,6 +11,7 @@ import Chip from '@mui/material/Chip';
 import Tabs from '@mui/material/Tabs';
 import Stack from '@mui/material/Stack';
 import Drawer from '@mui/material/Drawer';
+import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
@@ -39,7 +40,7 @@ function getCoordinatesText(place: CulturalPlace) {
   const placeLng = Number(place.lng);
 
   return Number.isFinite(placeLat) && Number.isFinite(placeLng)
-    ? `${placeLat.toFixed(4)}, ${placeLng.toFixed(4)}`
+    ? `${placeLat}, ${placeLng}`
     : 'ไม่พบพิกัด';
 }
 
@@ -112,7 +113,7 @@ function ProvincePlaceCard({
             borderRadius: '0 0 10px 10px',
             position: 'absolute',
             transform: 'translateX(-50%)',
-            bgcolor: '#f8f8f2',
+            bgcolor: '#ffffff',
             boxShadow: `0 8px 18px ${alpha(theme.palette.grey[900], 0.12)}`,
             whiteSpace: 'nowrap',
           }}
@@ -191,9 +192,7 @@ function ProvincePlaceCard({
             </Typography>
           </Box>
 
-          <Box
-            component="button"
-            type="button"
+          <Button
             onClick={() => onPlaceSelect(place)}
             sx={{
               m: 0,
@@ -210,7 +209,7 @@ function ProvincePlaceCard({
             }}
           >
             ดูรายละเอียด
-          </Box>
+          </Button>
         </Stack>
       </Box>
     </Box>

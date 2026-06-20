@@ -35,7 +35,12 @@ export function getSourceLabel(source?: CulturalPlace['source']) {
     return 'ททท.';
   }
 
-  if (source === 'finearts_archeology') {
+  if (
+    source === 'finearts_monument' ||
+    source === 'finearts_archeology' ||
+    source === 'finearts_buddha' ||
+    source === 'finearts_museum'
+  ) {
     return 'กรมศิลป์';
   }
 

@@ -13,7 +13,6 @@ import { alpha, useTheme } from '@mui/material/styles';
 import DialogContent from '@mui/material/DialogContent';
 
 import { Iconify } from 'src/components/iconify';
-import { TruncatedTypography } from 'src/components/typography';
 
 import { CULTURE_CATEGORY_LABELS, CULTURE_CATEGORY_COLORS } from '../province-data';
 
@@ -123,7 +122,7 @@ export function ProvincePlaceDialog({
               {place.highlight}
             </Typography>
 
-            <TruncatedTypography
+            <Typography
               sx={{
                 mt: 1,
                 color: 'text.secondary',
@@ -132,7 +131,7 @@ export function ProvincePlaceDialog({
               }}
             >
               {place.description}
-            </TruncatedTypography>
+            </Typography>
 
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.2} sx={{ mt: 2.4 }}>
               {place.mapUrl && (

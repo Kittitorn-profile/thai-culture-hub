@@ -11,7 +11,11 @@ import { alpha, useTheme } from '@mui/material/styles';
 
 import { CULTURE_CATEGORY_COLORS } from '../province-data';
 import { mergeCulturalPlaces } from './province-detail-utils';
-import { rewindGeometry, useThailandProvincesGeoJson } from '../thailand-geojson';
+import {
+  rewindGeometry,
+  useThailandDistrictCenters,
+  useThailandProvincesGeoJson,
+} from '../thailand-geojson';
 
 type ProvinceFeature = Feature<Geometry, GeoJsonProperties>;
 
@@ -385,6 +389,10 @@ export function ProvinceShapeMap({
 }: ProvinceShapeMapProps) {
   const theme = useTheme();
   const { data: provincesGeoJson } = useThailandProvincesGeoJson();
+  const { data: districtCentersData } = useThailandDistrictCenters(provinceId);
+
+  console.log('districtCentersData', districtCentersData);
+
   const provinceFeatures = useMemo(
     () => (Array.isArray(provincesGeoJson?.features) ? provincesGeoJson.features : []),
     [provincesGeoJson]
@@ -415,6 +423,14 @@ export function ProvinceShapeMap({
       310, 260,
     ];
     const districtCenters = new Map<string, [number, number]>();
+
+    districtCentersData?.districts.forEach((district) => {
+      const point = projection([district.lng, district.lat]);
+
+      if (point) {
+        districtCenters.set(normalizeDistrictName(district.name), point);
+      }
+    });
 
     const calloutPlaceIds = getMapCalloutPlaces(places).map((place) => place.id);
     const projectedPoints = places
@@ -458,7 +474,7 @@ export function ProvinceShapeMap({
       markers,
       clusters: getDistrictClusters(markers, center, districtCenters, provinceBounds),
     };
-  }, [places, provinceFeature]);
+  }, [districtCentersData?.districts, places, provinceFeature]);
 
   return (
     <Box

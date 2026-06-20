@@ -1,13 +1,24 @@
+import type { NextRequest } from 'next/server';
 import type { Feature, Geometry, GeoJsonProperties, FeatureCollection } from 'geojson';
 
 import path from 'node:path';
 import { NextResponse } from 'next/server';
 import { readFile } from 'node:fs/promises';
+import { geoCentroid } from 'd3-geo';
+
+import provinces from 'src/data/thailand-culture/provinces';
+import { getSupabaseAdmin } from 'src/server/supabase-admin';
 
 // ----------------------------------------------------------------------
 
 const THAILAND_DISTRICTS_GEOJSON_API_URL =
   'https://www.geoboundaries.org/api/current/gbOpen/THA/ADM2/';
+const KONGVUT_PROVINCES_API_URL =
+  'https://raw.githubusercontent.com/kongvut/thai-province-data/refs/heads/master/api/latest/province.json';
+const KONGVUT_DISTRICTS_API_URL =
+  'https://raw.githubusercontent.com/kongvut/thai-province-data/refs/heads/master/api/latest/district.json';
+const DEFAULT_DISTRICTS_TABLE_NAME = 'thailand_districts';
+const UPSERT_CHUNK_SIZE = 100;
 const THAILAND_PROVINCES_GEOJSON_FILE = path.join(
   process.cwd(),
   'public/assets/maps/thailand-provinces.geojson'
@@ -19,10 +30,49 @@ type GeoBoundariesApiResponse = {
 };
 
 type GeoJsonFeature = Feature<Geometry, GeoJsonProperties>;
+type KongvutProvince = {
+  id: number;
+  name_th: string;
+  name_en: string;
+  geography_id: number;
+  created_at?: string | null;
+  updated_at?: string | null;
+  deleted_at?: string | null;
+};
+type KongvutDistrict = {
+  id: number;
+  name_th: string;
+  name_en: string;
+  province_id: number;
+  created_at?: string | null;
+  updated_at?: string | null;
+  deleted_at?: string | null;
+};
 type DistrictCenter = {
   name: string;
   lat: number;
   lng: number;
+};
+type DistrictCenterRow = {
+  name: string | null;
+  lat: number | null;
+  lng: number | null;
+};
+type DistrictSyncBody = {
+  provinceId?: string;
+  provinceIds?: string[];
+  dryRun?: boolean;
+};
+type DistrictBoundaryRow = {
+  id: string;
+  province_code: string;
+  name: string;
+  lat: number;
+  lng: number;
+  geometry: Geometry;
+  properties: GeoJsonProperties;
+  source: string;
+  updated_at: string;
 };
 
 let districtsGeoJsonPromise: Promise<FeatureCollection> | null = null;
@@ -89,6 +139,28 @@ async function fetchDistrictsGeoJson() {
   return (await geoJsonResponse.json()) as FeatureCollection;
 }
 
+async function fetchJson<T>(url: string): Promise<T> {
+  const response = await fetch(url, {
+    cache: 'no-store',
+    signal: AbortSignal.timeout(10000),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to load ${url}: ${response.status}`);
+  }
+
+  return (await response.json()) as T;
+}
+
+async function fetchKongvutDistrictSource() {
+  const [provinceMetadata, districtMetadata] = await Promise.all([
+    fetchJson<KongvutProvince[]>(KONGVUT_PROVINCES_API_URL),
+    fetchJson<KongvutDistrict[]>(KONGVUT_DISTRICTS_API_URL),
+  ]);
+
+  return { provinceMetadata, districtMetadata };
+}
+
 async function getProvinceFeature(provinceId: string) {
   const geoJson = await getProvincesGeoJson();
 
@@ -142,6 +214,16 @@ function getGeometryBounds(geometry: Geometry): [[number, number], [number, numb
 }
 
 function getGeometryCenter(geometry: Geometry) {
+  const centroid = geoCentroid({
+    type: 'Feature',
+    properties: {},
+    geometry,
+  });
+
+  if (centroid.every(Number.isFinite)) {
+    return centroid as [number, number];
+  }
+
   const [[minX, minY], [maxX, maxY]] = getGeometryBounds(geometry);
 
   if (![minX, minY, maxX, maxY].every(Number.isFinite)) {
@@ -164,6 +246,10 @@ function getDistrictName(feature: GeoJsonFeature) {
     : 'ไม่ระบุอำเภอ';
 }
 
+function getProvinceCodeByThaiName(name: string) {
+  return provinces.find((province) => province.name === name)?.code ?? '';
+}
+
 function toDistrictCenters(features: GeoJsonFeature[]) {
   return features.reduce<DistrictCenter[]>((districtCenters, feature) => {
     const center = getGeometryCenter(feature.geometry);
@@ -183,6 +269,22 @@ function toDistrictCenters(features: GeoJsonFeature[]) {
       lat,
       lng,
     });
+
+    return districtCenters;
+  }, []);
+}
+
+function toValidDistrictCenters(rows: DistrictCenterRow[]) {
+  return rows.reduce<DistrictCenter[]>((districtCenters, row) => {
+    const name = row.name?.trim();
+    const lat = Number(row.lat);
+    const lng = Number(row.lng);
+
+    if (!name || !Number.isFinite(lat) || !Number.isFinite(lng) || (lat === 0 && lng === 0)) {
+      return districtCenters;
+    }
+
+    districtCenters.push({ name, lat, lng });
 
     return districtCenters;
   }, []);
@@ -250,6 +352,104 @@ async function filterDistrictsByProvince(geoJson: FeatureCollection, provinceId:
   };
 }
 
+function getProvinceIds(body: DistrictSyncBody, request: NextRequest) {
+  const searchProvinceId = request.nextUrl.searchParams.get('provinceId');
+  const searchProvinceIds = request.nextUrl.searchParams.get('provinceIds');
+  const requestedProvinceIds = [
+    ...(body.provinceIds ?? []),
+    ...(body.provinceId ? [body.provinceId] : []),
+    ...(searchProvinceId ? [searchProvinceId] : []),
+    ...(searchProvinceIds ? searchProvinceIds.split(',') : []),
+  ]
+    .map((provinceId) => provinceId.trim())
+    .filter(Boolean);
+
+  return Array.from(new Set(requestedProvinceIds));
+}
+
+async function readSyncBody(request: NextRequest): Promise<DistrictSyncBody> {
+  if (request.method !== 'POST') {
+    return {};
+  }
+
+  try {
+    return (await request.json()) as DistrictSyncBody;
+  } catch {
+    return {};
+  }
+}
+
+function mapKongvutDistrictToRow(
+  district: KongvutDistrict,
+  provinceCodeById: Map<number, string>,
+  updatedAt: string
+): DistrictBoundaryRow | null {
+  const provinceCode = provinceCodeById.get(district.province_id);
+
+  if (!provinceCode) {
+    return null;
+  }
+
+  return {
+    id: `${provinceCode}:${district.id}`,
+    province_code: provinceCode,
+    name: district.name_th,
+    lat: 0,
+    lng: 0,
+    geometry: {
+      type: 'GeometryCollection',
+      geometries: [],
+    },
+    properties: {
+      kongvut: district,
+    },
+    source: KONGVUT_DISTRICTS_API_URL,
+    updated_at: updatedAt,
+  };
+}
+
+function getKongvutDistrictRows(
+  provinceMetadata: KongvutProvince[],
+  districtMetadata: KongvutDistrict[],
+  provinceIds: string[]
+) {
+  const requestedProvinceIds = new Set(provinceIds);
+  const updatedAt = new Date().toISOString();
+  const provinceCodeById = new Map(
+    provinceMetadata
+      .map((province) => [province.id, getProvinceCodeByThaiName(province.name_th)] as const)
+      .filter(([, provinceCode]) => Boolean(provinceCode))
+  );
+
+  return districtMetadata
+    .map((district) => mapKongvutDistrictToRow(district, provinceCodeById, updatedAt))
+    .filter((row): row is DistrictBoundaryRow => Boolean(row))
+    .filter((row) => !requestedProvinceIds.size || requestedProvinceIds.has(row.province_code));
+}
+
+async function upsertDistrictRows(tableName: string, rows: DistrictBoundaryRow[]) {
+  const supabase = getSupabaseAdmin();
+
+  if (!supabase.ok) {
+    return { ok: false as const, error: supabase.error };
+  }
+
+  const { client } = supabase;
+
+  for (let index = 0; index < rows.length; index += UPSERT_CHUNK_SIZE) {
+    const chunk = rows.slice(index, index + UPSERT_CHUNK_SIZE);
+    const { error } = await client.from(tableName).upsert(chunk, {
+      onConflict: 'id',
+    });
+
+    if (error) {
+      return { ok: false as const, error: error.message };
+    }
+  }
+
+  return { ok: true as const };
+}
+
 async function getDistrictCentersByProvince(geoJson: FeatureCollection, provinceId: string | null) {
   const provinceCacheKey = provinceId?.trim();
 
@@ -275,16 +475,112 @@ async function getDistrictCentersByProvince(geoJson: FeatureCollection, province
   return districtCentersPromise;
 }
 
-export async function GET(request: Request) {
+async function getDistrictCentersFromDatabase(provinceId: string | null) {
+  const tableName = process.env.THAILAND_DISTRICTS_TABLE ?? DEFAULT_DISTRICTS_TABLE_NAME;
+  const supabase = getSupabaseAdmin();
+
+  if (!supabase.ok) {
+    return null;
+  }
+
+  let query = supabase.client.from(tableName).select('name, lat, lng').order('name');
+
+  if (provinceId) {
+    query = query.eq('province_code', provinceId);
+  }
+
+  const { data, error } = await query;
+
+  if (error || !data?.length) {
+    return null;
+  }
+
+  const districtCenters = toValidDistrictCenters(data as DistrictCenterRow[]);
+
+  return districtCenters.length ? districtCenters : null;
+}
+
+async function handleDistrictSync(request: NextRequest, options?: { defaultDryRun?: boolean }) {
+  const body = await readSyncBody(request);
+  const dryRunParam = request.nextUrl.searchParams.get('dryRun');
+  const dryRun = body.dryRun ?? (dryRunParam ? dryRunParam === 'true' : options?.defaultDryRun);
+  const tableName = process.env.THAILAND_DISTRICTS_TABLE ?? DEFAULT_DISTRICTS_TABLE_NAME;
+  const provinceIds = getProvinceIds(body, request);
+  const { provinceMetadata, districtMetadata } = await fetchKongvutDistrictSource();
+  const rows = getKongvutDistrictRows(provinceMetadata, districtMetadata, provinceIds);
+
+  if (dryRun) {
+    return NextResponse.json({
+      dryRun: true,
+      table: tableName,
+      total: rows.length,
+      provinceIds,
+      sources: {
+        provinceMetadata: KONGVUT_PROVINCES_API_URL,
+        districtMetadata: KONGVUT_DISTRICTS_API_URL,
+      },
+      sample: rows.slice(0, 3),
+    });
+  }
+
+  const syncResult = await upsertDistrictRows(tableName, rows);
+
+  if (!syncResult.ok) {
+    return NextResponse.json(
+      {
+        table: tableName,
+        total: rows.length,
+        upserted: 0,
+        provinceIds,
+        message: syncResult.error,
+      },
+      { status: 500 }
+    );
+  }
+
+  return NextResponse.json({
+    table: tableName,
+    total: rows.length,
+    upserted: rows.length,
+    provinceIds,
+    sources: {
+      provinceMetadata: KONGVUT_PROVINCES_API_URL,
+      districtMetadata: KONGVUT_DISTRICTS_API_URL,
+    },
+  });
+}
+
+export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
-    const provinceId = searchParams.get('provinceId');
+    if (request.nextUrl.searchParams.get('sync') === 'true') {
+      return handleDistrictSync(request, { defaultDryRun: false });
+    }
+
+    const provinceId = request.nextUrl.searchParams.get('provinceId');
+    const databaseDistrictCenters = await getDistrictCentersFromDatabase(provinceId);
+
+    if (databaseDistrictCenters) {
+      return NextResponse.json(
+        {
+          provinceId,
+          source: 'database',
+          districts: databaseDistrictCenters,
+        },
+        {
+          headers: {
+            'Cache-Control': 'public, s-maxage=86400, stale-while-revalidate=604800',
+          },
+        }
+      );
+    }
+
     const districtsGeoJson = await getDistrictsGeoJson();
     const districtCenters = await getDistrictCentersByProvince(districtsGeoJson, provinceId);
 
     return NextResponse.json(
       {
         provinceId,
+        source: 'geojson',
         districts: districtCenters,
       },
       {
@@ -296,6 +592,17 @@ export async function GET(request: Request) {
   } catch (error) {
     return NextResponse.json(
       { message: error instanceof Error ? error.message : 'Failed to load district GeoJSON' },
+      { status: 502 }
+    );
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    return await handleDistrictSync(request);
+  } catch (error) {
+    return NextResponse.json(
+      { message: error instanceof Error ? error.message : 'Failed to sync district GeoJSON' },
       { status: 502 }
     );
   }

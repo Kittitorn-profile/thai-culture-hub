@@ -21,6 +21,7 @@ import { getPlaceImages, mergeCulturalPlaces } from './province-detail-utils';
 import {
   getCultureMetrics,
   getProvinceDisplayName,
+  CULTURE_CATEGORY_LABELS,
   getProvinceCulturalPlaces,
 } from '../province-data';
 
@@ -65,6 +66,7 @@ export function ProvinceDetailView() {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedSources, setSelectedSources] = useState<string[]>([]);
   const [selectedDistricts, setSelectedDistricts] = useState<string[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
   const [isPlacesDrawerOpen, setIsPlacesDrawerOpen] = useState(false);
   const [selectedDistrictDetail, setSelectedDistrictDetail] = useState<string | null>(null);
   const [selectedPlace, setSelectedPlace] = useState<CulturalPlace | null>(null);
@@ -95,8 +97,10 @@ export function ProvinceDetailView() {
     [allCulturalPlaces]
   );
   const culturalPlaces = useMemo(
-    () =>
-      allCulturalPlaces.filter((place) => {
+    () => {
+      const normalizedSearchQuery = searchQuery.trim().toLocaleLowerCase('th');
+
+      return allCulturalPlaces.filter((place) => {
         const source = place.source ?? 'local';
         const district = place.district || 'ไม่ระบุอำเภอ';
         const isCategoryMatched =
@@ -104,10 +108,23 @@ export function ProvinceDetailView() {
         const isSourceMatched = selectedSources.length === 0 || selectedSources.includes(source);
         const isDistrictMatched =
           selectedDistricts.length === 0 || selectedDistricts.includes(district);
+        const searchText = [
+          place.name,
+          district,
+          place.highlight,
+          place.description,
+          CULTURE_CATEGORY_LABELS[place.category],
+        ]
+          .filter(Boolean)
+          .join(' ')
+          .toLocaleLowerCase('th');
+        const isSearchMatched =
+          !normalizedSearchQuery || searchText.includes(normalizedSearchQuery);
 
-        return isCategoryMatched && isSourceMatched && isDistrictMatched;
-      }),
-    [allCulturalPlaces, selectedCategories, selectedDistricts, selectedSources]
+        return isCategoryMatched && isSourceMatched && isDistrictMatched && isSearchMatched;
+      });
+    },
+    [allCulturalPlaces, searchQuery, selectedCategories, selectedDistricts, selectedSources]
   );
   const activeFilterCount =
     selectedCategories.length + selectedSources.length + selectedDistricts.length;
@@ -135,7 +152,7 @@ export function ProvinceDetailView() {
   const selectedPlaceLng = Number(selectedPlace?.lng);
   const selectedPlaceCoordinates =
     Number.isFinite(selectedPlaceLat) && Number.isFinite(selectedPlaceLng)
-      ? `${selectedPlaceLat.toFixed(4)}, ${selectedPlaceLng.toFixed(4)}`
+      ? `${selectedPlaceLat}, ${selectedPlaceLng}`
       : 'ไม่พบพิกัด';
   const dataSourceLabel = [
     tatCulturalPlaces.length ? 'ททท.' : null,
@@ -274,8 +291,10 @@ export function ProvinceDetailView() {
             dataSourceLabel={dataSourceLabel}
             isRemoteLoading={isRemoteLoading}
             activeFilterCount={activeFilterCount}
+            searchQuery={searchQuery}
             onFilterOpen={() => setIsFilterOpen(true)}
             onPlacesOpen={openAllPlacesDrawer}
+            onSearchQueryChange={setSearchQuery}
           />
         </Box>
 
