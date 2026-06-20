@@ -106,9 +106,7 @@ export function MainLayout({
             boxShadow: 'none',
             '--color': theme.palette.common.white,
           }),
-          ...(Array.isArray(slotProps?.header?.sx)
-            ? slotProps.header.sx
-            : [slotProps?.header?.sx]),
+          ...(Array.isArray(slotProps?.header?.sx) ? slotProps.header.sx : [slotProps?.header?.sx]),
         ]}
       />
     );
@@ -133,7 +131,7 @@ export function MainLayout({
     >
       {renderHeader()}
       {renderMain()}
-      {renderFooter()}
+      {/* {renderFooter()} */}
     </LayoutSection>
   );
 }

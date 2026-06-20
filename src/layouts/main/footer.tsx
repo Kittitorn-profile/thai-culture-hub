@@ -175,7 +175,7 @@ export function HomeFooter({ sx, ...other }: FooterProps) {
       {...other}
     >
       <Container>
-        <Logo />
+        <Logo sx={{ width: 200, height: '100%' }} />
         <Box sx={{ mt: 1, typography: 'caption', color: theme.palette.secondary.main }}>
           © CODE FOR CAT. All rights reserved.
         </Box>

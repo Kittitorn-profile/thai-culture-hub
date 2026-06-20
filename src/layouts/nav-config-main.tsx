@@ -8,27 +8,27 @@ import { Iconify } from 'src/components/iconify';
 
 export const navData: NavMainProps['data'] = [
   {
-    title: 'Home',
+    title: 'หน้าแรก',
     path: '/',
     icon: <Iconify width={22} icon="solar:home-angle-bold-duotone" />,
   },
   {
-    title: 'Culture',
+    title: 'แผนที่',
     path: '/#culture-map',
     icon: <Iconify width={22} icon="solar:palette-bold-duotone" />,
   },
   {
-    title: 'Stories',
+    title: 'เรื่องราว',
     path: '/#stories',
     icon: <Iconify width={22} icon="solar:notebook-bold-duotone" />,
   },
   {
-    title: 'About',
+    title: 'เกี่ยวกับเรา',
     path: paths.about,
     icon: <Iconify width={22} icon="solar:users-group-rounded-bold-duotone" />,
   },
   {
-    title: 'Contact',
+    title: 'ติดต่อสอบถาม',
     path: paths.contact,
     icon: <Iconify width={22} icon="solar:inbox-in-bold-duotone" />,
   },

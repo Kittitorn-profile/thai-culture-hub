@@ -5,7 +5,7 @@ import { Iconify } from 'src/components/iconify';
 // ----------------------------------------------------------------------
 
 export const _account: AccountDrawerProps['data'] = [
-  { label: 'Home', href: '/', icon: <Iconify icon="solar:home-angle-bold-duotone" /> },
+  { label: 'หน้าแรก', href: '/', icon: <Iconify icon="solar:home-angle-bold-duotone" /> },
   {
     label: 'Profile',
     href: '#',

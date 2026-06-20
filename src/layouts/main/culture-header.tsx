@@ -1,5 +1,7 @@
 'use client';
 
+import { Typography } from 'node_modules/@mui/material/esm';
+
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
@@ -8,16 +10,16 @@ import { alpha, useTheme } from '@mui/material/styles';
 import { paths } from 'src/routes/paths';
 import { RouterLink } from 'src/routes/components';
 
-import { Iconify } from 'src/components/iconify';
+import { Logo } from 'src/components/logo';
 
 // ----------------------------------------------------------------------
 
 const HEADER_NAV_ITEMS = [
-  { label: 'Home', path: '/' },
-  { label: 'Culture', path: '/#culture-map' },
-  { label: 'Stories', path: '/#stories' },
-  { label: 'About', path: paths.about },
-  { label: 'Contact', path: paths.contact },
+  { label: 'หน้าแรก', path: '/' },
+  { label: 'แผนที่', path: '/#culture-map' },
+  { label: 'เรื่องราว', path: '/#stories' },
+  { label: 'เกี่ยวกับเรา', path: paths.about },
+  { label: 'ติดต่อสอบถาม', path: paths.contact },
 ];
 
 type CultureHeaderProps = {
@@ -43,28 +45,16 @@ export function CultureHeader({ pathname }: CultureHeaderProps) {
     <Box
       sx={{
         width: 1,
-        px: { xs: 2, md: '20%' },
+        maxWidth: 1180,
+        mx: 'auto',
+        px: { xs: 2, md: 4 },
         display: 'grid',
         gridTemplateColumns: { xs: '1fr auto', md: '1fr auto 1fr' },
         alignItems: 'center',
-        gap: 2,
+        gap: { xs: 2, md: 3 },
       }}
     >
-      <Link
-        component={RouterLink}
-        href="/"
-        underline="none"
-        sx={{
-          color: 'white',
-          fontSize: { xs: 20, md: 27 },
-          fontWeight: 800,
-          letterSpacing: 0,
-          textTransform: 'uppercase',
-          textShadow: '0 2px 14px rgba(42,31,22,0.22)',
-        }}
-      >
-        THAI HUB
-      </Link>
+      <Logo sx={{ height: 'auto', width: 96 }} />
 
       <Stack
         component="nav"
@@ -73,8 +63,8 @@ export function CultureHeader({ pathname }: CultureHeaderProps) {
         spacing={1}
         sx={{
           p: 0.35,
-          gap: 1,
-          height: 36,
+          gap: 0.5,
+          height: 'auto',
           display: { xs: 'none', md: 'flex' },
           borderRadius: 99,
           bgcolor: alpha(theme.palette.common.white, 0.24),
@@ -92,13 +82,14 @@ export function CultureHeader({ pathname }: CultureHeaderProps) {
               href={item.path}
               underline="none"
               sx={{
-                px: 2.1,
-                height: 28,
+                px: { md: 1.8, lg: 2.1 },
+                py: 1,
+                height: 'auto',
                 display: 'inline-flex',
                 alignItems: 'center',
                 borderRadius: 99,
                 color: active ? theme.palette.grey[900] : alpha(theme.palette.common.white, 0.9),
-                fontSize: 18,
+                fontSize: { md: 16, lg: 18 },
                 fontWeight: 800,
                 whiteSpace: 'nowrap',
                 bgcolor: active ? alpha(theme.palette.common.white, 0.94) : 'transparent',
@@ -126,44 +117,7 @@ export function CultureHeader({ pathname }: CultureHeaderProps) {
         spacing={1}
         sx={{ display: { xs: 'none', md: 'flex' } }}
       >
-        <Link
-          component={RouterLink}
-          href={paths.contact}
-          underline="none"
-          sx={{
-            color: 'white',
-            fontSize: 13,
-            fontWeight: 800,
-            textShadow: '0 2px 14px rgba(42,31,22,0.22)',
-          }}
-        >
-          Contact Us
-        </Link>
-        <Box
-          component={RouterLink}
-          href={paths.contact}
-          aria-label="Go to contact page"
-          sx={{
-            width: 34,
-            height: 34,
-            display: 'grid',
-            color: theme.palette.grey[900],
-            borderRadius: '50%',
-            placeItems: 'center',
-            bgcolor: '#e5c43d',
-            boxShadow: '0 10px 24px rgba(80,63,13,0.2)',
-            textDecoration: 'none',
-            transition: theme.transitions.create(['transform', 'box-shadow'], {
-              duration: theme.transitions.duration.shorter,
-            }),
-            '&:hover': {
-              transform: 'translateY(-1px)',
-              boxShadow: '0 14px 28px rgba(80,63,13,0.26)',
-            },
-          }}
-        >
-          <Iconify icon="eva:diagonal-arrow-right-up-fill" width={18} />
-        </Box>
+        <Typography>Thailand Cultural Hub</Typography>
       </Stack>
     </Box>
   );

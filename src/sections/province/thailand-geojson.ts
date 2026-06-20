@@ -8,9 +8,20 @@ import { useQuery } from '@tanstack/react-query';
 // ----------------------------------------------------------------------
 
 export const THAILAND_PROVINCES_GEOJSON_API = '/api/thailand-provinces';
-export const THAILAND_DISTRICTS_GEOJSON_API = '/api/thailand-districts';
+export const THAILAND_DISTRICTS_CENTERS_API = '/api/thailand-districts';
 
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+
+export type ThailandDistrictCenter = {
+  name: string;
+  lat: number;
+  lng: number;
+};
+
+export type ThailandDistrictCentersResponse = {
+  provinceId?: string | null;
+  districts: ThailandDistrictCenter[];
+};
 
 async function fetchGeoJsonApi(url: string, signal: AbortSignal): Promise<FeatureCollection> {
   const response = await fetch(url, { signal });
@@ -21,6 +32,25 @@ async function fetchGeoJsonApi(url: string, signal: AbortSignal): Promise<Featur
       typeof errorData?.message === 'string'
         ? errorData.message
         : `Failed to load GeoJSON API: ${response.status}`;
+
+    throw new Error(message);
+  }
+
+  return response.json();
+}
+
+async function fetchDistrictCentersApi(
+  url: string,
+  signal: AbortSignal
+): Promise<ThailandDistrictCentersResponse> {
+  const response = await fetch(url, { signal });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => null);
+    const message =
+      typeof errorData?.message === 'string'
+        ? errorData.message
+        : `Failed to load district centers API: ${response.status}`;
 
     throw new Error(message);
   }
@@ -75,13 +105,13 @@ export function useThailandProvincesGeoJson<TData = FeatureCollection>(
   });
 }
 
-export function useThailandDistrictsGeoJson(provinceId?: string) {
-  return useQuery<FeatureCollection, Error>({
+export function useThailandDistrictCenters(provinceId?: string) {
+  return useQuery<ThailandDistrictCentersResponse, Error>({
     enabled: Boolean(provinceId),
-    queryKey: ['thailand', 'districts-geojson', provinceId],
+    queryKey: ['thailand', 'district-centers', provinceId],
     queryFn: ({ signal }) =>
-      fetchGeoJsonApi(
-        `${THAILAND_DISTRICTS_GEOJSON_API}?provinceId=${encodeURIComponent(provinceId ?? '')}`,
+      fetchDistrictCentersApi(
+        `${THAILAND_DISTRICTS_CENTERS_API}?provinceId=${encodeURIComponent(provinceId ?? '')}`,
         signal
       ),
     retry: false,

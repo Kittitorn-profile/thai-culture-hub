@@ -37,6 +37,15 @@ function getFineArtsApiKey() {
   return process.env.FINE_ARTS_API_KEY ?? process.env.NEXT_PRIVATE_FINE_ARTS_API_KEY;
 }
 
+function fineArtsUnavailableResponse(message: string, upstreamStatus?: number) {
+  return NextResponse.json({
+    data: [],
+    source: 'api.finearts.go.th',
+    message,
+    upstreamStatus,
+  });
+}
+
 function normalizeText(value?: string | null) {
   return (value ?? '').replace(/\s+/g, '').trim();
 }
@@ -88,7 +97,8 @@ function mapFineArtsRecordToPlace(
   }
 
   const id = record.id ?? record._id ?? slugifyThai(name);
-  const district = record.amphoeName ?? record.amphoe ?? record.district ?? record.provinceName ?? '';
+  const district =
+    record.amphoeName ?? record.amphoe ?? record.district ?? record.provinceName ?? '';
   const description = [
     record.detail,
     record.description,
@@ -126,7 +136,7 @@ export async function GET(request: NextRequest) {
   }
 
   if (!apiKey) {
-    return NextResponse.json({ data: [], message: 'Missing FINE_ARTS_API_KEY' }, { status: 501 });
+    return fineArtsUnavailableResponse('Missing FINE_ARTS_API_KEY');
   }
 
   const url = new URL(FINE_ARTS_ARCHEOLOGY_API_URL);
@@ -145,6 +155,13 @@ export async function GET(request: NextRequest) {
   });
 
   if (!response.ok) {
+    if (response.status === 401 || response.status === 403) {
+      return fineArtsUnavailableResponse(
+        'Fine Arts API key is invalid or unauthorized',
+        response.status
+      );
+    }
+
     return NextResponse.json(
       { data: [], message: 'Failed to load Fine Arts archeology data' },
       { status: response.status }

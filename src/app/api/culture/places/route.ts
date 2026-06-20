@@ -164,6 +164,7 @@ export const revalidate = 86400;
 export async function GET(request: NextRequest) {
   const provinceCode = request.nextUrl.searchParams.get('provinceCode');
   const limit = Number(request.nextUrl.searchParams.get('limit') ?? 5);
+  const isSummary = request.nextUrl.searchParams.get('summary') === 'true';
   const province = provinces.find((item) => item.code === provinceCode);
 
   if (!provinceCode || !province) {
@@ -190,11 +191,12 @@ export async function GET(request: NextRequest) {
   const json = await response.json();
   const records = Array.isArray(json?.result?.records) ? json.result.records : [];
   const targetProvinceName = normalizeText(province.name);
+  const responseLimit = isSummary ? 10000 : Math.min(Math.max(limit, 1), 50);
   const data = records
     .filter((record: CultureCatalogRecord) => normalizeText(record.Province) === targetProvinceName)
     .map((record: CultureCatalogRecord) => mapCultureRecordToPlace(record, provinceCode))
     .filter((item: CulturalPlace | null): item is CulturalPlace => Boolean(item))
-    .slice(0, Math.min(Math.max(limit, 1), 50));
+    .slice(0, responseLimit);
 
   return NextResponse.json({
     data,

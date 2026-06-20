@@ -14,6 +14,7 @@ import type { NextConfig } from 'next';
  * NOTE: Remove all "generateStaticParams()" functions if not using static exports.
  */
 const isStaticExport = false;
+const isDevelopment = process.env.NODE_ENV === 'development';
 
 // ----------------------------------------------------------------------
 
@@ -24,8 +25,8 @@ const nextConfig: NextConfig = {
     BUILD_STATIC_EXPORT: JSON.stringify(isStaticExport),
   },
   // Without --turbopack (next dev)
-  webpack(config, { isServer }) {
-    if (!isServer) {
+  webpack(config, { dev, isServer }) {
+    if (dev && !isServer) {
       config.module.rules.push({
         test: /\.(tsx|ts|jsx|js)$/,
         exclude: /node_modules/,
@@ -47,15 +48,20 @@ const nextConfig: NextConfig = {
   },
   // With --turbopack (next dev --turbopack)
   turbopack: {
+    root: process.cwd(),
     rules: {
-      '**/*.{tsx,jsx}': {
-        loaders: [
-          {
-            loader: '@locator/webpack-loader',
-            options: { env: 'development' },
-          },
-        ],
-      },
+      ...(isDevelopment
+        ? {
+            '**/*.{tsx,jsx}': {
+              loaders: [
+                {
+                  loader: '@locator/webpack-loader',
+                  options: { env: 'development' },
+                },
+              ],
+            },
+          }
+        : {}),
       '*.svg': {
         loaders: ['@svgr/webpack'],
         as: '*.js',

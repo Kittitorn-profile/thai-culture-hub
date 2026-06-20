@@ -19,8 +19,15 @@ type GeoBoundariesApiResponse = {
 };
 
 type GeoJsonFeature = Feature<Geometry, GeoJsonProperties>;
+type DistrictCenter = {
+  name: string;
+  lat: number;
+  lng: number;
+};
 
 let districtsGeoJsonPromise: Promise<FeatureCollection> | null = null;
+let provincesGeoJsonPromise: Promise<FeatureCollection> | null = null;
+const districtCentersByProvincePromise = new Map<string, Promise<DistrictCenter[]>>();
 
 export const revalidate = 86400;
 export const runtime = 'nodejs';
@@ -36,6 +43,21 @@ async function getDistrictsGeoJson() {
   });
 
   return districtsGeoJsonPromise;
+}
+
+async function getProvincesGeoJson() {
+  if (provincesGeoJsonPromise) {
+    return provincesGeoJsonPromise;
+  }
+
+  provincesGeoJsonPromise = readFile(THAILAND_PROVINCES_GEOJSON_FILE, 'utf8')
+    .then((geoJson) => JSON.parse(geoJson) as FeatureCollection)
+    .catch((error) => {
+      provincesGeoJsonPromise = null;
+      throw error;
+    });
+
+  return provincesGeoJsonPromise;
 }
 
 async function fetchDistrictsGeoJson() {
@@ -68,9 +90,7 @@ async function fetchDistrictsGeoJson() {
 }
 
 async function getProvinceFeature(provinceId: string) {
-  const geoJson = JSON.parse(await readFile(THAILAND_PROVINCES_GEOJSON_FILE, 'utf8')) as
-    | FeatureCollection
-    | undefined;
+  const geoJson = await getProvincesGeoJson();
 
   return (
     geoJson?.features.find((feature) => feature.properties?.shapeISO === provinceId) ??
@@ -129,6 +149,43 @@ function getGeometryCenter(geometry: Geometry) {
   }
 
   return [(minX + maxX) / 2, (minY + maxY) / 2] as [number, number];
+}
+
+function getDistrictName(feature: GeoJsonFeature) {
+  const districtName =
+    feature.properties?.shapeName ??
+    feature.properties?.name ??
+    feature.properties?.NAME_2 ??
+    feature.properties?.ADM2_TH ??
+    feature.properties?.ADM2_EN;
+
+  return typeof districtName === 'string' && districtName.trim()
+    ? districtName.trim()
+    : 'ไม่ระบุอำเภอ';
+}
+
+function toDistrictCenters(features: GeoJsonFeature[]) {
+  return features.reduce<DistrictCenter[]>((districtCenters, feature) => {
+    const center = getGeometryCenter(feature.geometry);
+
+    if (!center) {
+      return districtCenters;
+    }
+
+    const [lng, lat] = center;
+
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+      return districtCenters;
+    }
+
+    districtCenters.push({
+      name: getDistrictName(feature),
+      lat,
+      lng,
+    });
+
+    return districtCenters;
+  }, []);
 }
 
 function isPointInRing([x, y]: [number, number], ring: number[][]) {
@@ -193,20 +250,49 @@ async function filterDistrictsByProvince(geoJson: FeatureCollection, provinceId:
   };
 }
 
+async function getDistrictCentersByProvince(geoJson: FeatureCollection, provinceId: string | null) {
+  const provinceCacheKey = provinceId?.trim();
+
+  if (!provinceCacheKey) {
+    return toDistrictCenters(geoJson.features as GeoJsonFeature[]);
+  }
+
+  const cachedDistrictCenters = districtCentersByProvincePromise.get(provinceCacheKey);
+
+  if (cachedDistrictCenters) {
+    return cachedDistrictCenters;
+  }
+
+  const districtCentersPromise = filterDistrictsByProvince(geoJson, provinceCacheKey)
+    .then((responseGeoJson) => toDistrictCenters(responseGeoJson.features as GeoJsonFeature[]))
+    .catch((error) => {
+      districtCentersByProvincePromise.delete(provinceCacheKey);
+      throw error;
+    });
+
+  districtCentersByProvincePromise.set(provinceCacheKey, districtCentersPromise);
+
+  return districtCentersPromise;
+}
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const provinceId = searchParams.get('provinceId');
     const districtsGeoJson = await getDistrictsGeoJson();
-    const responseGeoJson = provinceId
-      ? await filterDistrictsByProvince(districtsGeoJson, provinceId)
-      : districtsGeoJson;
+    const districtCenters = await getDistrictCentersByProvince(districtsGeoJson, provinceId);
 
-    return NextResponse.json(responseGeoJson, {
-      headers: {
-        'Cache-Control': 'public, s-maxage=86400, stale-while-revalidate=604800',
+    return NextResponse.json(
+      {
+        provinceId,
+        districts: districtCenters,
       },
-    });
+      {
+        headers: {
+          'Cache-Control': 'public, s-maxage=86400, stale-while-revalidate=604800',
+        },
+      }
+    );
   } catch (error) {
     return NextResponse.json(
       { message: error instanceof Error ? error.message : 'Failed to load district GeoJSON' },

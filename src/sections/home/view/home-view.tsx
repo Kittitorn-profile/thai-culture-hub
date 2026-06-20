@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import ReactPlayer from 'react-player';
 
 import { Box } from '@mui/material';
 import Stack from '@mui/material/Stack';
@@ -10,7 +9,7 @@ import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import DialogContent from '@mui/material/DialogContent';
 
-import { CONFIG } from 'src/global-config';
+import { HomeFooter } from 'src/layouts/main/footer';
 
 import { Image } from 'src/components/image';
 import { Iconify } from 'src/components/iconify';
@@ -18,6 +17,11 @@ import { Iconify } from 'src/components/iconify';
 import ThailandMap from './thailand-map';
 
 // ----------------------------------------------------------------------
+
+// const ReactPlayer = dynamic(() => import('react-player'), {
+//   ssr: false,
+//   loading: () => null,
+// });
 
 const HOME_BG_TOP = '#6f8790';
 const HOME_BG_MIDDLE = '#7b8476';
@@ -48,35 +52,14 @@ const POSTER_FRAME_IMAGES = [
     },
   },
   // {
-  //   src: '/assets/background/akhahas-sri-4.jpg',
-  //   alt: 'ดนตรีพื้นบ้านและงานศิลป์',
+  //   src: '/assets/th-hub/bg-right.png',
+  //   alt: 'เครื่องแต่งกายและภูมิปัญญาไทย',
   //   sx: {
-  //     top: { xs: 86, md: 116 },
-  //     right: { xs: -94, md: -88 },
-  //     width: { xs: 176, sm: 220, md: 310 },
-  //     rotate: '12deg',
+  //     right: { xs: -104, md: 0 },
+  //     top: { xs: 38, md: 0 },
+  //     width: { xs: 190, sm: 246, md: 850 },
   //   },
   // },
-  // {
-  //   src: '/assets/akhahas-sri/hero-3.png',
-  //   alt: 'ลวดลายและการแสดงพื้นถิ่น',
-  //   sx: {
-  //     bottom: { xs: 92, md: 78 },
-  //     left: { xs: -106, md: -80 },
-  //     width: { xs: 188, sm: 240, md: 340 },
-  //     rotate: '9deg',
-  //   },
-  // },
-  {
-    src: '/assets/background/akhahas-sri-7.jpg',
-    alt: 'เครื่องแต่งกายและภูมิปัญญาไทย',
-    sx: {
-      right: { xs: -104, md: -72 },
-      bottom: { xs: 38, md: 44 },
-      width: { xs: 190, sm: 246, md: 350 },
-      rotate: '-8deg',
-    },
-  },
 ];
 
 const highlights = [
@@ -99,22 +82,62 @@ const highlights = [
 
 const ROYAL_IMAGE_ITEMS = [
   {
-    title: 'ประเพณีในชุมชนไทย',
-    src: '/assets/akhahas-sri/ac-1.png',
+    title: 'สถานที่ท่องเที่ยว',
+    description: 'แหล่งท่องเที่ยว วัด เมืองเก่า และจุดหมายสำคัญทางวัฒนธรรม',
+    icon: 'custom:location-fill',
+    src: '/assets/background/akhahas-sri-1.jpg',
+    color: '#608D8C',
   },
   {
-    title: 'การแสดงและเครื่องแต่งกายพื้นถิ่น',
-    src: '/assets/akhahas-sri/ac-2.png',
+    title: 'อาหารพื้นบ้าน',
+    description: 'รสชาติท้องถิ่น วัตถุดิบตามฤดูกาล และครัวชุมชนไทย',
+    icon: 'solar:tea-cup-bold',
+    src: '/assets/background/akhahas-sri-2.jpg',
+    color: '#D19F46',
   },
   {
-    title: 'ศิลปะและภูมิปัญญาท้องถิ่น',
-    src: '/assets/akhahas-sri/ac-3.png',
+    title: 'ศิลปะการแสดง',
+    description: 'นาฏศิลป์ ดนตรีไทย การแสดงพื้นบ้านที่งดงามและทรงคุณค่า',
+    icon: 'solar:palette-bold',
+    src: '/assets/background/akhahas-sri-3.jpg',
+    color: '#CE7B48',
   },
   {
-    title: 'มรดกวัฒนธรรมร่วมสมัย',
-    src: '/assets/akhahas-sri/ac-4.png',
+    title: 'ประเพณีท้องถิ่น',
+    description: 'เทศกาล งานบุญ และขนบธรรมเนียมที่สืบทอดในแต่ละพื้นที่',
+    icon: 'solar:confetti-minimalistic-outline',
+    src: '/assets/background/akhahas-sri-4.jpg',
+    color: '#947488',
   },
-];
+  {
+    title: 'ภูมิปัญญาชุมชน',
+    description: 'ความรู้ท้องถิ่น วิธีคิด และทักษะที่เกิดจากชีวิตในชุมชน',
+    icon: 'solar:notebook-bold-duotone',
+    src: '/assets/background/akhahas-sri-5.jpg',
+    color: '#7E9578',
+  },
+  {
+    title: 'งานช่างฝีมือ',
+    description: 'งานจักสาน ผ้าทอ เครื่องปั้น และฝีมือช่างพื้นถิ่น',
+    icon: 'solar:settings-bold',
+    src: '/assets/background/akhahas-sri-6.jpg',
+    color: '#5B7B91',
+  },
+  {
+    title: 'ศิลปะพื้นบ้าน',
+    description: 'ลวดลาย สีสัน เครื่องแต่งกาย และงานศิลป์จากชุมชน',
+    icon: 'solar:gallery-wide-bold',
+    src: '/assets/background/akhahas-sri-7.jpg',
+    color: '#AB8395',
+  },
+  {
+    title: 'พิธีกรรม',
+    description: 'ความเชื่อ พิธีบูชา และเรื่องเล่าศักดิ์สิทธิ์ของท้องถิ่น',
+    icon: 'solar:shield-check-bold',
+    src: '/assets/akhahas-sri/hero-1.jpg',
+    color: '#B2865A',
+  },
+] as const;
 
 const VIDEO_ITEMS = [
   {
@@ -209,18 +232,8 @@ export function HomeView() {
           display: 'grid',
           overflow: 'hidden',
           px: HOME_SECTION_PX,
-          py: { xs: 11, md: 12 },
-          placeItems: 'center',
+          py: { xs: 11, md: 8 },
           zIndex: 1,
-          // '&::after': {
-          //   content: '""',
-          //   position: 'absolute',
-          //   inset: 0,
-          //   zIndex: 1,
-          //   pointerEvents: 'none',
-          //   backgroundImage:
-          //     'linear-gradient(180deg, rgba(38,54,55,0.14) 0%, rgba(38,54,55,0.18) 100%)',
-          // },
         }}
       >
         {POSTER_FRAME_IMAGES.map((image) => (
@@ -271,7 +284,7 @@ export function HomeView() {
             spacing={1.2}
             alignItems="center"
             sx={{
-              mt: 10,
+              mt: { xs: 7, md: 14 },
               mx: 'auto',
               maxWidth: 670,
             }}
@@ -279,11 +292,10 @@ export function HomeView() {
             <Image
               alt="Single logo"
               sx={{
-                width: { xs: 96, md: 128 },
-                mb: { xs: 0.5, md: 1 },
-                filter: 'drop-shadow(0 10px 22px rgba(45,49,48,0.2))',
+                width: { xs: 96, md: 200 },
+                mb: { xs: 0.5, md: 4 },
               }}
-              src={`${CONFIG.assetsDir}/logo/logo-single.svg`}
+              src="/logo/logo-single.png"
             />
 
             <Typography
@@ -425,7 +437,6 @@ export function HomeView() {
       </Box>
 
       <Box
-        id="culture-map"
         sx={{
           position: 'relative',
           overflow: 'hidden',
@@ -440,7 +451,6 @@ export function HomeView() {
       </Box>
 
       <Box
-        id="stories"
         sx={{
           px: HOME_SECTION_PX,
           py: { xs: 7, md: 10 },
@@ -474,19 +484,19 @@ export function HomeView() {
 
           <Box
             sx={{
-              mt: 7,
+              mt: { xs: 4, md: 6 },
               display: 'grid',
-              gap: { xs: 2.2, sm: 2.5 },
+              gap: { xs: 1.8, md: 2 },
               gridTemplateColumns: {
-                xs: 'repeat(2, minmax(0, 1fr))',
-                md: 'repeat(4, minmax(0, 1fr))',
+                xs: '1fr',
+                sm: 'repeat(2, minmax(0, 1fr))',
+                lg: 'repeat(4, minmax(0, 1fr))',
               },
             }}
           >
             {ROYAL_IMAGE_ITEMS.map((image) => (
               <Box
                 key={image.src}
-                className="royal-image-button"
                 component="button"
                 type="button"
                 aria-label={`ดูภาพ ${image.title}`}
@@ -494,70 +504,118 @@ export function HomeView() {
                 sx={{
                   p: 0,
                   m: 0,
-                  border: 0,
                   width: 1,
-                  display: 'block',
+                  minHeight: 230,
+                  display: 'grid',
                   cursor: 'pointer',
                   overflow: 'hidden',
-                  borderRadius: 1,
-                  bgcolor: 'transparent',
+                  borderRadius: 1.5,
+                  color: HOME_DEEP,
+                  gridTemplateRows: '100px 1fr',
+                  bgcolor: 'rgba(250,244,232,0.94)',
                   position: 'relative',
-                  '&::after': {
-                    inset: 0,
-                    opacity: 0,
-                    content: '""',
-                    position: 'absolute',
-                    transition: 'opacity 180ms ease',
-                    background:
-                      'linear-gradient(180deg, rgba(42,55,54,0.02) 0%, rgba(42,55,54,0.48) 100%)',
-                  },
-                  '&:hover::after, &:focus-visible::after': {
-                    opacity: 1,
-                  },
+                  boxShadow: '0 18px 44px rgba(44,35,21,0.2)',
+                  border: '1px solid rgba(255,255,255,0.64)',
+                  transition: 'transform 180ms ease, box-shadow 180ms ease',
                   '&:focus-visible': {
                     outline: `2px solid ${HOME_TEXT}`,
                     outlineOffset: 4,
                   },
-                  '&:hover .royal-image-preview-icon, &:focus-visible .royal-image-preview-icon': {
-                    opacity: 1,
-                    transform: 'translate(-50%, -50%) scale(1)',
+                  '&:hover, &:focus-visible': {
+                    transform: 'translateY(-4px)',
+                    boxShadow: '0 24px 56px rgba(44,35,21,0.28)',
+                  },
+                  '&:hover .culture-category-image, &:focus-visible .culture-category-image': {
+                    transform: 'scale(1.06)',
                   },
                 }}
               >
-                <Image
-                  alt={image.title}
-                  src={image.src}
-                  ratio="3/4"
+                <Box
                   sx={{
                     width: 1,
-                    transition: 'transform 220ms ease',
-                    '.royal-image-button:hover > &, .royal-image-button:focus-visible > &': {
-                      transform: 'scale(1.04)',
+                    height: 100,
+                    overflow: 'hidden',
+                    position: 'relative',
+                    '&::after': {
+                      content: '""',
+                      position: 'absolute',
+                      inset: 0,
+                      background:
+                        'linear-gradient(180deg, rgba(42,55,54,0.02) 0%, rgba(42,55,54,0.28) 100%)',
                     },
                   }}
-                />
+                >
+                  <Image
+                    alt={image.title}
+                    src={image.src}
+                    className="culture-category-image"
+                    ratio="16/9"
+                    sx={{
+                      width: 1,
+                      height: 1,
+                      transition: 'transform 240ms ease',
+                      '& img': { objectFit: 'cover' },
+                    }}
+                  />
+                </Box>
+
                 <Box
-                  className="royal-image-preview-icon"
                   sx={{
-                    top: '50%',
+                    top: 76,
                     left: '50%',
+                    width: 56,
+                    height: 56,
                     zIndex: 1,
-                    width: 52,
-                    height: 52,
-                    opacity: 0,
                     display: 'grid',
                     borderRadius: '50%',
                     placeItems: 'center',
                     position: 'absolute',
                     color: HOME_TEXT,
-                    transform: 'translate(-50%, -50%) scale(0.92)',
-                    transition: 'opacity 180ms ease, transform 180ms ease',
-                    bgcolor: 'rgba(42,55,54,0.7)',
-                    border: '1px solid rgba(234,215,161,0.58)',
-                    boxShadow: '0 18px 40px rgba(0,0,0,0.34)',
+                    bgcolor: image.color,
+                    transform: 'translateX(-50%)',
+                    border: '3px solid rgba(250,244,232,0.95)',
+                    boxShadow: '0 12px 28px rgba(49,35,20,0.22)',
                   }}
                 >
-                  <Iconify icon="solar:eye-bold" width={24} />
+                  <Iconify icon={image.icon} width={27} />
+                </Box>
+
+                <Box
+                  sx={{
+                    px: 2,
+                    pt: 4.8,
+                    pb: 2,
+                    display: 'flex',
+                    minHeight: 130,
+                    textAlign: 'center',
+                    alignItems: 'center',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    background:
+                      'linear-gradient(180deg, rgba(255,251,242,0.98) 0%, rgba(241,232,214,0.96) 100%)',
+                  }}
+                >
+                  <Typography
+                    sx={{
+                      color: '#4b3523',
+                      fontSize: 18,
+                      fontWeight: 800,
+                      lineHeight: 1.2,
+                    }}
+                  >
+                    {image.title}
+                  </Typography>
+                  <Typography
+                    sx={{
+                      mt: 0.8,
+                      color: 'rgba(75,53,35,0.78)',
+                      fontSize: 12,
+                      fontWeight: 600,
+                      lineHeight: 1.45,
+                    }}
+                  >
+                    {image.description}
+                  </Typography>
                 </Box>
               </Box>
             ))}
@@ -619,7 +677,7 @@ export function HomeView() {
                   },
                 }}
               >
-                <ReactPlayer
+                {/* <ReactPlayer
                   src="https://www.youtube.com/watch?v=76jSHW8-Sug&t=5s"
                   light="https://img.youtube.com/vi/76jSHW8-Sug/maxresdefault.jpg"
                   width="100%"
@@ -627,7 +685,7 @@ export function HomeView() {
                   playIcon={<PlayButton small />}
                   // previewAriaLabel={`ดูวิดีโอ ${video.title}`}
                   // onClickPreview={() => setSelectedVideo(video)}
-                />
+                /> */}
               </Box>
             </Box>
           </Box>
@@ -687,7 +745,7 @@ export function HomeView() {
         sx={{
           px: HOME_SECTION_PX,
           py: { xs: 8, md: 12 },
-          minHeight: 800,
+          minHeight: 700,
           position: 'relative',
           overflow: 'hidden',
           zIndex: 1,
@@ -776,7 +834,7 @@ export function HomeView() {
                     },
                   }}
                 >
-                  <ReactPlayer
+                  {/* <ReactPlayer
                     key={`${video.title}-${videoPreviewKey}`}
                     src={video.src}
                     light={video.cover}
@@ -785,7 +843,7 @@ export function HomeView() {
                     playIcon={<PlayButton small />}
                     previewAriaLabel={`ดูวิดีโอ ${video.title}`}
                     onClickPreview={() => setSelectedVideo(video)}
-                  />
+                  /> */}
                 </Box>
 
                 <Typography
@@ -804,6 +862,84 @@ export function HomeView() {
           </Box>
         </Box>
       </Box>
+
+      <Box
+        sx={{
+          px: HOME_SECTION_PX,
+          py: { xs: 7, md: 10 },
+          minHeight: 400,
+          position: 'relative',
+          overflow: 'hidden',
+          scrollMarginTop: 96,
+          zIndex: 1,
+        }}
+      >
+        <Box
+          sx={{
+            mx: 'auto',
+            maxWidth: HOME_SECTION_MAX_WIDTH,
+            position: 'relative',
+            zIndex: 1,
+            textAlign: 'center',
+          }}
+        >
+          <Typography variant="h3" sx={{ color: HOME_TEXT }}>
+            ข้อมูล
+          </Typography>
+          <Typography
+            variant="subtitle1"
+            sx={{ mt: 1.4, color: 'rgba(248,246,238,0.82)', textAlign: 'center' }}
+          >
+            ประเพณีไทยไม่ได้เป็นเพียงพิธีในปฏิทิน แต่คือความสัมพันธ์ระหว่างผู้คน ธรรมชาติ ความเชื่อ
+            และชุมชน ตั้งแต่สงกรานต์ ลอยกระทง บุญบั้งไฟ งานแห่เทียน ไปจนถึงพิธีเล็ก ๆ
+            ในท้องถิ่นที่บอกว่าแต่ละพื้นที่มองโลกอย่างไร
+          </Typography>
+
+          <Box
+            sx={{
+              mt: 7,
+              display: 'grid',
+              gap: { xs: 2.2, sm: 2.5 },
+              gridTemplateColumns: {
+                xs: 'repeat(2, minmax(0, 1fr))',
+                md: 'repeat(4, minmax(0, 1fr))',
+              },
+            }}
+          >
+            กกกกหก
+          </Box>
+        </Box>
+      </Box>
+
+      <Box
+        sx={{
+          width: 1000,
+          p: { xs: 0.7, md: 1 },
+          zIndex: 0,
+          opacity: { xs: 0.64, md: 0.78 },
+          overflow: 'hidden',
+          position: 'absolute',
+          bottom: -140,
+          right: -110,
+          borderRadius: 1,
+          filter: 'saturate(0.78) sepia(0.12)',
+        }}
+      >
+        <Image
+          src="/assets/th-hub/hub-bg-removebg.png"
+          alt="การแสดงศิลปวัฒนธรรมไทย"
+          ratio="4/3"
+          visibleByDefault
+          disablePlaceholder
+          sx={{
+            width: 1,
+            borderRadius: 0.75,
+            '& img': { objectFit: 'cover' },
+          }}
+        />
+      </Box>
+
+      <HomeFooter />
 
       <Dialog
         fullWidth
@@ -857,7 +993,7 @@ export function HomeView() {
         </DialogContent>
       </Dialog>
 
-      <Dialog
+      {/* <Dialog
         fullWidth
         maxWidth="lg"
         open={!!selectedVideo}
@@ -898,7 +1034,7 @@ export function HomeView() {
             )}
           </Box>
         </DialogContent>
-      </Dialog>
+      </Dialog> */}
     </Box>
   );
 }
