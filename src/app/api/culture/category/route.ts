@@ -9,6 +9,7 @@ import { getSupabaseAdmin } from 'src/server/supabase-admin';
 
 const PLACES_TABLE = process.env.CULTURAL_PLACES_TABLE ?? 'cultural_places';
 const OVERRIDES_TABLE = process.env.CULTURAL_PLACE_OVERRIDES_TABLE ?? 'cultural_place_overrides';
+const ETHNIC_GROUPS_TABLE = process.env.ETHNIC_GROUPS_TABLE ?? 'ethnic_groups';
 const QUERY_BATCH_SIZE = 1000;
 const MAX_QUERY_ROWS = 50000;
 const DEFAULT_LIMIT = 16;
@@ -62,6 +63,26 @@ type PlaceOverride = {
   updated_at?: string | null;
 };
 
+type EthnicGroupRow = {
+  ethnic_id: number | null;
+  spatial: string | null;
+  title: string | null;
+  ip_group: string | null;
+  sub_district_th: string | null;
+  sub_district_en: string | null;
+  district_th: string | null;
+  district_en: string | null;
+  province: string | null;
+  province_en: string | null;
+  lat: number | null;
+  lng: number | null;
+  village_name_th: string | null;
+  village_name_en: string | null;
+  description_th: string | null;
+  description_en: string | null;
+  village_no: string | null;
+};
+
 function mapPlaceRow(row: CulturalPlaceRow): CulturalPlace & { provinceCode: string } | null {
   if (!row.id || !row.name || row.lat == null || row.lng == null) {
     return null;
@@ -110,6 +131,62 @@ function applyOverride<T extends CulturalPlace & { provinceCode: string }>(
 
 function getProvinceName(provinceCode: string) {
   return provinces.find((province) => province.code === provinceCode)?.name ?? provinceCode;
+}
+
+function normalizePlaceKeyText(value?: string | null) {
+  return (value ?? '').replace(/\s+/g, '').trim().toLowerCase();
+}
+
+function getProvinceCodeFromName(provinceName?: string | null) {
+  const normalizedProvinceName = normalizePlaceKeyText(provinceName);
+
+  return provinces.find((province) => normalizePlaceKeyText(province.name) === normalizedProvinceName)
+    ?.code;
+}
+
+function getEthnicGroupPlaceId(row: EthnicGroupRow) {
+  if (row.ethnic_id != null) {
+    return `ethnic-group-${row.ethnic_id}`;
+  }
+
+  return [
+    'ethnic-group',
+    row.ip_group,
+    row.province,
+    row.district_th,
+    row.sub_district_th,
+    row.village_name_th,
+    row.lat,
+    row.lng,
+  ]
+    .filter((value) => value != null && value !== '')
+    .map((value) => normalizePlaceKeyText(`${value}`))
+    .join('-');
+}
+
+function mapEthnicGroupRow(row: EthnicGroupRow): (CulturalPlace & { provinceCode: string }) | null {
+  const provinceCode = getProvinceCodeFromName(row.province);
+
+  if (!provinceCode || !row.title || row.lat == null || row.lng == null) {
+    return null;
+  }
+
+  return {
+    id: getEthnicGroupPlaceId(row),
+    provinceCode,
+    name: row.title,
+    district: row.district_th ?? '',
+    category: 'ethnic_group',
+    lat: row.lat,
+    lng: row.lng,
+    description: row.description_th || row.description_en || 'ข้อมูลกลุ่มชาติพันธุ์',
+    highlight: row.ip_group ?? 'กลุ่มชาติพันธุ์',
+    imageUrls: [],
+    sourceUrl:
+      'https://data.thailand.opendevelopmentmekong.net/th/api/3/action/datastore_search?resource_id=286cca68-b84d-4151-b95f-d31ba7a9f640',
+    mapUrl: `https://www.google.com/maps/search/?api=1&query=${row.lat},${row.lng}`,
+    source: 'ethnic_groups',
+  };
 }
 
 function getCategoryLabel(categoryKey: string) {
@@ -211,6 +288,35 @@ async function fetchOverrides({
   return { ok: true as const, data: rows };
 }
 
+async function fetchEthnicGroupPlaces({
+  client,
+  categoryKey,
+  provinceCode,
+}: {
+  client: SupabaseClient;
+  categoryKey?: string;
+  provinceCode?: string;
+}) {
+  if (categoryKey && categoryKey !== 'ethnic_group') {
+    return [];
+  }
+
+  const { data, error } = await client
+    .from(ETHNIC_GROUPS_TABLE)
+    .select(
+      'ethnic_id, spatial, title, ip_group, sub_district_th, sub_district_en, district_th, district_en, province, province_en, lat, lng, village_name_th, village_name_en, description_th, description_en, village_no'
+    );
+
+  if (error) {
+    return [];
+  }
+
+  return ((data ?? []) as EthnicGroupRow[])
+    .map(mapEthnicGroupRow)
+    .filter((place): place is CulturalPlace & { provinceCode: string } => Boolean(place))
+    .filter((place) => !provinceCode || place.provinceCode === provinceCode);
+}
+
 export const runtime = 'nodejs';
 
 export async function GET(request: NextRequest) {
@@ -245,13 +351,23 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ data: [], message: overrideRows.error }, { status: 500 });
   }
 
+  const ethnicGroupPlaces = await fetchEthnicGroupPlaces({
+    client: supabase.client,
+    categoryKey,
+    provinceCode,
+  });
+
   const overrideMap = new Map(
     overrideRows.data.map((override) => [override.place_id, override])
   );
-  const places = placeRows.data
+  const places = [
+    ...placeRows.data
     .map(mapPlaceRow)
     .filter((place): place is CulturalPlace & { provinceCode: string } => Boolean(place))
     .map((place) => applyOverride(place, overrideMap.get(place.id)))
+    .filter((place) => !categoryKey || place.category === categoryKey),
+    ...ethnicGroupPlaces,
+  ]
     .filter((place) => !categoryKey || place.category === categoryKey)
     .filter((place) => {
       if (!query) {

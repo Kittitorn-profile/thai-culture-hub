@@ -10,6 +10,7 @@ create table if not exists public.cultural_place_overrides (
   map_url text,
   image_url text,
   note text,
+  detail text,
   updated_by_id uuid,
   updated_by_email text,
   updated_by_name text,
@@ -21,6 +22,9 @@ alter table public.cultural_place_overrides
 
 alter table public.cultural_place_overrides
   add column if not exists image_url text;
+
+alter table public.cultural_place_overrides
+  add column if not exists detail text;
 
 alter table public.cultural_place_overrides
   add column if not exists category text;

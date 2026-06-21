@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -13,6 +14,7 @@ import Typography from '@mui/material/Typography';
 import LoadingButton from '@mui/lab/LoadingButton';
 
 import { DashboardContent } from 'src/layouts/dashboard';
+import { AdminApiError, adminApiRequest } from 'src/lib/admin-api';
 
 import { Iconify } from 'src/components/iconify';
 
@@ -27,6 +29,11 @@ type LocalWisdomContent = {
   caption: string;
   mediaUrl: string;
   coverUrl: string;
+};
+
+type HomeContentResponse = {
+  data?: { content?: unknown } | null;
+  message?: string;
 };
 
 const SECTION_KEY = 'local-wisdom';
@@ -59,90 +66,64 @@ function isValidStoredContent(value: unknown): value is LocalWisdomContent {
 
 export default function LocalWisdomContentPage() {
   const { user, checkUserSession } = useAuthContext();
+  const queryClient = useQueryClient();
   const [content, setContent] = useState<LocalWisdomContent>(DEFAULT_CONTENT);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
   const accessToken = user?.accessToken ?? user?.access_token ?? '';
 
+  const contentQuery = useQuery({
+    queryKey: ['admin-home-content', SECTION_KEY, accessToken],
+    enabled: !!accessToken,
+    queryFn: () => {
+      const params = new URLSearchParams({ sectionKey: SECTION_KEY });
+
+      return adminApiRequest<HomeContentResponse>(`/api/admin/home-content?${params.toString()}`, {
+        accessToken,
+      });
+    },
+  });
+
   useEffect(() => {
-    if (!accessToken) {
-      return undefined;
+    if (isValidStoredContent(contentQuery.data?.data?.content)) {
+      setContent(contentQuery.data.data.content);
     }
+  }, [contentQuery.data]);
 
-    const controller = new AbortController();
+  useEffect(() => {
+    if (
+      contentQuery.error &&
+      contentQuery.error instanceof AdminApiError &&
+      contentQuery.error.status === 401
+    ) {
+      checkUserSession?.();
+    }
+  }, [checkUserSession, contentQuery.error]);
 
-    async function loadContent() {
-      setIsLoading(true);
-      setError('');
-
-      try {
-        const params = new URLSearchParams({ sectionKey: SECTION_KEY });
-        const response = await fetch(`/api/admin/home-content?${params.toString()}`, {
-          headers: { Authorization: `Bearer ${accessToken}` },
-          signal: controller.signal,
-        });
-        const data = (await response.json()) as {
-          data?: { content?: unknown } | null;
-          message?: string;
-        };
-
-        if (!response.ok) {
-          if (response.status === 401) {
-            await checkUserSession?.();
-          }
-
-          throw new Error(data.message ?? 'โหลดข้อมูลไม่สำเร็จ');
-        }
-
-        if (isValidStoredContent(data.data?.content)) {
-          setContent(data.data.content);
-        }
-      } catch (caughtError) {
-        if (!(caughtError instanceof Error && caughtError.name === 'AbortError')) {
-          setError(caughtError instanceof Error ? caughtError.message : 'โหลดข้อมูลไม่สำเร็จ');
-        }
-      } finally {
-        setIsLoading(false);
+  const saveContentMutation = useMutation({
+    mutationFn: () =>
+      adminApiRequest<{ message?: string }>('/api/admin/home-content', {
+        method: 'PUT',
+        accessToken,
+        body: { sectionKey: SECTION_KEY, content },
+      }),
+    onSuccess: async () => {
+      setMessage('บันทึก section ภูมิปัญญาท้องถิ่นลง database แล้ว');
+      await queryClient.invalidateQueries({ queryKey: ['admin-home-content', SECTION_KEY] });
+    },
+    onError: (caughtError) => {
+      if (caughtError instanceof AdminApiError && caughtError.status === 401) {
+        checkUserSession?.();
       }
-    }
 
-    loadContent();
-
-    return () => controller.abort();
-  }, [accessToken, checkUserSession]);
+      setError(caughtError instanceof Error ? caughtError.message : 'บันทึกไม่สำเร็จ');
+    },
+  });
 
   const handleSaveDraft = async () => {
     setError('');
     setMessage('');
-    setIsSaving(true);
-
-    try {
-      const response = await fetch('/api/admin/home-content', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify({ sectionKey: SECTION_KEY, content }),
-      });
-      const data = (await response.json()) as { message?: string };
-
-      if (!response.ok) {
-        if (response.status === 401) {
-          await checkUserSession?.();
-        }
-
-        throw new Error(data.message ?? 'บันทึกไม่สำเร็จ');
-      }
-
-      setMessage('บันทึก section ภูมิปัญญาท้องถิ่นลง database แล้ว');
-    } catch (caughtError) {
-      setError(caughtError instanceof Error ? caughtError.message : 'บันทึกไม่สำเร็จ');
-    } finally {
-      setIsSaving(false);
-    }
+    await saveContentMutation.mutateAsync().catch(() => undefined);
   };
 
   const handleReset = () => {
@@ -171,20 +152,31 @@ export default function LocalWisdomContentPage() {
             <Button color="inherit" variant="outlined" size="small" onClick={handleReset}>
               คืนค่าเริ่มต้น
             </Button>
-            <LoadingButton variant="contained" loading={isSaving} onClick={handleSaveDraft}>
+            <LoadingButton
+              variant="contained"
+              loading={saveContentMutation.isPending}
+              onClick={handleSaveDraft}
+            >
               บันทึก
             </LoadingButton>
           </Stack>
         </Stack>
 
-        {error && <Alert severity="error">{error}</Alert>}
+        {(error || contentQuery.error) && (
+          <Alert severity="error">
+            {error ||
+              (contentQuery.error instanceof Error
+                ? contentQuery.error.message
+                : 'โหลดข้อมูลไม่สำเร็จ')}
+          </Alert>
+        )}
         {message && <Alert severity="success">{message}</Alert>}
 
         <Alert severity="info">
           หน้านี้อ่านและบันทึกข้อมูลผ่าน database table home_content_sections
         </Alert>
 
-        {isLoading && <Alert severity="info">กำลังโหลดข้อมูลจาก database...</Alert>}
+        {contentQuery.isLoading && <Alert severity="info">กำลังโหลดข้อมูลจาก database...</Alert>}
 
         <Box
           sx={{

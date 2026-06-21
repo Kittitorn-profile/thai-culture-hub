@@ -23,6 +23,7 @@ import { Image } from 'src/components/image';
 import { Iconify } from 'src/components/iconify';
 
 import ThailandMap from './thailand-map';
+import { HomePopupBanner } from '../components/home-popup-banner';
 
 // ----------------------------------------------------------------------
 
@@ -1259,6 +1260,8 @@ export function HomeView() {
       </Box>
 
       <HomeFooter />
+
+      <HomePopupBanner />
 
       <Dialog
         fullWidth

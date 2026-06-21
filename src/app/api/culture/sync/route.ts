@@ -257,9 +257,23 @@ async function handleSync(request: NextRequest, options?: { defaultDryRun?: bool
   }
 
   const { client } = supabase;
-  const { count: existingCount, error: countError } = await client
+  let countQuery = client
     .from(tableName)
     .select('id', { count: 'exact', head: true });
+
+  if (sources.length) {
+    countQuery = countQuery.in('source', sources);
+  }
+
+  if (sources.includes('culture_catalog')) {
+    countQuery = countQuery.not('id', 'like', 'm-culture-religious-%');
+  }
+
+  if (provinceCodes.length) {
+    countQuery = countQuery.in('province_code', provinceCodes);
+  }
+
+  const { count: existingCount, error: countError } = await countQuery;
 
   if (countError) {
     return NextResponse.json(

@@ -34,6 +34,7 @@ const AuthProvider = (CONFIG.auth.method === 'supabase' && SupabaseAuthProvider)
 
 const OG_IMAGE_URL =
   'https://res.cloudinary.com/dkdbilwtj/image/upload/v1782029454/og-images_vvdlcu.jpg';
+const SITE_URL = 'https://thailandculturalhub.com';
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -42,6 +43,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   icons: [
     {
       rel: 'icon',

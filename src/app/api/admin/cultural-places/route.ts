@@ -20,13 +20,45 @@ type PlaceOverride = {
   map_url?: string | null;
   image_url?: string | null;
   note?: string | null;
+  detail?: string | null;
   updated_at?: string | null;
   updated_by_id?: string | null;
   updated_by_email?: string | null;
   updated_by_name?: string | null;
 };
 
+type PlaceDetailRow = {
+  place_id: string;
+  province_code?: string | null;
+  detail_th?: string | null;
+  highlight?: string | null;
+  updated_at?: string | null;
+  updated_by_id?: string | null;
+  updated_by_email?: string | null;
+  updated_by_name?: string | null;
+};
+
+type CulturalPlaceRow = {
+  id: string;
+  province_code?: string | null;
+  name: string | null;
+  district: string | null;
+  category: string | null;
+  lat: number | null;
+  lng: number | null;
+  description: string | null;
+  highlight: string | null;
+  image_urls: string[] | null;
+  source_url: string | null;
+  map_url: string | null;
+  source: string | null;
+  payload?: Partial<CulturalPlace> | null;
+};
+
+const PLACES_TABLE = process.env.CULTURAL_PLACES_TABLE ?? 'cultural_places';
 const OVERRIDES_TABLE = process.env.CULTURAL_PLACE_OVERRIDES_TABLE ?? 'cultural_place_overrides';
+const DETAILS_TABLE = process.env.CULTURAL_PLACE_DETAILS_TABLE ?? 'cultural_place_details';
+const SUPABASE_PAGE_SIZE = 1000;
 
 function toNumber(value: unknown) {
   const numberValue = typeof value === 'number' ? value : Number(value);
@@ -55,17 +87,93 @@ function applyOverride(place: CulturalPlace, override?: PlaceOverride) {
   };
 }
 
-async function getOverrides(provinceCode: string) {
+function mapPlaceRow(row: CulturalPlaceRow): (CulturalPlace & { provinceCode?: string }) | null {
+  if (!row.id || !row.name) {
+    return null;
+  }
+
+  return {
+    ...(row.payload ?? {}),
+    id: row.id,
+    provinceCode: row.province_code ?? undefined,
+    name: row.name,
+    district: row.district ?? '',
+    category: (row.category as CulturalPlace['category']) ?? 'cultural_attraction',
+    lat: row.lat as number,
+    lng: row.lng as number,
+    description: row.description ?? '',
+    highlight: row.highlight ?? '',
+    imageUrls: row.image_urls ?? row.payload?.imageUrls ?? [],
+    sourceUrl: row.source_url ?? row.payload?.sourceUrl,
+    mapUrl: row.map_url ?? row.payload?.mapUrl,
+    source: (row.source as CulturalPlace['source']) ?? row.payload?.source ?? 'local',
+  };
+}
+
+async function getStoredPlaces(provinceCode?: string | null) {
+  const supabase = getSupabaseAdmin();
+
+  if (!supabase.ok) {
+    return [];
+  }
+
+  const rows: CulturalPlaceRow[] = [];
+
+  for (let pageIndex = 0; ; pageIndex += 1) {
+    const from = pageIndex * SUPABASE_PAGE_SIZE;
+    const to = from + SUPABASE_PAGE_SIZE - 1;
+    let query = supabase.client
+      .from(PLACES_TABLE)
+      .select(
+        'id, province_code, name, district, category, lat, lng, description, highlight, image_urls, source_url, map_url, source, payload'
+      )
+      .order('updated_at', { ascending: false })
+      .range(from, to);
+
+    if (provinceCode) {
+      query = query.eq('province_code', provinceCode);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      return [];
+    }
+
+    const nextRows = (data ?? []) as CulturalPlaceRow[];
+
+    rows.push(...nextRows);
+
+    if (nextRows.length < SUPABASE_PAGE_SIZE) {
+      break;
+    }
+  }
+
+  return rows
+    .map(mapPlaceRow)
+    .filter((place): place is CulturalPlace & { provinceCode?: string } => Boolean(place));
+}
+
+function isReadyPlace(place: CulturalPlace) {
+  return place.lat != null && place.lng != null && Number.isFinite(Number(place.lat)) && Number.isFinite(Number(place.lng));
+}
+
+async function getOverrides(provinceCode?: string | null) {
   const supabase = getSupabaseAdmin();
 
   if (!supabase.ok) {
     return { ok: false as const, error: supabase.error, data: [] as PlaceOverride[] };
   }
 
-  const { data, error } = await supabase.client
+  let query = supabase.client
     .from(OVERRIDES_TABLE)
-    .select('*')
-    .eq('province_code', provinceCode);
+    .select('*');
+
+  if (provinceCode) {
+    query = query.eq('province_code', provinceCode);
+  }
+
+  const { data, error } = await query;
 
   if (error) {
     return { ok: false as const, error: error.message, data: [] as PlaceOverride[] };
@@ -83,27 +191,38 @@ export async function GET(request: NextRequest) {
 
   const provinceCode = request.nextUrl.searchParams.get('provinceCode');
   const query = request.nextUrl.searchParams.get('q')?.trim().toLowerCase() ?? '';
+  const status = request.nextUrl.searchParams.get('status') ?? '';
+  const page = Math.max(Number(request.nextUrl.searchParams.get('page') ?? 1), 1);
+  const pageSize = Math.min(Math.max(Number(request.nextUrl.searchParams.get('pageSize') ?? 10), 1), 100);
+  const district = request.nextUrl.searchParams.get('district') ?? '';
+  const source = request.nextUrl.searchParams.get('source') ?? '';
 
-  if (!provinceCode) {
-    return NextResponse.json({ data: [], message: 'Invalid provinceCode' }, { status: 400 });
-  }
-
-  const url = new URL('/api/culture/province-places', request.nextUrl.origin);
-
-  url.searchParams.set('provinceCode', provinceCode);
-
-  const [placesResponse, overridesResult] = await Promise.all([
-    fetch(url, { signal: request.signal }),
+  const [places, overridesResult] = await Promise.all([
+    getStoredPlaces(provinceCode),
     getOverrides(provinceCode),
   ]);
-  const placesJson = (await placesResponse.json().catch(() => ({}))) as { data?: CulturalPlace[] };
-  const places = Array.isArray(placesJson.data) ? placesJson.data : [];
   const overrideMap = new Map(
     overridesResult.data.map((override) => [override.place_id, override])
   );
-  const data = places
-    .map((place) => applyOverride(place, overrideMap.get(place.id)))
+  const allPlaces = places.map((place) => applyOverride(place, overrideMap.get(place.id)));
+  const filteredData = allPlaces
     .filter((place) => {
+      if (status === 'ready' && !isReadyPlace(place)) {
+        return false;
+      }
+
+      if (status === 'not_ready' && isReadyPlace(place)) {
+        return false;
+      }
+
+      if (district && place.district !== district) {
+        return false;
+      }
+
+      if (source && place.source !== source) {
+        return false;
+      }
+
       if (!query) {
         return true;
       }
@@ -114,9 +233,34 @@ export async function GET(request: NextRequest) {
         .toLowerCase()
         .includes(query);
     });
+  const total = filteredData.length;
+  const totalPages = Math.max(Math.ceil(total / pageSize), 1);
+  const normalizedPage = Math.min(page, totalPages);
+  const data = filteredData.slice((normalizedPage - 1) * pageSize, normalizedPage * pageSize);
+  const districts = Array.from(
+    new Set(
+      allPlaces
+        .map((place) => place.district)
+        .filter((nextDistrict): nextDistrict is string => Boolean(nextDistrict))
+    )
+  ).sort((first, second) => first.localeCompare(second, 'th'));
 
   return NextResponse.json({
     data,
+    districts,
+    page: normalizedPage,
+    pageSize,
+    total,
+    pagination: {
+      page: normalizedPage,
+      pageSize,
+      total,
+      totalPages,
+    },
+    readiness: {
+      ready: allPlaces.filter(isReadyPlace).length,
+      notReady: allPlaces.filter((place) => !isReadyPlace(place)).length,
+    },
     overrideError: overridesResult.ok ? undefined : overridesResult.error,
   });
 }
@@ -140,6 +284,7 @@ export async function PUT(request: NextRequest) {
     mapUrl?: string;
     imageUrl?: string;
     note?: string;
+    detail?: string;
   };
   const placeId = body.placeId?.trim();
   const provinceCode = body.provinceCode?.trim();
@@ -171,11 +316,25 @@ export async function PUT(request: NextRequest) {
     map_url: body.mapUrl?.trim() || null,
     image_url: body.imageUrl?.trim() || null,
     note: body.note?.trim() || null,
+    detail: null,
     updated_at: new Date().toISOString(),
     updated_by_id: auth.user.id,
     updated_by_email: auth.user.email ?? null,
     updated_by_name: auth.user.displayName ?? auth.user.email ?? null,
   };
+  const updatedAt = new Date().toISOString();
+  const detailRow: PlaceDetailRow = {
+    place_id: placeId,
+    province_code: provinceCode,
+    detail_th: body.detail?.trim() || null,
+    highlight: body.note?.trim() || null,
+    updated_at: updatedAt,
+    updated_by_id: auth.user.id,
+    updated_by_email: auth.user.email ?? null,
+    updated_by_name: auth.user.displayName ?? auth.user.email ?? null,
+  };
+  row.updated_at = updatedAt;
+
   const { data, error } = await supabase.client
     .from(OVERRIDES_TABLE)
     .upsert(row, { onConflict: 'place_id' })
@@ -186,7 +345,17 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ message: error.message }, { status: 500 });
   }
 
-  return NextResponse.json({ data });
+  const { data: detailData, error: detailError } = await supabase.client
+    .from(DETAILS_TABLE)
+    .upsert(detailRow, { onConflict: 'place_id' })
+    .select('*')
+    .single();
+
+  if (detailError) {
+    return NextResponse.json({ message: detailError.message }, { status: 500 });
+  }
+
+  return NextResponse.json({ data, details: detailData });
 }
 
 export async function DELETE(request: NextRequest) {
@@ -204,6 +373,15 @@ export async function DELETE(request: NextRequest) {
 
   if (!supabase.ok) {
     return NextResponse.json({ message: supabase.error }, { status: 500 });
+  }
+
+  const { error: detailError } = await supabase.client
+    .from(DETAILS_TABLE)
+    .delete()
+    .eq('place_id', placeId);
+
+  if (detailError) {
+    return NextResponse.json({ message: detailError.message }, { status: 500 });
   }
 
   const { error } = await supabase.client.from(OVERRIDES_TABLE).delete().eq('place_id', placeId);

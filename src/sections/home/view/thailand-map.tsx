@@ -61,9 +61,16 @@ type ProvinceCategorySummary = {
   color: string;
   counts: ProvinceCategoryCounts;
   dominantCategory: string;
+  total?: number;
 };
 
 type ProvinceCategorySummaryMap = Record<string, ProvinceCategorySummary>;
+
+type ApiProvinceCategorySummary = {
+  counts?: unknown;
+  dominantCategory?: unknown;
+  total?: unknown;
+};
 
 const EMPTY_GEOJSON = {
   type: 'FeatureCollection',
@@ -71,7 +78,6 @@ const EMPTY_GEOJSON = {
 } satisfies FeatureCollection;
 
 const DEFAULT_PROVINCE_FILL = '#ffffff';
-const PROVINCE_CATEGORY_SUMMARIES_CACHE_KEY = 'thai-culture-hub:province-category-summaries:v1';
 const THAI_PROVINCE_NAME_BY_CODE = new Map(
   provinces.map((province) => [province.code, province.name])
 );
@@ -165,6 +171,40 @@ function getCategorySummary(
   };
 }
 
+function isCategoryCounts(value: unknown): value is ProvinceCategoryCounts {
+  return Boolean(
+    value &&
+      typeof value === 'object' &&
+      !Array.isArray(value) &&
+      Object.values(value).every((count) => typeof count === 'number')
+  );
+}
+
+function getProvinceCategorySummaryFromApi(
+  summary: ApiProvinceCategorySummary,
+  categoryConfig: CategoryConfigMap
+): ProvinceCategorySummary | null {
+  if (!isCategoryCounts(summary.counts)) {
+    return null;
+  }
+
+  const dominantCategory =
+    typeof summary.dominantCategory === 'string' && summary.dominantCategory
+      ? summary.dominantCategory
+      : getDominantCategoryFromCounts(summary.counts);
+
+  if (!dominantCategory) {
+    return null;
+  }
+
+  return {
+    counts: summary.counts,
+    dominantCategory,
+    color: getCategoryColor(categoryConfig, dominantCategory),
+    total: typeof summary.total === 'number' ? summary.total : undefined,
+  };
+}
+
 function getProvinceColor(
   province: ThailandProvince,
   provinceCategorySummaries: ProvinceCategorySummaryMap,
@@ -240,61 +280,6 @@ function getCategoryConfigCacheKey(categoryConfig: CategoryConfigMap) {
     .join('|');
 }
 
-function isProvinceCategorySummaryMap(value: unknown): value is ProvinceCategorySummaryMap {
-  return Boolean(value && typeof value === 'object' && !Array.isArray(value));
-}
-
-function getCachedProvinceCategorySummaries(provinceIds: string[], categoryConfigKey: string) {
-  if (typeof window === 'undefined' || !provinceIds.length) {
-    return undefined;
-  }
-
-  const cachedValue = window.localStorage.getItem(PROVINCE_CATEGORY_SUMMARIES_CACHE_KEY);
-
-  if (!cachedValue) {
-    return undefined;
-  }
-
-  try {
-    const parsedValue = JSON.parse(cachedValue) as {
-      provinceIdsKey?: string;
-      categoryConfigKey?: string;
-      summaries?: unknown;
-    };
-
-    if (
-      parsedValue.provinceIdsKey !== getProvinceIdsCacheKey(provinceIds) ||
-      parsedValue.categoryConfigKey !== categoryConfigKey ||
-      !isProvinceCategorySummaryMap(parsedValue.summaries)
-    ) {
-      return undefined;
-    }
-
-    return parsedValue.summaries;
-  } catch {
-    return undefined;
-  }
-}
-
-function setCachedProvinceCategorySummaries(
-  provinceIds: string[],
-  summaries: ProvinceCategorySummaryMap,
-  categoryConfigKey: string
-) {
-  if (typeof window === 'undefined' || !provinceIds.length) {
-    return;
-  }
-
-  window.localStorage.setItem(
-    PROVINCE_CATEGORY_SUMMARIES_CACHE_KEY,
-    JSON.stringify({
-      summaries,
-      provinceIdsKey: getProvinceIdsCacheKey(provinceIds),
-      categoryConfigKey,
-    })
-  );
-}
-
 function fetchProvincePlacesApi(url: string, signal: AbortSignal) {
   return fetch(url, { signal }).catch((error) => {
     if (error?.name === 'AbortError') {
@@ -320,6 +305,31 @@ async function fetchProvinceCategorySummaries(
   signal: AbortSignal,
   categoryConfig: CategoryConfigMap
 ) {
+  const summaryResponse = await fetchProvincePlacesApi(
+    '/api/culture/province-places',
+    signal
+  );
+  const summaryJson = summaryResponse?.ok ? await summaryResponse.json() : {};
+  const apiSummaries =
+    summaryJson?.summaries && typeof summaryJson.summaries === 'object'
+      ? (summaryJson.summaries as Record<string, ApiProvinceCategorySummary>)
+      : null;
+
+  if (apiSummaries) {
+    return Object.fromEntries(
+      provinceIds
+        .map((provinceId) => {
+          const summary = getProvinceCategorySummaryFromApi(
+            apiSummaries[provinceId] ?? {},
+            categoryConfig
+          );
+
+          return summary ? [provinceId, summary] : null;
+        })
+        .filter((entry): entry is [string, ProvinceCategorySummary] => Boolean(entry))
+    );
+  }
+
   const entries = await Promise.all(
     provinceIds.map(async (provinceId) => {
       const places = await fetchProvinceApiPlaces(provinceId, signal);
@@ -366,13 +376,11 @@ export default function ThailandMap() {
   );
   const {
     data: provinceCategorySummaries = {},
-    isSuccess: isProvinceSummarySuccess,
     isLoading: isProvinceSummaryLoading,
   } = useQuery({
     enabled: provinceIds.length > 0,
     queryKey: provinceSummaryQueryKey,
     queryFn: ({ signal }) => fetchProvinceCategorySummaries(provinceIds, signal, categoryConfig),
-    initialData: () => getCachedProvinceCategorySummaries(provinceIds, categoryConfigKey),
     staleTime: Infinity,
     gcTime: Infinity,
   });
@@ -426,12 +434,6 @@ export default function ThailandMap() {
     ? `Lat ${popoverProvinceCenter.lat.toFixed(7)}, Lng ${popoverProvinceCenter.lng.toFixed(7)}`
     : 'Lat / Lng';
   const popoverAccentColor = popoverProvinceSummary?.color ?? '#d98b35';
-
-  useEffect(() => {
-    if (isProvinceSummarySuccess) {
-      setCachedProvinceCategorySummaries(provinceIds, provinceCategorySummaries, categoryConfigKey);
-    }
-  }, [categoryConfigKey, isProvinceSummarySuccess, provinceCategorySummaries, provinceIds]);
 
   useEffect(() => {
     const query = searchQuery.trim();

@@ -2,6 +2,61 @@ import provinces from 'src/data/thailand-culture/provinces';
 
 export type CulturalCategory = string;
 
+export type CulturalPlaceDetails = {
+  placeId: string;
+  provinceCode?: string | null;
+  nameTh?: string | null;
+  nameEn?: string | null;
+  detailTh?: string | null;
+  detailEn?: string | null;
+  nearbyLocation?: string | null;
+  categoryId?: string | null;
+  categoryLabel?: string | null;
+  typeId?: string | null;
+  typeLabel?: string | null;
+  address?: string | null;
+  addressAlley?: string | null;
+  addressRoad?: string | null;
+  provinceNameTh?: string | null;
+  districtNameTh?: string | null;
+  subdistrictNameTh?: string | null;
+  postcode?: string | null;
+  tel?: string | null;
+  email?: string | null;
+  openingHours?: string | null;
+  feeTh?: string | null;
+  feeThKid?: string | null;
+  feeEn?: string | null;
+  feeEnKid?: string | null;
+  activity?: string | null;
+  highlight?: string | null;
+  reward?: string | null;
+  suitableDuration?: string | null;
+  marketLimitation?: string | null;
+  marketChance?: string | null;
+  rule?: string | null;
+  accessibility?: string | null;
+  facilitiesContact?: string | null;
+  travelerPreparation?: string | null;
+  website?: string | null;
+  facebook?: string | null;
+  instagram?: string | null;
+  tiktok?: string | null;
+  youtube?: string | null;
+  line?: string | null;
+  credit?: string | null;
+  cash?: string | null;
+  payment?: string | null;
+  remark?: string | null;
+  bookingDetail?: string | null;
+  sourceAttId?: string | null;
+  sourcePayload?: Record<string, unknown> | null;
+  updatedAt?: string | null;
+  updatedById?: string | null;
+  updatedByEmail?: string | null;
+  updatedByName?: string | null;
+};
+
 export type CulturalPlace = {
   id: string;
   name: string;
@@ -15,10 +70,15 @@ export type CulturalPlace = {
   sourceUrl?: string;
   mapUrl?: string;
   provinceName?: string;
+  details?: CulturalPlaceDetails | null;
   source?:
     | 'local'
     | 'tat'
     | 'culture_catalog'
+    | 'religious_places'
+    | 'cpot_products'
+    | 'thai_fabric_wisdom'
+    | 'ethnic_groups'
     | 'thailand_cultural_hub'
     | 'finearts_monument'
     | 'finearts_archeology'

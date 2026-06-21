@@ -66,6 +66,14 @@ function getSharePageUrl(place: CulturalPlace) {
   return `${SHARE_SITE_URL}/culture-place/${encodeURIComponent(place.id)}`;
 }
 
+function getPlainText(value?: string | null) {
+  return (value ?? '')
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 export function ProvincePlaceCard({
   place,
   likeState,
@@ -75,6 +83,7 @@ export function ProvincePlaceCard({
 }: ProvincePlaceCardProps) {
   const theme = useTheme();
   const accentColor = getCategoryColor(categoryConfig, place.category);
+  const displayHighlight = place.highlight ? getCategoryLabel(categoryConfig, place.highlight) : '';
   const cardImage = place.imageUrls?.[0];
   const googleMapsUrl = getGoogleMapsUrl(place);
   const liked = likeState?.liked ?? false;
@@ -99,7 +108,7 @@ export function ProvincePlaceCard({
     >
       <Box
         sx={{
-          height: 190,
+          minHeight: 190,
           borderRadius: 1.5,
           overflow: 'hidden',
           position: 'relative',
@@ -213,7 +222,7 @@ export function ProvincePlaceCard({
           }}
         >
           <Typography sx={{ color: accentColor, fontWeight: 900, fontSize: 14 }}>
-            {place.highlight}
+            {displayHighlight}
           </Typography>
           <Box
             sx={{
@@ -238,7 +247,8 @@ export function ProvincePlaceCard({
           </Box>
         </Stack>
 
-        <Typography
+        <TruncatedTypography
+          line={2}
           sx={{
             mt: 0.8,
             color: theme.palette.grey[900],
@@ -248,14 +258,14 @@ export function ProvincePlaceCard({
           }}
         >
           {place.name}
-        </Typography>
+        </TruncatedTypography>
         <TruncatedTypography
           line={2}
           lineHeight={1.5}
           variant="body2"
           sx={{ mt: 1, color: 'text.secondary', minHeight: 42 }}
         >
-          {place.description}
+          {getPlainText(place.description)}
         </TruncatedTypography>
         <Box
           sx={{

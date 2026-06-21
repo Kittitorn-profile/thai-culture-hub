@@ -3,6 +3,7 @@
 import type { IconifyName } from 'src/components/iconify/register-icons';
 
 import { useMemo, useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -16,6 +17,7 @@ import Typography from '@mui/material/Typography';
 import LoadingButton from '@mui/lab/LoadingButton';
 
 import { DashboardContent } from 'src/layouts/dashboard';
+import { AdminApiError, adminApiRequest } from 'src/lib/admin-api';
 
 import { Image } from 'src/components/image';
 import { Iconify } from 'src/components/iconify';
@@ -48,6 +50,11 @@ type EditingMediaItem = HomeMediaItem & {
 
 type StoredMediaItem = HomeMediaItem & {
   type?: 'image' | 'video';
+};
+
+type HomeContentResponse = {
+  data?: { content?: unknown } | null;
+  message?: string;
 };
 
 const SECTION_KEY = 'story-media';
@@ -120,62 +127,65 @@ function normalizeStoredMediaItems(mediaItems: StoredMediaItem[]): HomeMediaItem
 
 export default function HomeContentAdminPage() {
   const { user, checkUserSession } = useAuthContext();
+  const queryClient = useQueryClient();
   const [story, setStory] = useState<HomeStoryContent>(DEFAULT_STORY_CONTENT);
   const [mediaItems, setMediaItems] = useState<HomeMediaItem[]>(DEFAULT_MEDIA_ITEMS);
   const [editingItem, setEditingItem] = useState<EditingMediaItem | null>(null);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
   const accessToken = user?.accessToken ?? user?.access_token ?? '';
 
+  const contentQuery = useQuery({
+    queryKey: ['admin-home-content', SECTION_KEY, accessToken],
+    enabled: !!accessToken,
+    queryFn: () => {
+      const params = new URLSearchParams({ sectionKey: SECTION_KEY });
+
+      return adminApiRequest<HomeContentResponse>(`/api/admin/home-content?${params.toString()}`, {
+        accessToken,
+      });
+    },
+  });
+
   useEffect(() => {
-    if (!accessToken) {
-      return undefined;
+    if (isValidStoredContent(contentQuery.data?.data?.content)) {
+      setStory(contentQuery.data.data.content.story);
+      setMediaItems(normalizeStoredMediaItems(contentQuery.data.data.content.mediaItems));
     }
+  }, [contentQuery.data]);
 
-    const controller = new AbortController();
+  useEffect(() => {
+    if (
+      contentQuery.error &&
+      contentQuery.error instanceof AdminApiError &&
+      contentQuery.error.status === 401
+    ) {
+      checkUserSession?.();
+    }
+  }, [checkUserSession, contentQuery.error]);
 
-    async function loadContent() {
-      setIsLoading(true);
-      setError('');
-
-      try {
-        const params = new URLSearchParams({ sectionKey: SECTION_KEY });
-        const response = await fetch(`/api/admin/home-content?${params.toString()}`, {
-          headers: { Authorization: `Bearer ${accessToken}` },
-          signal: controller.signal,
-        });
-        const data = (await response.json()) as {
-          data?: { content?: unknown } | null;
-          message?: string;
-        };
-
-        if (!response.ok) {
-          if (response.status === 401) {
-            await checkUserSession?.();
-          }
-
-          throw new Error(data.message ?? 'โหลดข้อมูลไม่สำเร็จ');
-        }
-
-        if (isValidStoredContent(data.data?.content)) {
-          setStory(data.data.content.story);
-          setMediaItems(normalizeStoredMediaItems(data.data.content.mediaItems));
-        }
-      } catch (caughtError) {
-        if (!(caughtError instanceof Error && caughtError.name === 'AbortError')) {
-          setError(caughtError instanceof Error ? caughtError.message : 'โหลดข้อมูลไม่สำเร็จ');
-        }
-      } finally {
-        setIsLoading(false);
+  const saveContentMutation = useMutation({
+    mutationFn: () =>
+      adminApiRequest<{ message?: string }>('/api/admin/home-content', {
+        method: 'PUT',
+        accessToken,
+        body: {
+          sectionKey: SECTION_KEY,
+          content: { story, mediaItems },
+        },
+      }),
+    onSuccess: async () => {
+      setMessage('บันทึกข้อมูลหน้า Home Content ลง database แล้ว');
+      await queryClient.invalidateQueries({ queryKey: ['admin-home-content', SECTION_KEY] });
+    },
+    onError: (caughtError) => {
+      if (caughtError instanceof AdminApiError && caughtError.status === 401) {
+        checkUserSession?.();
       }
-    }
 
-    loadContent();
-
-    return () => controller.abort();
-  }, [accessToken, checkUserSession]);
+      setError(caughtError instanceof Error ? caughtError.message : 'บันทึกไม่สำเร็จ');
+    },
+  });
 
   const stats = useMemo(
     () => ({
@@ -189,36 +199,7 @@ export default function HomeContentAdminPage() {
   const handleSaveDraft = async () => {
     setError('');
     setMessage('');
-    setIsSaving(true);
-
-    try {
-      const response = await fetch('/api/admin/home-content', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify({
-          sectionKey: SECTION_KEY,
-          content: { story, mediaItems },
-        }),
-      });
-      const data = (await response.json()) as { message?: string };
-
-      if (!response.ok) {
-        if (response.status === 401) {
-          await checkUserSession?.();
-        }
-
-        throw new Error(data.message ?? 'บันทึกไม่สำเร็จ');
-      }
-
-      setMessage('บันทึกข้อมูลหน้า Home Content ลง database แล้ว');
-    } catch (caughtError) {
-      setError(caughtError instanceof Error ? caughtError.message : 'บันทึกไม่สำเร็จ');
-    } finally {
-      setIsSaving(false);
-    }
+    await saveContentMutation.mutateAsync().catch(() => undefined);
   };
 
   const handleReset = () => {
@@ -295,20 +276,31 @@ export default function HomeContentAdminPage() {
             <Button color="inherit" variant="outlined" onClick={handleReset}>
               คืนค่าเริ่มต้น
             </Button>
-            <LoadingButton variant="contained" loading={isSaving} onClick={handleSaveDraft}>
+            <LoadingButton
+              variant="contained"
+              loading={saveContentMutation.isPending}
+              onClick={handleSaveDraft}
+            >
               บันทึก draft
             </LoadingButton>
           </Stack>
         </Stack>
 
-        {error && <Alert severity="error">{error}</Alert>}
+        {(error || contentQuery.error) && (
+          <Alert severity="error">
+            {error ||
+              (contentQuery.error instanceof Error
+                ? contentQuery.error.message
+                : 'โหลดข้อมูลไม่สำเร็จ')}
+          </Alert>
+        )}
         {message && <Alert severity="success">{message}</Alert>}
 
         <Alert severity="info">
           หน้านี้อ่านและบันทึกข้อมูลผ่าน database table home_content_sections
         </Alert>
 
-        {isLoading && <Alert severity="info">กำลังโหลดข้อมูลจาก database...</Alert>}
+        {contentQuery.isLoading && <Alert severity="info">กำลังโหลดข้อมูลจาก database...</Alert>}
 
         <Card sx={{ p: 2.5 }}>
           <Stack

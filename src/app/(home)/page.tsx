@@ -4,8 +4,12 @@ import { HomeView } from 'src/sections/home/view';
 
 // ----------------------------------------------------------------------
 
+const SITE_URL = 'https://thailandculturalhub.com';
+const OG_IMAGE_URL =
+  'https://res.cloudinary.com/dkdbilwtj/image/upload/v1782029454/og-images_vvdlcu.jpg';
+
 export const metadata: Metadata = {
-  metadataBase: new URL('https://thailandculturalhub.com'),
+  metadataBase: new URL(SITE_URL),
 
   title: {
     default: 'Thailand Cultural Hub | Discover Thai Culture & Heritage',
@@ -62,13 +66,13 @@ export const metadata: Metadata = {
     title: 'Thailand Cultural Hub',
     description:
       'Discover the rich cultural heritage, traditions, festivals, temples, landmarks, and local wisdom of Thailand.',
-    url: 'https://thailandculturalhub.com',
+    url: SITE_URL,
     siteName: 'Thailand Cultural Hub',
     locale: 'en_US',
     type: 'website',
     images: [
       {
-        url: '/images/og-image.jpg',
+        url: OG_IMAGE_URL,
         width: 1200,
         height: 630,
         alt: 'Thailand Cultural Hub',
@@ -81,11 +85,11 @@ export const metadata: Metadata = {
     title: 'Thailand Cultural Hub',
     description:
       'Explore Thai culture, traditions, festivals, temples, and heritage from all regions of Thailand.',
-    images: ['/images/og-image.jpg'],
+    images: [OG_IMAGE_URL],
   },
 
   alternates: {
-    canonical: 'https://thailandculturalhub.com',
+    canonical: SITE_URL,
   },
 
   category: 'Culture & Heritage',

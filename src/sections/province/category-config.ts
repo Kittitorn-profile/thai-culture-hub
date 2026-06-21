@@ -18,9 +18,12 @@ const DEFAULT_CATEGORY_COLOR = '#608D8C';
 
 const DEFAULT_CATEGORY_LABELS: Record<string, string> = {
   community_wisdom: 'ภูมิปัญญาชุมชน',
+  costume: 'ผ้าและเครื่องแต่งกาย',
   craftsmanship: 'งานช่างฝีมือ',
   cultural_attraction: 'แหล่งท่องเที่ยวทางวัฒนธรรม',
+  ethnic_group: 'กลุ่มชาติพันธุ์',
   folk_art: 'ศิลปะพื้นบ้าน',
+  heritage: 'โบราณสถานและมรดกทางวัฒนธรรม',
   learning_center: 'แหล่งเรียนรู้',
   local_food: 'อาหารพื้นบ้าน',
   local_tradition: 'ประเพณีท้องถิ่น',

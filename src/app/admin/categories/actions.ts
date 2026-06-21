@@ -148,6 +148,22 @@ function getSourceDisplayLabel(source: string) {
     return 'บัญชีข้อมูลวัฒนธรรม';
   }
 
+  if (source === 'religious_places') {
+    return 'ศาสนสถาน';
+  }
+
+  if (source === 'cpot_products') {
+    return 'ผลิตภัณฑ์วัฒนธรรมไทย';
+  }
+
+  if (source === 'thai_fabric_wisdom') {
+    return 'มรดกภูมิปัญญาผ้าไทย';
+  }
+
+  if (source === 'ethnic_groups') {
+    return 'กลุ่มชาติพันธุ์';
+  }
+
   if (source.startsWith('finearts')) {
     return 'กรมศิลป์';
   }

@@ -10,8 +10,8 @@ import { geoPath, geoMercator } from 'd3-geo';
 import Box from '@mui/material/Box';
 import { alpha, lighten, useTheme } from '@mui/material/styles';
 
-import { getCategoryColor } from '../category-config';
 import { mergeCulturalPlaces } from './province-detail-utils';
+import { getCategoryColor, getCategoryLabel } from '../category-config';
 import {
   rewindGeometry,
   useThailandDistrictCenters,
@@ -672,6 +672,9 @@ export function ProvinceShapeMap({
               .filter((marker) => marker.hasCallout && mapData.clusters.length === 0)
               .map((marker, index) => {
                 const markerColor = getCategoryColor(categoryConfig, marker.category);
+                const displayHighlight = marker.highlight
+                  ? getCategoryLabel(categoryConfig, marker.highlight)
+                  : '';
                 const calloutRadius = 29;
                 const calloutEdgeX =
                   marker.calloutX + (marker.side === 'left' ? calloutRadius : -calloutRadius);
@@ -804,7 +807,7 @@ export function ProvinceShapeMap({
                       fontWeight={800}
                       textAnchor="middle"
                     >
-                      {marker.highlight}
+                      {displayHighlight}
                     </text>
                   </g>
                 );

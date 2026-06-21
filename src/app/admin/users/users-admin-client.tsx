@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -21,6 +22,7 @@ import OutlinedInput from '@mui/material/OutlinedInput';
 import FormControlLabel from '@mui/material/FormControlLabel';
 
 import { DashboardContent } from 'src/layouts/dashboard';
+import { AdminApiError, adminApiRequest } from 'src/lib/admin-api';
 
 import { useAuthContext } from 'src/auth/hooks';
 import {
@@ -49,6 +51,11 @@ type CreateUserForm = {
   permissions: AdminPermission[];
 };
 
+type AdminUsersResponse = {
+  data?: AdminUser[];
+  message?: string;
+};
+
 const defaultForm: CreateUserForm = {
   email: '',
   password: '',
@@ -75,54 +82,34 @@ function getRolePermissions(role: string, permissions: AdminPermission[]) {
 
 export function AdminUsersClient() {
   const { user, checkUserSession } = useAuthContext();
+  const queryClient = useQueryClient();
   const accessToken = user?.accessToken ?? user?.access_token ?? '';
-  const [users, setUsers] = useState<AdminUser[]>([]);
   const [form, setForm] = useState<CreateUserForm>(defaultForm);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [savingUserId, setSavingUserId] = useState('');
   const [isCreateDrawerOpen, setIsCreateDrawerOpen] = useState(false);
 
-  const loadUsers = useCallback(async () => {
-    if (!accessToken) {
-      return;
-    }
+  const usersQuery = useQuery({
+    queryKey: ['admin-users', accessToken],
+    enabled: !!accessToken,
+    queryFn: () =>
+      adminApiRequest<AdminUsersResponse>('/api/admin/users', {
+        accessToken,
+      }),
+    select: (result) => result.data ?? [],
+  });
 
-    setIsLoading(true);
-    setError('');
-
-    try {
-      const response = await fetch('/api/admin/users', {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
-      const result = (await response.json().catch(() => ({}))) as {
-        data?: AdminUser[];
-        message?: string;
-      };
-
-      if (!response.ok) {
-        if (response.status === 401) {
-          await checkUserSession?.();
-        }
-
-        throw new Error(result.message || 'โหลดผู้ใช้ไม่สำเร็จ');
-      }
-
-      setUsers(result.data ?? []);
-    } catch (caughtError) {
-      setError(caughtError instanceof Error ? caughtError.message : 'โหลดผู้ใช้ไม่สำเร็จ');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [accessToken, checkUserSession]);
+  const users = usersQuery.data ?? [];
 
   useEffect(() => {
-    loadUsers();
-  }, [loadUsers]);
+    if (
+      usersQuery.error &&
+      usersQuery.error instanceof AdminApiError &&
+      usersQuery.error.status === 401
+    ) {
+      checkUserSession?.();
+    }
+  }, [checkUserSession, usersQuery.error]);
 
   const updateForm = (field: keyof CreateUserForm, value: string | AdminPermission[]) => {
     setForm((current) => ({
@@ -134,75 +121,61 @@ export function AdminUsersClient() {
     }));
   };
 
-  const createUser = async () => {
-    setIsSaving(true);
-    setError('');
-    setMessage('');
-
-    try {
-      const response = await fetch('/api/admin/users', {
+  const createUserMutation = useMutation({
+    mutationFn: () =>
+      adminApiRequest<{ message?: string }>('/api/admin/users', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify({
+        accessToken,
+        body: {
           ...form,
           permissions: getRolePermissions(form.role, form.permissions),
-        }),
-      });
-      const result = (await response.json().catch(() => ({}))) as { message?: string };
-
-      if (!response.ok) {
-        throw new Error(result.message || 'สร้างผู้ใช้ไม่สำเร็จ');
-      }
-
+        },
+      }),
+    onSuccess: async () => {
       setMessage('สร้างผู้ใช้ admin แล้ว');
       setForm(defaultForm);
       setIsCreateDrawerOpen(false);
-      await loadUsers();
-    } catch (caughtError) {
+      await queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+    },
+    onError: (caughtError) => {
       setError(caughtError instanceof Error ? caughtError.message : 'สร้างผู้ใช้ไม่สำเร็จ');
-    } finally {
-      setIsSaving(false);
-    }
-  };
+    },
+  });
 
-  const updateUserAccess = async (targetUser: AdminUser) => {
-    setSavingUserId(targetUser.id);
-    setError('');
-    setMessage('');
-
-    try {
-      const response = await fetch('/api/admin/users', {
+  const updateUserMutation = useMutation({
+    mutationFn: (targetUser: AdminUser) =>
+      adminApiRequest<{ message?: string }>('/api/admin/users', {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify({
+        accessToken,
+        body: {
           id: targetUser.id,
           role: targetUser.role,
           permissions: getRolePermissions(targetUser.role, targetUser.permissions),
-        }),
-      });
-      const result = (await response.json().catch(() => ({}))) as { message?: string };
-
-      if (!response.ok) {
-        throw new Error(result.message || 'บันทึกสิทธิ์ไม่สำเร็จ');
-      }
-
+        },
+      }),
+    onSuccess: async () => {
       setMessage('บันทึกสิทธิ์ผู้ใช้แล้ว');
-      await loadUsers();
-    } catch (caughtError) {
+      await queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+    },
+    onError: (caughtError) => {
       setError(caughtError instanceof Error ? caughtError.message : 'บันทึกสิทธิ์ไม่สำเร็จ');
-    } finally {
-      setSavingUserId('');
-    }
+    },
+  });
+
+  const createUser = async () => {
+    setError('');
+    setMessage('');
+    await createUserMutation.mutateAsync().catch(() => undefined);
+  };
+
+  const updateUserAccess = async (targetUser: AdminUser) => {
+    setError('');
+    setMessage('');
+    await updateUserMutation.mutateAsync(targetUser).catch(() => undefined);
   };
 
   const updateLocalUser = (targetUser: AdminUser, changes: Partial<AdminUser>) => {
-    setUsers((current) =>
+    queryClient.setQueryData<AdminUser[]>(['admin-users', accessToken], (current = []) =>
       current.map((item) =>
         item.id === targetUser.id
           ? {
@@ -237,9 +210,14 @@ export function AdminUsersClient() {
           </Button>
         </Stack>
 
-        {error && <Alert severity="error">{error}</Alert>}
+        {(error || usersQuery.error) && (
+          <Alert severity="error">
+            {error ||
+              (usersQuery.error instanceof Error ? usersQuery.error.message : 'โหลดผู้ใช้ไม่สำเร็จ')}
+          </Alert>
+        )}
         {message && <Alert severity="success">{message}</Alert>}
-        {isLoading && <Alert severity="info">กำลังโหลดผู้ใช้...</Alert>}
+        {usersQuery.isLoading && <Alert severity="info">กำลังโหลดผู้ใช้...</Alert>}
 
         <Stack spacing={2}>
           {users.map((adminUser) => (
@@ -261,7 +239,10 @@ export function AdminUsersClient() {
                   </Box>
                   <Button
                     variant="contained"
-                    disabled={savingUserId === adminUser.id}
+                    disabled={
+                      updateUserMutation.isPending &&
+                      updateUserMutation.variables?.id === adminUser.id
+                    }
                     onClick={() => updateUserAccess(adminUser)}
                   >
                     บันทึกสิทธิ์
@@ -418,7 +399,7 @@ export function AdminUsersClient() {
             <Button color="inherit" onClick={() => setIsCreateDrawerOpen(false)}>
               ยกเลิก
             </Button>
-            <LoadingButton variant="contained" loading={isSaving} onClick={createUser}>
+            <LoadingButton variant="contained" loading={createUserMutation.isPending} onClick={createUser}>
               สร้างผู้ใช้
             </LoadingButton>
           </Stack>

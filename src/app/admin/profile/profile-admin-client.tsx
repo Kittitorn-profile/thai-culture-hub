@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useMutation } from '@tanstack/react-query';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -12,6 +13,7 @@ import Typography from '@mui/material/Typography';
 import LoadingButton from '@mui/lab/LoadingButton';
 
 import { supabase } from 'src/lib/supabase';
+import { adminApiRequest } from 'src/lib/admin-api';
 import { DashboardContent } from 'src/layouts/dashboard';
 
 import { useAuthContext } from 'src/auth/hooks';
@@ -33,38 +35,21 @@ export function ProfileAdminClient() {
   const [photoUrl, setPhotoUrl] = useState(user?.photoURL ?? '');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
-  const [isSaving, setIsSaving] = useState(false);
   const accessToken = user?.accessToken ?? user?.access_token ?? '';
 
-  const saveProfile = async () => {
-    if (!firstName.trim() || !lastName.trim()) {
-      setError('กรุณากรอกชื่อและนามสกุล');
-      return;
-    }
-
-    setIsSaving(true);
-    setError('');
-    setMessage('');
-
-    try {
+  const saveProfileMutation = useMutation({
+    mutationFn: async () => {
       const formData = new FormData();
 
       formData.set('firstName', firstName.trim());
       formData.set('lastName', lastName.trim());
       formData.set('photoUrl', photoUrl.trim());
 
-      const response = await fetch('/api/admin/profile', {
+      await adminApiRequest<{ message?: string }>('/api/admin/profile', {
         method: 'PUT',
+        accessToken,
         body: formData,
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
       });
-      const result = (await response.json().catch(() => ({}))) as { message?: string };
-
-      if (!response.ok) {
-        throw new Error(result.message || 'บันทึกโปรไฟล์ไม่สำเร็จ');
-      }
 
       const displayName = `${firstName.trim()} ${lastName.trim()}`.trim();
 
@@ -76,14 +61,26 @@ export function ProfileAdminClient() {
           photo_url: photoUrl.trim() || null,
         },
       });
-
+    },
+    onSuccess: async () => {
       setMessage('บันทึกโปรไฟล์แล้ว');
       await checkUserSession?.();
-    } catch (caughtError) {
+    },
+    onError: (caughtError) => {
       setError(caughtError instanceof Error ? caughtError.message : 'บันทึกโปรไฟล์ไม่สำเร็จ');
-    } finally {
-      setIsSaving(false);
+    },
+  });
+
+  const saveProfile = async () => {
+    if (!firstName.trim() || !lastName.trim()) {
+      setError('กรุณากรอกชื่อและนามสกุล');
+      return;
     }
+
+    setError('');
+    setMessage('');
+
+    await saveProfileMutation.mutateAsync().catch(() => undefined);
   };
 
   return (
@@ -144,7 +141,7 @@ export function ProfileAdminClient() {
 
             <LoadingButton
               variant="contained"
-              loading={isSaving}
+              loading={saveProfileMutation.isPending}
               onClick={saveProfile}
               sx={{ alignSelf: 'flex-end' }}
             >

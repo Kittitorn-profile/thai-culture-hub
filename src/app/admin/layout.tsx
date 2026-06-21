@@ -41,6 +41,7 @@ const navData: AdminNavGroup[] = [
           { title: 'เรื่องเล่าและสื่อ', path: '/admin/home-content' },
           { title: 'หมวดวัฒนธรรม', path: '/admin/home-content/culture-categories' },
           { title: 'ภูมิปัญญาท้องถิ่น', path: '/admin/home-content/local-wisdom' },
+          { title: 'Popup Banner', path: '/admin/home-content/popup-banner' },
         ],
       },
       {
@@ -54,6 +55,10 @@ const navData: AdminNavGroup[] = [
         path: '/admin/cultural-places',
         icon: icon('ic-params'),
         permission: ADMIN_PERMISSION.culturalPlaces,
+        children: [
+          { title: 'รายการสถานที่', path: '/admin/cultural-places' },
+          { title: 'Sync ข้อมูล', path: '/admin/cultural-places/sync' },
+        ],
       },
       {
         title: 'Analytics',
