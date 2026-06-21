@@ -130,20 +130,17 @@ function getCategoryCounts(places: CulturalPlace[]) {
 }
 
 function getDominantCategoryFromCounts(counts: ProvinceCategoryCounts) {
-  return Object.entries(counts).reduce<string | null>(
-    (dominantCategory, [category, count]) => {
-      if (!category || !count) {
-        return dominantCategory;
-      }
-
-      if (!dominantCategory || count > (counts[dominantCategory] ?? 0)) {
-        return category;
-      }
-
+  return Object.entries(counts).reduce<string | null>((dominantCategory, [category, count]) => {
+    if (!category || !count) {
       return dominantCategory;
-    },
-    null
-  );
+    }
+
+    if (!dominantCategory || count > (counts[dominantCategory] ?? 0)) {
+      return category;
+    }
+
+    return dominantCategory;
+  }, null);
 }
 
 function getCategorySummary(
@@ -432,11 +429,7 @@ export default function ThailandMap() {
 
   useEffect(() => {
     if (isProvinceSummarySuccess) {
-      setCachedProvinceCategorySummaries(
-        provinceIds,
-        provinceCategorySummaries,
-        categoryConfigKey
-      );
+      setCachedProvinceCategorySummaries(provinceIds, provinceCategorySummaries, categoryConfigKey);
     }
   }, [categoryConfigKey, isProvinceSummarySuccess, provinceCategorySummaries, provinceIds]);
 
@@ -465,17 +458,17 @@ export default function ThailandMap() {
 
       setPopoverAnchor((currentAnchor) => {
         if (currentAnchor === anchor) {
-        setPopoverProvince(null);
-        return null;
-      }
+          setPopoverProvince(null);
+          return null;
+        }
 
-      trackAnalyticsEvent('province_map_click', getProvinceDisplayName(province), {
-        provinceId: getProvinceId(province),
-        provinceName: getProvinceDisplayName(province),
+        trackAnalyticsEvent('province_map_click', getProvinceDisplayName(province), {
+          provinceId: getProvinceId(province),
+          provinceName: getProvinceDisplayName(province),
+        });
+        setPopoverProvince(province);
+        return anchor;
       });
-      setPopoverProvince(province);
-      return anchor;
-    });
     },
     []
   );
@@ -605,7 +598,7 @@ export default function ThailandMap() {
           top: { xs: 18, md: '40%' },
           left: 0,
           zIndex: 3,
-          maxWidth: { xs: 190, sm: 360 },
+          maxWidth: { xs: 290, sm: 360 },
           position: 'absolute',
         }}
       >

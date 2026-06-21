@@ -313,7 +313,7 @@ export function CultureCategoryView({ allCategories = false }: Props) {
         bgcolor: PAGE_BG_MIDDLE,
         backgroundImage: PAGE_BACKGROUND,
         px: SECTION_PX,
-        py: { xs: 8, md: 10 },
+        py: { xs: 8, sm: 12, md: 10 },
         fontFamily: "'LINE Seed Sans TH', sans-serif",
         '&::before': {
           content: '""',

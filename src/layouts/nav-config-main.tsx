@@ -12,16 +12,16 @@ export const navData: NavMainProps['data'] = [
     path: '/',
     icon: <Iconify width={22} icon="solar:home-angle-bold-duotone" />,
   },
-  {
-    title: 'แผนที่',
-    path: '/#culture-map',
-    icon: <Iconify width={22} icon="solar:palette-bold-duotone" />,
-  },
-  {
-    title: 'เรื่องราว',
-    path: '/#stories',
-    icon: <Iconify width={22} icon="solar:notebook-bold-duotone" />,
-  },
+  // {
+  //   title: 'แผนที่',
+  //   path: '/#culture-map',
+  //   icon: <Iconify width={22} icon="solar:palette-bold-duotone" />,
+  // },
+  // {
+  //   title: 'เรื่องราว',
+  //   path: '/#stories',
+  //   icon: <Iconify width={22} icon="solar:notebook-bold-duotone" />,
+  // },
   {
     title: 'เกี่ยวกับเรา',
     path: paths.about,

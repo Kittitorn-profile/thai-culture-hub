@@ -60,7 +60,7 @@ export function CultureHeader({ pathname }: CultureHeaderProps) {
         gap: { xs: 2, md: 3 },
       }}
     >
-      <Logo sx={{ height: 'auto', width: 96 }} />
+      <Logo sx={{ height: 'auto', width: 96 }} isSingle />
 
       <Stack
         component="nav"

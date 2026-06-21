@@ -109,6 +109,18 @@ type SyncEndpointResult = {
   ok: boolean;
 };
 
+type SyncTask = {
+  endpoint: string;
+  label: string;
+  body: Record<string, unknown>;
+};
+
+type SyncDatasetOption = {
+  value: string;
+  label: string;
+  description: string;
+};
+
 const TABLE_HEAD = [
   { id: 'image', label: 'ภาพ', width: 96 },
   { id: 'name', label: 'ชื่อสถานที่' },
@@ -143,6 +155,49 @@ const FINE_ARTS_SYNC_SOURCE_BY_PLACE_SOURCE: Record<string, string> = {
   finearts_museum: 'museum',
 };
 
+const SYNC_DATASET_OPTIONS: SyncDatasetOption[] = [
+  {
+    value: 'tat_metadata',
+    label: 'ททท. metadata',
+    description: 'categories / sub-categories / places table',
+  },
+  {
+    value: 'tat_cultural_places',
+    label: 'ททท. -> Cultural Places',
+    description: 'ดึงสถานที่จาก ททท. เข้า cultural_places',
+  },
+  {
+    value: 'culture_catalog',
+    label: 'ข้อมูลวัฒนธรรม -> Cultural Places',
+    description: 'ดึงชุด culture catalog เข้า cultural_places',
+  },
+  {
+    value: 'finearts_monument',
+    label: 'กรมศิลป์ - โบราณสถาน',
+    description: 'ดึง monument เข้า cultural_places',
+  },
+  {
+    value: 'finearts_archeology',
+    label: 'กรมศิลป์ - แหล่งโบราณคดี',
+    description: 'ดึง archeology เข้า cultural_places',
+  },
+  {
+    value: 'finearts_buddha',
+    label: 'กรมศิลป์ - พระพุทธรูป',
+    description: 'ดึง buddha เข้า cultural_places',
+  },
+  {
+    value: 'finearts_museum',
+    label: 'กรมศิลป์ - พิพิธภัณฑ์',
+    description: 'ดึง museum เข้า cultural_places',
+  },
+  {
+    value: 'finearts_all',
+    label: 'กรมศิลป์ทั้งหมด',
+    description: 'ดึงทุกชุดของกรมศิลป์เข้า cultural_places',
+  },
+];
+
 function getSourceText(source?: CulturalPlace['source']) {
   if (source === 'tat') {
     return 'ททท.';
@@ -175,85 +230,86 @@ function getProvinceName(provinceCode?: string) {
   return provinces.find((province) => province.code === provinceCode)?.name ?? provinceCode;
 }
 
-function getSyncTasks(provinceCode: string, sourceFilter: string) {
-  if (sourceFilter === 'thailand_cultural_hub') {
-    return [];
+function withProvinceSyncPayload(provinceCode: string, payload: Record<string, unknown>) {
+  if (!provinceCode) {
+    return payload;
   }
 
-  if (sourceFilter === 'tat') {
+  return {
+    ...payload,
+    provinceCode,
+  };
+}
+
+function getSyncTasks(provinceCode: string, syncDataset: string): SyncTask[] {
+  if (syncDataset === 'tat_metadata') {
     return [
       {
         endpoint: '/api/tat/sync',
         label: 'ททท. metadata',
-        body: {
-          provinceCode,
+        body: withProvinceSyncPayload(provinceCode, {
           limit: SYNC_LIMIT,
           maxPages: TAT_SYNC_MAX_PAGES,
           syncCategories: true,
           syncSubCategories: true,
           syncPlaces: true,
-        },
-      },
-      {
-        endpoint: '/api/culture/sync',
-        label: 'ททท. -> Cultural Places',
-        body: { provinceCode, limit: CULTURAL_PLACES_SYNC_LIMIT, sources: ['tat'] },
+        }),
       },
     ];
   }
 
-  if (sourceFilter === 'culture_catalog') {
+  if (syncDataset === 'tat_cultural_places') {
+    return [
+      {
+        endpoint: '/api/culture/sync',
+        label: 'ททท. -> Cultural Places',
+        body: withProvinceSyncPayload(provinceCode, {
+          limit: CULTURAL_PLACES_SYNC_LIMIT,
+          sources: ['tat'],
+        }),
+      },
+    ];
+  }
+
+  if (syncDataset === 'culture_catalog') {
     return [
       {
         endpoint: '/api/culture/sync',
         label: 'ข้อมูลวัฒนธรรม',
-        body: { provinceCode, limit: CULTURAL_PLACES_SYNC_LIMIT, sources: ['culture_catalog'] },
+        body: withProvinceSyncPayload(provinceCode, {
+          limit: CULTURAL_PLACES_SYNC_LIMIT,
+          sources: ['culture_catalog'],
+        }),
       },
     ];
   }
 
-  if (sourceFilter in FINE_ARTS_SYNC_SOURCE_BY_PLACE_SOURCE) {
+  if (syncDataset === 'finearts_all') {
     return [
       {
         endpoint: '/api/finearts/sync',
-        label: 'กรมศิลป์',
-        body: {
-          provinceCode,
+        label: 'กรมศิลป์ทั้งหมด',
+        body: withProvinceSyncPayload(provinceCode, {
           limit: SYNC_LIMIT,
-          sources: [FINE_ARTS_SYNC_SOURCE_BY_PLACE_SOURCE[sourceFilter]],
-        },
+        }),
       },
     ];
   }
 
-  return [
-    {
-      endpoint: '/api/tat/sync',
-      label: 'ททท. metadata',
-      body: {
-        provinceCode,
-        limit: SYNC_LIMIT,
-        maxPages: TAT_SYNC_MAX_PAGES,
-        syncCategories: true,
-        syncSubCategories: true,
-        syncPlaces: true,
+  if (syncDataset in FINE_ARTS_SYNC_SOURCE_BY_PLACE_SOURCE) {
+    return [
+      {
+        endpoint: '/api/finearts/sync',
+        label: getSourceText(syncDataset as CulturalPlace['source']),
+        body: withProvinceSyncPayload(provinceCode, {
+          limit: SYNC_LIMIT,
+          sources: [FINE_ARTS_SYNC_SOURCE_BY_PLACE_SOURCE[syncDataset]],
+        }),
       },
-    },
-    {
-      endpoint: '/api/finearts/sync',
-      label: 'กรมศิลป์',
-      body: { provinceCode, limit: SYNC_LIMIT },
-    },
-    {
-      endpoint: '/api/culture/sync',
-      label: 'ททท. + ข้อมูลวัฒนธรรม -> Cultural Places',
-      body: {
-        provinceCode,
-        limit: CULTURAL_PLACES_SYNC_LIMIT,
-        sources: ['tat', 'culture_catalog'],
-      },
-    },
-  ];
+    ];
+  }
+
+  return [];
 }
 
 function getSyncTotal(data: Record<string, any>) {
@@ -326,6 +382,7 @@ export default function CulturalPlacesCmsPage() {
   const [query, setQuery] = useState('');
   const [appliedQuery, setAppliedQuery] = useState('');
   const [sourceFilter, setSourceFilter] = useState('');
+  const [syncDataset, setSyncDataset] = useState(SYNC_DATASET_OPTIONS[0].value);
   const [districtFilter, setDistrictFilter] = useState('');
   const [districts, setDistricts] = useState<string[]>([]);
   const [drawerDistricts, setDrawerDistricts] = useState<string[]>([]);
@@ -358,6 +415,10 @@ export default function CulturalPlacesCmsPage() {
   const sourceFilterOptions = useMemo<CategoryOption[]>(
     () => [{ value: '', label: 'ทุกแหล่งที่มา' }, ...SOURCE_OPTIONS],
     []
+  );
+  const selectedSyncDataset = useMemo(
+    () => SYNC_DATASET_OPTIONS.find((option) => option.value === syncDataset),
+    [syncDataset]
   );
 
   const handleUnauthorized = async () => {
@@ -515,10 +576,10 @@ export default function CulturalPlacesCmsPage() {
   };
 
   const syncExternalData = async () => {
-    const syncTasks = getSyncTasks(provinceCode, sourceFilter);
+    const syncTasks = getSyncTasks(provinceCode, syncDataset);
 
     if (!syncTasks.length) {
-      setError('แหล่งข้อมูลนี้เป็นข้อมูลภายใน ไม่ต้อง sync จาก API นอก');
+      setError('กรุณาเลือกชุดข้อมูลที่ต้องการ Sync');
       setMessage('');
       return;
     }
@@ -557,10 +618,11 @@ export default function CulturalPlacesCmsPage() {
       const failedResults = results.filter((result) => !result.ok);
       const successResults = results.filter((result) => result.ok);
       const totalSynced = successResults.reduce((total, result) => total + (result.total ?? 0), 0);
+      const datasetLabel = selectedSyncDataset?.label ?? 'API นอก';
 
       if (successResults.length) {
         setMessage(
-          `Sync API นอกสำเร็จ ${totalSynced} รายการ (${successResults
+          `Sync ${datasetLabel} สำเร็จ ${totalSynced} รายการ (${successResults
             .map((result) => `${result.label} ${result.total ?? 0}`)
             .join(', ')})`
         );
@@ -733,13 +795,32 @@ export default function CulturalPlacesCmsPage() {
               แก้พิกัด lat/lng โดยเก็บเป็น override ไม่ทับข้อมูลต้นทาง
             </Typography>
           </Box>
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
+          <Stack
+            direction={{ xs: 'column', sm: 'row' }}
+            spacing={1.5}
+            alignItems={{ xs: 'stretch', sm: 'flex-start' }}
+          >
+            <TextField
+              select
+              size="small"
+              label="ชุดข้อมูล Sync"
+              value={syncDataset}
+              onChange={(event) => setSyncDataset(event.target.value)}
+              helperText={selectedSyncDataset?.description}
+              sx={{ minWidth: { xs: 1, sm: 280 } }}
+            >
+              {SYNC_DATASET_OPTIONS.map((option) => (
+                <MenuItem key={option.value} value={option.value}>
+                  {option.label}
+                </MenuItem>
+              ))}
+            </TextField>
             <LoadingButton
               color="inherit"
               variant="outlined"
               loading={isSyncing}
               onClick={syncExternalData}
-              sx={{ alignSelf: { md: 'flex-start' } }}
+              sx={{ alignSelf: { md: 'flex-start' }, whiteSpace: 'nowrap' }}
             >
               Sync API นอก
             </LoadingButton>

@@ -25,7 +25,7 @@ export function Logo({
   disabled,
   className,
   href = '/',
-  isSingle = true,
+  isSingle = false,
   ...other
 }: LogoProps) {
   // const theme = useTheme();

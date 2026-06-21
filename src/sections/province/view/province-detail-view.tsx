@@ -386,8 +386,8 @@ export function ProvinceDetailView() {
         backgroundImage: PROVINCE_PAGE_BACKGROUND,
         color: 'text.primary',
         minHeight: '100vh',
-        py: { xs: 3, md: '7%' },
-        px: { xs: 2, md: '20%' },
+        py: { xs: 11, sm: 12, md: 10 },
+        px: { xs: 1.5, sm: 3, md: 5, lg: 8 },
         fontFamily: "'LINE Seed Sans TH', sans-serif",
         '&::before': {
           content: '""',
@@ -415,11 +415,11 @@ export function ProvinceDetailView() {
           mx: 'auto',
           width: 1,
           zIndex: 1,
-          maxWidth: '100%',
+          maxWidth: 1320,
           position: 'relative',
         }}
       >
-        <Box sx={{ mx: 'auto', maxWidth: 980, position: 'relative' }}>
+        <Box sx={{ mx: 'auto', maxWidth: 1040, position: 'relative' }}>
           <ProvinceDetailHeader
             provinceDisplayName={provinceDisplayName}
             cultureMetrics={cultureMetrics}
@@ -435,7 +435,7 @@ export function ProvinceDetailView() {
           />
         </Box>
 
-        <Box sx={{ mt: 4 }}>
+        <Box sx={{ mt: { xs: 3, md: 5 } }}>
           {!!provinceId && (
             <ProvinceShapeMap
               places={culturalPlaces}

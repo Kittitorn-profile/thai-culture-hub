@@ -16,7 +16,7 @@ import { getSupabaseAdmin } from 'src/server/supabase-admin';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://thailandculturalhub.com';
 const OG_FALLBACK_IMAGE =
-  'https://res.cloudinary.com/dkdbilwtj/image/upload/v1781850507/og-images_ciyncn.jpg';
+  'https://res.cloudinary.com/dkdbilwtj/image/upload/v1782029454/og-images_vvdlcu.jpg';
 
 type PageProps = {
   params: Promise<{
@@ -93,7 +93,7 @@ function getProvinceName(provinceCode: string) {
 }
 
 function getCategoryLabel(category?: string | null) {
-  return category ? CATEGORY_LABELS[category] ?? category : 'วัฒนธรรมไทย';
+  return category ? (CATEGORY_LABELS[category] ?? category) : 'วัฒนธรรมไทย';
 }
 
 function getShareUrl(placeId: string) {
@@ -170,7 +170,9 @@ async function getSharePlace(placeId: string) {
       .maybeSingle(),
     supabase.client
       .from(process.env.CULTURAL_PLACE_OVERRIDES_TABLE ?? 'cultural_place_overrides')
-      .select('place_id, province_code, name, source, category, district, lat, lng, map_url, image_url, note')
+      .select(
+        'place_id, province_code, name, source, category, district, lat, lng, map_url, image_url, note'
+      )
       .eq('place_id', placeId)
       .maybeSingle(),
   ]);
@@ -252,8 +254,7 @@ export default async function Page({ params }: PageProps) {
 
   const imageUrl = getAbsoluteUrl(place.imageUrls?.[0]) ?? OG_FALLBACK_IMAGE;
   const mapUrl =
-    place.mapUrl ||
-    `https://www.google.com/maps/search/?api=1&query=${place.lat},${place.lng}`;
+    place.mapUrl || `https://www.google.com/maps/search/?api=1&query=${place.lat},${place.lng}`;
 
   return (
     <Box

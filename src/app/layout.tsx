@@ -32,7 +32,7 @@ import { AuthProvider as SupabaseAuthProvider } from 'src/auth/context/supabase'
 const AuthProvider = (CONFIG.auth.method === 'supabase' && SupabaseAuthProvider) || JwtAuthProvider;
 
 const OG_IMAGE_URL =
-  'https://res.cloudinary.com/dkdbilwtj/image/upload/v1781850507/og-images_ciyncn.jpg';
+  'https://res.cloudinary.com/dkdbilwtj/image/upload/v1782029454/og-images_vvdlcu.jpg';
 
 export const viewport: Viewport = {
   width: 'device-width',

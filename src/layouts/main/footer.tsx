@@ -175,7 +175,7 @@ export function HomeFooter({ sx, ...other }: FooterProps) {
       {...other}
     >
       <Container>
-        <Logo sx={{ width: 200, height: '100%' }} />
+        <Logo isSingle sx={{ width: 200, height: '100%' }} />
         <Box sx={{ mt: 1, typography: 'caption', color: theme.palette.common.white }}>
           © Thailand Cultural Hub. All rights reserved.
         </Box>

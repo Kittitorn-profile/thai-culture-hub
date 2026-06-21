@@ -496,8 +496,9 @@ export function ProvinceShapeMap({
       sx={{
         mx: 'auto',
         width: 1,
-        maxWidth: 1,
-        aspectRatio: { xs: '1 / 1.15', sm: '1.18 / 1' },
+        maxWidth: { xs: 520, sm: 720, md: 920, lg: 1080 },
+        minHeight: { xs: 360, sm: 480, md: 600, lg: 680 },
+        aspectRatio: { xs: '1 / 1.04', sm: '1.18 / 1' },
         display: 'grid',
         placeItems: 'center',
       }}

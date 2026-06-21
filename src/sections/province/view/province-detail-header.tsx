@@ -37,9 +37,10 @@ export function ProvinceCultureMetrics({ cultureMetrics }: ProvinceCultureMetric
   return (
     <Stack
       direction="row"
-      justifyContent="space-between"
+      flexWrap="wrap"
+      justifyContent="center"
       sx={{
-        gap: 1,
+        gap: { xs: 1, sm: 1.25 },
         zIndex: 2,
         mt: { xs: 2, lg: 0 },
       }}
@@ -50,7 +51,8 @@ export function ProvinceCultureMetrics({ cultureMetrics }: ProvinceCultureMetric
           sx={{
             px: 2,
             py: 1.5,
-            minWidth: 0,
+            minWidth: { xs: 'calc(50% - 8px)', sm: 150, md: 170 },
+            flex: { xs: '1 1 calc(50% - 8px)', sm: '0 1 170px' },
             borderRadius: 2,
             textAlign: 'left',
             color: theme.palette.common.white,
@@ -163,11 +165,11 @@ export function ProvinceDetailHeader({
         </Box>
 
         <Stack
-          direction="row"
+          direction={{ xs: 'column', sm: 'row' }}
           spacing={1}
           justifyContent="center"
           alignItems="center"
-          sx={{ flex: 1 }}
+          sx={{ flex: 1, width: 1 }}
         >
           <Box
             sx={{
@@ -230,7 +232,7 @@ export function ProvinceDetailHeader({
             onClick={onFilterOpen}
             sx={{
               height: 48,
-              width: 180,
+              width: { xs: 1, sm: 180 },
               borderRadius: 99,
               fontWeight: 900,
               color: '#11343a',
