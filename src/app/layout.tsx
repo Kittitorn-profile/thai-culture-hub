@@ -3,6 +3,7 @@ import 'src/global.css';
 import type { Metadata, Viewport } from 'next';
 
 import { Suspense } from 'react';
+import { Analytics } from '@vercel/analytics/next';
 
 import InitColorSchemeScript from '@mui/material/InitColorSchemeScript';
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v15-appRouter';
@@ -115,6 +116,7 @@ export default async function RootLayout({ children }: RootLayoutProps) {
                         <Suspense fallback={null}>
                           <VisitorAnalytics />
                         </Suspense>
+                        <Analytics />
                         <CookieConsent />
                         <FeedbackWidget />
                         {children}
