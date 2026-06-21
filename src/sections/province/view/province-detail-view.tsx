@@ -506,7 +506,7 @@ export function ProvinceDetailView() {
       </Box>
 
       <Box textAlign="center" mt={10}>
-        <Logo sx={{ width: 200, height: '100%' }} />
+        <Logo sx={{ width: 200, height: '100%' }} isSingle />
         <Box sx={{ mt: 1, typography: 'caption', color: theme.palette.common.white }}>
           © Thailand Cultural Hub. All rights reserved.
         </Box>

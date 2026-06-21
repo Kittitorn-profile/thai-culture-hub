@@ -26,7 +26,7 @@ import { useAuthContext } from 'src/auth/hooks';
 
 type PopupBannerRow = {
   id: string;
-  title: string;
+  title?: string | null;
   description?: string | null;
   image_url?: string | null;
   button_label?: string | null;
@@ -92,7 +92,7 @@ function toDateTimeLocal(value?: string | null) {
 function toForm(row: PopupBannerRow): PopupBannerForm {
   return {
     id: row.id,
-    title: row.title,
+    title: row.title ?? '',
     description: row.description ?? '',
     imageUrl: row.image_url ?? '',
     buttonLabel: row.button_label ?? '',
@@ -223,8 +223,13 @@ export default function PopupBannerAdminPage() {
       return;
     }
 
-    if (!editingBanner.title.trim()) {
-      setError('กรุณากรอกหัวข้อ popup');
+    if (!editingBanner.imageUrl.trim()) {
+      setError('กรุณากรอก Image URL');
+      return;
+    }
+
+    if (!editingBanner.startsAt) {
+      setError('กรุณากรอกวันที่เริ่มแสดง');
       return;
     }
 
@@ -263,7 +268,6 @@ export default function PopupBannerAdminPage() {
                 : 'โหลดข้อมูลไม่สำเร็จ')}
           </Alert>
         )}
-        {message && <Alert severity="success">{message}</Alert>}
         {bannersQuery.isLoading && <Alert severity="info">กำลังโหลด popup banner...</Alert>}
 
         <Alert severity="info">หน้านี้อ่านและบันทึกข้อมูลผ่าน database table popup_banners</Alert>
@@ -307,7 +311,7 @@ export default function PopupBannerAdminPage() {
               <Card key={banner.id} sx={{ overflow: 'hidden' }}>
                 {banner.image_url ? (
                   <Image
-                    alt={banner.title}
+                    alt={banner.title || 'Popup banner'}
                     src={banner.image_url}
                     ratio="16/9"
                     sx={{ bgcolor: 'background.neutral' }}
@@ -330,7 +334,7 @@ export default function PopupBannerAdminPage() {
                   <Stack direction="row" spacing={1.5} justifyContent="space-between">
                     <Box sx={{ minWidth: 0 }}>
                       <Typography noWrap variant="h6" sx={{ fontWeight: 900 }}>
-                        {banner.title}
+                        {banner.title || 'Popup banner'}
                       </Typography>
                       <Typography sx={{ color: status.color, fontSize: 13, fontWeight: 800 }}>
                         {status.label}
@@ -351,7 +355,11 @@ export default function PopupBannerAdminPage() {
                   </Typography>
 
                   <Stack direction="row" spacing={1}>
-                    <Button fullWidth variant="outlined" onClick={() => setEditingBanner(toForm(banner))}>
+                    <Button
+                      fullWidth
+                      variant="outlined"
+                      onClick={() => setEditingBanner(toForm(banner))}
+                    >
                       แก้ไข
                     </Button>
                     <Button
@@ -397,7 +405,7 @@ export default function PopupBannerAdminPage() {
             <Stack spacing={2.25} sx={{ p: 3, flex: 1, overflow: 'auto' }}>
               <TextField
                 fullWidth
-                label="หัวข้อ"
+                label="หัวข้อ (ไม่บังคับ)"
                 value={editingBanner.title}
                 onChange={(event) =>
                   setEditingBanner({ ...editingBanner, title: event.target.value })
@@ -418,6 +426,7 @@ export default function PopupBannerAdminPage() {
               <TextField
                 fullWidth
                 label="Image URL"
+                required
                 value={editingBanner.imageUrl}
                 onChange={(event) =>
                   setEditingBanner({ ...editingBanner, imageUrl: event.target.value })
@@ -467,6 +476,7 @@ export default function PopupBannerAdminPage() {
                   fullWidth
                   type="datetime-local"
                   label="เริ่มแสดง"
+                  required
                   InputLabelProps={{ shrink: true }}
                   value={editingBanner.startsAt}
                   onChange={(event) =>

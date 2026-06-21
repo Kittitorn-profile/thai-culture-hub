@@ -108,7 +108,7 @@ export function ProvincePlaceCard({
     >
       <Box
         sx={{
-          minHeight: 190,
+          minHeight: 200,
           borderRadius: 1.5,
           overflow: 'hidden',
           position: 'relative',
@@ -254,7 +254,8 @@ export function ProvincePlaceCard({
             color: theme.palette.grey[900],
             fontSize: 18,
             fontWeight: 900,
-            lineHeight: 1.1,
+            lineHeight: 1.4,
+            minHeight: 46,
           }}
         >
           {place.name}

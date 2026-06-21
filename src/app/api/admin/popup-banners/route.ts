@@ -39,10 +39,15 @@ function optionalDate(value: unknown) {
 }
 
 function toRow(body: PopupBannerPayload) {
-  const title = body.title?.trim();
+  const imageUrl = optionalText(body.imageUrl);
+  const startsAt = optionalDate(body.startsAt);
 
-  if (!title) {
-    return { ok: false as const, message: 'title is required' };
+  if (!imageUrl) {
+    return { ok: false as const, message: 'imageUrl is required' };
+  }
+
+  if (!startsAt) {
+    return { ok: false as const, message: 'startsAt is required' };
   }
 
   const sortOrder = Number(body.sortOrder);
@@ -50,16 +55,16 @@ function toRow(body: PopupBannerPayload) {
   return {
     ok: true as const,
     row: {
-      title,
+      title: optionalText(body.title) ?? 'Popup banner',
       description: optionalText(body.description),
-      image_url: optionalText(body.imageUrl),
+      image_url: imageUrl,
       button_label: optionalText(body.buttonLabel),
       button_url: optionalText(body.buttonUrl),
       sort_order: Number.isFinite(sortOrder) ? sortOrder : 0,
       is_active: body.isActive ?? true,
       dismissible: body.dismissible ?? true,
       show_once: body.showOnce ?? true,
-      starts_at: optionalDate(body.startsAt),
+      starts_at: startsAt,
       ends_at: optionalDate(body.endsAt),
       updated_at: new Date().toISOString(),
     },

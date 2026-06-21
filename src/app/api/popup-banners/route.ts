@@ -6,7 +6,7 @@ const TABLE_NAME = process.env.POPUP_BANNERS_TABLE ?? 'popup_banners';
 
 type PopupBannerRow = {
   id: string;
-  title: string;
+  title?: string | null;
   description?: string | null;
   image_url?: string | null;
   button_label?: string | null;
@@ -32,7 +32,8 @@ export async function GET() {
       'id, title, description, image_url, button_label, button_url, dismissible, show_once, updated_at'
     )
     .eq('is_active', true)
-    .or(`starts_at.is.null,starts_at.lte.${now}`)
+    .not('image_url', 'is', null)
+    .lte('starts_at', now)
     .or(`ends_at.is.null,ends_at.gte.${now}`)
     .order('sort_order', { ascending: true })
     .order('created_at', { ascending: false })
