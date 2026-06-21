@@ -3,6 +3,9 @@
 import type { AnalyticsSummary } from './types';
 
 import { getSupabaseAdmin } from 'src/server/supabase-admin';
+import { verifyAdminAccessToken } from 'src/server/admin-api-auth';
+
+import { ADMIN_PERMISSION } from 'src/auth/admin-permissions';
 
 const TABLE_NAME = 'visitor_page_views';
 const EVENT_TABLE_NAME = 'visitor_events';
@@ -34,20 +37,10 @@ type ActionSuccess<T> = {
 };
 
 async function verifyAdminAccess(accessToken: string): Promise<ActionError | null> {
-  if (!accessToken) {
-    return { ok: false, status: 401, message: 'Unauthorized' };
-  }
+  const result = await verifyAdminAccessToken(accessToken, ADMIN_PERMISSION.analytics);
 
-  const supabase = getSupabaseAdmin();
-
-  if (!supabase.ok) {
-    return { ok: false, status: 500, message: supabase.error };
-  }
-
-  const { error } = await supabase.client.auth.getUser(accessToken);
-
-  if (error) {
-    return { ok: false, status: 401, message: 'Unauthorized' };
+  if (!result.ok) {
+    return { ok: false, status: result.status, message: result.message };
   }
 
   return null;

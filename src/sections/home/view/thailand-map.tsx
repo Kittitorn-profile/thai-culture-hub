@@ -1,7 +1,8 @@
 'use client';
 
 import type { Feature, Geometry, GeoJsonProperties, FeatureCollection } from 'geojson';
-import type { CulturalPlace, CulturalCategory } from 'src/sections/province/province-data';
+import type { CulturalPlace } from 'src/sections/province/province-data';
+import type { CategoryConfigMap } from 'src/sections/province/category-config';
 
 import { useQuery } from '@tanstack/react-query';
 import { geoPath, geoCentroid, geoMercator } from 'd3-geo';
@@ -21,11 +22,9 @@ import provinces from 'src/data/thailand-culture/provinces';
 import { Iconify } from 'src/components/iconify';
 import { trackAnalyticsEvent } from 'src/components/analytics';
 
+import { getProvinceCulturalPlaces } from 'src/sections/province/province-data';
+import { getCategoryColor, useCategoryConfig } from 'src/sections/province/category-config';
 import { rewindGeoJson, useThailandProvincesGeoJson } from 'src/sections/province/thailand-geojson';
-import {
-  CULTURE_CATEGORY_COLORS,
-  getProvinceCulturalPlaces,
-} from 'src/sections/province/province-data';
 
 // ----------------------------------------------------------------------
 
@@ -56,12 +55,12 @@ type ProvinceSearchOption = ThailandProvinceMapItem & {
   searchText: string;
 };
 
-type ProvinceCategoryCounts = Partial<Record<CulturalCategory, number>>;
+type ProvinceCategoryCounts = Record<string, number>;
 
 type ProvinceCategorySummary = {
   color: string;
   counts: ProvinceCategoryCounts;
-  dominantCategory: CulturalCategory;
+  dominantCategory: string;
 };
 
 type ProvinceCategorySummaryMap = Record<string, ProvinceCategorySummary>;
@@ -107,10 +106,6 @@ function getProvinceFromGeography(geo: ThailandProvinceFeature): ThailandProvinc
   };
 }
 
-function isCulturalCategory(value: string): value is CulturalCategory {
-  return Object.prototype.hasOwnProperty.call(CULTURE_CATEGORY_COLORS, value);
-}
-
 function getCategoryCounts(places: CulturalPlace[]) {
   const uniquePlaces = new Map<string, CulturalPlace>();
 
@@ -123,7 +118,7 @@ function getCategoryCounts(places: CulturalPlace[]) {
   });
 
   return Array.from(uniquePlaces.values()).reduce<ProvinceCategoryCounts>((counts, place) => {
-    if (!isCulturalCategory(place.category)) {
+    if (!place.category) {
       return counts;
     }
 
@@ -135,9 +130,9 @@ function getCategoryCounts(places: CulturalPlace[]) {
 }
 
 function getDominantCategoryFromCounts(counts: ProvinceCategoryCounts) {
-  return Object.entries(counts).reduce<CulturalCategory | null>(
+  return Object.entries(counts).reduce<string | null>(
     (dominantCategory, [category, count]) => {
-      if (!isCulturalCategory(category) || !count) {
+      if (!category || !count) {
         return dominantCategory;
       }
 
@@ -151,7 +146,10 @@ function getDominantCategoryFromCounts(counts: ProvinceCategoryCounts) {
   );
 }
 
-function getCategorySummary(places: CulturalPlace[]): ProvinceCategorySummary | null {
+function getCategorySummary(
+  places: CulturalPlace[],
+  categoryConfig: CategoryConfigMap
+): ProvinceCategorySummary | null {
   if (!places.length) {
     return null;
   }
@@ -166,13 +164,14 @@ function getCategorySummary(places: CulturalPlace[]): ProvinceCategorySummary | 
   return {
     counts,
     dominantCategory,
-    color: CULTURE_CATEGORY_COLORS[dominantCategory],
+    color: getCategoryColor(categoryConfig, dominantCategory),
   };
 }
 
 function getProvinceColor(
   province: ThailandProvince,
-  provinceCategorySummaries: ProvinceCategorySummaryMap
+  provinceCategorySummaries: ProvinceCategorySummaryMap,
+  categoryConfig: CategoryConfigMap
 ) {
   const provinceId = province.iso ?? province.id ?? '';
   const remoteCategorySummary = provinceId ? provinceCategorySummaries[provinceId] : undefined;
@@ -187,13 +186,14 @@ function getProvinceColor(
     return DEFAULT_PROVINCE_FILL;
   }
 
-  return getCategorySummary(places)?.color ?? DEFAULT_PROVINCE_FILL;
+  return getCategorySummary(places, categoryConfig)?.color ?? DEFAULT_PROVINCE_FILL;
 }
 
 function getMapItems(
   mapGeoJson: FeatureCollection,
   geoPathGenerator: ReturnType<typeof geoPath>,
-  provinceCategorySummaries: ProvinceCategorySummaryMap
+  provinceCategorySummaries: ProvinceCategorySummaryMap,
+  categoryConfig: CategoryConfigMap
 ) {
   const mapFeatures = Array.isArray(mapGeoJson.features) ? mapGeoJson.features : [];
   const items = mapFeatures.reduce<ThailandProvinceMapItem[]>((provinceItems, geo, index) => {
@@ -210,7 +210,7 @@ function getMapItems(
       pathData,
       province,
       provinceCenter: { lat, lng },
-      provinceFill: getProvinceColor(province, provinceCategorySummaries),
+      provinceFill: getProvinceColor(province, provinceCategorySummaries, categoryConfig),
       id: String(geo.id ?? geo.properties?.shapeID ?? province.iso ?? index),
     });
 
@@ -236,11 +236,18 @@ function getProvinceIdsCacheKey(provinceIds: string[]) {
   return provinceIds.join('|');
 }
 
+function getCategoryConfigCacheKey(categoryConfig: CategoryConfigMap) {
+  return Object.values(categoryConfig)
+    .map((category) => `${category.key}:${category.color}`)
+    .sort()
+    .join('|');
+}
+
 function isProvinceCategorySummaryMap(value: unknown): value is ProvinceCategorySummaryMap {
   return Boolean(value && typeof value === 'object' && !Array.isArray(value));
 }
 
-function getCachedProvinceCategorySummaries(provinceIds: string[]) {
+function getCachedProvinceCategorySummaries(provinceIds: string[], categoryConfigKey: string) {
   if (typeof window === 'undefined' || !provinceIds.length) {
     return undefined;
   }
@@ -254,11 +261,13 @@ function getCachedProvinceCategorySummaries(provinceIds: string[]) {
   try {
     const parsedValue = JSON.parse(cachedValue) as {
       provinceIdsKey?: string;
+      categoryConfigKey?: string;
       summaries?: unknown;
     };
 
     if (
       parsedValue.provinceIdsKey !== getProvinceIdsCacheKey(provinceIds) ||
+      parsedValue.categoryConfigKey !== categoryConfigKey ||
       !isProvinceCategorySummaryMap(parsedValue.summaries)
     ) {
       return undefined;
@@ -272,7 +281,8 @@ function getCachedProvinceCategorySummaries(provinceIds: string[]) {
 
 function setCachedProvinceCategorySummaries(
   provinceIds: string[],
-  summaries: ProvinceCategorySummaryMap
+  summaries: ProvinceCategorySummaryMap,
+  categoryConfigKey: string
 ) {
   if (typeof window === 'undefined' || !provinceIds.length) {
     return;
@@ -283,6 +293,7 @@ function setCachedProvinceCategorySummaries(
     JSON.stringify({
       summaries,
       provinceIdsKey: getProvinceIdsCacheKey(provinceIds),
+      categoryConfigKey,
     })
   );
 }
@@ -307,11 +318,15 @@ async function fetchProvinceApiPlaces(provinceId: string, signal: AbortSignal) {
   return Array.isArray(json?.data) ? (json.data as CulturalPlace[]) : [];
 }
 
-async function fetchProvinceCategorySummaries(provinceIds: string[], signal: AbortSignal) {
+async function fetchProvinceCategorySummaries(
+  provinceIds: string[],
+  signal: AbortSignal,
+  categoryConfig: CategoryConfigMap
+) {
   const entries = await Promise.all(
     provinceIds.map(async (provinceId) => {
       const places = await fetchProvinceApiPlaces(provinceId, signal);
-      const summary = getCategorySummary(places);
+      const summary = getCategorySummary(places, categoryConfig);
 
       return summary ? [provinceId, summary] : null;
     })
@@ -325,6 +340,7 @@ async function fetchProvinceCategorySummaries(provinceIds: string[], signal: Abo
 export default function ThailandMap() {
   const theme = useTheme();
   const router = useRouter();
+  const categoryConfig = useCategoryConfig();
   const { data: mapGeoJson = EMPTY_GEOJSON, isLoading: isMapGeoJsonLoading } =
     useThailandProvincesGeoJson({
       select: rewindGeoJson,
@@ -338,9 +354,18 @@ export default function ThailandMap() {
   );
   const geoPathGenerator = useMemo(() => geoPath(projection), [projection]);
   const provinceIds = useMemo(() => getMapProvinceIds(mapGeoJson), [mapGeoJson]);
+  const categoryConfigKey = useMemo(
+    () => getCategoryConfigCacheKey(categoryConfig),
+    [categoryConfig]
+  );
   const provinceSummaryQueryKey = useMemo(
-    () => ['thailand', 'province-category-summaries', getProvinceIdsCacheKey(provinceIds)],
-    [provinceIds]
+    () => [
+      'thailand',
+      'province-category-summaries',
+      getProvinceIdsCacheKey(provinceIds),
+      categoryConfigKey,
+    ],
+    [categoryConfigKey, provinceIds]
   );
   const {
     data: provinceCategorySummaries = {},
@@ -349,15 +374,15 @@ export default function ThailandMap() {
   } = useQuery({
     enabled: provinceIds.length > 0,
     queryKey: provinceSummaryQueryKey,
-    queryFn: ({ signal }) => fetchProvinceCategorySummaries(provinceIds, signal),
-    initialData: () => getCachedProvinceCategorySummaries(provinceIds),
+    queryFn: ({ signal }) => fetchProvinceCategorySummaries(provinceIds, signal, categoryConfig),
+    initialData: () => getCachedProvinceCategorySummaries(provinceIds, categoryConfigKey),
     staleTime: Infinity,
     gcTime: Infinity,
   });
 
   const mapItems = useMemo(
-    () => getMapItems(mapGeoJson, geoPathGenerator, provinceCategorySummaries),
-    [geoPathGenerator, mapGeoJson, provinceCategorySummaries]
+    () => getMapItems(mapGeoJson, geoPathGenerator, provinceCategorySummaries, categoryConfig),
+    [categoryConfig, geoPathGenerator, mapGeoJson, provinceCategorySummaries]
   );
   const normalizedSearchQuery = useMemo(() => normalizeSearchText(searchQuery), [searchQuery]);
   const provinceSearchOptions = useMemo<ProvinceSearchOption[]>(
@@ -407,9 +432,13 @@ export default function ThailandMap() {
 
   useEffect(() => {
     if (isProvinceSummarySuccess) {
-      setCachedProvinceCategorySummaries(provinceIds, provinceCategorySummaries);
+      setCachedProvinceCategorySummaries(
+        provinceIds,
+        provinceCategorySummaries,
+        categoryConfigKey
+      );
     }
-  }, [isProvinceSummarySuccess, provinceCategorySummaries, provinceIds]);
+  }, [categoryConfigKey, isProvinceSummarySuccess, provinceCategorySummaries, provinceIds]);
 
   useEffect(() => {
     const query = searchQuery.trim();

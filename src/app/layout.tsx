@@ -15,8 +15,10 @@ import { themeConfig, ThemeProvider, primary as primaryColor } from 'src/theme';
 
 import { Snackbar } from 'src/components/snackbar';
 import { LocatorJS } from 'src/components/locator-js';
+import { FeedbackWidget } from 'src/components/feedback';
 import { ProgressBar } from 'src/components/progress-bar';
 import { VisitorAnalytics } from 'src/components/analytics';
+import { CookieConsent } from 'src/components/cookie-consent';
 import { QueryProvider } from 'src/components/query-provider';
 import { MotionLazy } from 'src/components/animate/motion-lazy';
 import { detectSettings } from 'src/components/settings/server';
@@ -113,6 +115,8 @@ export default async function RootLayout({ children }: RootLayoutProps) {
                         <Suspense fallback={null}>
                           <VisitorAnalytics />
                         </Suspense>
+                        <CookieConsent />
+                        <FeedbackWidget />
                         {children}
                       </MotionLazy>
                     </QueryProvider>

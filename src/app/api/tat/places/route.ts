@@ -8,6 +8,9 @@ import provinces from 'src/data/thailand-culture/provinces';
 // ----------------------------------------------------------------------
 
 const TAT_API_BASE_URL = 'https://tatdataapi.io/api/v2';
+const DEFAULT_PAGE_SIZE = 50;
+const MAX_PAGE_SIZE = 100;
+const DEFAULT_MAX_PAGES = 500;
 
 type TatProvince = {
   id?: number;
@@ -37,6 +40,8 @@ type TatPlace = {
   googleMapUrl?: string | null;
   tags?: string[];
 };
+
+type TatFetchResult = Awaited<ReturnType<typeof tatFetch>>;
 
 function getTatApiKey() {
   return process.env.TAT_DATA_API_KEY ?? process.env.NEXT_PRIVATE_TAT_DATA_API_KEY;
@@ -179,7 +184,17 @@ export const revalidate = 3600;
 export async function GET(request: NextRequest) {
   const provinceCode = request.nextUrl.searchParams.get('provinceCode');
   const limitParam = request.nextUrl.searchParams.get('limit');
+  const pageSizeParam = request.nextUrl.searchParams.get('pageSize');
+  const maxPagesParam = request.nextUrl.searchParams.get('maxPages');
   const limit = limitParam == null ? null : Number(limitParam);
+  const pageSize = Math.min(
+    Math.max(Number(pageSizeParam ?? DEFAULT_PAGE_SIZE) || DEFAULT_PAGE_SIZE, 1),
+    MAX_PAGE_SIZE
+  );
+  const maxPages = Math.min(
+    Math.max(Number(maxPagesParam ?? DEFAULT_MAX_PAGES) || DEFAULT_MAX_PAGES, 1),
+    DEFAULT_MAX_PAGES
+  );
   const province = provinces.find((item) => item.code === provinceCode);
 
   if (!provinceCode || !province) {
@@ -211,14 +226,12 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const pageSize = 50;
   const requestedLimit = limit != null && Number.isFinite(limit) ? Math.max(limit, 1) : null;
   const tatPlaces: TatPlace[] = [];
-  let placesResponse:
-    | Awaited<ReturnType<typeof tatFetch>>
-    | null = null;
+  const pages: Array<{ page: number; status: number; total: number }> = [];
+  let placesResponse: TatFetchResult | null = null;
 
-  for (let page = 1; ; page += 1) {
+  for (let page = 1; page <= maxPages; page += 1) {
     placesResponse = await tatFetch('/places', {
       page,
       limit: requestedLimit == null ? pageSize : Math.min(requestedLimit - tatPlaces.length, pageSize),
@@ -229,12 +242,14 @@ export async function GET(request: NextRequest) {
     });
 
     if (!placesResponse.ok) {
+      pages.push({ page, status: placesResponse.status, total: 0 });
       break;
     }
 
     const pagePlaces = Array.isArray(placesResponse.json?.data) ? placesResponse.json.data : [];
 
     tatPlaces.push(...pagePlaces);
+    pages.push({ page, status: placesResponse.status, total: pagePlaces.length });
 
     if (
       pagePlaces.length < pageSize ||
@@ -258,5 +273,8 @@ export async function GET(request: NextRequest) {
   return NextResponse.json({
     data,
     source: 'tatdataapi',
+    total: data.length,
+    fetched: tatPlaces.length,
+    pages,
   });
 }

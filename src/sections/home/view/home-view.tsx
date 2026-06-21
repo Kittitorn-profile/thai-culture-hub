@@ -12,6 +12,9 @@ import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import DialogContent from '@mui/material/DialogContent';
 
+import { paths } from 'src/routes/paths';
+import { RouterLink } from 'src/routes/components';
+
 import { fNumber } from 'src/utils/format-number';
 
 import { HomeFooter } from 'src/layouts/main/footer';
@@ -86,6 +89,7 @@ const highlights = [
 ];
 
 type CultureCategoryCard = {
+  categoryKey: string;
   title: string;
   description: string;
   icon: IconifyName;
@@ -179,6 +183,7 @@ const DEFAULT_CULTURE_CATEGORIES_CONTENT: CultureCategoriesContent = {
 
 const ROYAL_IMAGE_ITEMS: CultureCategoryCard[] = [
   {
+    categoryKey: 'tourist_attraction',
     title: 'สถานที่ท่องเที่ยว',
     description: 'แหล่งท่องเที่ยว วัด เมืองเก่า และจุดหมายสำคัญทางวัฒนธรรม',
     icon: 'custom:location-fill',
@@ -186,6 +191,7 @@ const ROYAL_IMAGE_ITEMS: CultureCategoryCard[] = [
     color: '#608D8C',
   },
   {
+    categoryKey: 'local_food',
     title: 'อาหารพื้นบ้าน',
     description: 'รสชาติท้องถิ่น วัตถุดิบตามฤดูกาล และครัวชุมชนไทย',
     icon: 'solar:tea-cup-bold',
@@ -193,6 +199,7 @@ const ROYAL_IMAGE_ITEMS: CultureCategoryCard[] = [
     color: '#D19F46',
   },
   {
+    categoryKey: 'performing_art',
     title: 'ศิลปะการแสดง',
     description: 'นาฏศิลป์ ดนตรีไทย การแสดงพื้นบ้านที่งดงามและทรงคุณค่า',
     icon: 'solar:palette-bold',
@@ -200,6 +207,7 @@ const ROYAL_IMAGE_ITEMS: CultureCategoryCard[] = [
     color: '#CE7B48',
   },
   {
+    categoryKey: 'local_tradition',
     title: 'ประเพณีท้องถิ่น',
     description: 'เทศกาล งานบุญ และขนบธรรมเนียมที่สืบทอดในแต่ละพื้นที่',
     icon: 'solar:confetti-minimalistic-outline',
@@ -207,6 +215,7 @@ const ROYAL_IMAGE_ITEMS: CultureCategoryCard[] = [
     color: '#947488',
   },
   {
+    categoryKey: 'community_wisdom',
     title: 'ภูมิปัญญาชุมชน',
     description: 'ความรู้ท้องถิ่น วิธีคิด และทักษะที่เกิดจากชีวิตในชุมชน',
     icon: 'solar:notebook-bold-duotone',
@@ -214,6 +223,7 @@ const ROYAL_IMAGE_ITEMS: CultureCategoryCard[] = [
     color: '#7E9578',
   },
   {
+    categoryKey: 'craftsmanship',
     title: 'งานช่างฝีมือ',
     description: 'งานจักสาน ผ้าทอ เครื่องปั้น และฝีมือช่างพื้นถิ่น',
     icon: 'solar:settings-bold',
@@ -221,6 +231,7 @@ const ROYAL_IMAGE_ITEMS: CultureCategoryCard[] = [
     color: '#5B7B91',
   },
   {
+    categoryKey: 'folk_art',
     title: 'ศิลปะพื้นบ้าน',
     description: 'ลวดลาย สีสัน เครื่องแต่งกาย และงานศิลป์จากชุมชน',
     icon: 'solar:gallery-wide-bold',
@@ -228,6 +239,7 @@ const ROYAL_IMAGE_ITEMS: CultureCategoryCard[] = [
     color: '#AB8395',
   },
   {
+    categoryKey: 'ritual',
     title: 'พิธีกรรม',
     description: 'ความเชื่อ พิธีบูชา และเรื่องเล่าศักดิ์สิทธิ์ของท้องถิ่น',
     icon: 'solar:shield-check-bold',
@@ -289,6 +301,24 @@ const DEFAULT_HOME_ANALYTICS: HomeAnalyticsSummary = {
   topDistricts: [],
 };
 
+const CATEGORY_KEY_BY_TITLE: Record<string, string> = {
+  สถานที่ท่องเที่ยว: 'tourist_attraction',
+  อาหารพื้นบ้าน: 'local_food',
+  ศิลปะการแสดง: 'performing_art',
+  ประเพณีท้องถิ่น: 'local_tradition',
+  ภูมิปัญญาชุมชน: 'community_wisdom',
+  งานช่างฝีมือ: 'craftsmanship',
+  ศิลปะพื้นบ้าน: 'folk_art',
+  พิธีกรรม: 'ritual',
+  วัด: 'temple',
+  พิพิธภัณฑ์: 'museum',
+  แหล่งเรียนรู้: 'learning_center',
+};
+
+function getCultureCategoryKey(title: string) {
+  return CATEGORY_KEY_BY_TITLE[title] ?? 'cultural_attraction';
+}
+
 function PlayButton({ small = false }: { small?: boolean }) {
   return (
     <Box
@@ -318,7 +348,6 @@ function PlayButton({ small = false }: { small?: boolean }) {
 }
 
 export function HomeView() {
-  const [selectedImage, setSelectedImage] = useState<CultureCategoryCard | null>(null);
   const [selectedVideo, setSelectedVideo] = useState<HomeVideoItem | null>(null);
   const [videoPreviewKey, setVideoPreviewKey] = useState(0);
   const [storyContent, setStoryContent] = useState<StoryContent>(DEFAULT_STORY_CONTENT);
@@ -398,6 +427,7 @@ export function HomeView() {
           const nextCultureCategoryCards = cultureCategoriesDraft.items
             .filter((item) => item.isActive !== false && item.title && item.imageUrl)
             .map((item) => ({
+              categoryKey: getCultureCategoryKey(item.title),
               title: item.title,
               description: item.description,
               icon: item.icon,
@@ -743,11 +773,11 @@ export function HomeView() {
                   Live usage insights
                 </Typography>
                 <Typography
-                  component="h2"
+                  variant="h3"
                   sx={{
                     mt: 1,
                     color: HOME_TEXT,
-                    fontSize: { xs: 34, md: 52 },
+                    fontSize: { xs: 32, md: 48 },
                     fontWeight: 900,
                     lineHeight: 1.1,
                   }}
@@ -829,13 +859,12 @@ export function HomeView() {
               },
             }}
           >
-            {cultureCategoryCards.map((image) => (
+            {cultureCategoryCards.map((image, index) => (
               <Box
-                key={`${image.title}-${image.src}`}
-                component="button"
-                type="button"
+                key={`${image?.title}-${index}`}
+                component={RouterLink}
+                href={paths.cultureCategory.details(image.categoryKey)}
                 aria-label={`ดูรายละเอียด ${image.title}`}
-                onClick={() => setSelectedImage(image)}
                 sx={{
                   px: 2.2,
                   py: 2.4,
@@ -843,6 +872,7 @@ export function HomeView() {
                   width: 1,
                   minHeight: 180,
                   display: 'flex',
+                  textDecoration: 'none',
                   cursor: 'pointer',
                   overflow: 'hidden',
                   textAlign: 'left',
@@ -921,7 +951,7 @@ export function HomeView() {
                   <Typography
                     sx={{
                       color: 'inherit',
-                      fontSize: { xs: 19, md: 20 },
+                      fontSize: { xs: 16, md: 16 },
                       fontWeight: 900,
                       lineHeight: 1.2,
                       textShadow: '0 2px 10px rgba(37,30,20,0.18)',
@@ -1293,58 +1323,6 @@ export function HomeView() {
       </Box>
 
       <HomeFooter />
-
-      <Dialog
-        fullWidth
-        open={!!selectedImage}
-        onClose={() => setSelectedImage(null)}
-        slotProps={{
-          paper: {
-            sx: {
-              overflow: 'hidden',
-              bgcolor: HOME_DEEP,
-              borderRadius: 1.5,
-              border: '1px solid rgba(234,215,161,0.24)',
-            },
-          },
-        }}
-      >
-        <Box
-          sx={{
-            px: 2,
-            py: 1.25,
-            gap: 1.5,
-            display: 'flex',
-            alignItems: 'center',
-            color: HOME_TEXT,
-            justifyContent: 'space-between',
-          }}
-        >
-          <Typography sx={{ fontSize: 16, fontWeight: 800 }}>{selectedImage?.title}</Typography>
-
-          <IconButton onClick={() => setSelectedImage(null)} sx={{ color: 'inherit' }}>
-            <Iconify icon="mingcute:close-line" />
-          </IconButton>
-        </Box>
-
-        <DialogContent sx={{ py: 3, bgcolor: HOME_DEEP, width: 'auto' }}>
-          {selectedImage && (
-            <Box
-              component="img"
-              alt={selectedImage.title}
-              src={selectedImage.src}
-              sx={{
-                width: 1,
-                height: 'auto',
-                display: 'block',
-                objectFit: 'contain',
-                maxHeight: { xs: '78vh', md: '82vh' },
-                bgcolor: HOME_DEEP,
-              }}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
 
       <Dialog
         fullWidth

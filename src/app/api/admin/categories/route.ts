@@ -5,13 +5,9 @@ import { NextResponse } from 'next/server';
 import { getSupabaseAdmin } from 'src/server/supabase-admin';
 import { verifyAdminRequest } from 'src/server/admin-api-auth';
 
-import {
-  CULTURE_CATEGORY_COLORS,
-  CULTURE_CATEGORY_LABELS,
-} from 'src/sections/province/province-data';
+import { ADMIN_PERMISSION } from 'src/auth/admin-permissions';
 
 const TABLE_NAME = 'place_sub_categories';
-const SYSTEM_SOURCE = 'system';
 
 type CulturalCategoryRow = {
   category_key: string;
@@ -85,15 +81,7 @@ function toCategoryRow(row: PlaceSubCategoryRow): CulturalCategoryRow {
 }
 
 function getSystemCategoryRows(): CulturalCategoryRow[] {
-  return Object.entries(CULTURE_CATEGORY_LABELS).map(([categoryKey, label], index) => ({
-    category_key: categoryKey,
-    label,
-    color: CULTURE_CATEGORY_COLORS[categoryKey as keyof typeof CULTURE_CATEGORY_COLORS],
-    sort_order: index,
-    is_active: true,
-    source: SYSTEM_SOURCE,
-    source_label: 'Thailand Cultural Hub',
-  }));
+  return [];
 }
 
 function parseCategoryId(value: unknown) {
@@ -105,7 +93,7 @@ function parseCategoryId(value: unknown) {
 export const runtime = 'nodejs';
 
 export async function GET(request: NextRequest) {
-  if (!(await verifyAdminRequest(request))) {
+  if (!(await verifyAdminRequest(request, ADMIN_PERMISSION.categories))) {
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
   }
 
@@ -134,7 +122,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
-  if (!(await verifyAdminRequest(request))) {
+  if (!(await verifyAdminRequest(request, ADMIN_PERMISSION.categories))) {
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
   }
 
@@ -210,7 +198,7 @@ export async function PUT(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
-  if (!(await verifyAdminRequest(request))) {
+  if (!(await verifyAdminRequest(request, ADMIN_PERMISSION.categories))) {
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
   }
 

@@ -16,6 +16,7 @@ import { useAuthContext } from 'src/auth/hooks';
 
 export function NavUpgrade({ sx, ...other }: BoxProps) {
   const { user } = useAuthContext();
+  const displayName = user?.displayName ?? user?.name ?? '';
 
   return (
     <Box
@@ -24,8 +25,8 @@ export function NavUpgrade({ sx, ...other }: BoxProps) {
     >
       <Box sx={{ display: 'flex', alignItems: 'center', flexDirection: 'column' }}>
         <Box sx={{ position: 'relative' }}>
-          <Avatar src={user?.photoURL} alt={user?.displayName} sx={{ width: 48, height: 48 }}>
-            {user?.displayName?.charAt(0).toUpperCase()}
+          <Avatar src={user?.photoURL} alt={displayName} sx={{ width: 48, height: 48 }}>
+            {displayName.charAt(0).toUpperCase()}
           </Avatar>
         </Box>
 
@@ -35,7 +36,7 @@ export function NavUpgrade({ sx, ...other }: BoxProps) {
             noWrap
             sx={{ mb: 1, color: 'var(--layout-nav-text-primary-color)' }}
           >
-            {user?.name}
+            {displayName}
           </Typography>
 
           <Typography

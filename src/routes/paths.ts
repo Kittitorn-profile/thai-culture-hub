@@ -22,9 +22,14 @@ export const paths = {
   payment: '/payment',
   about: '/about-us',
   contact: '/contact-us',
+  privacyPolicy: '/privacy-policy',
+  termsAndConditions: '/terms-and-conditions',
   province: {
     details: (id: string, name?: string) =>
       `/province/${id}${name ? `?name=${encodeURIComponent(name)}` : ''}`,
+  },
+  cultureCategory: {
+    details: (categoryKey: string) => `/culture-category/${categoryKey}`,
   },
   faqs: '/faqs',
   page403: '/error/403',

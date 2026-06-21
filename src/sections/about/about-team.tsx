@@ -8,31 +8,13 @@ import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
-import { CONFIG } from 'src/global-config';
 import { HomeFooter } from 'src/layouts/main/footer';
 
+import { Image } from 'src/components/image';
 import { Iconify } from 'src/components/iconify';
 import { varFade, MotionViewport } from 'src/components/animate';
 
 // ----------------------------------------------------------------------
-
-const SOCIALS = [
-  { label: 'Facebook', icon: 'socials:facebook', href: '#' },
-  { label: 'Twitter', icon: 'socials:twitter', href: '#' },
-  { label: 'Linkedin', icon: 'socials:linkedin', href: '#' },
-] as const;
-
-const FEATURED_MEMBER = {
-  name: 'Thai Culture Hub',
-  role: 'Culture Data Platform',
-  image: `${CONFIG.assetsDir}/assets/images/mock/portrait/portrait-1.webp`,
-};
-
-const EXPERIENCE = [
-  'รวบรวมข้อมูลจากแหล่งภาครัฐและชุดข้อมูลสาธารณะที่เกี่ยวข้องกับวัฒนธรรมไทย',
-  'ปรับชื่อพื้นที่ หมวดหมู่ และพิกัดให้ค้นหาและแสดงผลบนแผนที่ได้สอดคล้องกัน',
-  'ออกแบบประสบการณ์สำรวจข้อมูลรายจังหวัดให้ใช้งานง่ายทั้งบนเดสก์ท็อปและมือถือ',
-];
 
 const VISION_MISSION = [
   {
@@ -66,6 +48,42 @@ const HIGHLIGHTS = [
     title: 'พร้อมต่อยอด',
     icon: 'solar:shield-check-bold',
     description: 'โครงสร้างข้อมูลรองรับการเพิ่มจังหวัด แหล่งข้อมูล และมุมมองใหม่ในอนาคต',
+  },
+] as const;
+
+const SOURCE_DATASETS = [
+  {
+    name: 'บัญชีข้อมูลด้านวัฒนธรรม',
+    owner: 'กระทรวงวัฒนธรรม / Government Data Catalog',
+    logo: 'GDC',
+    icon: 'solar:file-text-bold',
+    href: 'https://culture.gdcatalog.go.th/dataset/culture_heritage',
+    description: 'ข้อมูลมรดกภูมิปัญญาทางวัฒนธรรมและรายละเอียดประกอบที่ใช้จัดหมวดหมู่เชิงวัฒนธรรม',
+  },
+  {
+    name: 'TAT Data API',
+    owner: 'การท่องเที่ยวแห่งประเทศไทย',
+    logo: 'TAT',
+    icon: 'solar:flag-bold',
+    href: 'https://tatdataapi.io/',
+    description: 'ข้อมูลสถานที่ท่องเที่ยว ภาพประกอบ รายละเอียด และพิกัดที่นำมาเชื่อมกับจังหวัด',
+  },
+  {
+    name: 'Fine Arts Open Data API',
+    owner: 'กรมศิลปากร',
+    logo: 'FAD',
+    icon: 'solar:notebook-bold-duotone',
+    href: 'https://api.finearts.go.th/',
+    description:
+      'ข้อมูลโบราณสถาน แหล่งโบราณคดี พิพิธภัณฑ์ และรายการศิลปวัตถุสำหรับหมวดประวัติศาสตร์',
+  },
+  {
+    name: 'Thailand Boundary & Province Data',
+    owner: 'apisit/thailand.json',
+    logo: 'MAP',
+    icon: 'solar:add-folder-bold',
+    href: 'https://www.geoboundaries.org/',
+    description: 'ชุดข้อมูลขอบเขตจังหวัด อำเภอ ชื่อพื้นที่ และตำแหน่งศูนย์กลางสำหรับแสดงผลแผนที่',
   },
 ] as const;
 
@@ -230,139 +248,20 @@ export function AboutTeam({ sx, ...other }: BoxProps) {
             </Grid>
           </Box>
 
-          {/* <Box
+          <Box
             sx={{
               mx: 'auto',
               maxWidth: 1040,
               mt: { xs: 5, md: 7 },
-              p: { xs: 2.5, md: 5 },
-              overflow: 'hidden',
-              borderRadius: 1,
-              bgcolor: 'rgba(248,246,238,0.9)',
-              border: '1px solid rgba(255,255,255,0.44)',
-              boxShadow: '0 24px 70px rgba(31,42,41,0.24)',
+              textAlign: 'center',
             }}
           >
-            <Grid container spacing={{ xs: 4, md: 6 }} sx={{ alignItems: 'center' }}>
-              <Grid size={{ xs: 12, md: 5 }}>
-                <m.div variants={varFade('inLeft')}>
-                  <Box
-                    sx={{
-                      p: 1.5,
-                      minHeight: { xs: 430, md: 520 },
-                      position: 'relative',
-                      bgcolor: 'rgba(42,55,54,0.1)',
-                      borderRadius: 1,
-                      overflow: 'hidden',
-                      border: '1px solid rgba(42,55,54,0.16)',
-                    }}
-                  >
-                    <RoleLabel>{FEATURED_MEMBER.role}</RoleLabel>
+            <m.div variants={varFade('inUp')}>
+              <SectionPill>Credits & Data Sources</SectionPill>
+            </m.div>
 
-                    <Image
-                      alt={FEATURED_MEMBER.name}
-                      src={FEATURED_MEMBER.image}
-                      ratio="4/5"
-                      sx={{
-                        height: 1,
-                        width: 1,
-                        '& img': { objectFit: 'contain', objectPosition: 'center bottom' },
-                      }}
-                    />
-                  </Box>
-                </m.div>
-              </Grid>
-
-              <Grid size={{ xs: 12, md: 7 }}>
-                <Stack component={m.div} variants={varFade('inRight')} spacing={{ xs: 3, md: 4 }}>
-                  <Box>
-                    <Typography
-                      sx={{
-                        color: ABOUT_DEEP,
-                        fontSize: { xs: 28, md: 42 },
-                        fontWeight: 950,
-                        lineHeight: 1.05,
-                      }}
-                    >
-                      {FEATURED_MEMBER.name}
-                    </Typography>
-
-                    <Typography sx={{ mt: 2, color: 'rgba(42,55,54,0.76)', lineHeight: 1.8 }}>
-                      Thai Culture Hub ตั้งใจทำให้ข้อมูลวัฒนธรรมที่กระจายอยู่หลายระบบ
-                      กลับมาเชื่อมกับพื้นที่ หมวดหมู่ และแหล่งอ้างอิงอย่างเป็นระเบียบ
-                      เพื่อให้คนทั่วไป นักเรียน นักวิจัย และคนทำงานท้องถิ่นเริ่มสำรวจต่อได้ง่าย
-                    </Typography>
-                  </Box>
-
-                  <Stack direction="row" spacing={1}>
-                    {SOCIALS.map((social) => (
-                      <IconButton
-                        key={social.label}
-                        href={social.href}
-                        aria-label={social.label}
-                        sx={{
-                          width: 40,
-                          height: 40,
-                          color: ABOUT_DEEP,
-                          bgcolor: 'rgba(255,255,255,0.78)',
-                          borderRadius: 999,
-                          boxShadow: '0 12px 24px rgba(46,42,36,0.08)',
-                          '&:hover': { bgcolor: '#fff' },
-                        }}
-                      >
-                        <Iconify icon={social.icon} width={18} />
-                      </IconButton>
-                    ))}
-                  </Stack>
-
-                  <Divider sx={{ borderColor: 'rgba(42,55,54,0.16)' }} />
-
-                  <Box>
-                    <Typography
-                      sx={{
-                        mb: 2,
-                        color: ABOUT_DEEP,
-                        fontSize: { xs: 22, md: 28 },
-                        fontWeight: 900,
-                      }}
-                    >
-                      วิธีจัดการข้อมูลของเรา
-                    </Typography>
-
-                    <Stack spacing={1.5}>
-                      {EXPERIENCE.map((item) => (
-                        <Stack
-                          key={item}
-                          direction="row"
-                          spacing={1.5}
-                          sx={{ alignItems: 'center' }}
-                        >
-                          <Box
-                            sx={{
-                              width: 28,
-                              height: 28,
-                              flexShrink: 0,
-                              display: 'grid',
-                              borderRadius: '50%',
-                              placeItems: 'center',
-                              color: ABOUT_DEEP,
-                              bgcolor: ABOUT_GOLD,
-                            }}
-                          >
-                            <Iconify icon="eva:checkmark-fill" width={18} />
-                          </Box>
-
-                          <Typography sx={{ color: 'rgba(42,55,54,0.76)', fontSize: 14 }}>
-                            {item}
-                          </Typography>
-                        </Stack>
-                      ))}
-                    </Stack>
-                  </Box>
-                </Stack>
-              </Grid>
-            </Grid>
-          </Box> */}
+            <AttributionSection />
+          </Box>
         </Box>
       </Box>
 
@@ -401,8 +300,8 @@ function SectionPill({ children }: SectionPillProps) {
 
 // ----------------------------------------------------------------------
 
-type RoleLabelProps = {
-  children: React.ReactNode;
+type SourceDatasetCardProps = {
+  dataset: (typeof SOURCE_DATASETS)[number];
 };
 
 type HighlightCardProps = {
@@ -519,25 +418,128 @@ function VisionMissionCard({ item }: VisionMissionCardProps) {
 
 // ----------------------------------------------------------------------
 
-function RoleLabel({ children }: RoleLabelProps) {
+function AttributionSection() {
   return (
     <Box
+      component={m.div}
+      variants={varFade('inUp')}
       sx={{
-        top: 20,
-        left: 20,
-        zIndex: 1,
-        px: 1.4,
-        py: 0.7,
-        borderRadius: 999,
-        position: 'absolute',
-        bgcolor: ABOUT_GOLD,
-        boxShadow: '0 12px 24px rgba(80,63,13,0.18)',
+        mt: { xs: 3, md: 4 },
+        p: { xs: 2.5, md: 4 },
+        overflow: 'hidden',
         color: ABOUT_DEEP,
-        fontSize: 12,
-        fontWeight: 800,
+        textAlign: 'start',
+        borderRadius: 1,
+        position: 'relative',
+        bgcolor: 'rgba(42,55,54,0.28)',
+        border: '1px solid rgba(255,255,255,0.24)',
+        backdropFilter: 'blur(6px)',
       }}
     >
-      {children}
+      <Grid container spacing={{ xs: 3, md: 4 }} sx={{ alignItems: 'stretch' }}>
+        <Grid size={{ xs: 12, md: 4 }}>
+          <Stack
+            spacing={2}
+            sx={{
+              p: 3,
+              height: 1,
+              borderRadius: 1,
+              justifyContent: 'space-between',
+              bgcolor: 'rgba(42,55,54,0.28)',
+              border: '1px solid rgba(255,255,255,0.24)',
+            }}
+          >
+            <Box sx={{ textAlign: 'center', color: '#fff' }}>
+              <Image
+                alt="Single logo"
+                sx={{
+                  width: { xs: 96, md: 200 },
+                  mb: { xs: 0.5, md: 0 },
+                }}
+                src="/logo/logo-single.png"
+              />
+
+              <Typography sx={{ mt: 2.5, fontSize: { xs: 25, md: 30 }, fontWeight: 950 }}>
+                Thai Culture Hub
+              </Typography>
+
+              <Typography sx={{ mt: 1, lineHeight: 1.8 }}>
+                ขอบคุณทุกแหล่งข้อมูลที่เปิดให้เข้าถึงและนำมาต่อยอด
+                เรานำข้อมูลมาจัดระเบียบเพื่อการสำรวจและการเรียนรู้ โดยยังคงอ้างอิงที่มาของข้อมูล
+              </Typography>
+            </Box>
+          </Stack>
+        </Grid>
+
+        <Grid size={{ xs: 12, md: 8 }}>
+          <Grid container spacing={2}>
+            {SOURCE_DATASETS.map((dataset) => (
+              <Grid key={dataset.name} size={{ xs: 12, sm: 6 }}>
+                <SourceDatasetCard dataset={dataset} />
+              </Grid>
+            ))}
+          </Grid>
+        </Grid>
+      </Grid>
     </Box>
+  );
+}
+
+// ----------------------------------------------------------------------
+
+function SourceDatasetCard({ dataset }: SourceDatasetCardProps) {
+  return (
+    <Card
+      sx={{
+        p: 2.5,
+        height: 1,
+        gap: 2,
+        display: 'flex',
+        boxShadow: 'none',
+        borderRadius: 1,
+        textDecoration: 'none',
+        color: '#fff',
+        bgcolor: 'rgba(42,55,54,0.28)',
+        border: '1px solid rgba(255,255,255,0.24)',
+        transition: 'transform 180ms ease, box-shadow 180ms ease, background-color 180ms ease',
+        '&:hover': {
+          transform: 'translateY(-3px)',
+          bgcolor: 'rgba(42,55,54,0.28)',
+          border: '1px solid rgba(255,255,255,0.24)',
+        },
+      }}
+    >
+      <Box
+        sx={{
+          width: 54,
+          height: 54,
+          flexShrink: 0,
+          display: 'grid',
+          borderRadius: 1.5,
+          placeItems: 'center',
+          color: ABOUT_DEEP,
+          bgcolor: ABOUT_GOLD,
+          fontSize: 13,
+          fontWeight: 950,
+          boxShadow: '0 12px 24px rgba(80,63,13,0.16)',
+        }}
+      >
+        {dataset.logo}
+      </Box>
+
+      <Box sx={{ minWidth: 0 }}>
+        <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+          <Typography sx={{ fontSize: 16, fontWeight: 950, lineHeight: 1.25 }}>
+            {dataset.name}
+          </Typography>
+        </Stack>
+
+        <Typography sx={{ mt: 0.7, fontSize: 12, fontWeight: 800 }}>{dataset.owner}</Typography>
+
+        <Typography sx={{ mt: 1.2, fontSize: 13, lineHeight: 1.7 }}>
+          {dataset.description}
+        </Typography>
+      </Box>
+    </Card>
   );
 }

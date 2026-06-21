@@ -19,13 +19,9 @@ import { DashboardContent } from 'src/layouts/dashboard';
 
 import { Iconify } from 'src/components/iconify';
 
-import {
-  type CulturalCategory,
-  CULTURE_CATEGORY_COLORS,
-  CULTURE_CATEGORY_LABELS,
-} from 'src/sections/province/province-data';
-
 import { useAuthContext } from 'src/auth/hooks';
+
+import { getCategoriesAction } from '../../categories/actions';
 
 // ----------------------------------------------------------------------
 
@@ -46,6 +42,18 @@ type CultureCategoryItem = {
 
 type EditingCategoryItem = CultureCategoryItem & {
   isNew?: boolean;
+};
+
+type SyncedCategory = {
+  category_key: string;
+  label: string;
+  description?: string | null;
+  color?: string | null;
+  icon?: string | null;
+  image_url?: string | null;
+  source_label?: string | null;
+  count?: number | null;
+  is_active?: boolean | null;
 };
 
 const SECTION_KEY = 'culture-categories';
@@ -131,7 +139,7 @@ const DEFAULT_CATEGORY_ITEMS: CultureCategoryItem[] = [
   },
 ];
 
-const CATEGORY_ICON_MAP: Partial<Record<CulturalCategory, IconifyName>> = {
+const CATEGORY_ICON_MAP: Partial<Record<string, IconifyName>> = {
   tourist_attraction: 'custom:location-fill',
   cultural_attraction: 'custom:location-fill',
   local_food: 'solar:tea-cup-bold',
@@ -151,7 +159,7 @@ const CATEGORY_ICON_MAP: Partial<Record<CulturalCategory, IconifyName>> = {
   moral_community: 'solar:notebook-bold-duotone',
 };
 
-const CATEGORY_IMAGE_MAP: Partial<Record<CulturalCategory, string>> = {
+const CATEGORY_IMAGE_MAP: Partial<Record<string, string>> = {
   tourist_attraction: '/assets/background/akhahas-sri-1.jpg',
   cultural_attraction: '/assets/background/akhahas-sri-1.jpg',
   local_food: '/assets/background/akhahas-sri-2.jpg',
@@ -181,25 +189,38 @@ function createId() {
   return `culture-category-${Date.now()}`;
 }
 
-function getCategoryId(category: CulturalCategory) {
-  return `culture-category-${category}`;
+function getCategoryId(categoryKey: string) {
+  return `culture-category-${categoryKey}`;
+}
+
+function getCategoryDescription(category: SyncedCategory) {
+  const sourceText = category.source_label ? ` จาก ${category.source_label}` : '';
+  const countText =
+    typeof category.count === 'number' ? ` (${category.count.toLocaleString('th-TH')} รายการ)` : '';
+
+  return category.description ?? `หมวด ${category.label}${sourceText}${countText}`;
 }
 
 function createSystemCategoryItem(
-  category: CulturalCategory,
+  category: SyncedCategory,
   currentItem?: CultureCategoryItem
 ): CultureCategoryItem {
   return {
-    id: getCategoryId(category),
-    title: CULTURE_CATEGORY_LABELS[category],
-    description: currentItem?.description ?? `หมวด ${CULTURE_CATEGORY_LABELS[category]} จากระบบ Cultural Places`,
+    id: getCategoryId(category.category_key),
+    title: category.label,
+    description: currentItem?.description ?? getCategoryDescription(category),
     imageUrl:
       currentItem?.imageUrl ??
-      CATEGORY_IMAGE_MAP[category] ??
+      category.image_url ??
+      CATEGORY_IMAGE_MAP[category.category_key] ??
       '/assets/background/akhahas-sri-1.jpg',
-    icon: currentItem?.icon ?? CATEGORY_ICON_MAP[category] ?? 'solar:gallery-wide-bold',
-    color: currentItem?.color ?? CULTURE_CATEGORY_COLORS[category],
-    isActive: currentItem?.isActive ?? true,
+    icon:
+      currentItem?.icon ??
+      (category.icon as IconifyName | null) ??
+      CATEGORY_ICON_MAP[category.category_key] ??
+      'solar:gallery-wide-bold',
+    color: currentItem?.color ?? category.color ?? '#608D8C',
+    isActive: currentItem?.isActive ?? category.is_active ?? true,
   };
 }
 
@@ -328,14 +349,27 @@ export default function CultureCategoriesContentPage() {
     setEditingItem({ ...EMPTY_CATEGORY_ITEM, id: createId() });
   };
 
-  const syncSystemCategories = () => {
+  const syncSystemCategories = async () => {
     const currentItemMap = new Map(items.map((item) => [item.id, item]));
-    const systemItems = (Object.keys(CULTURE_CATEGORY_LABELS) as CulturalCategory[]).map(
-      (category) => createSystemCategoryItem(category, currentItemMap.get(getCategoryId(category)))
+    const result = await getCategoriesAction(accessToken);
+
+    if (!result.ok) {
+      if (result.status === 401) {
+        await checkUserSession?.();
+      }
+
+      setError(result.message);
+      setMessage('');
+      return;
+    }
+
+    const categories = result.data;
+    const systemItems = categories.map((category) =>
+      createSystemCategoryItem(category, currentItemMap.get(getCategoryId(category.category_key)))
     );
 
     setItems(systemItems);
-    setMessage(`ดึงหมวดจากระบบ Cultural Places แล้ว ${systemItems.length} หมวด`);
+    setMessage(`ดึงหมวดชุดเดียวกับ /admin/categories แล้ว ${systemItems.length} หมวด`);
     setError('');
   };
 
@@ -470,7 +504,7 @@ export default function CultureCategoriesContentPage() {
           >
             <Box>
               <Typography variant="h5" sx={{ fontWeight: 900 }}>
-                จัดการการ์ดหมวดข้อมูล
+                จัดการการ์ดหมวดข้อมูล {items?.length} รายการ
               </Typography>
               <Typography sx={{ mt: 0.5, color: 'text.secondary', fontSize: 13 }}>
                 เพิ่ม แก้ไข ลบ หรือซ่อนหมวดที่แสดงใน grid หน้าแรก
@@ -565,7 +599,9 @@ export default function CultureCategoriesContentPage() {
                     <Typography sx={{ fontSize: 19, fontWeight: 900, lineHeight: 1.2 }}>
                       {item.title}
                     </Typography>
-                    <Typography sx={{ color: 'rgba(255,255,255,0.84)', fontSize: 12, lineHeight: 1.5 }}>
+                    <Typography
+                      sx={{ color: 'rgba(255,255,255,0.84)', fontSize: 12, lineHeight: 1.5 }}
+                    >
                       {item.description || 'ไม่มีคำอธิบาย'}
                     </Typography>
                   </Stack>
@@ -590,7 +626,12 @@ export default function CultureCategoriesContentPage() {
                     >
                       แก้ไข
                     </Button>
-                    <Button size="small" color="error" variant="outlined" onClick={() => deleteItem(item.id)}>
+                    <Button
+                      size="small"
+                      color="error"
+                      variant="outlined"
+                      onClick={() => deleteItem(item.id)}
+                    >
                       ลบ
                     </Button>
                   </Stack>
@@ -694,7 +735,9 @@ export default function CultureCategoriesContentPage() {
                   <Typography sx={{ fontSize: 19, fontWeight: 900, lineHeight: 1.2 }}>
                     {editingItem.title || 'ชื่อหมวด'}
                   </Typography>
-                  <Typography sx={{ color: 'rgba(255,255,255,0.84)', fontSize: 12, lineHeight: 1.5 }}>
+                  <Typography
+                    sx={{ color: 'rgba(255,255,255,0.84)', fontSize: 12, lineHeight: 1.5 }}
+                  >
                     {editingItem.description || 'คำอธิบายหมวด'}
                   </Typography>
                 </Stack>
@@ -716,7 +759,9 @@ export default function CultureCategoriesContentPage() {
                   fullWidth
                   label="สี"
                   value={editingItem.color}
-                  onChange={(event) => setEditingItem({ ...editingItem, color: event.target.value })}
+                  onChange={(event) =>
+                    setEditingItem({ ...editingItem, color: event.target.value })
+                  }
                 />
               </Stack>
 

@@ -14,11 +14,8 @@ import Alert from '@mui/material/Alert';
 import { paths } from 'src/routes/paths';
 import { RouterLink } from 'src/routes/components';
 
-import { CONFIG } from 'src/global-config';
-
 import { Logo } from 'src/components/logo';
 
-import { AuthSplitSection } from './section';
 import { AuthSplitContent } from './content';
 import { SettingsButton } from '../components/settings-button';
 import { MainSection, LayoutSection, HeaderSection } from '../core';
@@ -104,7 +101,7 @@ export function AuthSplitLayout({
         ...(Array.isArray(slotProps?.main?.sx) ? slotProps.main.sx : [slotProps?.main?.sx]),
       ]}
     >
-      <AuthSplitSection
+      {/* <AuthSplitSection
         layoutQuery={layoutQuery}
         method={CONFIG.auth.method}
         {...slotProps?.section}
@@ -135,7 +132,7 @@ export function AuthSplitLayout({
             icon: `${CONFIG.assetsDir}/assets/icons/platforms/ic-supabase.svg`,
           },
         ]}
-      />
+      /> */}
       <AuthSplitContent layoutQuery={layoutQuery} {...slotProps?.content}>
         {children}
       </AuthSplitContent>

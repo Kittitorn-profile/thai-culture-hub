@@ -9,6 +9,8 @@ export type CategoryRow = {
   is_active?: boolean | null;
   source?: string | null;
   source_label?: string | null;
+  count?: number | null;
+  editable?: boolean;
   updated_at?: string | null;
 };
 

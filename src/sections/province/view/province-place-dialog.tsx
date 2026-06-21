@@ -1,6 +1,7 @@
 'use client';
 
 import type { CulturalPlace } from '../province-data';
+import type { CategoryConfigMap } from '../category-config';
 
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
@@ -14,7 +15,7 @@ import DialogContent from '@mui/material/DialogContent';
 
 import { Iconify } from 'src/components/iconify';
 
-import { CULTURE_CATEGORY_LABELS, CULTURE_CATEGORY_COLORS } from '../province-data';
+import { getCategoryColor, getCategoryLabel } from '../category-config';
 
 type ProvincePlaceDialogProps = {
   place: CulturalPlace | null;
@@ -22,6 +23,7 @@ type ProvincePlaceDialogProps = {
   placeImages: string[];
   provinceDisplayName: string;
   coordinates: string;
+  categoryConfig: CategoryConfigMap;
   onClose: () => void;
 };
 
@@ -31,9 +33,11 @@ export function ProvincePlaceDialog({
   placeImages,
   provinceDisplayName,
   coordinates,
+  categoryConfig,
   onClose,
 }: ProvincePlaceDialogProps) {
   const theme = useTheme();
+  const categoryColor = place ? getCategoryColor(categoryConfig, place.category) : '#608D8C';
 
   return (
     <Dialog
@@ -70,7 +74,7 @@ export function ProvincePlaceDialog({
                 height: { xs: 260, sm: 360 },
                 overflow: 'hidden',
                 borderRadius: 1.5,
-                bgcolor: alpha(CULTURE_CATEGORY_COLORS[place.category], 0.16),
+                bgcolor: alpha(categoryColor, 0.16),
                 backgroundImage: `url(${placeImages[0]})`,
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
@@ -103,11 +107,11 @@ export function ProvincePlaceDialog({
               sx={{ mt: 2, flexWrap: 'wrap' }}
             >
               <Chip
-                label={CULTURE_CATEGORY_LABELS[place.category]}
+                label={getCategoryLabel(categoryConfig, place.category)}
                 sx={{
                   color: 'white',
                   fontWeight: 900,
-                  bgcolor: CULTURE_CATEGORY_COLORS[place.category],
+                  bgcolor: categoryColor,
                 }}
               />
               <Chip
@@ -148,7 +152,7 @@ export function ProvincePlaceDialog({
                     borderRadius: 1,
                     textAlign: 'center',
                     textDecoration: 'none',
-                    bgcolor: CULTURE_CATEGORY_COLORS[place.category],
+                    bgcolor: categoryColor,
                   }}
                 >
                   เปิดแผนที่
@@ -168,8 +172,8 @@ export function ProvincePlaceDialog({
                     borderRadius: 1,
                     textAlign: 'center',
                     textDecoration: 'none',
-                    color: CULTURE_CATEGORY_COLORS[place.category],
-                    border: `1px solid ${alpha(CULTURE_CATEGORY_COLORS[place.category], 0.36)}`,
+                    color: categoryColor,
+                    border: `1px solid ${alpha(categoryColor, 0.36)}`,
                   }}
                 >
                   ดูแหล่งข้อมูล

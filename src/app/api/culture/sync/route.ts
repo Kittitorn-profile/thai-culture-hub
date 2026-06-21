@@ -11,6 +11,8 @@ import { getSupabaseAdmin } from 'src/server/supabase-admin';
 const DEFAULT_LIMIT = 50;
 const MAX_LIMIT = 10000;
 const DEFAULT_TABLE_NAME = 'cultural_places';
+const TAT_MAX_PAGES = 500;
+const UPSERT_CHUNK_SIZE = 500;
 
 const SOURCE_ENDPOINTS = {
   culture_catalog: '/api/culture/places',
@@ -26,13 +28,17 @@ type SyncBody = {
   sources?: SyncSource[];
   limit?: number;
   dryRun?: boolean;
+  force?: boolean;
 };
 
 type SourceFetchResult = {
   source: SyncSource;
+  provinceCode: string;
   data: CulturalPlace[];
   message?: string;
   status: number;
+  total?: number;
+  pages?: unknown;
 };
 
 type CulturalPlaceRow = {
@@ -118,6 +124,11 @@ async function fetchSourcePlaces(
   url.searchParams.set('provinceCode', provinceCode);
   url.searchParams.set('limit', `${limit}`);
 
+  if (source === 'tat') {
+    url.searchParams.set('pageSize', '100');
+    url.searchParams.set('maxPages', `${TAT_MAX_PAGES}`);
+  }
+
   const response = await fetch(url, {
     cache: 'no-store',
   });
@@ -126,8 +137,11 @@ async function fetchSourcePlaces(
 
   return {
     source,
+    provinceCode,
     data,
     status: response.status,
+    total: typeof json?.total === 'number' ? json.total : data.length,
+    pages: json?.pages,
     message: json?.message,
   };
 }
@@ -152,14 +166,33 @@ function mapPlaceToRow(place: CulturalPlace, provinceCode: string): CulturalPlac
   };
 }
 
+function getSourceSummary(result: SourceFetchResult) {
+  return {
+    source: result.source,
+    provinceCode: result.provinceCode,
+    status: result.status,
+    total: result.total ?? result.data.length,
+    pages: result.pages,
+    message: result.message,
+  };
+}
+
 async function handleSync(request: NextRequest, options?: { defaultDryRun?: boolean }) {
   const body = await readSyncBody(request);
   const dryRunParam = request.nextUrl.searchParams.get('dryRun');
   const dryRun = body.dryRun ?? (dryRunParam ? dryRunParam === 'true' : options?.defaultDryRun);
+  const forceParam = request.nextUrl.searchParams.get('force');
+  const force = body.force ?? forceParam === 'true';
   const tableName = process.env.CULTURAL_PLACES_TABLE ?? DEFAULT_TABLE_NAME;
   const limit = getLimit(body.limit ?? request.nextUrl.searchParams.get('limit'));
   const sources = getSources(body.sources ?? request.nextUrl.searchParams.get('sources'));
-  const provinceCodes = getValidProvinceCodes(getProvinceCodes(body, request));
+  const requestedProvinceCodes = getProvinceCodes(body, request);
+  const provinceCodes = getValidProvinceCodes(requestedProvinceCodes);
+  const isAllProvinceSync =
+    !body.provinceCode &&
+    !body.provinceCodes?.length &&
+    !request.nextUrl.searchParams.get('provinceCode') &&
+    !request.nextUrl.searchParams.get('provinceCodes');
 
   if (!provinceCodes.length) {
     return NextResponse.json(
@@ -176,11 +209,28 @@ async function handleSync(request: NextRequest, options?: { defaultDryRun?: bool
     }
   }
 
-  const rows = results.flatMap((result, index) => {
-    const provinceCode = provinceCodes[Math.floor(index / sources.length)];
+  const failedResults = results.filter((result) => result.status >= 400);
 
-    return result.data.map((place) => mapPlaceToRow(place, provinceCode));
-  });
+  if (failedResults.length) {
+    return NextResponse.json(
+      {
+        inserted: 0,
+        updated: 0,
+        table: tableName,
+        total: 0,
+        provinceCodes,
+        sources: results.map(getSourceSummary),
+        message: failedResults
+          .map((result) => `${result.source} ${result.provinceCode}: ${result.message ?? result.status}`)
+          .join(', '),
+      },
+      { status: 502 }
+    );
+  }
+
+  const rows = results.flatMap((result) =>
+    result.data.map((place) => mapPlaceToRow(place, result.provinceCode))
+  );
   const uniqueRows = Array.from(new Map(rows.map((row) => [row.id, row])).values());
 
   if (dryRun) {
@@ -188,7 +238,7 @@ async function handleSync(request: NextRequest, options?: { defaultDryRun?: bool
       dryRun: true,
       table: tableName,
       total: uniqueRows.length,
-      sources: results,
+      sources: results.map(getSourceSummary),
     });
   }
 
@@ -207,33 +257,77 @@ async function handleSync(request: NextRequest, options?: { defaultDryRun?: bool
   }
 
   const { client } = supabase;
-  const { error } = await client.from(tableName).upsert(uniqueRows, {
-    onConflict: 'id',
-  });
+  const { count: existingCount, error: countError } = await client
+    .from(tableName)
+    .select('id', { count: 'exact', head: true });
 
-  if (error) {
+  if (countError) {
     return NextResponse.json(
       {
         inserted: 0,
         updated: 0,
         total: uniqueRows.length,
-        message: error.message,
+        message: countError.message,
       },
       { status: 500 }
     );
   }
 
+  if (
+    !force &&
+    isAllProvinceSync &&
+    typeof existingCount === 'number' &&
+    existingCount >= 1000 &&
+    uniqueRows.length < Math.floor(existingCount * 0.5)
+  ) {
+    return NextResponse.json(
+      {
+        inserted: 0,
+        updated: 0,
+        table: tableName,
+        total: uniqueRows.length,
+        existingCount,
+        provinceCodes,
+        sources: results.map(getSourceSummary),
+        message:
+          'Sync aborted because the fetched dataset is much smaller than existing cultural_places. Existing rows were not changed. Use force=true only if this is expected.',
+      },
+      { status: 409 }
+    );
+  }
+
+  let upsertedRows = 0;
+
+  for (let index = 0; index < uniqueRows.length; index += UPSERT_CHUNK_SIZE) {
+    const chunk = uniqueRows.slice(index, index + UPSERT_CHUNK_SIZE);
+    const { error } = await client.from(tableName).upsert(chunk, {
+      onConflict: 'id',
+    });
+
+    if (error) {
+      return NextResponse.json(
+        {
+          inserted: 0,
+          updated: 0,
+          total: uniqueRows.length,
+          upserted: upsertedRows,
+          message: error.message,
+        },
+        { status: 500 }
+      );
+    }
+
+    upsertedRows += chunk.length;
+  }
+
   return NextResponse.json({
     table: tableName,
     total: uniqueRows.length,
-    upserted: uniqueRows.length,
+    existingCount,
+    upserted: upsertedRows,
     provinceCodes,
-    sources: results.map((result) => ({
-      source: result.source,
-      status: result.status,
-      total: result.data.length,
-      message: result.message,
-    })),
+    sources: results.map(getSourceSummary),
+    message: `Synced ${upsertedRows} cultural places into ${tableName}`,
   });
 }
 

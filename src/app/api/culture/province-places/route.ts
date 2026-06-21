@@ -31,6 +31,7 @@ type SourceResult = {
 
 type PlaceOverride = {
   place_id: string;
+  province_code?: string | null;
   name?: string | null;
   source?: CulturalPlace['source'] | string | null;
   category?: CulturalPlace['category'] | string | null;
@@ -41,6 +42,26 @@ type PlaceOverride = {
   image_url?: string | null;
   note?: string | null;
   updated_at?: string | null;
+  updated_by_id?: string | null;
+  updated_by_email?: string | null;
+  updated_by_name?: string | null;
+};
+
+type CulturalPlaceRow = {
+  id: string;
+  province_code?: string | null;
+  name: string | null;
+  district: string | null;
+  category: string | null;
+  lat: number | null;
+  lng: number | null;
+  description: string | null;
+  highlight: string | null;
+  image_urls: string[] | null;
+  source_url: string | null;
+  map_url: string | null;
+  source: string | null;
+  payload?: Partial<CulturalPlace> | null;
 };
 
 const SOURCE_ENDPOINTS: Record<PlaceSource, string> = {
@@ -60,6 +81,12 @@ const SOURCE_KEYS: PlaceSource[] = [
   'culture_catalog',
 ];
 const OVERRIDES_TABLE = process.env.CULTURAL_PLACE_OVERRIDES_TABLE ?? 'cultural_place_overrides';
+const PLACES_TABLE = process.env.CULTURAL_PLACES_TABLE ?? 'cultural_places';
+const SUPABASE_PAGE_SIZE = 1000;
+
+type CulturalPlaceRecord = CulturalPlace & {
+  provinceCode?: string;
+};
 
 function getLimit(value: string | null) {
   if (value == null) {
@@ -91,19 +118,24 @@ function mergeCulturalPlaces(...placeGroups: CulturalPlace[][]) {
   return Array.from(placeMap.values());
 }
 
-async function getPlaceOverrides(provinceCode: string) {
+async function getPlaceOverrides(provinceCode?: string | null) {
   const supabase = getSupabaseAdmin();
 
   if (!supabase.ok) {
     return [];
   }
 
-  const { data, error } = await supabase.client
+  let query = supabase.client
     .from(OVERRIDES_TABLE)
     .select(
-      'place_id, name, source, category, district, lat, lng, map_url, image_url, note, updated_at'
-    )
-    .eq('province_code', provinceCode);
+      'place_id, province_code, name, source, category, district, lat, lng, map_url, image_url, note, updated_at, updated_by_id, updated_by_email, updated_by_name'
+    );
+
+  if (provinceCode) {
+    query = query.eq('province_code', provinceCode);
+  }
+
+  const { data, error } = await query;
 
   if (error) {
     return [];
@@ -112,7 +144,74 @@ async function getPlaceOverrides(provinceCode: string) {
   return (data ?? []) as PlaceOverride[];
 }
 
-type CulturalPlaceWithOverride = CulturalPlace & {
+function mapPlaceRow(row: CulturalPlaceRow): CulturalPlaceRecord | null {
+  if (!row.id || !row.name || row.lat == null || row.lng == null) {
+    return null;
+  }
+
+  return {
+    ...(row.payload ?? {}),
+    id: row.id,
+    provinceCode: row.province_code ?? undefined,
+    name: row.name,
+    district: row.district ?? '',
+    category: (row.category as CulturalPlace['category']) ?? 'cultural_attraction',
+    lat: row.lat,
+    lng: row.lng,
+    description: row.description ?? '',
+    highlight: row.highlight ?? '',
+    imageUrls: row.image_urls ?? row.payload?.imageUrls ?? [],
+    sourceUrl: row.source_url ?? row.payload?.sourceUrl,
+    mapUrl: row.map_url ?? row.payload?.mapUrl,
+    source: (row.source as CulturalPlace['source']) ?? row.payload?.source ?? 'local',
+  };
+}
+
+async function getStoredPlaces(provinceCode?: string | null) {
+  const supabase = getSupabaseAdmin();
+
+  if (!supabase.ok) {
+    return [];
+  }
+
+  const rows: CulturalPlaceRow[] = [];
+
+  for (let pageIndex = 0; ; pageIndex += 1) {
+    const from = pageIndex * SUPABASE_PAGE_SIZE;
+    const to = from + SUPABASE_PAGE_SIZE - 1;
+    let query = supabase.client
+      .from(PLACES_TABLE)
+      .select(
+        'id, province_code, name, district, category, lat, lng, description, highlight, image_urls, source_url, map_url, source, payload'
+      )
+      .order('updated_at', { ascending: false })
+      .range(from, to);
+
+    if (provinceCode) {
+      query = query.eq('province_code', provinceCode);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      return [];
+    }
+
+    const nextRows = (data ?? []) as CulturalPlaceRow[];
+
+    rows.push(...nextRows);
+
+    if (nextRows.length < SUPABASE_PAGE_SIZE) {
+      break;
+    }
+  }
+
+  return rows
+    .map(mapPlaceRow)
+    .filter((place): place is CulturalPlaceRecord => Boolean(place));
+}
+
+type CulturalPlaceWithOverride = CulturalPlaceRecord & {
   override?: PlaceOverride | null;
 };
 
@@ -138,6 +237,7 @@ function createPlaceFromOverride(override: PlaceOverride): CulturalPlaceWithOver
 
   return {
     id: override.place_id,
+    provinceCode: override.province_code ?? undefined,
     name: override.name || 'สถานที่ใหม่',
     source,
     lat: override.lat,
@@ -152,7 +252,7 @@ function createPlaceFromOverride(override: PlaceOverride): CulturalPlaceWithOver
   };
 }
 
-function applyPlaceOverrides(places: CulturalPlace[], overrides: PlaceOverride[]) {
+function applyPlaceOverrides(places: CulturalPlaceRecord[], overrides: PlaceOverride[]) {
   if (!overrides.length) {
     return places;
   }
@@ -167,6 +267,7 @@ function applyPlaceOverrides(places: CulturalPlace[], overrides: PlaceOverride[]
 
     return {
       ...place,
+      provinceCode: override.province_code || place.provinceCode,
       name: override.name || place.name,
       source: (override.source as CulturalPlace['source']) || place.source,
       category: (override.category as CulturalPlace['category']) || place.category,
@@ -188,7 +289,7 @@ function applyPlaceOverrides(places: CulturalPlace[], overrides: PlaceOverride[]
   return [...overrideOnlyPlaces, ...overriddenPlaces];
 }
 
-function getDistricts(places: CulturalPlace[]) {
+function getDistricts(places: CulturalPlaceRecord[]) {
   return Array.from(
     new Set(
       places.map((place) => place.district).filter((district): district is string => !!district)
@@ -196,7 +297,7 @@ function getDistricts(places: CulturalPlace[]) {
   ).sort((firstDistrict, secondDistrict) => firstDistrict.localeCompare(secondDistrict, 'th'));
 }
 
-function filterPlaces(places: CulturalPlace[], district: string, query: string, source: string) {
+function filterPlaces(places: CulturalPlaceRecord[], district: string, query: string, source: string) {
   const normalizedDistrict = district.trim().toLowerCase();
   const normalizedQuery = query.trim().toLowerCase();
   const normalizedSource = source.trim().toLowerCase();
@@ -214,7 +315,7 @@ function filterPlaces(places: CulturalPlace[], district: string, query: string, 
       return true;
     }
 
-    return [place.name, place.district, place.highlight, place.source]
+    return [place.name, place.district, place.highlight, place.source, place.provinceCode]
       .filter(Boolean)
       .join(' ')
       .toLowerCase()
@@ -278,7 +379,9 @@ export const runtime = 'nodejs';
 export const revalidate = 3600;
 
 export async function GET(request: NextRequest) {
-  const provinceCode = request.nextUrl.searchParams.get('provinceCode');
+  const provinceCodeParam = request.nextUrl.searchParams.get('provinceCode');
+  const provinceCode =
+    provinceCodeParam && provinceCodeParam !== 'all' ? provinceCodeParam : '';
   const isSummary = request.nextUrl.searchParams.get('summary') === 'true';
   const requestedLimit = getLimit(request.nextUrl.searchParams.get('limit'));
   const page = getPositiveInteger(request.nextUrl.searchParams.get('page'), 1);
@@ -288,22 +391,21 @@ export async function GET(request: NextRequest) {
   const query = request.nextUrl.searchParams.get('q') ?? '';
   const source = request.nextUrl.searchParams.get('source') ?? '';
 
-  if (!provinceCode) {
-    return NextResponse.json({ data: [], message: 'Invalid provinceCode' }, { status: 400 });
-  }
-
-  const sourceResults = await Promise.all(
-    SOURCE_KEYS.map((key) =>
-      fetchSourcePlaces({
-        key,
-        summary: isSummary,
-        signal: request.signal,
-        origin: request.nextUrl.origin,
-        provinceCode,
-        limit: requestedLimit,
-      })
-    )
-  );
+  const storedPlaces = await getStoredPlaces(provinceCode);
+  const sourceResults = storedPlaces.length || !provinceCode
+    ? []
+    : await Promise.all(
+        SOURCE_KEYS.map((key) =>
+          fetchSourcePlaces({
+            key,
+            summary: isSummary,
+            signal: request.signal,
+            origin: request.nextUrl.origin,
+            provinceCode,
+            limit: requestedLimit,
+          })
+        )
+      );
   const sources = Object.fromEntries(
     sourceResults.map((result) => [
       result.key,
@@ -315,7 +417,9 @@ export async function GET(request: NextRequest) {
       },
     ])
   );
-  const mergedData = mergeCulturalPlaces(...sourceResults.map((result) => result.data));
+  const mergedData = storedPlaces.length
+    ? storedPlaces
+    : mergeCulturalPlaces(...sourceResults.map((result) => result.data));
   const allData = applyPlaceOverrides(mergedData, await getPlaceOverrides(provinceCode));
   const districts = getDistricts(allData);
   const filteredData = filterPlaces(allData, district, query, source);
@@ -339,6 +443,6 @@ export async function GET(request: NextRequest) {
       totalPages,
     },
     sources,
-    source: 'culture-province-places',
+    source: storedPlaces.length ? 'supabase-cultural-places' : 'culture-province-places',
   });
 }

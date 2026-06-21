@@ -3,6 +3,10 @@ import type { BoxProps } from '@mui/material/Box';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 
+import { CONFIG } from 'src/global-config';
+
+import { Image } from 'src/components/image';
+
 // ----------------------------------------------------------------------
 
 type FormHeadProps = BoxProps & {
@@ -34,13 +38,21 @@ export function FormHead({ sx, icon, title, description, ...other }: FormHeadPro
         ]}
         {...other}
       >
-        <Typography variant="h5">{title}</Typography>
+        <Image
+          alt="Single logo"
+          src={`${CONFIG.assetsDir}/logo/logo-full.svg`}
+          sx={{ width: 300, mx: 'auto' }}
+        />
 
-        {description && (
+        <Typography variant="h5" textAlign="center">
+          {title}
+        </Typography>
+
+        {/* {description && (
           <Typography variant="body2" sx={{ color: 'text.secondary' }}>
             {description}
           </Typography>
-        )}
+        )} */}
       </Box>
     </>
   );

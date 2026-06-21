@@ -10,6 +10,7 @@ import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
 import { alpha, useTheme } from '@mui/material/styles';
 
+import { Logo } from 'src/components/logo';
 import { Iconify } from 'src/components/iconify';
 import { trackAnalyticsEvent } from 'src/components/analytics';
 
@@ -20,10 +21,10 @@ import { ProvinceFilterDrawer } from './province-filter-drawer';
 import { ProvincePlacesDrawer } from './province-places-drawer';
 import { ProvinceDetailHeader } from './province-detail-header';
 import { useThailandDistrictCenters } from '../thailand-geojson';
+import { getCategoryLabel, useCategoryConfig } from '../category-config';
 import {
   getCultureMetrics,
   getProvinceDisplayName,
-  CULTURE_CATEGORY_LABELS,
   getProvinceCulturalPlaces,
 } from '../province-data';
 
@@ -120,6 +121,7 @@ function resolvePlaceDistricts(places: CulturalPlace[], districtCenters: Distric
 
 export function ProvinceDetailView() {
   const theme = useTheme();
+  const categoryConfig = useCategoryConfig();
   const params = useParams<{ provinceId?: string | string[] }>();
   const searchParams = useSearchParams();
   const rawProvinceId = params.provinceId;
@@ -188,7 +190,7 @@ export function ProvinceDetailView() {
         district,
         place.highlight,
         place.description,
-        CULTURE_CATEGORY_LABELS[place.category],
+        getCategoryLabel(categoryConfig, place.category),
       ]
         .filter(Boolean)
         .join(' ')
@@ -197,7 +199,14 @@ export function ProvinceDetailView() {
 
       return isCategoryMatched && isSourceMatched && isDistrictMatched && isSearchMatched;
     });
-  }, [allCulturalPlaces, searchQuery, selectedCategories, selectedDistricts, selectedSources]);
+  }, [
+    allCulturalPlaces,
+    categoryConfig,
+    searchQuery,
+    selectedCategories,
+    selectedDistricts,
+    selectedSources,
+  ]);
   const activeFilterCount =
     selectedCategories.length + selectedSources.length + selectedDistricts.length;
   const cultureMetrics = useMemo(() => getCultureMetrics(culturalPlaces), [culturalPlaces]);
@@ -432,6 +441,7 @@ export function ProvinceDetailView() {
               places={culturalPlaces}
               provinceId={provinceId}
               provinceName={provinceDisplayName}
+              categoryConfig={categoryConfig}
               onDistrictSelect={handleDistrictSelect}
             />
           )}
@@ -463,6 +473,7 @@ export function ProvinceDetailView() {
           filteredCount={culturalPlaces.length}
           sourceOptions={sourceOptions}
           categoryOptions={categoryOptions}
+          categoryConfig={categoryConfig}
           districtOptions={districtOptions}
           selectedSources={selectedSources}
           selectedCategories={selectedCategories}
@@ -478,7 +489,7 @@ export function ProvinceDetailView() {
           selectedDistrictDetail={selectedDistrictDetail}
           places={drawerPlaces}
           allPlacesCount={allCulturalPlaces.length}
-          culturalPlaces={culturalPlaces}
+          categoryConfig={categoryConfig}
           onClose={closePlacesDrawer}
           onPlaceSelect={handlePlaceSelect}
         />
@@ -489,8 +500,16 @@ export function ProvinceDetailView() {
           placeImages={selectedPlaceImages}
           provinceDisplayName={provinceDisplayName}
           coordinates={selectedPlaceCoordinates}
+          categoryConfig={categoryConfig}
           onClose={() => setSelectedPlace(null)}
         />
+      </Box>
+
+      <Box textAlign="center" mt={10}>
+        <Logo sx={{ width: 200, height: '100%' }} />
+        <Box sx={{ mt: 1, typography: 'caption', color: theme.palette.common.white }}>
+          © Thailand Cultural Hub. All rights reserved.
+        </Box>
       </Box>
     </Box>
   );

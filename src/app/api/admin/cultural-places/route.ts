@@ -4,7 +4,9 @@ import type { CulturalPlace } from 'src/sections/province/province-data';
 import { NextResponse } from 'next/server';
 
 import { getSupabaseAdmin } from 'src/server/supabase-admin';
-import { verifyAdminRequest } from 'src/server/admin-api-auth';
+import { verifyAdminRequest, verifyAdminAccessToken } from 'src/server/admin-api-auth';
+
+import { ADMIN_PERMISSION } from 'src/auth/admin-permissions';
 
 type PlaceOverride = {
   place_id: string;
@@ -19,6 +21,9 @@ type PlaceOverride = {
   image_url?: string | null;
   note?: string | null;
   updated_at?: string | null;
+  updated_by_id?: string | null;
+  updated_by_email?: string | null;
+  updated_by_name?: string | null;
 };
 
 const OVERRIDES_TABLE = process.env.CULTURAL_PLACE_OVERRIDES_TABLE ?? 'cultural_place_overrides';
@@ -27,6 +32,10 @@ function toNumber(value: unknown) {
   const numberValue = typeof value === 'number' ? value : Number(value);
 
   return Number.isFinite(numberValue) ? numberValue : null;
+}
+
+function getBearerToken(request: NextRequest) {
+  return request.headers.get('authorization')?.match(/^Bearer\s+(.+)$/i)?.[1] ?? '';
 }
 
 function applyOverride(place: CulturalPlace, override?: PlaceOverride) {
@@ -68,7 +77,7 @@ async function getOverrides(provinceCode: string) {
 export const runtime = 'nodejs';
 
 export async function GET(request: NextRequest) {
-  if (!(await verifyAdminRequest(request))) {
+  if (!(await verifyAdminRequest(request, ADMIN_PERMISSION.culturalPlaces))) {
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
   }
 
@@ -113,8 +122,10 @@ export async function GET(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
-  if (!(await verifyAdminRequest(request))) {
-    return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+  const auth = await verifyAdminAccessToken(getBearerToken(request), ADMIN_PERMISSION.culturalPlaces);
+
+  if (!auth.ok) {
+    return NextResponse.json({ message: auth.message }, { status: auth.status });
   }
 
   const body = (await request.json().catch(() => ({}))) as {
@@ -161,6 +172,9 @@ export async function PUT(request: NextRequest) {
     image_url: body.imageUrl?.trim() || null,
     note: body.note?.trim() || null,
     updated_at: new Date().toISOString(),
+    updated_by_id: auth.user.id,
+    updated_by_email: auth.user.email ?? null,
+    updated_by_name: auth.user.displayName ?? auth.user.email ?? null,
   };
   const { data, error } = await supabase.client
     .from(OVERRIDES_TABLE)
@@ -176,7 +190,7 @@ export async function PUT(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
-  if (!(await verifyAdminRequest(request))) {
+  if (!(await verifyAdminRequest(request, ADMIN_PERMISSION.culturalPlaces))) {
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
   }
 

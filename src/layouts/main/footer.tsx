@@ -30,8 +30,8 @@ const LINKS = [
   {
     headline: 'Legal',
     children: [
-      { name: 'Terms and condition', href: '#' },
-      { name: 'Privacy policy', href: '#' },
+      { name: 'Terms and condition', href: paths.termsAndConditions },
+      { name: 'Privacy policy', href: paths.privacyPolicy },
     ],
   },
   { headline: 'Contact', children: [{ name: 'support@minimals.cc', href: '#' }] },

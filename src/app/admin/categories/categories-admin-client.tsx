@@ -34,7 +34,8 @@ const TABLE_HEAD = [
   { id: 'sort', label: 'ลำดับ', width: 90 },
   { id: 'key', label: 'Key', width: 220 },
   { id: 'label', label: 'ชื่อหมวด' },
-  { id: 'source', label: 'แหล่งที่มา', width: 140 },
+  { id: 'source', label: 'แหล่งที่มา', width: 180 },
+  { id: 'count', label: 'จำนวน', width: 110, align: 'right' as const },
   { id: 'style', label: 'สี/Icon', width: 180 },
   { id: 'status', label: 'สถานะ', width: 120 },
   { id: 'actions', label: '', width: 190, align: 'right' as const },
@@ -208,7 +209,7 @@ export function CategoriesAdminClient() {
               Categories
             </Typography>
             <Typography sx={{ mt: 0.5, color: 'text.secondary' }}>
-              แสดง category ตรงจากแหล่งที่มาใน table place_sub_categories
+              แสดงหมวดระบบ และหมวด/หมวดย่อยที่พบจริงจากข้อมูลต้นทาง
             </Typography>
           </Box>
         </Stack>
@@ -251,7 +252,7 @@ export function CategoriesAdminClient() {
 
         <Card>
           <TableContainer sx={{ overflow: 'auto' }}>
-            <Table sx={{ minWidth: 1060 }}>
+            <Table sx={{ minWidth: 1180 }}>
               <TableHeadCustom headCells={TABLE_HEAD} />
               <TableBody>
                 {paginatedCategories.map((category) => (
@@ -271,6 +272,9 @@ export function CategoriesAdminClient() {
                       )}
                     </TableCell>
                     <TableCell>{category.source_label ?? category.source ?? '-'}</TableCell>
+                    <TableCell align="right">
+                      {typeof category.count === 'number' ? category.count.toLocaleString('th-TH') : '-'}
+                    </TableCell>
                     <TableCell>
                       <Stack direction="row" spacing={1.2} alignItems="center">
                         <Box
@@ -288,9 +292,9 @@ export function CategoriesAdminClient() {
                     <TableCell>{category.is_active === false ? 'ซ่อน' : 'ใช้งาน'}</TableCell>
                     <TableCell align="right">
                       <Stack direction="row" spacing={1} justifyContent="flex-end">
-                        {category.source === 'system' ? (
+                        {category.editable === false || category.source === 'system' ? (
                           <Typography sx={{ color: 'text.disabled', fontSize: 13 }}>
-                            ระบบ
+                            อ้างอิง
                           </Typography>
                         ) : (
                           <Button

@@ -6,6 +6,35 @@ export type AnalyticsMetadata = Record<string, string | number | boolean | null 
 
 const VISITOR_ID_KEY = 'thch_visitor_id';
 const SESSION_ID_KEY = 'thch_session_id';
+const ADMIN_ANALYTICS_KEY = 'thch_admin_analytics_disabled';
+const PRIVATE_PATHS = ['/admin', '/auth', '/api'];
+
+function isPrivatePath(pathname: string) {
+  return PRIVATE_PATHS.some((privatePath) => pathname.startsWith(privatePath));
+}
+
+export function setAdminAnalyticsDisabled(disabled: boolean) {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  if (disabled) {
+    window.localStorage.setItem(ADMIN_ANALYTICS_KEY, '1');
+  } else {
+    window.localStorage.removeItem(ADMIN_ANALYTICS_KEY);
+  }
+}
+
+export function shouldSkipAnalytics() {
+  if (typeof window === 'undefined') {
+    return true;
+  }
+
+  return (
+    isPrivatePath(window.location.pathname) ||
+    window.localStorage.getItem(ADMIN_ANALYTICS_KEY) === '1'
+  );
+}
 
 function getBrowserId(storage: Storage, key: string) {
   const existingId = storage.getItem(key);
@@ -54,7 +83,7 @@ export function trackAnalyticsEvent(
   eventName: string,
   metadata: AnalyticsMetadata = {}
 ) {
-  if (typeof window === 'undefined') {
+  if (shouldSkipAnalytics()) {
     return;
   }
 
@@ -71,5 +100,9 @@ export function trackAnalyticsEvent(
 }
 
 export function trackAnalyticsPageView(payload: Record<string, string>) {
+  if (shouldSkipAnalytics()) {
+    return;
+  }
+
   sendAnalyticsPayload('/api/analytics/page-view', payload);
 }

@@ -2,6 +2,7 @@
 
 import type { Feature, Geometry, GeoJsonProperties } from 'geojson';
 import type { CulturalPlace } from '../province-data';
+import type { CategoryConfigMap } from '../category-config';
 
 import { useMemo } from 'react';
 import { geoPath, geoMercator } from 'd3-geo';
@@ -9,7 +10,7 @@ import { geoPath, geoMercator } from 'd3-geo';
 import Box from '@mui/material/Box';
 import { alpha, lighten, useTheme } from '@mui/material/styles';
 
-import { CULTURE_CATEGORY_COLORS } from '../province-data';
+import { getCategoryColor } from '../category-config';
 import { mergeCulturalPlaces } from './province-detail-utils';
 import {
   rewindGeometry,
@@ -24,7 +25,7 @@ type LandmarkMarker = {
   name: string;
   district: string;
   highlight: string;
-  category: keyof typeof CULTURE_CATEGORY_COLORS;
+  category: string;
   imageHref?: string;
   number: number;
   x: number;
@@ -46,7 +47,7 @@ type MarkerCluster = {
   cardWidth: number;
   count: number;
   label: string;
-  category: keyof typeof CULTURE_CATEGORY_COLORS;
+  category: string;
   title: string;
   variant: 'card' | 'dot';
 };
@@ -55,6 +56,7 @@ type ProvinceShapeMapProps = {
   provinceId: string;
   provinceName: string;
   places: CulturalPlace[];
+  categoryConfig: CategoryConfigMap;
   onDistrictSelect?: (district: string) => void;
 };
 
@@ -399,6 +401,7 @@ export function ProvinceShapeMap({
   provinceId,
   provinceName,
   places,
+  categoryConfig,
   onDistrictSelect,
 }: ProvinceShapeMapProps) {
   const theme = useTheme();
@@ -568,7 +571,7 @@ export function ProvinceShapeMap({
               />
             </g>
             {mapData.clusters.map((cluster) => {
-              const clusterColor = CULTURE_CATEGORY_COLORS[cluster.category];
+              const clusterColor = getCategoryColor(categoryConfig, cluster.category);
 
               return (
                 <g
@@ -667,7 +670,7 @@ export function ProvinceShapeMap({
             {mapData.markers
               .filter((marker) => marker.hasCallout && mapData.clusters.length === 0)
               .map((marker, index) => {
-                const markerColor = CULTURE_CATEGORY_COLORS[marker.category];
+                const markerColor = getCategoryColor(categoryConfig, marker.category);
                 const calloutRadius = 29;
                 const calloutEdgeX =
                   marker.calloutX + (marker.side === 'left' ? calloutRadius : -calloutRadius);

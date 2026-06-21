@@ -8,6 +8,8 @@ import { useMemo, useEffect, useCallback } from 'react';
 import axios from 'src/lib/axios';
 import { supabase } from 'src/lib/supabase';
 
+import { setAdminAnalyticsDisabled } from 'src/components/analytics/track-event';
+
 import { AuthContext } from '../auth-context';
 
 // ----------------------------------------------------------------------
@@ -41,14 +43,17 @@ export function AuthProvider({ children }: Props) {
       if (session) {
         const accessToken = session?.access_token;
 
+        setAdminAnalyticsDisabled(true);
         setState({ user: { ...session, ...session?.user }, loading: false });
         axios.defaults.headers.common.Authorization = `Bearer ${accessToken}`;
       } else {
+        setAdminAnalyticsDisabled(false);
         setState({ user: null, loading: false });
         delete axios.defaults.headers.common.Authorization;
       }
     } catch (error) {
       console.error(error);
+      setAdminAnalyticsDisabled(false);
       setState({ user: null, loading: false });
     }
   }, [setState]);
@@ -72,7 +77,13 @@ export function AuthProvider({ children }: Props) {
             id: state.user?.id,
             accessToken: state.user?.access_token,
             displayName: state.user?.user_metadata.display_name,
-            role: state.user?.role ?? 'admin',
+            name: state.user?.user_metadata.display_name,
+            firstName: state.user?.user_metadata.first_name,
+            lastName: state.user?.user_metadata.last_name,
+            photoURL: state.user?.user_metadata.photo_url,
+            app_metadata: state.user?.app_metadata ?? {},
+            role: state.user?.app_metadata?.role ?? 'admin',
+            adminPermissions: state.user?.app_metadata?.admin_permissions ?? [],
           }
         : null,
       checkUserSession,

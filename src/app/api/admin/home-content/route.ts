@@ -5,6 +5,8 @@ import { NextResponse } from 'next/server';
 import { getSupabaseAdmin } from 'src/server/supabase-admin';
 import { verifyAdminRequest } from 'src/server/admin-api-auth';
 
+import { ADMIN_PERMISSION } from 'src/auth/admin-permissions';
+
 const TABLE_NAME = process.env.HOME_CONTENT_SECTIONS_TABLE ?? 'home_content_sections';
 const ALLOWED_SECTION_KEYS = new Set(['story-media', 'local-wisdom', 'culture-categories']);
 
@@ -17,7 +19,7 @@ type HomeContentRow = {
 export const runtime = 'nodejs';
 
 export async function GET(request: NextRequest) {
-  if (!(await verifyAdminRequest(request))) {
+  if (!(await verifyAdminRequest(request, ADMIN_PERMISSION.homeContent))) {
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
   }
 
@@ -58,7 +60,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
-  if (!(await verifyAdminRequest(request))) {
+  if (!(await verifyAdminRequest(request, ADMIN_PERMISSION.homeContent))) {
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
   }
 

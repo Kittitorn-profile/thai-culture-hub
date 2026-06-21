@@ -27,11 +27,10 @@ import provinces from 'src/data/thailand-culture/provinces';
 
 import { TableNoData, TableHeadCustom, TablePaginationCustom } from 'src/components/table';
 
-import { CULTURE_CATEGORY_LABELS } from 'src/sections/province/province-data';
-
 import { useAuthContext } from 'src/auth/hooks';
 
 type CmsPlace = CulturalPlace & {
+  provinceCode?: string;
   override?: {
     lat?: number | null;
     lng?: number | null;
@@ -41,6 +40,9 @@ type CmsPlace = CulturalPlace & {
     image_url?: string | null;
     note?: string | null;
     updated_at?: string | null;
+    updated_by_id?: string | null;
+    updated_by_email?: string | null;
+    updated_by_name?: string | null;
   } | null;
 };
 
@@ -83,23 +85,39 @@ type CategoryOption = {
   label: string;
 };
 
-type AdminCategoriesResponse = {
+type ProvinceOption = {
+  code: string;
+  name: string;
+  region?: string;
+};
+
+type CategoryConfigResponse = {
   data?: Array<{
-    category_key?: string;
+    key?: string;
     label?: string;
-    source?: string | null;
-    is_active?: boolean | null;
   }>;
   message?: string;
+};
+
+type SyncEndpointResult = {
+  endpoint: string;
+  label: string;
+  status: number;
+  total?: number;
+  upserted?: number;
+  message?: string;
+  ok: boolean;
 };
 
 const TABLE_HEAD = [
   { id: 'image', label: 'ภาพ', width: 96 },
   { id: 'name', label: 'ชื่อสถานที่' },
+  { id: 'province', label: 'จังหวัด', width: 100 },
   { id: 'source', label: 'แหล่งข้อมูล', width: 140 },
   { id: 'district', label: 'อำเภอ', width: 160 },
-  { id: 'coordinate', label: 'พิกัด', width: 220 },
-  { id: 'override', label: 'Override', width: 180 },
+  { id: 'coordinate', label: 'พิกัด', width: 120 },
+  { id: 'override', label: 'Override', width: 150 },
+  { id: 'updatedBy', label: 'แก้ไขล่าสุดโดย', width: 120 },
   { id: 'actions', label: '', width: 240, align: 'right' as const },
 ];
 
@@ -112,10 +130,18 @@ const SOURCE_OPTIONS: Array<{ value: NonNullable<CulturalPlace['source']>; label
   { value: 'culture_catalog', label: 'ข้อมูลวัฒนธรรม' },
   { value: 'thailand_cultural_hub', label: 'ข้อมูลจาก Thailand Cultural Hub' },
 ];
-const DEFAULT_CATEGORY_OPTIONS = Object.entries(CULTURE_CATEGORY_LABELS).map(([value, label]) => ({
-  value,
-  label,
-}));
+const DEFAULT_CATEGORY_OPTIONS: CategoryOption[] = [];
+const ALL_PROVINCES_OPTION: ProvinceOption = { code: '', name: 'ทุกจังหวัด' };
+const SYNC_LIMIT = 100;
+const CULTURAL_PLACES_SYNC_LIMIT = 10000;
+const TAT_SYNC_MAX_PAGES = 500;
+
+const FINE_ARTS_SYNC_SOURCE_BY_PLACE_SOURCE: Record<string, string> = {
+  finearts_monument: 'monument',
+  finearts_archeology: 'archeology',
+  finearts_buddha: 'buddha',
+  finearts_museum: 'museum',
+};
 
 function getSourceText(source?: CulturalPlace['source']) {
   if (source === 'tat') {
@@ -141,9 +167,162 @@ function canDeletePlace(place: CmsPlace) {
   return place.source === 'thailand_cultural_hub' && !!place.override;
 }
 
+function getProvinceName(provinceCode?: string) {
+  if (!provinceCode) {
+    return 'ทุกจังหวัด';
+  }
+
+  return provinces.find((province) => province.code === provinceCode)?.name ?? provinceCode;
+}
+
+function getSyncTasks(provinceCode: string, sourceFilter: string) {
+  if (sourceFilter === 'thailand_cultural_hub') {
+    return [];
+  }
+
+  if (sourceFilter === 'tat') {
+    return [
+      {
+        endpoint: '/api/tat/sync',
+        label: 'ททท. metadata',
+        body: {
+          provinceCode,
+          limit: SYNC_LIMIT,
+          maxPages: TAT_SYNC_MAX_PAGES,
+          syncCategories: true,
+          syncSubCategories: true,
+          syncPlaces: true,
+        },
+      },
+      {
+        endpoint: '/api/culture/sync',
+        label: 'ททท. -> Cultural Places',
+        body: { provinceCode, limit: CULTURAL_PLACES_SYNC_LIMIT, sources: ['tat'] },
+      },
+    ];
+  }
+
+  if (sourceFilter === 'culture_catalog') {
+    return [
+      {
+        endpoint: '/api/culture/sync',
+        label: 'ข้อมูลวัฒนธรรม',
+        body: { provinceCode, limit: CULTURAL_PLACES_SYNC_LIMIT, sources: ['culture_catalog'] },
+      },
+    ];
+  }
+
+  if (sourceFilter in FINE_ARTS_SYNC_SOURCE_BY_PLACE_SOURCE) {
+    return [
+      {
+        endpoint: '/api/finearts/sync',
+        label: 'กรมศิลป์',
+        body: {
+          provinceCode,
+          limit: SYNC_LIMIT,
+          sources: [FINE_ARTS_SYNC_SOURCE_BY_PLACE_SOURCE[sourceFilter]],
+        },
+      },
+    ];
+  }
+
+  return [
+    {
+      endpoint: '/api/tat/sync',
+      label: 'ททท. metadata',
+      body: {
+        provinceCode,
+        limit: SYNC_LIMIT,
+        maxPages: TAT_SYNC_MAX_PAGES,
+        syncCategories: true,
+        syncSubCategories: true,
+        syncPlaces: true,
+      },
+    },
+    {
+      endpoint: '/api/finearts/sync',
+      label: 'กรมศิลป์',
+      body: { provinceCode, limit: SYNC_LIMIT },
+    },
+    {
+      endpoint: '/api/culture/sync',
+      label: 'ททท. + ข้อมูลวัฒนธรรม -> Cultural Places',
+      body: {
+        provinceCode,
+        limit: CULTURAL_PLACES_SYNC_LIMIT,
+        sources: ['tat', 'culture_catalog'],
+      },
+    },
+  ];
+}
+
+function getSyncTotal(data: Record<string, any>) {
+  if (typeof data.upserted === 'number') {
+    return data.upserted;
+  }
+
+  if (typeof data.total === 'number') {
+    return data.total;
+  }
+
+  if (Array.isArray(data.results)) {
+    return data.results.reduce((total: number, result: Record<string, any>) => {
+      if (typeof result.upserted === 'number') {
+        return total + result.upserted;
+      }
+
+      if (typeof result.total === 'number') {
+        return total + result.total;
+      }
+
+      if (Array.isArray(result.rows)) {
+        return total + result.rows.length;
+      }
+
+      return total;
+    }, 0);
+  }
+
+  return 0;
+}
+
+function getSyncFailureMessage(label: string, data: Record<string, any>, status: number) {
+  const messages = [
+    typeof data.message === 'string' ? data.message : '',
+    ...(Array.isArray(data.results)
+      ? data.results
+          .map((result: Record<string, any>) => result.message)
+          .filter((message): message is string => typeof message === 'string' && !!message)
+      : []),
+    ...(Array.isArray(data.sources)
+      ? data.sources
+          .map((source: Record<string, any>) => source.message)
+          .filter((message): message is string => typeof message === 'string' && !!message)
+      : []),
+  ].filter(Boolean);
+  const rawMessage = messages[0] ?? `HTTP ${status}`;
+  const normalizedMessage = rawMessage.toLowerCase();
+
+  if (
+    label.includes('ททท.') &&
+    /api[_\s-]?key|unauthorized|forbidden|401|403/.test(normalizedMessage)
+  ) {
+    return `${label}: API key ไม่ถูกต้อง หรือยังไม่ได้ตั้งค่า TAT_DATA_API_KEY`;
+  }
+
+  if (
+    label.includes('กรมศิลป์') &&
+    /api[_\s-]?key|unauthorized|forbidden|401|403/.test(normalizedMessage)
+  ) {
+    return `${label}: API key ไม่ถูกต้อง หรือยังไม่ได้ตั้งค่า FINE_ARTS_API_KEY`;
+  }
+
+  return `${label}: ${rawMessage}`;
+}
+
 export default function CulturalPlacesCmsPage() {
   const { user, checkUserSession } = useAuthContext();
-  const [provinceCode, setProvinceCode] = useState('TH-44');
+  const [provinceCode, setProvinceCode] = useState('');
   const [query, setQuery] = useState('');
   const [appliedQuery, setAppliedQuery] = useState('');
   const [sourceFilter, setSourceFilter] = useState('');
@@ -161,12 +340,14 @@ export default function CulturalPlacesCmsPage() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
   const accessToken = user?.accessToken ?? user?.access_token ?? '';
 
   const selectedProvince = useMemo(
-    () => provinces.find((province) => province.code === provinceCode),
+    () => [ALL_PROVINCES_OPTION, ...provinces].find((province) => province.code === provinceCode),
     [provinceCode]
   );
+  const provinceOptions = useMemo<ProvinceOption[]>(() => [ALL_PROVINCES_OPTION, ...provinces], []);
   const districtFilterOptions = useMemo<CategoryOption[]>(
     () => [
       { value: '', label: 'ทุกอำเภอ' },
@@ -186,74 +367,77 @@ export default function CulturalPlacesCmsPage() {
     await checkUserSession?.();
   };
 
-  const loadPlaces = useCallback(async () => {
-    setError('');
-    setMessage('');
-    setIsLoading(true);
-
-    try {
-      const params = new URLSearchParams({
-        provinceCode,
-        page: `${page + 1}`,
-        pageSize: `${rowsPerPage}`,
-      });
-
-      if (districtFilter) {
-        params.set('district', districtFilter);
+  const loadPlaces = useCallback(
+    async (options?: { keepMessage?: boolean }) => {
+      setError('');
+      if (!options?.keepMessage) {
+        setMessage('');
       }
+      setIsLoading(true);
 
-      if (sourceFilter) {
-        params.set('source', sourceFilter);
+      try {
+        const params = new URLSearchParams({
+          page: `${page + 1}`,
+          pageSize: `${rowsPerPage}`,
+        });
+
+        if (provinceCode) {
+          params.set('provinceCode', provinceCode);
+        }
+
+        if (districtFilter) {
+          params.set('district', districtFilter);
+        }
+
+        if (sourceFilter) {
+          params.set('source', sourceFilter);
+        }
+
+        if (appliedQuery) {
+          params.set('q', appliedQuery);
+        }
+
+        const response = await fetch(`/api/culture/province-places?${params.toString()}`);
+        const data = (await response.json()) as ProvincePlacesResponse;
+
+        if (!response.ok) {
+          throw new Error(data.message ?? 'โหลดข้อมูลไม่สำเร็จ');
+        }
+
+        const nextPlaces = Array.isArray(data.data) ? data.data : [];
+        const nextTotal = data.pagination?.total ?? data.total ?? nextPlaces.length;
+        const nextPage = (data.pagination?.page ?? data.page ?? page + 1) - 1;
+
+        setPlaces(nextPlaces);
+        setDistricts(Array.isArray(data.districts) ? data.districts : []);
+        setTotalRows(nextTotal);
+        if (!options?.keepMessage) {
+          setMessage(`โหลดข้อมูล ${nextTotal} รายการ`);
+        }
+
+        if (nextPage !== page) {
+          setPage(Math.max(nextPage, 0));
+        }
+      } catch (caughtError) {
+        setError(caughtError instanceof Error ? caughtError.message : 'โหลดข้อมูลไม่สำเร็จ');
+      } finally {
+        setIsLoading(false);
       }
-
-      if (appliedQuery) {
-        params.set('q', appliedQuery);
-      }
-
-      const response = await fetch(`/api/culture/province-places?${params.toString()}`);
-      const data = (await response.json()) as ProvincePlacesResponse;
-
-      if (!response.ok) {
-        throw new Error(data.message ?? 'โหลดข้อมูลไม่สำเร็จ');
-      }
-
-      const nextPlaces = Array.isArray(data.data) ? data.data : [];
-      const nextTotal = data.pagination?.total ?? data.total ?? nextPlaces.length;
-      const nextPage = (data.pagination?.page ?? data.page ?? page + 1) - 1;
-
-      setPlaces(nextPlaces);
-      setDistricts(Array.isArray(data.districts) ? data.districts : []);
-      setTotalRows(nextTotal);
-      setMessage(`โหลดข้อมูล ${nextTotal} รายการ`);
-
-      if (nextPage !== page) {
-        setPage(Math.max(nextPage, 0));
-      }
-    } catch (caughtError) {
-      setError(caughtError instanceof Error ? caughtError.message : 'โหลดข้อมูลไม่สำเร็จ');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [appliedQuery, districtFilter, page, provinceCode, rowsPerPage, sourceFilter]);
+    },
+    [appliedQuery, districtFilter, page, provinceCode, rowsPerPage, sourceFilter]
+  );
 
   useEffect(() => {
     loadPlaces();
   }, [loadPlaces]);
 
   useEffect(() => {
-    if (!accessToken) {
-      return undefined;
-    }
-
     const controller = new AbortController();
 
     async function loadCategories() {
       try {
-        const response = await fetch('/api/admin/categories', {
-          headers: { Authorization: `Bearer ${accessToken}` },
-          signal: controller.signal,
-        });
-        const data = (await response.json()) as AdminCategoriesResponse;
+        const response = await fetch('/api/culture/category-config', { signal: controller.signal });
+        const data = (await response.json()) as CategoryConfigResponse;
 
         if (!response.ok) {
           return;
@@ -261,11 +445,9 @@ export default function CulturalPlacesCmsPage() {
 
         const nextOptions = Array.isArray(data.data)
           ? data.data
-              .filter((category) => category.is_active !== false)
-              .filter((category) => category.source === 'system')
               .map((category) => ({
-                value: category.category_key ?? '',
-                label: category.label ?? category.category_key ?? '',
+                value: category.key ?? '',
+                label: category.label ?? category.key ?? '',
               }))
               .filter((category) => category.value && category.label)
           : [];
@@ -283,7 +465,7 @@ export default function CulturalPlacesCmsPage() {
     loadCategories();
 
     return () => controller.abort();
-  }, [accessToken]);
+  }, []);
 
   useEffect(() => {
     if (!editingPlace?.isNew) {
@@ -332,11 +514,85 @@ export default function CulturalPlacesCmsPage() {
     setAppliedQuery(nextQuery);
   };
 
+  const syncExternalData = async () => {
+    const syncTasks = getSyncTasks(provinceCode, sourceFilter);
+
+    if (!syncTasks.length) {
+      setError('แหล่งข้อมูลนี้เป็นข้อมูลภายใน ไม่ต้อง sync จาก API นอก');
+      setMessage('');
+      return;
+    }
+
+    setError('');
+    setMessage('');
+    setIsSyncing(true);
+
+    try {
+      const results: SyncEndpointResult[] = [];
+
+      for (const task of syncTasks) {
+        const response = await fetch(task.endpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify(task.body),
+        });
+        const data = (await response.json().catch(() => ({}))) as Record<string, any>;
+
+        results.push({
+          endpoint: task.endpoint,
+          label: task.label,
+          status: response.status,
+          total: getSyncTotal(data),
+          upserted: typeof data.upserted === 'number' ? data.upserted : undefined,
+          message: response.ok
+            ? data.message
+            : getSyncFailureMessage(task.label, data, response.status),
+          ok: response.ok,
+        });
+      }
+
+      const failedResults = results.filter((result) => !result.ok);
+      const successResults = results.filter((result) => result.ok);
+      const totalSynced = successResults.reduce((total, result) => total + (result.total ?? 0), 0);
+
+      if (successResults.length) {
+        setMessage(
+          `Sync API นอกสำเร็จ ${totalSynced} รายการ (${successResults
+            .map((result) => `${result.label} ${result.total ?? 0}`)
+            .join(', ')})`
+        );
+        setPage(0);
+        await loadPlaces({ keepMessage: true });
+      }
+
+      if (failedResults.length) {
+        setError(
+          failedResults
+            .map((result) => result.message ?? `${result.label}: sync ไม่สำเร็จ`)
+            .join(', ')
+        );
+      }
+
+      if (!successResults.length && failedResults.length) {
+        setMessage('');
+      }
+    } catch (caughtError) {
+      setError(caughtError instanceof Error ? caughtError.message : 'Sync API นอกไม่สำเร็จ');
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
   const startAdd = () => {
+    const nextProvinceCode = provinceCode || 'TH-44';
+
     setEditingPlace({
       isNew: true,
-      id: `cms-${provinceCode}-${Date.now()}`,
-      provinceCode,
+      id: `cms-${nextProvinceCode}-${Date.now()}`,
+      provinceCode: nextProvinceCode,
       name: '',
       source: 'thailand_cultural_hub',
       category: 'cultural_attraction',
@@ -352,7 +608,7 @@ export default function CulturalPlacesCmsPage() {
   const startEdit = (place: CmsPlace) => {
     setEditingPlace({
       id: place.id,
-      provinceCode,
+      provinceCode: place.provinceCode || provinceCode || 'TH-44',
       name: place.name,
       source: place.source,
       category: place.category,
@@ -419,7 +675,7 @@ export default function CulturalPlacesCmsPage() {
       setMessage('บันทึกพิกัดแล้ว');
       setEditingPlace(null);
 
-      if (editingPlace.provinceCode !== provinceCode) {
+      if (provinceCode && editingPlace.provinceCode !== provinceCode) {
         setProvinceCode(editingPlace.provinceCode);
         setDistrictFilter('');
         setPage(0);
@@ -477,13 +733,28 @@ export default function CulturalPlacesCmsPage() {
               แก้พิกัด lat/lng โดยเก็บเป็น override ไม่ทับข้อมูลต้นทาง
             </Typography>
           </Box>
-          <Button variant="contained" onClick={startAdd} sx={{ alignSelf: { md: 'flex-start' } }}>
-            เพิ่มสถานที่
-          </Button>
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
+            <LoadingButton
+              color="inherit"
+              variant="outlined"
+              loading={isSyncing}
+              onClick={syncExternalData}
+              sx={{ alignSelf: { md: 'flex-start' } }}
+            >
+              Sync API นอก
+            </LoadingButton>
+            <Button variant="contained" onClick={startAdd} sx={{ alignSelf: { md: 'flex-start' } }}>
+              เพิ่มสถานที่
+            </Button>
+          </Stack>
         </Stack>
 
         {error && <Alert severity="error">{error}</Alert>}
         {message && <Alert severity="success">{message}</Alert>}
+        <Alert severity="info">
+          Sync จาก ททท. ต้องมี <strong>TAT_DATA_API_KEY</strong> และกรมศิลป์ต้องมี{' '}
+          <strong>FINE_ARTS_API_KEY</strong> ใน env ของ server
+        </Alert>
 
         <>
           <Card sx={{ p: 2.5 }}>
@@ -501,7 +772,7 @@ export default function CulturalPlacesCmsPage() {
               />
               <Autocomplete
                 fullWidth
-                options={provinces}
+                options={provinceOptions}
                 value={selectedProvince ?? null}
                 getOptionLabel={(option) => option.name}
                 isOptionEqualToValue={(option, value) => option.code === value.code}
@@ -559,14 +830,23 @@ export default function CulturalPlacesCmsPage() {
                 ค้นหา
               </LoadingButton>
             </Stack>
-            <Typography sx={{ mt: 1.5, color: 'text.secondary', fontSize: 13 }}>
-              จังหวัดที่เลือก: {selectedProvince?.name ?? provinceCode}
-            </Typography>
+            <Stack
+              direction={{ xs: 'column', sm: 'row' }}
+              spacing={1.5}
+              sx={{ mt: 1.5, color: 'text.secondary', fontSize: 13 }}
+            >
+              <Typography sx={{ fontSize: 13 }}>
+                จังหวัดที่เลือก: {selectedProvince?.name ?? 'ทุกจังหวัด'}
+              </Typography>
+              <Typography sx={{ fontSize: 13, fontWeight: 800 }}>
+                ข้อมูลทั้งหมด: {totalRows.toLocaleString('th-TH')} รายการ
+              </Typography>
+            </Stack>
           </Card>
 
           <Card>
             <TableContainer sx={{ overflow: 'auto' }}>
-              <Table sx={{ minWidth: 1080 }}>
+              <Table sx={{ minWidth: 1240 }}>
                 <TableHeadCustom headCells={TABLE_HEAD} />
 
                 <TableBody>
@@ -602,6 +882,8 @@ export default function CulturalPlacesCmsPage() {
                         )}
                       </TableCell>
 
+                      <TableCell>{getProvinceName(place.provinceCode)}</TableCell>
+
                       <TableCell>{getSourceText(place.source)}</TableCell>
 
                       <TableCell>{place.district || 'ไม่ระบุอำเภอ'}</TableCell>
@@ -629,6 +911,25 @@ export default function CulturalPlacesCmsPage() {
                           <Typography sx={{ color: 'text.disabled', fontSize: 13 }}>
                             ยังไม่มี
                           </Typography>
+                        )}
+                      </TableCell>
+
+                      <TableCell>
+                        {place.override?.updated_by_name || place.override?.updated_by_email ? (
+                          <Box>
+                            <Typography sx={{ fontSize: 13, fontWeight: 800 }}>
+                              {place.override.updated_by_name || place.override.updated_by_email}
+                            </Typography>
+                            {place.override.updated_by_email &&
+                              place.override.updated_by_email !==
+                                place.override.updated_by_name && (
+                                <Typography sx={{ color: 'text.secondary', fontSize: 12 }}>
+                                  {place.override.updated_by_email}
+                                </Typography>
+                              )}
+                          </Box>
+                        ) : (
+                          <Typography sx={{ color: 'text.disabled', fontSize: 13 }}>-</Typography>
                         )}
                       </TableCell>
 

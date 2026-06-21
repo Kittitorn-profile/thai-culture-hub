@@ -1,6 +1,7 @@
 'use client';
 
 import type { CulturalPlace } from '../province-data';
+import type { CategoryConfigMap } from '../category-config';
 
 import { useState } from 'react';
 
@@ -19,15 +20,16 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import { Iconify } from 'src/components/iconify';
 import { trackAnalyticsEvent } from 'src/components/analytics';
 
+import { getCategoryColor, getCategoryLabel } from '../category-config';
 import { getSourceLabel, toggleFilterValue } from './province-detail-utils';
-import { CULTURE_CATEGORY_LABELS, CULTURE_CATEGORY_COLORS } from '../province-data';
 
 type ProvinceFilterDrawerProps = {
   open: boolean;
   totalCount: number;
   filteredCount: number;
   sourceOptions: string[];
-  categoryOptions: Array<keyof typeof CULTURE_CATEGORY_COLORS>;
+  categoryOptions: string[];
+  categoryConfig: CategoryConfigMap;
   districtOptions: string[];
   selectedSources: string[];
   selectedCategories: string[];
@@ -111,6 +113,7 @@ export function ProvinceFilterDrawer({
   filteredCount,
   sourceOptions,
   categoryOptions,
+  categoryConfig,
   districtOptions,
   selectedSources,
   selectedCategories,
@@ -233,10 +236,10 @@ export function ProvinceFilterDrawer({
                         width: 10,
                         height: 10,
                         borderRadius: '50%',
-                        bgcolor: CULTURE_CATEGORY_COLORS[category],
+                        bgcolor: getCategoryColor(categoryConfig, category),
                       }}
                     />
-                    <span>{CULTURE_CATEGORY_LABELS[category]}</span>
+                    <span>{getCategoryLabel(categoryConfig, category)}</span>
                   </Stack>
                 }
               />

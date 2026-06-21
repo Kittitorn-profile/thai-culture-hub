@@ -7,6 +7,8 @@ import { useMemo, useEffect, useCallback } from 'react';
 
 import axios, { endpoints } from 'src/lib/axios';
 
+import { setAdminAnalyticsDisabled } from 'src/components/analytics/track-event';
+
 import { JWT_STORAGE_KEY } from './constant';
 import { AuthContext } from '../auth-context';
 import { setSession, isValidToken } from './utils';
@@ -37,12 +39,15 @@ export function AuthProvider({ children }: Props) {
 
         const { user } = res.data;
 
+        setAdminAnalyticsDisabled(true);
         setState({ user: { ...user, accessToken }, loading: false });
       } else {
+        setAdminAnalyticsDisabled(false);
         setState({ user: null, loading: false });
       }
     } catch (error) {
       console.error(error);
+      setAdminAnalyticsDisabled(false);
       setState({ user: null, loading: false });
     }
   }, [setState]);
