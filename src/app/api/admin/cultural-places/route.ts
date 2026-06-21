@@ -55,10 +55,39 @@ type CulturalPlaceRow = {
   payload?: Partial<CulturalPlace> | null;
 };
 
+type CulturalPlaceRemapRow = CulturalPlaceRow & {
+  updated_at?: string | null;
+};
+
+type CulturalPlaceUpsertRow = {
+  id: string;
+  province_code: string;
+  name: string;
+  district: string;
+  category: string;
+  lat: number;
+  lng: number;
+  description: string;
+  highlight: string;
+  image_urls: string[];
+  source_url: string | null;
+  map_url: string | null;
+  source: string;
+  payload: Partial<CulturalPlace>;
+  updated_at: string;
+};
+
+type RemappablePlacePayload = Partial<CulturalPlace> & {
+  name: string;
+  lat: number | string;
+  lng: number | string;
+};
+
 const PLACES_TABLE = process.env.CULTURAL_PLACES_TABLE ?? 'cultural_places';
 const OVERRIDES_TABLE = process.env.CULTURAL_PLACE_OVERRIDES_TABLE ?? 'cultural_place_overrides';
 const DETAILS_TABLE = process.env.CULTURAL_PLACE_DETAILS_TABLE ?? 'cultural_place_details';
 const SUPABASE_PAGE_SIZE = 1000;
+const UPSERT_CHUNK_SIZE = 500;
 
 function toNumber(value: unknown) {
   const numberValue = typeof value === 'number' ? value : Number(value);
@@ -108,6 +137,98 @@ function mapPlaceRow(row: CulturalPlaceRow): (CulturalPlace & { provinceCode?: s
     mapUrl: row.map_url ?? row.payload?.mapUrl,
     source: (row.source as CulturalPlace['source']) ?? row.payload?.source ?? 'local',
   };
+}
+
+function hasRemappablePayload(
+  payload?: Partial<CulturalPlace> | null
+): payload is RemappablePlacePayload {
+  return Boolean(
+    payload &&
+      typeof payload === 'object' &&
+      typeof payload.name === 'string' &&
+      payload.name.trim() &&
+      toNumber(payload.lat) != null &&
+      toNumber(payload.lng) != null
+  );
+}
+
+function mapPayloadToPlaceRow(row: CulturalPlaceRemapRow): CulturalPlaceUpsertRow | null {
+  const payload = row.payload;
+
+  if (!row.id || !row.province_code || !hasRemappablePayload(payload)) {
+    return null;
+  }
+
+  const lat = toNumber(payload.lat);
+  const lng = toNumber(payload.lng);
+
+  if (lat == null || lng == null) {
+    return null;
+  }
+
+  return {
+    id: row.id,
+    province_code: row.province_code,
+    name: payload.name.trim(),
+    district: payload.district?.trim() ?? row.district ?? '',
+    category: payload.category ?? row.category ?? 'cultural_attraction',
+    lat,
+    lng,
+    description: payload.description ?? row.description ?? '',
+    highlight: payload.highlight ?? row.highlight ?? '',
+    image_urls: payload.imageUrls ?? row.image_urls ?? [],
+    source_url: payload.sourceUrl ?? row.source_url ?? null,
+    map_url: payload.mapUrl ?? row.map_url ?? null,
+    source: payload.source ?? row.source ?? 'local',
+    payload,
+    updated_at: new Date().toISOString(),
+  };
+}
+
+async function getRemapRows(provinceCode?: string | null, source?: string | null) {
+  const supabase = getSupabaseAdmin();
+
+  if (!supabase.ok) {
+    return { ok: false as const, error: supabase.error, data: [] as CulturalPlaceRemapRow[] };
+  }
+
+  const rows: CulturalPlaceRemapRow[] = [];
+
+  for (let pageIndex = 0; ; pageIndex += 1) {
+    const from = pageIndex * SUPABASE_PAGE_SIZE;
+    const to = from + SUPABASE_PAGE_SIZE - 1;
+    let query = supabase.client
+      .from(PLACES_TABLE)
+      .select(
+        'id, province_code, name, district, category, lat, lng, description, highlight, image_urls, source_url, map_url, source, payload, updated_at'
+      )
+      .order('updated_at', { ascending: false })
+      .range(from, to);
+
+    if (provinceCode) {
+      query = query.eq('province_code', provinceCode);
+    }
+
+    if (source) {
+      query = query.eq('source', source);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      return { ok: false as const, error: error.message, data: [] as CulturalPlaceRemapRow[] };
+    }
+
+    const nextRows = (data ?? []) as CulturalPlaceRemapRow[];
+
+    rows.push(...nextRows);
+
+    if (nextRows.length < SUPABASE_PAGE_SIZE) {
+      break;
+    }
+  }
+
+  return { ok: true as const, data: rows };
 }
 
 async function getStoredPlaces(provinceCode?: string | null) {
@@ -356,6 +477,82 @@ export async function PUT(request: NextRequest) {
   }
 
   return NextResponse.json({ data, details: detailData });
+}
+
+export async function PATCH(request: NextRequest) {
+  const auth = await verifyAdminAccessToken(getBearerToken(request), ADMIN_PERMISSION.culturalPlaces);
+
+  if (!auth.ok) {
+    return NextResponse.json({ message: auth.message }, { status: auth.status });
+  }
+
+  const body = (await request.json().catch(() => ({}))) as {
+    provinceCode?: string;
+    source?: string;
+    dryRun?: boolean;
+  };
+  const provinceCode = body.provinceCode?.trim() || null;
+  const source = body.source?.trim() || null;
+  const rowsResult = await getRemapRows(provinceCode, source);
+
+  if (!rowsResult.ok) {
+    return NextResponse.json({ message: rowsResult.error }, { status: 500 });
+  }
+
+  const remapRows = rowsResult.data
+    .map(mapPayloadToPlaceRow)
+    .filter((row): row is CulturalPlaceUpsertRow => Boolean(row));
+
+  if (body.dryRun) {
+    return NextResponse.json({
+      dryRun: true,
+      scanned: rowsResult.data.length,
+      remappable: remapRows.length,
+      skipped: rowsResult.data.length - remapRows.length,
+      provinceCode,
+      source,
+    });
+  }
+
+  const supabase = getSupabaseAdmin();
+
+  if (!supabase.ok) {
+    return NextResponse.json({ message: supabase.error }, { status: 500 });
+  }
+
+  let updated = 0;
+
+  for (let index = 0; index < remapRows.length; index += UPSERT_CHUNK_SIZE) {
+    const chunk = remapRows.slice(index, index + UPSERT_CHUNK_SIZE);
+    const { error } = await supabase.client.from(PLACES_TABLE).upsert(chunk, {
+      onConflict: 'id',
+    });
+
+    if (error) {
+      return NextResponse.json(
+        {
+          updated,
+          scanned: rowsResult.data.length,
+          remappable: remapRows.length,
+          skipped: rowsResult.data.length - remapRows.length,
+          message: error.message,
+        },
+        { status: 500 }
+      );
+    }
+
+    updated += chunk.length;
+  }
+
+  return NextResponse.json({
+    updated,
+    scanned: rowsResult.data.length,
+    remappable: remapRows.length,
+    skipped: rowsResult.data.length - remapRows.length,
+    provinceCode,
+    source,
+    message: `Remapped ${updated} cultural places`,
+  });
 }
 
 export async function DELETE(request: NextRequest) {

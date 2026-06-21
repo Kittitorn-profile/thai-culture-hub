@@ -41,6 +41,13 @@ type SyncEndpointResult = {
   ok: boolean;
 };
 
+type SummaryRefreshResult = {
+  ok: boolean;
+  status: number;
+  total?: number;
+  message?: string;
+};
+
 type SyncTask = {
   endpoint: string;
   label: string;
@@ -431,6 +438,25 @@ function formatSyncedAt(value?: string) {
   }).format(new Date(value));
 }
 
+async function refreshProvincePlaceSummaries(): Promise<SummaryRefreshResult> {
+  const response = await fetch('/api/culture/province-places?summary=true&refreshSummary=true', {
+    cache: 'no-store',
+  });
+  const data = (await response.json().catch(() => ({}))) as Record<string, any>;
+
+  return {
+    ok: response.ok,
+    status: response.status,
+    total: typeof data.total === 'number' ? data.total : undefined,
+    message:
+      typeof data.message === 'string'
+        ? data.message
+        : response.ok
+          ? 'Refresh province_place_summaries สำเร็จ'
+          : `Refresh province_place_summaries ไม่สำเร็จ (HTTP ${response.status})`,
+  };
+}
+
 export default function CulturalPlacesSyncPage() {
   const { user, checkUserSession } = useAuthContext();
   const queryClient = useQueryClient();
@@ -619,19 +645,36 @@ export default function CulturalPlacesSyncPage() {
       const successResults = results.filter((result) => result.ok);
       const totalSynced = successResults.reduce((total, result) => total + (result.total ?? 0), 0);
       const syncedAt = new Date().toISOString();
+      const summaryRefresh = successResults.length ? await refreshProvincePlaceSummaries() : null;
 
       if (successResults.length) {
         const successMessage = `Sync ${datasetLabel} สำเร็จ ${totalSynced.toLocaleString(
           'th-TH'
-        )} รายการ`;
+        )} รายการ${
+          summaryRefresh?.ok
+            ? ` และ refresh summary แล้ว ${summaryRefresh.total?.toLocaleString('th-TH') ?? '-'} รายการ`
+            : ''
+        }`;
 
         await recordSyncLog({
           syncDatasetValue,
           datasetLabel,
           totalRecords: totalSynced,
-          success: !failedResults.length,
+          success: !failedResults.length && summaryRefresh?.ok !== false,
           logMessage: successMessage,
-          results,
+          results: summaryRefresh
+            ? [
+                ...results,
+                {
+                  endpoint: '/api/culture/province-places?summary=true&refreshSummary=true',
+                  label: 'province_place_summaries',
+                  status: summaryRefresh.status,
+                  total: summaryRefresh.total,
+                  message: summaryRefresh.message,
+                  ok: summaryRefresh.ok,
+                },
+              ]
+            : results,
         }).catch((caughtError) => {
           setError(
             caughtError instanceof Error ? caughtError.message : 'บันทึกประวัติ Sync ไม่สำเร็จ'
@@ -643,12 +686,16 @@ export default function CulturalPlacesSyncPage() {
           ...previous,
           [syncDatasetValue]: {
             loading: false,
-            ok: true,
+            ok: summaryRefresh?.ok !== false,
             total: totalSynced,
             message: successMessage,
             syncedAt,
           },
         }));
+
+        if (summaryRefresh?.ok === false) {
+          setError(summaryRefresh.message ?? 'Refresh province_place_summaries ไม่สำเร็จ');
+        }
       }
 
       if (failedResults.length) {

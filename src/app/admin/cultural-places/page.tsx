@@ -110,6 +110,14 @@ type CategoryConfigResponse = {
   message?: string;
 };
 
+type RemapResponse = {
+  updated?: number;
+  scanned?: number;
+  remappable?: number;
+  skipped?: number;
+  message?: string;
+};
+
 const TABLE_HEAD = [
   { id: 'image', label: 'ภาพ', width: 96 },
   { id: 'name', label: 'ชื่อสถานที่' },
@@ -236,6 +244,19 @@ function getPlaceUpdatedByName(place: CmsPlace) {
 
 function getPlaceUpdatedByEmail(place: CmsPlace) {
   return place.override?.updated_by_email ?? place.details?.updatedByEmail ?? '';
+}
+
+async function refreshProvincePlaceSummaries() {
+  const response = await fetch('/api/culture/province-places?summary=true&refreshSummary=true', {
+    cache: 'no-store',
+  });
+  const data = (await response.json().catch(() => ({}))) as { total?: number; message?: string };
+
+  if (!response.ok) {
+    throw new Error(data.message ?? 'Refresh province_place_summaries ไม่สำเร็จ');
+  }
+
+  return data;
 }
 
 export default function CulturalPlacesCmsPage() {
@@ -566,6 +587,40 @@ export default function CulturalPlacesCmsPage() {
     },
   });
 
+  const remapPlacesMutation = useMutation({
+    mutationFn: async () =>
+      adminApiRequest<RemapResponse>('/api/admin/cultural-places', {
+        method: 'PATCH',
+        accessToken,
+        body: {
+          provinceCode: provinceCode || undefined,
+          source: sourceFilter || undefined,
+        },
+      }),
+    onSuccess: async (data) => {
+      const summary = await refreshProvincePlaceSummaries();
+
+      setMessage(
+        `Remap สำเร็จ ${Number(data.updated ?? 0).toLocaleString('th-TH')} รายการ${
+          typeof data.skipped === 'number'
+            ? `, ข้าม ${data.skipped.toLocaleString('th-TH')} รายการ`
+            : ''
+        } และ refresh summary แล้ว${
+          typeof summary.total === 'number' ? ` ${summary.total.toLocaleString('th-TH')} รายการ` : ''
+        }`
+      );
+      await queryClient.invalidateQueries({ queryKey: ['admin-cultural-places'] });
+      await loadPlaces({ keepMessage: true });
+    },
+    onError: async (caughtError) => {
+      if (caughtError instanceof AdminApiError && caughtError.status === 401) {
+        await handleUnauthorized();
+      }
+
+      setError(caughtError instanceof Error ? caughtError.message : 'Remap data ไม่สำเร็จ');
+    },
+  });
+
   const savePlace = async () => {
     if (!editingPlace) {
       return;
@@ -604,6 +659,26 @@ export default function CulturalPlacesCmsPage() {
     await deletePlaceMutation.mutateAsync(place).catch(() => undefined);
   };
 
+  const remapPlaces = async () => {
+    const scope = [
+      provinceCode ? `จังหวัด ${getProvinceName(provinceCode)}` : 'ทุกจังหวัด',
+      sourceFilter ? `แหล่งข้อมูล ${getSourceText(sourceFilter as CulturalPlace['source'])}` : '',
+    ]
+      .filter(Boolean)
+      .join(' / ');
+    const confirmed = window.confirm(
+      `ต้องการ remap data ใน cultural_places สำหรับ ${scope} หรือไม่? ข้อมูล override ที่แก้มือไว้จะไม่ถูกลบ`
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    setError('');
+    setMessage('');
+    await remapPlacesMutation.mutateAsync().catch(() => undefined);
+  };
+
   return (
     <DashboardContent maxWidth="xl">
       <Stack spacing={3}>
@@ -616,9 +691,19 @@ export default function CulturalPlacesCmsPage() {
               แก้พิกัด lat/lng โดยเก็บเป็น override ไม่ทับข้อมูลต้นทาง
             </Typography>
           </Box>
-          <Button variant="contained" onClick={startAdd} sx={{ alignSelf: { md: 'flex-start' } }}>
-            เพิ่มสถานที่
-          </Button>
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} sx={{ alignSelf: { md: 'flex-start' } }}>
+            <LoadingButton
+              color="inherit"
+              variant="outlined"
+              loading={remapPlacesMutation.isPending}
+              onClick={remapPlaces}
+            >
+              Remap data
+            </LoadingButton>
+            <Button variant="contained" onClick={startAdd}>
+              เพิ่มสถานที่
+            </Button>
+          </Stack>
         </Stack>
 
         {error && <Alert severity="error">{error}</Alert>}
