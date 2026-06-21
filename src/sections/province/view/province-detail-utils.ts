@@ -13,7 +13,7 @@ export function getCulturalPlaceCardImage(index: number) {
 }
 
 export function getPlaceImages(place: CulturalPlace, index: number) {
-  return place.imageUrls?.length ? place.imageUrls : [getCulturalPlaceCardImage(index)];
+  return place.imageUrls?.length ? place.imageUrls : [];
 }
 
 export function mergeCulturalPlaces(...placeGroups: CulturalPlace[][]) {

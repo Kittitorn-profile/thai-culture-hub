@@ -221,9 +221,9 @@ export function ProvincePlaceCard({
             justifyContent: 'space-between',
           }}
         >
-          <Typography sx={{ color: accentColor, fontWeight: 900, fontSize: 14 }}>
+          <TruncatedTypography line={1} sx={{ color: accentColor, fontWeight: 900, fontSize: 14 }}>
             {displayHighlight}
-          </Typography>
+          </TruncatedTypography>
           <Box
             sx={{
               flexShrink: 0,

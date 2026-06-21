@@ -144,17 +144,48 @@ export function ProvincePlaceDialog({
           </DialogTitle>
 
           <DialogContent sx={{ pt: 0, pb: 3 }}>
-            <Box
-              sx={{
-                height: { xs: 260, sm: 360 },
-                overflow: 'hidden',
-                borderRadius: 1.5,
-                bgcolor: alpha(categoryColor, 0.16),
-                backgroundImage: `url(${placeImages[0]})`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-              }}
-            />
+            {placeImages?.[0] ? (
+              <Box
+                sx={{
+                  height: { xs: 260, sm: 360 },
+                  overflow: 'hidden',
+                  borderRadius: 1.5,
+                  bgcolor: alpha(categoryColor, 0.16),
+                  backgroundImage: `url(${placeImages?.[0]})`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                  alignItems: 'center',
+                }}
+              />
+            ) : (
+              <Box>
+                <Box
+                  sx={{
+                    minHeight: 200,
+                    borderRadius: 1.5,
+                    overflow: 'hidden',
+                    position: 'relative',
+                    display: 'grid',
+                    placeItems: 'center',
+                    bgcolor: theme.palette.grey[300],
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                  }}
+                >
+                  <Box
+                    component="img"
+                    alt="Thailand Cultural Hub"
+                    src="/assets/th-hub/logo-th-hub.png"
+                    sx={{
+                      width: 92,
+                      maxWidth: '46%',
+                      opacity: 0.58,
+                      filter: 'grayscale(1)',
+                    }}
+                  />
+                </Box>
+              </Box>
+            )}
 
             {placeImages.length > 1 && (
               <Stack direction="row" spacing={1} sx={{ mt: 1.2, overflowX: 'auto', pb: 0.5 }}>
