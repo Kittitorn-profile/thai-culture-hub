@@ -13,6 +13,8 @@ import { paths } from 'src/routes/paths';
 
 import { supabase } from 'src/lib/supabase';
 
+import { CREATOR_AUTH_TOKEN_KEY } from './auth-provider';
+
 // ----------------------------------------------------------------------
 
 export type SignInParams = {
@@ -101,6 +103,8 @@ export const signUp = async ({
 export const signOut = async (): Promise<{
   error: AuthError | null;
 }> => {
+  sessionStorage.removeItem(CREATOR_AUTH_TOKEN_KEY);
+
   const { error } = await supabase.auth.signOut();
 
   if (error) {

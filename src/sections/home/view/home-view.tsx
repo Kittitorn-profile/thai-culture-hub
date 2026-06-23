@@ -1,6 +1,19 @@
 'use client';
 
 import type { IconifyName } from 'src/components/iconify/register-icons';
+import type {
+  StoryContent,
+  HomeVideoItem,
+  HomeEventItem,
+  StoredHomeContent,
+  LocalWisdomContent,
+  CultureCategoryCard,
+  HomeAnalyticsSummary,
+  CreatorArticlePreview,
+  CreatorArticleResponse,
+  CultureCategoriesContent,
+  StoredCultureCategoriesContent,
+} from '../components/home-types';
 
 import dynamic from 'next/dynamic';
 import { useRef, useState, useEffect, useCallback } from 'react';
@@ -9,24 +22,50 @@ import { Box } from '@mui/material';
 import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
-import Dialog from '@mui/material/Dialog';
-import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
-import DialogContent from '@mui/material/DialogContent';
 import CircularProgress from '@mui/material/CircularProgress';
 
 import { paths } from 'src/routes/paths';
 import { RouterLink } from 'src/routes/components';
-
-import { fNumber } from 'src/utils/format-number';
 
 import { HomeFooter } from 'src/layouts/main/footer';
 
 import { Image } from 'src/components/image';
 import { Iconify } from 'src/components/iconify';
 
-import ThailandMap from './thailand-map';
+import { HomePlayButton } from '../components/home-play-button';
+import { HomeMapSection } from '../components/home-map-section';
 import { HomePopupBanner } from '../components/home-popup-banner';
+import { HomeHeroSection } from '../components/home-hero-section';
+import { HomeVideoDialog } from '../components/home-video-dialog';
+import { HomeAnalyticsSection } from '../components/home-analytics-section';
+import {
+  getFilledText,
+  isUpcomingHomeEvent,
+  formatHomeEventDate,
+  getCultureCategoryKey,
+  normalizeStoryContent,
+  formatCreatorArticleDate,
+  normalizeLocalWisdomContent,
+  normalizeCultureCategoriesContent,
+} from '../components/home-utils';
+import {
+  HOME_TEXT,
+  HOME_DEEP,
+  HOME_BG_TOP,
+  HOME_BG_MIDDLE,
+  DATA_FLOW_STEPS,
+  HOME_SECTION_PX,
+  HOME_POSTER_PATTERN,
+  CREATOR_ARTICLES_LIMIT,
+  HOME_SHARED_BACKGROUND,
+  DEFAULT_HOME_ANALYTICS,
+  HOME_SECTION_MAX_WIDTH,
+  STORY_MEDIA_SECTION_KEY,
+  LOCAL_WISDOM_SECTION_KEY,
+  CULTURE_CATEGORIES_SECTION_KEY,
+  FEATURED_CULTURE_CATEGORY_LIMIT,
+} from '../components/home-constants';
 
 // ----------------------------------------------------------------------
 
@@ -34,329 +73,6 @@ const ReactPlayer = dynamic(() => import('react-player'), {
   ssr: false,
   loading: () => null,
 });
-
-const HOME_BG_TOP = '#6f8790';
-const HOME_BG_MIDDLE = '#7b8476';
-const HOME_BG_BOTTOM = '#8f7c5c';
-const HOME_TEXT = '#f8f6ee';
-const HOME_DEEP = '#2a3736';
-const HOME_SECTION_MAX_WIDTH = 1280;
-const HOME_SECTION_PX = { xs: 2.5, sm: 4, md: 6, lg: 8 };
-const HOME_SHARED_BACKGROUND = `
-  radial-gradient(circle at 50% 18%, rgba(239,236,224,0.3) 0%, rgba(239,236,224,0.1) 28%, rgba(111,135,144,0) 58%),
-  linear-gradient(180deg, ${HOME_BG_TOP} 0%, ${HOME_BG_MIDDLE} 54%, ${HOME_BG_BOTTOM} 100%)
-`;
-const HOME_POSTER_PATTERN = `
-  repeating-radial-gradient(circle at 78% 12%, transparent 0 44px, rgba(230,236,232,0.22) 46px 48px),
-  repeating-radial-gradient(circle at 10% 82%, transparent 0 52px, rgba(230,236,232,0.12) 54px 56px),
-  linear-gradient(120deg, transparent 0 58%, rgba(229,221,198,0.13) 58% 59%, transparent 59% 100%)
-`;
-
-const POSTER_FRAME_IMAGES = [
-  {
-    src: '/assets/th-hub/bg-1.png',
-    alt: 'การแสดงศิลปวัฒนธรรมไทย',
-    sx: {
-      top: { xs: 0, md: -12 },
-      left: { xs: -10, md: -10 },
-      width: { xs: 400, sm: 600, md: 1200 },
-      // rotate: '-10deg',
-    },
-  },
-  // {
-  //   src: '/assets/th-hub/bg-right.png',
-  //   alt: 'เครื่องแต่งกายและภูมิปัญญาไทย',
-  //   sx: {
-  //     right: { xs: -104, md: 0 },
-  //     top: { xs: 38, md: 0 },
-  //     width: { xs: 190, sm: 246, md: 850 },
-  //   },
-  // },
-];
-
-const highlights = [
-  {
-    icon: '01',
-    title: 'ค้นจากแผนที่จังหวัด',
-    body: 'เลือกจังหวัดเพื่อดูสถานที่ วัฒนธรรม และหมวดข้อมูลที่เชื่อมกับพื้นที่จริง',
-  },
-  {
-    icon: '02',
-    title: 'รวมข้อมูลหลายแหล่ง',
-    body: 'จัดกลุ่มข้อมูลจาก ททท. กรมศิลปากร และบัญชีข้อมูลวัฒนธรรมให้สำรวจง่ายขึ้น',
-  },
-  {
-    icon: '03',
-    title: 'ดูตามอำเภอและหมวดหมู่',
-    body: 'แยกสถานที่ ประเพณี อาหาร หัตถกรรม การแสดง และภูมิปัญญาตามบริบทท้องถิ่น',
-  },
-];
-
-type CultureCategoryCard = {
-  categoryKey: string;
-  title: string;
-  description: string;
-  icon: IconifyName;
-  src: string;
-  color: string;
-};
-
-type HomeVideoItem = {
-  title: string;
-  src: string;
-  cover: string;
-};
-
-type StoryContent = {
-  title: string;
-  actionLabel: string;
-  body: string;
-};
-
-type LocalWisdomContent = {
-  title: string;
-  body: string;
-  quote: string;
-  caption: string;
-  mediaUrl: string;
-  coverUrl: string;
-};
-
-type CultureCategoriesContent = {
-  title: string;
-  description: string;
-};
-
-type StoredHomeContent = {
-  story?: StoryContent;
-  mediaItems?: Array<{
-    title: string;
-    description?: string;
-    url: string;
-    coverUrl: string;
-    isActive?: boolean;
-  }>;
-};
-
-type StoredCultureCategoriesContent = {
-  content?: CultureCategoriesContent;
-  items?: Array<{
-    title: string;
-    description: string;
-    imageUrl: string;
-    icon: IconifyName;
-    color: string;
-    isActive?: boolean;
-  }>;
-};
-
-type HomeAnalyticsSummary = {
-  days: number;
-  pageViews: number;
-  visitors: number;
-  sessions: number;
-  topSearches: Array<{ name: string; count: number; visitors: number }>;
-  topProvinces: Array<{ name: string; count: number; visitors: number }>;
-  topDistricts: Array<{ name: string; count: number; visitors: number }>;
-};
-
-type CreatorArticlePreview = {
-  id: string;
-  title: string;
-  slug: string;
-  excerpt: string;
-  coverImageUrl: string;
-  categoryKey: string;
-  categoryLabel: string;
-  creatorName: string;
-  publishedAt: string;
-  updatedAt: string;
-};
-
-type CreatorArticleResponse = {
-  data?: CreatorArticlePreview[];
-  total?: number;
-  hasMore?: boolean;
-  nextOffset?: number;
-};
-
-const STORY_MEDIA_SECTION_KEY = 'story-media';
-const LOCAL_WISDOM_SECTION_KEY = 'local-wisdom';
-const CULTURE_CATEGORIES_SECTION_KEY = 'culture-categories';
-
-const DATA_FEATURES = [
-  {
-    icon: 'solar:file-text-bold' as IconifyName,
-    title: 'ข้อมูลมีโครงสร้าง',
-    description:
-      'จัดเก็บชื่อสถานที่ จังหวัด อำเภอ หมวดหมู่ พิกัด รูปภาพ และแหล่งอ้างอิงให้พร้อมใช้งานต่อ',
-  },
-  {
-    icon: 'solar:add-folder-bold' as IconifyName,
-    title: 'ต่อยอดได้หลายมุมมอง',
-    description:
-      'นำข้อมูลเดียวกันไปแสดงได้ทั้งหน้าจังหวัด หน้าหมวด แผนที่ รายการสถานที่ และบทความประกอบ',
-  },
-  {
-    icon: 'solar:shield-check-bold' as IconifyName,
-    title: 'ตรวจสอบและแก้ไขได้',
-    description:
-      'รองรับคำขอแก้ไขจากผู้ใช้และ Creator ก่อนให้ทีมงานตรวจสอบ เพื่อให้ข้อมูลค่อย ๆ แม่นยำขึ้น',
-  },
-  {
-    icon: 'solar:calendar-date-bold' as IconifyName,
-    title: 'พร้อมขยายในอนาคต',
-    description:
-      'เพิ่มชุดข้อมูลใหม่ หมวดใหม่ หรือแหล่งข้อมูลจากหน่วยงานอื่นได้ โดยไม่ต้องเปลี่ยนประสบการณ์หลัก',
-  },
-];
-
-const DATA_FLOW_STEPS = [
-  {
-    label: 'รวบรวม',
-    title: 'นำเข้าข้อมูลหลายแหล่ง',
-    description: 'รวมข้อมูลจากฐานข้อมูลวัฒนธรรม แหล่งท่องเที่ยว และข้อมูลที่ทีมงานดูแล',
-  },
-  {
-    label: 'จัดระเบียบ',
-    title: 'ทำให้ค้นหาและเปรียบเทียบง่าย',
-    description: 'ผูกข้อมูลกับจังหวัด อำเภอ หมวดหมู่ พิกัด และแหล่งอ้างอิง',
-  },
-  {
-    label: 'ต่อยอด',
-    title: 'เปิดให้ชุมชนช่วยพัฒนา',
-    description: 'Creator และผู้ใช้ช่วยเสนอแก้ไขข้อมูล ก่อนนำไปใช้ในระบบหลัก',
-  },
-];
-
-const DEFAULT_HOME_ANALYTICS: HomeAnalyticsSummary = {
-  days: 30,
-  pageViews: 0,
-  visitors: 0,
-  sessions: 0,
-  topSearches: [],
-  topProvinces: [],
-  topDistricts: [],
-};
-const CREATOR_ARTICLES_LIMIT = 8;
-const FEATURED_CULTURE_CATEGORY_LIMIT = 6;
-
-const CATEGORY_KEY_BY_TITLE: Record<string, string> = {
-  สถานที่ท่องเที่ยว: 'tourist_attraction',
-  อาหารพื้นบ้าน: 'local_food',
-  ศิลปะการแสดง: 'performing_art',
-  ประเพณีท้องถิ่น: 'local_tradition',
-  ภูมิปัญญาชุมชน: 'community_wisdom',
-  งานช่างฝีมือ: 'craftsmanship',
-  ศิลปะพื้นบ้าน: 'folk_art',
-  พิธีกรรม: 'ritual',
-  วัด: 'temple',
-  พิพิธภัณฑ์: 'museum',
-  แหล่งเรียนรู้: 'learning_center',
-};
-
-function getFilledText(value: unknown) {
-  return typeof value === 'string' ? value.trim() : '';
-}
-
-function getCultureCategoryKey(title: string) {
-  return CATEGORY_KEY_BY_TITLE[title] ?? 'cultural_attraction';
-}
-
-function formatCreatorArticleDate(value: string) {
-  if (!value) {
-    return '';
-  }
-
-  return new Intl.DateTimeFormat('th-TH', {
-    dateStyle: 'medium',
-  }).format(new Date(value));
-}
-
-function normalizeStoryContent(story?: StoredHomeContent['story']) {
-  if (!story) {
-    return undefined;
-  }
-
-  const title = getFilledText(story.title);
-  const actionLabel = getFilledText(story.actionLabel);
-  const body = getFilledText(story.body);
-
-  if (!title || !actionLabel || !body) {
-    return undefined;
-  }
-
-  return { title, actionLabel, body };
-}
-
-function normalizeLocalWisdomContent(content?: LocalWisdomContent) {
-  if (!content) {
-    return undefined;
-  }
-
-  const title = getFilledText(content.title);
-  const body = getFilledText(content.body);
-  const quote = getFilledText(content.quote);
-  const caption = getFilledText(content.caption);
-  const mediaUrl = getFilledText(content.mediaUrl);
-  const coverUrl = getFilledText(content.coverUrl);
-
-  if (!title || !body || !mediaUrl) {
-    return undefined;
-  }
-
-  return {
-    title,
-    body,
-    quote,
-    caption,
-    mediaUrl,
-    coverUrl,
-  };
-}
-
-function normalizeCultureCategoriesContent(content?: CultureCategoriesContent) {
-  if (!content) {
-    return undefined;
-  }
-
-  const title = getFilledText(content.title);
-  const description = getFilledText(content.description);
-
-  if (!title || !description) {
-    return undefined;
-  }
-
-  return { title, description };
-}
-
-function PlayButton({ small = false }: { small?: boolean }) {
-  return (
-    <Box
-      component="span"
-      sx={{
-        width: small ? 34 : 48,
-        height: small ? 34 : 48,
-        display: 'grid',
-        borderRadius: '50%',
-        color: HOME_TEXT,
-        placeItems: 'center',
-        border: '2px solid rgba(234,215,161,0.88)',
-        backgroundColor: 'rgba(42,55,54,0.58)',
-        boxShadow: '0 18px 40px rgba(0,0,0,0.34), 0 0 20px rgba(217,181,109,0.14)',
-        '&::before': {
-          content: '""',
-          width: 0,
-          height: 0,
-          ml: '3px',
-          borderTop: `${small ? 6 : 8}px solid transparent`,
-          borderBottom: `${small ? 6 : 8}px solid transparent`,
-          borderLeft: `${small ? 9 : 13}px solid currentColor`,
-        },
-      }}
-    />
-  );
-}
 
 export function HomeView() {
   const creatorLoadMoreRef = useRef<HTMLDivElement | null>(null);
@@ -369,6 +85,7 @@ export function HomeView() {
     useState<CultureCategoriesContent>();
   const [cultureCategoryCards, setCultureCategoryCards] = useState<CultureCategoryCard[]>([]);
   const [videoItems, setVideoItems] = useState<HomeVideoItem[]>([]);
+  const [homeEvents, setHomeEvents] = useState<HomeEventItem[]>([]);
   const [homeAnalytics, setHomeAnalytics] = useState<HomeAnalyticsSummary>(DEFAULT_HOME_ANALYTICS);
   const [creatorArticles, setCreatorArticles] = useState<CreatorArticlePreview[]>([]);
   const [creatorArticlesTotal, setCreatorArticlesTotal] = useState(0);
@@ -495,6 +212,57 @@ export function HomeView() {
   }, []);
 
   useEffect(() => {
+    const controller = new AbortController();
+
+    async function loadHomeEvents() {
+      try {
+        const response = await fetch('/api/events', { signal: controller.signal });
+
+        if (!response.ok) {
+          return;
+        }
+
+        const json = (await response.json()) as { data?: HomeEventItem[] };
+        const nextEvents = (json.data ?? [])
+          .filter(
+            (item) =>
+              item.title &&
+              (item.isFeatured ||
+                (item.startsAt &&
+                  item.location &&
+                  item.organizer &&
+                  isUpcomingHomeEvent(item.startsAt)))
+          )
+          .sort((first, second) => {
+            if (Boolean(first.isFeatured) !== Boolean(second.isFeatured)) {
+              return first.isFeatured ? -1 : 1;
+            }
+
+            const firstTime = first.startsAt
+              ? new Date(first.startsAt).getTime()
+              : Number.MAX_SAFE_INTEGER;
+            const secondTime = second.startsAt
+              ? new Date(second.startsAt).getTime()
+              : Number.MAX_SAFE_INTEGER;
+
+            return firstTime - secondTime;
+          })
+          .slice(0, 2);
+
+        setHomeEvents(nextEvents);
+      } catch (caughtError) {
+        if (caughtError instanceof Error && caughtError.name !== 'AbortError') {
+          console.warn('Unable to load home events', caughtError);
+        }
+      }
+    }
+
+    loadHomeEvents();
+
+    return () => controller.abort();
+  }, []);
+
+  useEffect(() => {
     loadCreatorArticles(0);
   }, [loadCreatorArticles]);
 
@@ -582,360 +350,268 @@ export function HomeView() {
         },
       }}
     >
-      <Box
-        sx={{
-          minHeight: { xs: 780, md: 860 },
-          position: 'relative',
-          display: 'grid',
-          overflow: 'hidden',
-          px: HOME_SECTION_PX,
-          py: { xs: 5, md: 8 },
-          zIndex: 1,
-        }}
-      >
-        {POSTER_FRAME_IMAGES.map((image) => (
-          <Box
-            key={image.src}
-            sx={{
-              p: { xs: 0.7, md: 1 },
-              zIndex: 1,
-              opacity: { xs: 0.64, md: 0.78 },
-              overflow: 'hidden',
-              position: 'absolute',
-              borderRadius: 1,
-              // bgcolor: 'rgba(229,218,194,0.52)',
-              // border: '1px solid rgba(255,255,255,0.34)',
-              // boxShadow: '0 28px 70px rgba(43,54,50,0.28)',
-              filter: 'saturate(0.78) sepia(0.12)',
-              ...image.sx,
-            }}
-          >
-            <Image
-              src={image.src}
-              alt={image.alt}
-              ratio="4/3"
-              visibleByDefault
-              disablePlaceholder
-              sx={{
-                width: 1,
-                borderRadius: 0.75,
-                '& img': { objectFit: 'cover' },
-              }}
-            />
-          </Box>
-        ))}
+      <HomeHeroSection />
 
+      <HomeMapSection />
+
+      <HomeAnalyticsSection summary={homeAnalytics} />
+
+      {homeEvents.length > 0 && (
         <Box
           sx={{
-            zIndex: 2,
-            width: 1,
-            mx: 'auto',
-            maxWidth: HOME_SECTION_MAX_WIDTH,
+            px: HOME_SECTION_PX,
+            py: { xs: 7, md: 10 },
             position: 'relative',
-            textAlign: 'center',
-            color: HOME_TEXT,
-            textShadow: '0 3px 16px rgba(40,48,48,0.34)',
+            overflow: 'hidden',
+            scrollMarginTop: 96,
+            zIndex: 1,
           }}
         >
-          <Stack
-            spacing={1.2}
-            alignItems="center"
-            sx={{
-              mt: { xs: 7, md: 14 },
-              mx: 'auto',
-              maxWidth: 670,
-            }}
-          >
-            <Image
-              alt="Single logo"
-              sx={{
-                width: { xs: 300, md: 200 },
-                mb: { xs: 0.5, md: 4 },
-              }}
-              src="/logo/logo-single.png"
-            />
-
-            <Typography
-              component="p"
-              sx={{
-                fontSize: { xs: 13, md: 15 },
-                fontWeight: 800,
-                letterSpacing: 1.8,
-                textTransform: 'uppercase',
-                color: 'rgba(255,255,255,0.88)',
-              }}
-            >
-              Explore Thai Cultural Heritage
-            </Typography>
-
-            <Typography
-              component="h1"
-              sx={{
-                maxWidth: 610,
-                color: HOME_TEXT,
-                fontWeight: 800,
-                lineHeight: 0.92,
-                fontSize: { xs: 52, sm: 96, md: 132 },
-                textShadow: '0 5px 22px rgba(32,42,43,0.36)',
-              }}
-            >
-              Thailand
-              <Box
-                component="span"
-                sx={{
-                  display: 'block',
-                  color: 'rgba(248,246,238,0.82)',
-                  mt: { xs: -0.7, md: -1.4 },
-                }}
-              >
-                Cultural Hub
-              </Box>
-            </Typography>
-
-            <Typography
-              sx={{
-                maxWidth: 540,
-                mx: 'auto',
-                mt: { xs: 1, md: 1.5 },
-                color: 'rgba(255,255,255,0.86)',
-                fontSize: { xs: 16, md: 19 },
-                lineHeight: 1.65,
-              }}
-            >
-              สำรวจข้อมูลวัฒนธรรมไทยรายจังหวัด ผ่านแผนที่ สถานที่สำคัญ ประเพณี ภูมิปัญญา
-              อาหารพื้นถิ่น และแหล่งข้อมูลที่ตรวจสอบย้อนกลับได้
-            </Typography>
-          </Stack>
-
-          <Box
-            sx={{
-              mt: { xs: 4, md: 20 },
-              display: 'grid',
-              gap: { xs: 2, md: 4 },
-              alignItems: 'end',
-              textAlign: { xs: 'left', md: 'left' },
-              gridTemplateColumns: { xs: '1fr', md: '1.08fr 0.92fr' },
-            }}
-          >
-            <Box
-              sx={{
-                p: { xs: 2, md: 0 },
-                borderRadius: { xs: 1.5, md: 0 },
-                bgcolor: { xs: 'rgba(42,55,54,0.24)', md: 'transparent' },
-                border: { xs: '1px solid rgba(255,255,255,0.18)', md: 'none' },
-                backdropFilter: { xs: 'blur(5px)', md: 'none' },
-              }}
-            >
-              <Typography
-                sx={{
-                  fontSize: { xs: 13, md: 32 },
-                  fontWeight: { xs: 800, md: 800 },
-                  letterSpacing: { xs: 0.8, md: 0 },
-                  textTransform: { xs: 'uppercase', md: 'none' },
-                  lineHeight: 1.35,
-                  color: { xs: 'rgba(234,215,161,0.9)', md: 'rgba(255,255,255,0.92)' },
-                }}
-              >
-                ภาพรวมวัฒนธรรมรายจังหวัด
-              </Typography>
-
-              <Typography
-                sx={{
-                  mt: { xs: 1, md: 2 },
-                  color: '#ffffff',
-                  fontSize: { xs: 24, sm: 30, md: 46 },
-                  fontWeight: 900,
-                  lineHeight: { xs: 1.18, md: 1.2 },
-                }}
-              >
-                สำรวจพื้นที่ วัฒนธรรม และเรื่องเล่าท้องถิ่น
-              </Typography>
-
-              <Stack
-                direction="row"
-                spacing={0.8}
-                sx={{
-                  mt: { xs: 1.5, md: 1.25 },
-                  flexWrap: 'wrap',
-                  rowGap: 0.8,
-                }}
-              >
-                {['แผนที่', 'อำเภอ', 'หมวดหมู่', 'แหล่งอ้างอิง'].map((label) => (
-                  <Chip
-                    key={label}
-                    size="small"
-                    label={label}
-                    sx={{
-                      color: HOME_TEXT,
-                      fontWeight: 800,
-                      bgcolor: 'rgba(248,246,238,0.13)',
-                      border: '1px solid rgba(248,246,238,0.18)',
-                    }}
-                  />
-                ))}
-              </Stack>
-            </Box>
-
-            <Stack
-              sx={{
-                justifySelf: { xs: 'center', md: 'end' },
-                width: { xs: 1, md: 380 },
-                display: 'grid',
-                gap: { xs: 1, md: 1.2 },
-                gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, minmax(0, 1fr))', md: '1fr' },
-                p: { xs: 0, md: 2.5 },
-                borderRadius: 1,
-                color: HOME_TEXT,
-                textAlign: 'left',
-                bgcolor: { xs: 'transparent', md: 'rgba(42,55,54,0.28)' },
-                border: { xs: 'none', md: '1px solid rgba(255,255,255,0.28)' },
-                backdropFilter: { xs: 'none', md: 'blur(6px)' },
-              }}
-            >
-              {highlights.map((item) => (
-                <Stack
-                  key={item.title}
-                  direction={{ xs: 'row', md: 'row' }}
-                  spacing={1.2}
-                  sx={{
-                    p: { xs: 1.4, md: 0 },
-                    minHeight: { xs: 88, md: 'auto' },
-                    borderRadius: { xs: 1.25, md: 0 },
-                    bgcolor: { xs: 'rgba(42,55,54,0.24)', md: 'transparent' },
-                    border: { xs: '1px solid rgba(255,255,255,0.16)', md: 'none' },
-                  }}
-                >
-                  <Typography
-                    sx={{
-                      color: { xs: 'rgba(234,215,161,0.92)', md: 'rgba(255,255,255,0.68)' },
-                      fontSize: { xs: 15, md: 18 },
-                      fontWeight: 800,
-                      lineHeight: 1.25,
-                      minWidth: { xs: 24, md: 28 },
-                    }}
-                  >
-                    {item.icon}
-                  </Typography>
-                  <Box>
-                    <Typography sx={{ fontSize: { xs: 14, md: 17 }, fontWeight: 900 }}>
-                      {item.title}
-                    </Typography>
-                    <Typography
-                      sx={{
-                        mt: 0.35,
-                        color: 'rgba(255,255,255,0.72)',
-                        fontSize: { xs: 12, md: 13 },
-                        lineHeight: 1.55,
-                      }}
-                    >
-                      {item.body}
-                    </Typography>
-                  </Box>
-                </Stack>
-              ))}
-            </Stack>
-          </Box>
-        </Box>
-      </Box>
-
-      <Box
-        sx={{
-          position: 'relative',
-          overflow: 'hidden',
-          scrollMarginTop: 96,
-          px: HOME_SECTION_PX,
-          zIndex: 1,
-        }}
-      >
-        <Box sx={{ mx: 'auto', maxWidth: HOME_SECTION_MAX_WIDTH }}>
-          <ThailandMap />
-        </Box>
-      </Box>
-
-      <Box
-        sx={{
-          px: HOME_SECTION_PX,
-          pb: { xs: 7, md: 10 },
-          position: 'relative',
-          overflow: 'hidden',
-          zIndex: 1,
-        }}
-      >
-        <Box sx={{ mx: 'auto', maxWidth: HOME_SECTION_MAX_WIDTH }}>
-          <Box
-            sx={{
-              p: { xs: 2.5, md: 4 },
-              borderRadius: 1.5,
-              color: HOME_TEXT,
-              bgcolor: 'rgba(42,55,54,0.34)',
-              border: '1px solid rgba(248,246,238,0.22)',
-              boxShadow: '0 28px 70px rgba(31,40,38,0.2)',
-              backdropFilter: 'blur(8px)',
-            }}
-          >
+          <Box sx={{ mx: 'auto', maxWidth: HOME_SECTION_MAX_WIDTH }}>
             <Stack
               direction={{ xs: 'column', md: 'row' }}
-              spacing={3}
-              justifyContent="space-between"
+              spacing={2.5}
               alignItems={{ xs: 'flex-start', md: 'flex-end' }}
+              justifyContent="space-between"
+              sx={{ mb: { xs: 3.5, md: 4.5 } }}
             >
-              <Box>
+              <Box sx={{ maxWidth: 720 }}>
                 <Typography
-                  component="p"
                   sx={{
-                    color: 'rgba(234,215,161,0.92)',
-                    fontSize: 13,
-                    fontWeight: 900,
-                    letterSpacing: 1.2,
-                    textTransform: 'uppercase',
+                    px: 1.4,
+                    py: 0.6,
+                    width: 'fit-content',
+                    color: HOME_TEXT,
+                    borderRadius: 999,
+                    bgcolor: 'rgba(42,55,54,0.28)',
+                    border: '1px solid rgba(255,255,255,0.28)',
+                    fontSize: 12,
+                    fontWeight: 800,
                   }}
                 >
-                  Live usage insights
+                  Upcoming events
                 </Typography>
                 <Typography
                   variant="h3"
                   sx={{
-                    mt: 1,
+                    mt: 2,
                     color: HOME_TEXT,
-                    fontSize: { xs: 24, md: 48 },
-                    fontWeight: 900,
-                    lineHeight: 1.1,
+                    fontSize: { xs: 28, md: 44 },
+                    fontWeight: 950,
+                    lineHeight: 1.15,
                   }}
                 >
-                  สถิติการสำรวจวัฒนธรรมบนเว็บไซต์
+                  กิจกรรมวัฒนธรรมที่ใกล้จะถึง
                 </Typography>
-                <Typography sx={{ mt: 1.5, maxWidth: 620, color: 'rgba(248,246,238,0.76)' }}>
-                  ภาพรวม {homeAnalytics.days} วันล่าสุดจากการเข้าชม คำค้นหา จังหวัด
-                  และอำเภอที่ผู้ใช้สนใจ
+                <Typography sx={{ mt: 1.3, color: 'rgba(248,246,238,0.76)', lineHeight: 1.75 }}>
+                  รวมวัน เวลา สถานที่ และผู้จัดงาน เพื่อให้ติดตามกิจกรรมวัฒนธรรมล่าสุดได้จากหน้าแรก
                 </Typography>
-              </Box>
-
-              <Box
-                sx={{
-                  mt: 4,
-                  display: 'grid',
-                  gap: 1.5,
-                  width: { xs: 1, md: '300px' },
-                }}
-              >
-                <Box
-                  sx={{
-                    p: { xs: 2, md: 2.5 },
-                    borderRadius: 1,
-                    bgcolor: 'rgba(248,246,238,0.12)',
-                    border: '1px solid rgba(248,246,238,0.18)',
-                    textAlign: 'center',
-                  }}
-                >
-                  <Typography sx={{ mt: 1, fontSize: { xs: 30, md: 42 }, fontWeight: 950 }}>
-                    {fNumber(homeAnalytics.visitors)}
-                  </Typography>
-                </Box>
               </Box>
             </Stack>
+
+            <Box
+              sx={{
+                display: 'grid',
+                gap: { xs: 2, md: 2.5 },
+                gridTemplateColumns: { xs: '1fr', lg: '1.35fr 0.65fr' },
+                alignItems: 'stretch',
+              }}
+            >
+              {homeEvents.map((eventItem, index) => {
+                const isFeatured = index === 0;
+                const mediaSource = eventItem.coverUrl || eventItem.mediaUrl;
+
+                return (
+                  <Box
+                    key={eventItem.id || `${eventItem.title}-${index}`}
+                    sx={{
+                      minWidth: 0,
+                      overflow: 'hidden',
+                      borderRadius: 1.5,
+                      color: HOME_TEXT,
+                      bgcolor: isFeatured ? 'rgba(42,55,54,0.36)' : 'rgba(42,55,54,0.26)',
+                      border: isFeatured
+                        ? '1px solid rgba(234,215,161,0.46)'
+                        : '1px solid rgba(248,246,238,0.2)',
+                      boxShadow: isFeatured
+                        ? '0 30px 76px rgba(31,40,38,0.28)'
+                        : '0 20px 48px rgba(31,40,38,0.18)',
+                      backdropFilter: 'blur(7px)',
+                      display: 'grid',
+                      gridTemplateColumns: {
+                        xs: '1fr',
+                        md: isFeatured ? '1.05fr 0.95fr' : '1fr',
+                      },
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        minHeight: isFeatured ? { xs: 240, md: 380 } : { xs: 210, md: 240 },
+                        bgcolor: HOME_DEEP,
+                        position: 'relative',
+                        overflow: 'hidden',
+                      }}
+                    >
+                      {eventItem.mediaType === 'video' && eventItem.mediaUrl ? (
+                        <ReactPlayer
+                          src={eventItem.mediaUrl}
+                          light={eventItem.coverUrl || true}
+                          width="100%"
+                          height="100%"
+                          playIcon={<HomePlayButton small={!isFeatured} />}
+                          previewAriaLabel={`ดูวิดีโอ ${eventItem.title}`}
+                          onClickPreview={() =>
+                            setSelectedVideo({
+                              title: eventItem.title,
+                              src: eventItem.mediaUrl,
+                              cover: eventItem.coverUrl,
+                            })
+                          }
+                        />
+                      ) : mediaSource ? (
+                        <Image
+                          src={mediaSource}
+                          alt={eventItem.title}
+                          ratio={isFeatured ? '4/3' : '16/9'}
+                          visibleByDefault
+                          disablePlaceholder
+                          sx={{
+                            width: 1,
+                            height: 1,
+                            '& img': { objectFit: 'cover' },
+                          }}
+                        />
+                      ) : (
+                        <Box
+                          sx={{
+                            height: 1,
+                            display: 'grid',
+                            placeItems: 'center',
+                            backgroundImage: `
+                              radial-gradient(circle at 24% 18%, rgba(234,215,161,0.35), transparent 32%),
+                              linear-gradient(135deg, rgba(96,141,140,0.48), rgba(143,124,92,0.42))
+                            `,
+                          }}
+                        >
+                          <Iconify icon="solar:calendar-date-bold" width={isFeatured ? 72 : 54} />
+                        </Box>
+                      )}
+
+                      <Box
+                        sx={{
+                          left: 16,
+                          top: 16,
+                          px: 1.2,
+                          py: 0.7,
+                          borderRadius: 1,
+                          position: 'absolute',
+                          color: HOME_DEEP,
+                          bgcolor: 'rgba(234,215,161,0.92)',
+                          fontSize: 12,
+                          fontWeight: 900,
+                        }}
+                      >
+                        {eventItem.isFeatured ? 'สำคัญ' : isFeatured ? 'เร็ว ๆ นี้' : 'รายการถัดไป'}
+                      </Box>
+                    </Box>
+
+                    <Stack spacing={isFeatured ? 2 : 1.4} sx={{ p: { xs: 2.2, md: 3 } }}>
+                      <Typography
+                        sx={{
+                          color: 'rgba(234,215,161,0.95)',
+                          fontSize: 13,
+                          fontWeight: 900,
+                          letterSpacing: 0.4,
+                        }}
+                      >
+                        {formatHomeEventDate(eventItem.startsAt) || 'ติดตามวันเวลาเร็ว ๆ นี้'}
+                      </Typography>
+
+                      <Typography
+                        sx={{
+                          color: HOME_TEXT,
+                          fontSize: isFeatured ? { xs: 25, md: 34 } : { xs: 21, md: 24 },
+                          fontWeight: 950,
+                          lineHeight: 1.18,
+                        }}
+                      >
+                        {eventItem.title}
+                      </Typography>
+
+                      {eventItem.description && (
+                        <Typography
+                          sx={{
+                            color: 'rgba(248,246,238,0.74)',
+                            fontSize: isFeatured ? 14 : 13,
+                            lineHeight: 1.7,
+                            display: '-webkit-box',
+                            overflow: 'hidden',
+                            WebkitLineClamp: isFeatured ? 3 : 2,
+                            WebkitBoxOrient: 'vertical',
+                          }}
+                        >
+                          {eventItem.description}
+                        </Typography>
+                      )}
+
+                      <Stack spacing={1.1} sx={{ pt: 0.5 }}>
+                        {[
+                          {
+                            icon: 'solar:clock-circle-bold',
+                            label: eventItem.time || 'เวลาจะแจ้งให้ทราบ',
+                          },
+                          {
+                            icon: 'solar:map-point-bold',
+                            label:
+                              [eventItem.provinceName, eventItem.location]
+                                .filter(Boolean)
+                                .join(' - ') || 'ยังไม่ระบุจังหวัด',
+                          },
+                          {
+                            icon: 'solar:users-group-rounded-bold',
+                            label: eventItem.organizer || 'ยังไม่ระบุผู้จัด',
+                          },
+                        ].map((detail) => (
+                          <Stack key={detail.icon} direction="row" spacing={1} alignItems="center">
+                            <Iconify icon={detail.icon as IconifyName} width={18} />
+                            <Typography sx={{ color: 'rgba(248,246,238,0.78)', fontSize: 13 }}>
+                              {detail.label}
+                            </Typography>
+                          </Stack>
+                        ))}
+                      </Stack>
+
+                      {eventItem.sourceUrl && (
+                        <Button
+                          component="a"
+                          href={eventItem.sourceUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          size="small"
+                          variant="outlined"
+                          endIcon={<Iconify icon="eva:external-link-fill" width={16} />}
+                          sx={{
+                            mt: 0.4,
+                            width: 'fit-content',
+                            color: HOME_TEXT,
+                            borderColor: 'rgba(248,246,238,0.42)',
+                            '&:hover': {
+                              borderColor: 'rgba(234,215,161,0.78)',
+                              bgcolor: 'rgba(234,215,161,0.08)',
+                            },
+                          }}
+                        >
+                          {eventItem.sourceLabel || 'ติดตามรายละเอียด'}
+                        </Button>
+                      )}
+                    </Stack>
+                  </Box>
+                );
+              })}
+            </Box>
           </Box>
         </Box>
-      </Box>
+      )}
 
       {cultureCategoriesContent && cultureCategoryCards.length > 0 && (
         <Box
@@ -1350,7 +1026,7 @@ export function HomeView() {
                     light={localWisdomContent?.coverUrl}
                     width="100%"
                     height="100%"
-                    playIcon={<PlayButton small />}
+                    playIcon={<HomePlayButton small />}
                     previewAriaLabel={`ดูวิดีโอ ${localWisdomContent?.title}`}
                     onClickPreview={() =>
                       setSelectedVideo({
@@ -1452,7 +1128,7 @@ export function HomeView() {
               </Typography>
 
               <Stack direction="row" spacing={2} alignItems="center" sx={{ mt: 4.5 }}>
-                <PlayButton small />
+                <HomePlayButton small />
                 <Typography variant="h5" sx={{ fontWeight: 800, textTransform: 'uppercase' }}>
                   {storyContent?.actionLabel}
                 </Typography>
@@ -1512,7 +1188,7 @@ export function HomeView() {
                         light={video.cover}
                         width="100%"
                         height="100%"
-                        playIcon={<PlayButton small />}
+                        playIcon={<HomePlayButton small />}
                         previewAriaLabel={`ดูวิดีโอ ${video.title}`}
                         onClickPreview={() => setSelectedVideo(video)}
                       />
@@ -1940,48 +1616,7 @@ export function HomeView() {
 
       <HomePopupBanner />
 
-      <Dialog
-        fullWidth
-        maxWidth="lg"
-        open={!!selectedVideo}
-        onClose={handleCloseVideo}
-        slotProps={{
-          paper: {
-            sx: {
-              overflow: 'hidden',
-              bgcolor: HOME_DEEP,
-              borderRadius: 1.5,
-              border: '1px solid rgba(234,215,161,0.24)',
-            },
-          },
-        }}
-      >
-        <Box
-          sx={{
-            px: 2,
-            py: 1.25,
-            gap: 1.5,
-            display: 'flex',
-            alignItems: 'center',
-            color: HOME_TEXT,
-            justifyContent: 'space-between',
-          }}
-        >
-          <Typography sx={{ fontSize: 16, fontWeight: 800 }}>{selectedVideo?.title}</Typography>
-
-          <IconButton onClick={handleCloseVideo} sx={{ color: 'inherit' }}>
-            <Iconify icon="mingcute:close-line" />
-          </IconButton>
-        </Box>
-
-        <DialogContent sx={{ p: 0, bgcolor: 'black' }}>
-          <Box sx={{ width: 1, aspectRatio: '16 / 9' }}>
-            {selectedVideo && (
-              <ReactPlayer controls playing src={selectedVideo.src} width="100%" height="100%" />
-            )}
-          </Box>
-        </DialogContent>
-      </Dialog>
+      <HomeVideoDialog video={selectedVideo} onClose={handleCloseVideo} />
     </Box>
   );
 }

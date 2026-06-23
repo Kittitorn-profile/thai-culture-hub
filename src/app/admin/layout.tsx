@@ -42,6 +42,7 @@ const navData: AdminNavGroup[] = [
           { title: 'เรื่องเล่าและสื่อ', path: '/admin/home-content' },
           { title: 'หมวดวัฒนธรรม', path: '/admin/home-content/culture-categories' },
           { title: 'ภูมิปัญญาท้องถิ่น', path: '/admin/home-content/local-wisdom' },
+          { title: 'กิจกรรมที่จะจัดขึ้น', path: '/admin/home-content/events' },
           { title: 'Popup Banner', path: '/admin/home-content/popup-banner' },
         ],
       },

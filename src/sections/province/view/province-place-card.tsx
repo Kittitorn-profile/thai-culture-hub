@@ -12,11 +12,16 @@ import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import { alpha, useTheme } from '@mui/material/styles';
 
+import { RouterLink } from 'src/routes/components';
+
 import { Iconify } from 'src/components/iconify';
 import { TruncatedTypography } from 'src/components/typography';
 
-import { getSourceLabel } from './province-detail-utils';
+import { useAuthContext } from 'src/auth/hooks';
+import { isCreatorUser } from 'src/auth/utils/role-redirect';
+
 import { getCategoryColor, getCategoryLabel } from '../category-config';
+import { getSourceLabel, cleanCulturalUrl, cleanCulturalText } from './province-detail-utils';
 
 // ----------------------------------------------------------------------
 
@@ -27,6 +32,7 @@ export type PlaceLikeState = {
 };
 
 type ProvincePlaceCardPlace = CulturalPlace & {
+  provinceCode?: string;
   provinceName?: string;
 };
 
@@ -50,8 +56,10 @@ function getCoordinatesText(place: CulturalPlace) {
 }
 
 function getGoogleMapsUrl(place: CulturalPlace) {
-  if (place.mapUrl) {
-    return place.mapUrl;
+  const mapUrl = cleanCulturalUrl(place.mapUrl);
+
+  if (mapUrl) {
+    return mapUrl;
   }
 
   const placeLat = Number(place.lat);
@@ -66,12 +74,27 @@ function getSharePageUrl(place: CulturalPlace) {
   return `${SHARE_SITE_URL}/culture-place/${encodeURIComponent(place.id)}`;
 }
 
+function getCorrectionRequestHref(place: CulturalPlace) {
+  const params = new URLSearchParams({ placeId: place.id });
+  const provinceCode = getPlaceProvinceCode(place);
+
+  if (provinceCode) {
+    params.set('provinceCode', provinceCode);
+  }
+
+  return `/creator/place-corrections/new?${params.toString()}`;
+}
+
+function getPlaceProvinceCode(place: CulturalPlace) {
+  return (
+    place.details?.provinceCode ??
+    (place as CulturalPlace & { provinceCode?: string }).provinceCode ??
+    ''
+  );
+}
+
 function getPlainText(value?: string | null) {
-  return (value ?? '')
-    .replace(/<[^>]*>/g, ' ')
-    .replace(/&nbsp;/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
+  return cleanCulturalText(value);
 }
 
 export function ProvincePlaceCard({
@@ -82,25 +105,36 @@ export function ProvincePlaceCard({
   onPlaceSelect,
 }: ProvincePlaceCardProps) {
   const theme = useTheme();
+  const { user } = useAuthContext();
+  const isCreator = isCreatorUser(user);
   const accentColor = getCategoryColor(categoryConfig, place.category);
-  const displayHighlight = place.highlight ? getCategoryLabel(categoryConfig, place.highlight) : '';
-  const cardImage = place.imageUrls?.[0];
+  const cleanHighlight = cleanCulturalText(place.highlight);
+  const displayHighlight = cleanHighlight ? getCategoryLabel(categoryConfig, cleanHighlight) : '';
+  const cardImage = place.imageUrls?.map(cleanCulturalUrl).find(Boolean);
   const googleMapsUrl = getGoogleMapsUrl(place);
   const liked = likeState?.liked ?? false;
   const likeCount = likeState?.likeCount ?? 0;
   const provinceName = place.provinceName ?? '';
-  const locationLabel = place.district
-    ? [place.district, provinceName].filter(Boolean).join('-')
-    : provinceName || place.district;
+  const placeProvinceCode = getPlaceProvinceCode(place);
+  const districtName = cleanCulturalText(place.district);
+  const locationLabel = districtName
+    ? [districtName, cleanCulturalText(provinceName)].filter(Boolean).join('-')
+    : cleanCulturalText(provinceName);
+  const descriptionText =
+    getPlainText(place.description) ||
+    (isCreator ? 'ยังไม่มีคำอธิบายเพิ่มเติมสำหรับสถานที่นี้' : '-');
 
   return (
     <Box
       id={place.id}
       sx={{
-        p: 1,
+        p: { xs: 0.9, sm: 1 },
         borderRadius: 2,
         overflow: 'hidden',
         bgcolor: '#fff',
+        display: 'flex',
+        minWidth: 0,
+        flexDirection: 'column',
         border: `1px solid ${alpha(accentColor, 0.16)}`,
         boxShadow: `0 14px 30px ${alpha(theme.palette.grey[900], 0.1)}`,
         height: '100%',
@@ -108,7 +142,8 @@ export function ProvincePlaceCard({
     >
       <Box
         sx={{
-          minHeight: 200,
+          minHeight: { xs: 168, sm: 188, md: 200 },
+          aspectRatio: { xs: '16 / 10', sm: '4 / 3' },
           borderRadius: 1.5,
           overflow: 'hidden',
           position: 'relative',
@@ -143,7 +178,7 @@ export function ProvincePlaceCard({
           sx={{
             top: 0,
             left: '50%',
-            px: 2.2,
+            px: { xs: 1.4, sm: 2.2 },
             py: 0.7,
             color: accentColor,
             fontSize: 12,
@@ -154,6 +189,9 @@ export function ProvincePlaceCard({
             bgcolor: '#ffffff',
             boxShadow: `0 8px 18px ${alpha(theme.palette.grey[900], 0.12)}`,
             whiteSpace: 'nowrap',
+            maxWidth: 'calc(100% - 24px)',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
           }}
         >
           {getCategoryLabel(categoryConfig, place.category)}
@@ -162,14 +200,22 @@ export function ProvincePlaceCard({
         {!!locationLabel && (
           <Chip
             size="small"
+            component={placeProvinceCode ? RouterLink : 'div'}
+            href={placeProvinceCode ? `/province/${placeProvinceCode}` : undefined}
+            clickable={Boolean(placeProvinceCode)}
             label={locationLabel}
             sx={{
               left: 12,
               bottom: 12,
+              maxWidth: 'calc(100% - 24px)',
               color: 'white',
               fontWeight: 900,
               position: 'absolute',
               bgcolor: alpha(theme.palette.grey[900], 0.72),
+              textDecoration: 'none',
+              '&:hover': {
+                bgcolor: alpha(theme.palette.grey[900], 0.84),
+              },
             }}
           />
         )}
@@ -212,16 +258,35 @@ export function ProvincePlaceCard({
         </Button>
       </Box>
 
-      <Box sx={{ px: 0.6, pt: 1.4, pb: 0.4 }}>
+      <Box
+        sx={{
+          px: { xs: 0.4, sm: 0.6 },
+          pt: { xs: 1.15, sm: 1.4 },
+          pb: 0.4,
+          minWidth: 0,
+          display: 'flex',
+          flex: 1,
+          flexDirection: 'column',
+        }}
+      >
         <Stack
           sx={{
             display: 'flex',
             flexDirection: 'row',
             alignItems: 'center',
             justifyContent: 'space-between',
+            gap: 1,
           }}
         >
-          <TruncatedTypography line={1} sx={{ color: accentColor, fontWeight: 900, fontSize: 14 }}>
+          <TruncatedTypography
+            line={1}
+            sx={{
+              minWidth: 0,
+              color: accentColor,
+              fontWeight: 900,
+              fontSize: { xs: 13, sm: 14 },
+            }}
+          >
             {displayHighlight}
           </TruncatedTypography>
           <Box
@@ -252,10 +317,10 @@ export function ProvincePlaceCard({
           sx={{
             mt: 0.8,
             color: theme.palette.grey[900],
-            fontSize: 18,
+            fontSize: { xs: 16, sm: 18 },
             fontWeight: 900,
             lineHeight: 1.4,
-            minHeight: 46,
+            minHeight: { xs: 44, sm: 50 },
           }}
         >
           {place.name}
@@ -264,34 +329,82 @@ export function ProvincePlaceCard({
           line={2}
           lineHeight={1.5}
           variant="body2"
-          sx={{ mt: 1, color: 'text.secondary', minHeight: 42 }}
+          sx={{
+            mt: 0.85,
+            color: 'text.secondary',
+            minHeight: { xs: 40, sm: 42 },
+            fontSize: { xs: 13, sm: 14 },
+          }}
         >
-          {getPlainText(place.description)}
+          {descriptionText}
         </TruncatedTypography>
         <Box
           sx={{
+            mt: 'auto',
+            pt: 1.15,
             minWidth: 0,
             display: 'flex',
-            flexDirection: 'row',
-            justifyContent: 'space-between',
+            gap: 0.75,
+            flexDirection: { xs: 'column', sm: 'row' },
+            justifyContent: { xs: 'flex-start', sm: 'space-between' },
           }}
         >
-          <Typography sx={{ color: accentColor, fontSize: 12, fontWeight: 900 }}>
+          <Typography sx={{ color: accentColor, fontSize: 12, fontWeight: 900 }} noWrap>
             {getSourceLabel(place.source)}
           </Typography>
-          <Typography sx={{ color: 'text.secondary', fontSize: 12, fontWeight: 800 }}>
+          <Typography
+            sx={{
+              minWidth: 0,
+              color: 'text.secondary',
+              fontSize: 12,
+              fontWeight: 800,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+            }}
+            noWrap
+          >
             {getCoordinatesText(place)}
           </Typography>
         </Box>
 
-        <Stack
-          direction="row"
-          alignItems="center"
-          justifyContent="space-between"
-          spacing={1.5}
-          sx={{ mt: 1.6 }}
-        >
-          <Stack direction="row" spacing={0.8} sx={{ flexShrink: 0, flex: 1 }}>
+        <Stack spacing={1} sx={{ mt: { xs: 1.25, sm: 1.6 } }}>
+          {isCreator && (
+            <Button
+              fullWidth
+              component={RouterLink}
+              href={getCorrectionRequestHref(place)}
+              startIcon={<Iconify icon="solar:pen-bold" />}
+              sx={{
+                m: 0,
+                px: 1.4,
+                py: 0.95,
+                border: 0,
+                color: accentColor,
+                cursor: 'pointer',
+                fontWeight: 950,
+                borderRadius: 1.2,
+                bgcolor: alpha(accentColor, 0.12),
+                whiteSpace: 'nowrap',
+                boxShadow: `inset 0 0 0 1px ${alpha(accentColor, 0.16)}`,
+                '&:hover': {
+                  bgcolor: alpha(accentColor, 0.18),
+                },
+              }}
+            >
+              ช่วยแก้ไขข้อมูล
+            </Button>
+          )}
+
+          <Box
+            sx={{
+              display: 'grid',
+              gap: 0.8,
+              gridTemplateColumns: {
+                xs: '1fr',
+                sm: googleMapsUrl ? 'minmax(0, 1fr) minmax(0, 1fr)' : '1fr',
+              },
+            }}
+          >
             {googleMapsUrl && (
               <Button
                 fullWidth
@@ -312,9 +425,12 @@ export function ProvincePlaceCard({
                   bgcolor: alpha(accentColor, 0.1),
                   whiteSpace: 'nowrap',
                   minWidth: 'auto',
+                  '&:hover': {
+                    bgcolor: alpha(accentColor, 0.16),
+                  },
                 }}
               >
-                Google Map
+                แผนที่
               </Button>
             )}
 
@@ -334,11 +450,15 @@ export function ProvincePlaceCard({
                 bgcolor: accentColor,
                 whiteSpace: 'nowrap',
                 boxShadow: `0 10px 22px ${alpha(accentColor, 0.26)}`,
+                '&:hover': {
+                  bgcolor: accentColor,
+                  boxShadow: `0 12px 26px ${alpha(accentColor, 0.34)}`,
+                },
               }}
             >
               ดูรายละเอียด
             </Button>
-          </Stack>
+          </Box>
         </Stack>
       </Box>
     </Box>

@@ -1,5 +1,5 @@
-import { CreatorAuthView } from 'src/sections/creator/view/creator-auth-view';
+import { CreatorSignInView } from 'src/sections/creator/view/creator-sign-in-view';
 
 export default function CreatorSignInPage() {
-  return <CreatorAuthView mode="sign-in" />;
+  return <CreatorSignInView />;
 }

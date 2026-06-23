@@ -9,6 +9,7 @@ export type CreatorProfile = {
   displayName: string;
   bio: string;
   phone: string;
+  provinceCode: string;
   websiteUrl: string;
   facebookUrl: string;
   avatarUrl: string;

@@ -11,6 +11,7 @@ import Typography from '@mui/material/Typography';
 
 import provinces from 'src/data/thailand-culture/provinces';
 import { getSupabaseAdmin } from 'src/server/supabase-admin';
+import { cleanCulturalText, cleanCulturalUrl } from 'src/sections/province/view/province-detail-utils';
 
 // ----------------------------------------------------------------------
 
@@ -78,15 +79,17 @@ const CATEGORY_LABELS: Record<string, string> = {
 };
 
 function getAbsoluteUrl(value?: string | null) {
-  if (!value) {
+  const url = cleanCulturalUrl(value);
+
+  if (!url) {
     return null;
   }
 
-  if (/^https?:\/\//i.test(value)) {
-    return value;
+  if (/^https?:\/\//i.test(url)) {
+    return url;
   }
 
-  return new URL(value, SITE_URL).toString();
+  return new URL(url, SITE_URL).toString();
 }
 
 function getProvinceName(provinceCode: string) {
@@ -110,26 +113,36 @@ function safeDecode(value: string) {
 }
 
 function mapPlaceRow(row: CulturalPlaceRow): SharePlace | null {
-  if (!row.id || !row.name || row.lat == null || row.lng == null) {
+  const name = cleanCulturalText(row.name);
+
+  if (!row.id || !name || row.lat == null || row.lng == null) {
     return null;
   }
 
+  const payload = row.payload ?? {};
+  const imageUrls = [
+    ...(row.image_urls ?? []),
+    ...((Array.isArray(payload.imageUrls) ? payload.imageUrls : []) as string[]),
+  ]
+    .map(cleanCulturalUrl)
+    .filter(Boolean);
+
   return {
-    ...(row.payload ?? {}),
+    ...payload,
     id: row.id,
     provinceCode: row.province_code,
     provinceName: getProvinceName(row.province_code),
-    name: row.name,
-    district: row.district ?? '',
-    category: row.category ?? 'cultural_attraction',
+    name,
+    district: cleanCulturalText(row.district),
+    category: cleanCulturalText(row.category) || 'cultural_attraction',
     lat: row.lat,
     lng: row.lng,
-    description: row.description ?? '',
-    highlight: row.highlight ?? '',
-    imageUrls: row.image_urls ?? row.payload?.imageUrls ?? [],
-    sourceUrl: row.source_url ?? row.payload?.sourceUrl,
-    mapUrl: row.map_url ?? row.payload?.mapUrl,
-    source: (row.source as CulturalPlace['source']) ?? row.payload?.source ?? 'local',
+    description: cleanCulturalText(row.description),
+    highlight: cleanCulturalText(row.highlight),
+    imageUrls,
+    sourceUrl: cleanCulturalUrl(row.source_url ?? payload.sourceUrl),
+    mapUrl: cleanCulturalUrl(row.map_url ?? payload.mapUrl),
+    source: (cleanCulturalText(row.source) as CulturalPlace['source']) || payload.source || 'local',
   };
 }
 
@@ -140,17 +153,18 @@ function applyOverride(place: SharePlace, override?: PlaceOverride | null): Shar
 
   return {
     ...place,
-    provinceCode: override.province_code || place.provinceCode,
-    provinceName: getProvinceName(override.province_code || place.provinceCode),
-    name: override.name || place.name,
-    source: (override.source as CulturalPlace['source']) || place.source,
-    category: override.category || place.category,
-    district: override.district || place.district,
+    provinceCode: cleanCulturalText(override.province_code) || place.provinceCode,
+    provinceName: getProvinceName(cleanCulturalText(override.province_code) || place.provinceCode),
+    name: cleanCulturalText(override.name) || place.name,
+    source: (cleanCulturalText(override.source) as CulturalPlace['source']) || place.source,
+    category: cleanCulturalText(override.category) || place.category,
+    district: cleanCulturalText(override.district) || place.district,
     lat: override.lat ?? place.lat,
     lng: override.lng ?? place.lng,
-    mapUrl: override.map_url || place.mapUrl,
-    imageUrls: override.image_url ? [override.image_url] : place.imageUrls,
-    highlight: override.note || place.highlight,
+    mapUrl: cleanCulturalUrl(override.map_url) || place.mapUrl,
+    imageUrls: cleanCulturalUrl(override.image_url) ? [cleanCulturalUrl(override.image_url)] : place.imageUrls,
+    highlight: cleanCulturalText(override.note) || place.highlight,
+    description: cleanCulturalText(override.detail) || place.description,
   };
 }
 
@@ -159,23 +173,26 @@ function createSharePlaceFromOverride(override: PlaceOverride): SharePlace | nul
     return null;
   }
 
-  const provinceCode = override.province_code ?? '';
-  const category = override.category || 'cultural_attraction';
+  const provinceCode = cleanCulturalText(override.province_code);
+  const category = cleanCulturalText(override.category) || 'cultural_attraction';
+  const note = cleanCulturalText(override.note);
+  const detail = cleanCulturalText(override.detail);
+  const imageUrl = cleanCulturalUrl(override.image_url);
 
   return {
     id: override.place_id,
     provinceCode,
     provinceName: getProvinceName(provinceCode),
-    name: override.name || 'สถานที่ใหม่',
-    source: (override.source as CulturalPlace['source']) || 'thailand_cultural_hub',
+    name: cleanCulturalText(override.name) || 'สถานที่ใหม่',
+    source: (cleanCulturalText(override.source) as CulturalPlace['source']) || 'thailand_cultural_hub',
     category,
-    district: override.district || '',
+    district: cleanCulturalText(override.district),
     lat: override.lat,
     lng: override.lng,
-    description: override.detail || override.note || '',
-    highlight: override.note || category,
-    mapUrl: override.map_url || undefined,
-    imageUrls: override.image_url ? [override.image_url] : [],
+    description: detail || note,
+    highlight: note || category,
+    mapUrl: cleanCulturalUrl(override.map_url) || undefined,
+    imageUrls: imageUrl ? [imageUrl] : [],
   };
 }
 
@@ -219,8 +236,8 @@ async function getSharePlace(placeId: string) {
 
 function getSeoDescription(place: SharePlace) {
   const parts = [
-    place.highlight,
-    place.description,
+    cleanCulturalText(place.highlight),
+    cleanCulturalText(place.description),
     [place.district, place.provinceName].filter(Boolean).join(' '),
   ].filter(Boolean);
 
@@ -286,6 +303,10 @@ export default async function Page({ params }: PageProps) {
   const imageUrl = getAbsoluteUrl(place.imageUrls?.[0]) ?? OG_FALLBACK_IMAGE;
   const mapUrl =
     place.mapUrl || `https://www.google.com/maps/search/?api=1&query=${place.lat},${place.lng}`;
+  const descriptionText =
+    cleanCulturalText(place.description) ||
+    cleanCulturalText(place.highlight) ||
+    'ยังไม่มีรายละเอียดเพิ่มเติมสำหรับสถานที่นี้';
 
   return (
     <Box
@@ -316,7 +337,7 @@ export default async function Page({ params }: PageProps) {
             {place.name}
           </Typography>
           <Typography sx={{ color: 'text.secondary', fontSize: 16, lineHeight: 1.8 }}>
-            {place.description || place.highlight}
+            {descriptionText}
           </Typography>
           <Typography sx={{ color: 'text.secondary', fontSize: 14, fontWeight: 800 }}>
             {place.district ? `${place.district} / ` : ''}

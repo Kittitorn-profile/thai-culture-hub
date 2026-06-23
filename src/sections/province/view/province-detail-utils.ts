@@ -13,7 +13,43 @@ export function getCulturalPlaceCardImage(index: number) {
 }
 
 export function getPlaceImages(place: CulturalPlace, index: number) {
-  return place.imageUrls?.length ? place.imageUrls : [];
+  return place.imageUrls?.map(cleanCulturalUrl).filter(Boolean) ?? [];
+}
+
+const EMPTY_TEXT_VALUES = new Set([
+  '',
+  '-',
+  'null',
+  'undefined',
+  'n/a',
+  'na',
+  'none',
+  'ไม่มีข้อมูล',
+  'ไม่ระบุ',
+]);
+
+export function cleanCulturalText(value?: string | number | null) {
+  const text = `${value ?? ''}`
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  return EMPTY_TEXT_VALUES.has(text.toLowerCase()) ? '' : text;
+}
+
+export function hasCulturalText(value?: string | number | null) {
+  return Boolean(cleanCulturalText(value));
+}
+
+export function cleanCulturalUrl(value?: string | null) {
+  const url = cleanCulturalText(value);
+
+  if (!url || /^(about:blank|#)$/i.test(url)) {
+    return '';
+  }
+
+  return url;
 }
 
 export function mergeCulturalPlaces(...placeGroups: CulturalPlace[][]) {

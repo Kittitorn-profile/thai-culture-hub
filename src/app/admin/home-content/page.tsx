@@ -155,11 +155,7 @@ export default function HomeContentAdminPage() {
   }, [contentQuery.data]);
 
   useEffect(() => {
-    if (
-      contentQuery.error &&
-      contentQuery.error instanceof AdminApiError &&
-      contentQuery.error.status === 401
-    ) {
+    if (contentQuery.error instanceof AdminApiError && contentQuery.error.status === 401) {
       checkUserSession?.();
     }
   }, [checkUserSession, contentQuery.error]);
@@ -338,6 +334,33 @@ export default function HomeContentAdminPage() {
           >
             <Box>
               <Typography variant="h5" sx={{ fontWeight: 900 }}>
+                กิจกรรมที่จะจัดขึ้น
+              </Typography>
+              <Typography sx={{ mt: 0.5, color: 'text.secondary', fontSize: 13 }}>
+                จัดการ event ที่แสดงบนหน้า home-view ผ่าน database table events
+              </Typography>
+            </Box>
+
+            <Button
+              component="a"
+              href="/admin/home-content/events"
+              variant="outlined"
+              endIcon={<Iconify icon="solar:pen-bold" />}
+            >
+              แก้ section นี้
+            </Button>
+          </Stack>
+        </Card>
+
+        <Card sx={{ p: 2.5 }}>
+          <Stack
+            direction={{ xs: 'column', md: 'row' }}
+            alignItems={{ md: 'center' }}
+            justifyContent="space-between"
+            spacing={2}
+          >
+            <Box>
+              <Typography variant="h5" sx={{ fontWeight: 900 }}>
                 สำรวจวัฒนธรรมไทยผ่านหมวดข้อมูล
               </Typography>
               <Typography sx={{ mt: 0.5, color: 'text.secondary', fontSize: 13 }}>
@@ -360,7 +383,7 @@ export default function HomeContentAdminPage() {
           sx={{
             gap: 2,
             display: 'grid',
-            gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' },
+            gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' },
           }}
         >
           {[
@@ -561,6 +584,7 @@ export default function HomeContentAdminPage() {
             )}
           </Box>
         </Card>
+
       </Stack>
 
       <Drawer
@@ -688,6 +712,7 @@ export default function HomeContentAdminPage() {
           </Stack>
         )}
       </Drawer>
+
     </DashboardContent>
   );
 }

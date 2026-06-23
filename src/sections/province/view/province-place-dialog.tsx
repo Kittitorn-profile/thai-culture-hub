@@ -20,6 +20,7 @@ import { RouterLink } from 'src/routes/components';
 import { Iconify } from 'src/components/iconify';
 import { Markdown } from 'src/components/markdown';
 
+import { cleanCulturalText, cleanCulturalUrl } from './province-detail-utils';
 import { getCategoryColor, getCategoryLabel } from '../category-config';
 
 type ProvincePlaceDialogProps = {
@@ -33,18 +34,24 @@ type ProvincePlaceDialogProps = {
 };
 
 function getCleanText(value?: string | null) {
-  return (value ?? '').trim();
+  return cleanCulturalText(value);
+}
+
+function getPrefixedText(prefix: string, value?: string | null) {
+  const text = getCleanText(value);
+
+  return text ? `${prefix}${text}` : '';
 }
 
 function getAddressText(place: CulturalPlace) {
   const details = place.details;
   const addressParts = [
     details?.address,
-    details?.addressAlley ? `ซ.${details.addressAlley}` : '',
-    details?.addressRoad ? `ถ.${details.addressRoad}` : '',
-    details?.subdistrictNameTh ? `ต.${details.subdistrictNameTh}` : '',
-    details?.districtNameTh ? `อ.${details.districtNameTh}` : '',
-    details?.provinceNameTh ? `จ.${details.provinceNameTh}` : '',
+    getPrefixedText('ซ.', details?.addressAlley),
+    getPrefixedText('ถ.', details?.addressRoad),
+    getPrefixedText('ต.', details?.subdistrictNameTh),
+    getPrefixedText('อ.', details?.districtNameTh),
+    getPrefixedText('จ.', details?.provinceNameTh),
     details?.postcode,
   ]
     .map(getCleanText)
@@ -76,7 +83,9 @@ function getDetailItems(place: CulturalPlace) {
     { label: 'ข้อจำกัด', value: details.marketLimitation },
     { label: 'โอกาสทางการตลาด', value: details.marketChance },
     { label: 'หมายเหตุ', value: details.remark },
-  ].filter((item) => getCleanText(item.value));
+  ]
+    .map((item) => ({ ...item, value: getCleanText(item.value) }))
+    .filter((item) => item.value);
 }
 
 function getSocialLinks(place: CulturalPlace) {
@@ -93,7 +102,7 @@ function getSocialLinks(place: CulturalPlace) {
     { label: 'TikTok', url: details.tiktok },
     { label: 'YouTube', url: details.youtube },
   ].reduce<Array<{ label: string; url: string }>>((links, item) => {
-    const url = getCleanText(item.url);
+    const url = cleanCulturalUrl(item.url);
 
     return url ? [...links, { label: item.label, url }] : links;
   }, []);
@@ -122,11 +131,14 @@ export function ProvincePlaceDialog({
 }: ProvincePlaceDialogProps) {
   const theme = useTheme();
   const categoryColor = place ? getCategoryColor(categoryConfig, place.category) : '#608D8C';
-  const displayHighlight = place?.highlight
-    ? getCategoryLabel(categoryConfig, place.highlight)
-    : '';
+  const cleanHighlight = cleanCulturalText(place?.highlight);
+  const displayHighlight = cleanHighlight ? getCategoryLabel(categoryConfig, cleanHighlight) : '';
   const detailItems = place ? getDetailItems(place) : [];
   const socialLinks = place ? getSocialLinks(place) : [];
+  const descriptionText = cleanCulturalText(place?.description);
+  const districtText = cleanCulturalText(place?.district) || provinceDisplayName;
+  const mapUrl = cleanCulturalUrl(place?.mapUrl);
+  const sourceUrl = cleanCulturalUrl(place?.sourceUrl);
 
   return (
     <Dialog
@@ -236,25 +248,29 @@ export function ProvincePlaceDialog({
               />
               <Chip
                 icon={<Iconify icon="custom:location-fill" />}
-                label={place.district || provinceDisplayName}
+                label={districtText}
                 sx={{ fontWeight: 800 }}
               />
               <Chip label={coordinates} sx={{ fontWeight: 800 }} />
             </Stack>
 
-            <Typography sx={{ mt: 2, color: 'text.primary', fontWeight: 900 }}>
-              {displayHighlight}
-            </Typography>
+            {!!displayHighlight && (
+              <Typography sx={{ mt: 2, color: 'text.primary', fontWeight: 900 }}>
+                {displayHighlight}
+              </Typography>
+            )}
 
-            <Markdown
-              children={place.description}
-              sx={{
-                mt: 1,
-                color: 'text.secondary',
-                lineHeight: 1.8,
-                '& p': { lineHeight: 1.8 },
-              }}
-            />
+            {!!descriptionText && (
+              <Markdown
+                children={descriptionText}
+                sx={{
+                  mt: 1,
+                  color: 'text.secondary',
+                  lineHeight: 1.8,
+                  '& p': { lineHeight: 1.8 },
+                }}
+              />
+            )}
 
             {!!detailItems.length && (
               <Box sx={{ mt: 2.5 }}>
@@ -311,10 +327,10 @@ export function ProvincePlaceDialog({
                 </Stack>
               )}
 
-              {place.mapUrl && (
+              {!!mapUrl && (
                 <Button
                   component="a"
-                  href={place.mapUrl}
+                  href={mapUrl}
                   target="_blank"
                   rel="noreferrer"
                   size="small"
@@ -350,10 +366,10 @@ export function ProvincePlaceDialog({
                 ขอปรับแก้ข้อมูล
               </Button>
 
-              {place.sourceUrl && (
+              {!!sourceUrl && (
                 <Box
                   component="a"
-                  href={place.sourceUrl}
+                  href={sourceUrl}
                   target="_blank"
                   rel="noreferrer"
                   sx={{

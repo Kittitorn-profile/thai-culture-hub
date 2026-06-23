@@ -14,6 +14,8 @@ import { AuthContext } from '../auth-context';
 
 // ----------------------------------------------------------------------
 
+export const CREATOR_AUTH_TOKEN_KEY = 'creator_access_token';
+
 /**
  * NOTE:
  * We only build demo at basic level.
@@ -65,9 +67,57 @@ function normalizeAuthUser(session: Awaited<ReturnType<typeof supabase.auth.getS
 }
 
 async function clearLocalAuthSession() {
+  sessionStorage.removeItem(CREATOR_AUTH_TOKEN_KEY);
   await supabase.auth.signOut({ scope: 'local' }).catch((error) => {
     console.error(error);
   });
+}
+
+async function getCreatorTableSession() {
+  const accessToken = sessionStorage.getItem(CREATOR_AUTH_TOKEN_KEY);
+
+  if (!accessToken) {
+    return null;
+  }
+
+  const response = await fetch('/api/creator/me', {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+  const result = (await response.json().catch(() => ({}))) as {
+    data?: {
+      id: string;
+      userId: string;
+      email: string;
+      displayName: string;
+      avatarUrl: string;
+      status: string;
+    };
+  };
+
+  if (!response.ok || !result.data) {
+    sessionStorage.removeItem(CREATOR_AUTH_TOKEN_KEY);
+    return null;
+  }
+
+  return {
+    id: result.data.userId,
+    email: result.data.email,
+    accessToken,
+    access_token: accessToken,
+    displayName: result.data.displayName,
+    name: result.data.displayName,
+    firstName: '',
+    lastName: '',
+    photoURL: result.data.avatarUrl,
+    role: 'creator',
+    adminPermissions: [],
+    app_metadata: {
+      role: 'creator',
+      creator_status: result.data.status,
+    },
+  };
 }
 
 export function AuthProvider({ children }: Props) {
@@ -95,9 +145,17 @@ export function AuthProvider({ children }: Props) {
         setState({ user: normalizeAuthUser(session), loading: false });
         axios.defaults.headers.common.Authorization = `Bearer ${accessToken}`;
       } else {
-        setAdminAnalyticsDisabled(false);
-        setState({ user: null, loading: false });
-        delete axios.defaults.headers.common.Authorization;
+        const creatorUser = await getCreatorTableSession();
+
+        if (creatorUser) {
+          setAdminAnalyticsDisabled(true);
+          setState({ user: creatorUser, loading: false });
+          axios.defaults.headers.common.Authorization = `Bearer ${creatorUser.accessToken}`;
+        } else {
+          setAdminAnalyticsDisabled(false);
+          setState({ user: null, loading: false });
+          delete axios.defaults.headers.common.Authorization;
+        }
       }
     } catch (error) {
       console.error(error);

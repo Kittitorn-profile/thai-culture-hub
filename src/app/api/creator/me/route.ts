@@ -60,7 +60,7 @@ export async function PATCH(request: NextRequest) {
     })
     .eq('id', profileResult.profile.id)
     .select(
-      'id, user_id, email, display_name, bio, phone, website_url, facebook_url, avatar_url, status, reviewed_at, reject_reason, created_at, updated_at'
+      'id, user_id, email, display_name, bio, phone, province_code, website_url, facebook_url, avatar_url, status, reviewed_at, reject_reason, created_at, updated_at'
     )
     .single();
 

@@ -50,8 +50,9 @@ export function RHFCheckbox({
             control={
               <Checkbox
                 {...field}
-                checked={field.value}
+                checked={!!field.value}
                 {...slotProps?.checkbox}
+                color={error ? 'error' : slotProps?.checkbox?.color}
                 slotProps={{
                   ...slotProps?.checkbox?.slotProps,
                   input: {

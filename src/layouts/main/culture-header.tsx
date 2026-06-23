@@ -1,5 +1,9 @@
 'use client';
 
+import type { CreatorProfile } from 'src/sections/creator/types';
+
+import { useState, useEffect, useCallback } from 'react';
+
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
@@ -10,6 +14,8 @@ import { paths } from 'src/routes/paths';
 import { RouterLink } from 'src/routes/components';
 
 import { Logo } from 'src/components/logo';
+
+import { getCreatorProfile } from 'src/sections/creator/creator-api';
 
 import { useAuthContext } from 'src/auth/hooks';
 import { isCreatorUser } from 'src/auth/utils/role-redirect';
@@ -48,7 +54,9 @@ function isActivePath(pathname: string, path: string) {
 export function CultureHeader({ pathname }: CultureHeaderProps) {
   const theme = useTheme();
   const { user } = useAuthContext();
+  const accessToken = user?.accessToken ?? user?.access_token ?? '';
   const isCreator = isCreatorUser(user);
+  const [creatorProfile, setCreatorProfile] = useState<CreatorProfile | null>(null);
   const headerNavItems = isCreator
     ? [
         ...HEADER_NAV_ITEMS,
@@ -56,6 +64,49 @@ export function CultureHeader({ pathname }: CultureHeaderProps) {
         { label: 'ร่วมพัฒนาข้อมูล', path: '/creator/place-corrections' },
       ]
     : HEADER_NAV_ITEMS;
+  const accountProfile = creatorProfile
+    ? {
+        displayName: creatorProfile.displayName,
+        email: creatorProfile.email,
+        photoURL: creatorProfile.avatarUrl,
+      }
+    : undefined;
+
+  const loadCreatorProfile = useCallback(async () => {
+    if (!isCreator || !accessToken) {
+      setCreatorProfile(null);
+      return;
+    }
+
+    try {
+      const result = await getCreatorProfile(accessToken);
+      setCreatorProfile(result.data);
+    } catch (error) {
+      console.error(error);
+    }
+  }, [accessToken, isCreator]);
+
+  useEffect(() => {
+    loadCreatorProfile();
+  }, [loadCreatorProfile]);
+
+  useEffect(() => {
+    function handleCreatorProfileUpdated(event: Event) {
+      const nextProfile = (event as CustomEvent<CreatorProfile>).detail;
+
+      if (nextProfile) {
+        setCreatorProfile(nextProfile);
+      } else {
+        loadCreatorProfile();
+      }
+    }
+
+    window.addEventListener('creator-profile-updated', handleCreatorProfileUpdated);
+
+    return () => {
+      window.removeEventListener('creator-profile-updated', handleCreatorProfileUpdated);
+    };
+  }, [loadCreatorProfile]);
 
   return (
     <Box
@@ -134,11 +185,11 @@ export function CultureHeader({ pathname }: CultureHeaderProps) {
         sx={{ display: { xs: 'none', md: 'flex' } }}
       >
         {user && user?.access_token ? (
-          <AccountPopover data={_account} />
+          <AccountPopover data={_account} account={accountProfile} />
         ) : (
           <Stack alignItems="flex-end" spacing={0.25}>
             <Typography variant="subtitle1">Thailand Cultural Hub</Typography>
-            <Stack direction="row" alignItems="center" spacing={0.75}>
+            {/* <Stack direction="row" alignItems="center" spacing={0.75}>
               <Link
                 component={RouterLink}
                 href="/creator/register"
@@ -146,7 +197,7 @@ export function CultureHeader({ pathname }: CultureHeaderProps) {
                 sx={{
                   color: alpha(theme.palette.common.white, 0.88),
                   fontSize: 13,
-                  fontWeight: 800,
+                  fontWeight: 400,
                   '&:hover': { color: theme.palette.common.white },
                 }}
               >
@@ -162,13 +213,13 @@ export function CultureHeader({ pathname }: CultureHeaderProps) {
                 sx={{
                   color: alpha(theme.palette.common.white, 0.88),
                   fontSize: 13,
-                  fontWeight: 800,
+                  fontWeight: 400,
                   '&:hover': { color: theme.palette.common.white },
                 }}
               >
                 เข้าสู่ระบบ
               </Link>
-            </Stack>
+            </Stack> */}
           </Stack>
         )}
       </Stack>

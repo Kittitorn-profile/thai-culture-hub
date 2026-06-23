@@ -3,6 +3,7 @@ import type { NextRequest } from 'next/server';
 import crypto from 'node:crypto';
 import { NextResponse } from 'next/server';
 
+import provinces from 'src/data/thailand-culture/provinces';
 import { getSupabaseAdmin } from 'src/server/supabase-admin';
 import { cleanText, mapCreatorProfile } from 'src/server/creator-auth';
 
@@ -18,18 +19,31 @@ export async function POST(request: NextRequest) {
   const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
   const email = cleanText(body.email).toLowerCase();
   const password = cleanText(body.password);
+  const confirmPassword = cleanText(body.confirmPassword);
   const firstName = cleanText(body.firstName);
   const lastName = cleanText(body.lastName);
   const displayName = cleanText(body.displayName) || `${firstName} ${lastName}`.trim() || email;
   const bio = cleanText(body.bio);
   const phone = cleanText(body.phone);
+  const provinceCode = cleanText(body.provinceCode);
 
-  if (!email || !password || !displayName) {
-    return NextResponse.json({ message: 'Email, password and display name are required' }, { status: 400 });
+  if (!email || !password || !displayName || !provinceCode) {
+    return NextResponse.json(
+      { message: 'Email, password, display name and province are required' },
+      { status: 400 }
+    );
   }
 
   if (password.length < 6) {
     return NextResponse.json({ message: 'Password must be at least 6 characters' }, { status: 400 });
+  }
+
+  if (password !== confirmPassword) {
+    return NextResponse.json({ message: 'Password confirmation does not match' }, { status: 400 });
+  }
+
+  if (!provinces.some((province) => province.code === provinceCode)) {
+    return NextResponse.json({ message: 'Invalid province' }, { status: 400 });
   }
 
   const supabase = getSupabaseAdmin();
@@ -38,7 +52,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ message: supabase.error }, { status: 500 });
   }
 
-  const { data: existingUser, error: existingUserError } = await supabase.client
+  const { data: existingEmailUser, error: existingUserError } = await supabase.client
     .from(USERS_TABLE)
     .select('id')
     .eq('email', email)
@@ -48,13 +62,14 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ message: existingUserError.message }, { status: 500 });
   }
 
-  if (existingUser) {
+  if (existingEmailUser) {
     return NextResponse.json({ message: 'This email is already registered' }, { status: 409 });
   }
 
   const { data: createdUser, error: createError } = await supabase.client
     .from(USERS_TABLE)
     .insert({
+      username: email,
       email,
       password_hash: `sha256:${sha256(password)}`,
       role: 'creator',
@@ -77,10 +92,11 @@ export async function POST(request: NextRequest) {
       display_name: displayName,
       bio,
       phone,
+      province_code: provinceCode,
       status: 'pending',
     })
     .select(
-      'id, user_id, email, display_name, bio, phone, website_url, facebook_url, avatar_url, status, reviewed_at, reject_reason, created_at, updated_at'
+      'id, user_id, email, display_name, bio, phone, province_code, website_url, facebook_url, avatar_url, status, reviewed_at, reject_reason, created_at, updated_at'
     )
     .single();
 

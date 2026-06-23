@@ -23,6 +23,11 @@ import { SignOutButton } from './sign-out-button';
 // ----------------------------------------------------------------------
 
 export type AccountPopoverProps = IconButtonProps & {
+  account?: {
+    displayName?: string;
+    email?: string;
+    photoURL?: string;
+  };
   data?: {
     label: string;
     href: string;
@@ -31,12 +36,15 @@ export type AccountPopoverProps = IconButtonProps & {
   }[];
 };
 
-export function AccountPopover({ data = [], sx, ...other }: AccountPopoverProps) {
+export function AccountPopover({ account, data = [], sx, ...other }: AccountPopoverProps) {
   const { open, anchorEl, onClose, onOpen } = usePopover();
 
   const { user } = useAuthContext();
   const roleHomePath = getRoleHomePath(user);
   const roleProfilePath = getRoleProfilePath(user);
+  const displayName = account?.displayName ?? user?.displayName ?? '';
+  const email = account?.email ?? user?.email ?? '';
+  const photoURL = account?.photoURL ?? user?.photoURL ?? '';
 
   const renderMenuActions = () => (
     <CustomPopover
@@ -47,11 +55,11 @@ export function AccountPopover({ data = [], sx, ...other }: AccountPopoverProps)
     >
       <Box sx={{ p: 2, pb: 1.5 }}>
         <Typography variant="subtitle2" noWrap>
-          {user?.displayName}
+          {displayName}
         </Typography>
 
         <Typography variant="body2" sx={{ color: 'text.secondary' }} noWrap>
-          {user?.email}
+          {email}
         </Typography>
       </Box>
 
@@ -121,17 +129,17 @@ export function AccountPopover({ data = [], sx, ...other }: AccountPopoverProps)
     <>
       <Box sx={{ p: 2, pb: 1.5, textAlign: 'end' }}>
         <Typography variant="subtitle2" noWrap>
-          {user?.displayName}
+          {displayName}
         </Typography>
 
         <Typography variant="body2" noWrap>
-          {user?.email}
+          {email}
         </Typography>
       </Box>
       <AccountButton
         onClick={onOpen}
-        photoURL={user?.photoURL}
-        displayName={user?.displayName}
+        photoURL={photoURL}
+        displayName={displayName}
         sx={sx}
         {...other}
       />

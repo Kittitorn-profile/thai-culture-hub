@@ -1,5 +1,7 @@
 import type { User } from '@supabase/supabase-js';
 
+import crypto from 'node:crypto';
+
 import { getSupabaseAdmin } from './supabase-admin';
 
 export type CreatorStatus = 'pending' | 'approved' | 'rejected';
@@ -12,6 +14,7 @@ export type CreatorProfileRow = {
   display_name: string;
   bio: string | null;
   phone: string | null;
+  province_code: string | null;
   website_url: string | null;
   facebook_url: string | null;
   avatar_url: string | null;
@@ -62,6 +65,47 @@ export function slugify(value: string) {
   );
 }
 
+function safeCompare(value: string, expectedValue: string) {
+  const valueBuffer = Buffer.from(value);
+  const expectedValueBuffer = Buffer.from(expectedValue);
+
+  return (
+    valueBuffer.length === expectedValueBuffer.length &&
+    crypto.timingSafeEqual(valueBuffer, expectedValueBuffer)
+  );
+}
+
+function verifyCreatorTableToken(accessToken: string) {
+  const secret = process.env.ADMIN_AUTH_SECRET ?? process.env.NEXTAUTH_SECRET ?? '';
+  const [body, signature] = accessToken.split('.');
+
+  if (!secret || !body || !signature) {
+    return null;
+  }
+
+  const expectedSignature = crypto.createHmac('sha256', secret).update(body).digest('base64url');
+
+  if (!safeCompare(signature, expectedSignature)) {
+    return null;
+  }
+
+  try {
+    const payload = JSON.parse(Buffer.from(body, 'base64url').toString('utf8')) as {
+      sub?: string;
+      role?: string | null;
+      exp?: number;
+    };
+
+    if (!payload.sub || payload.role !== 'creator' || !payload.exp || payload.exp < Date.now() / 1000) {
+      return null;
+    }
+
+    return payload;
+  } catch {
+    return null;
+  }
+}
+
 export function mapCreatorProfile(row: CreatorProfileRow) {
   return {
     id: row.id,
@@ -70,6 +114,7 @@ export function mapCreatorProfile(row: CreatorProfileRow) {
     displayName: row.display_name,
     bio: row.bio ?? '',
     phone: row.phone ?? '',
+    provinceCode: row.province_code ?? '',
     websiteUrl: row.website_url ?? '',
     facebookUrl: row.facebook_url ?? '',
     avatarUrl: row.avatar_url ?? '',
@@ -117,11 +162,26 @@ export async function verifyCreatorAccessToken(accessToken: string) {
 
   const { data, error } = await supabase.client.auth.getUser(accessToken);
 
-  if (error || !data.user) {
+  if (!error && data.user) {
+    return { ok: true as const, supabase: supabase.client, user: data.user as User };
+  }
+
+  const creatorTokenPayload = verifyCreatorTableToken(accessToken);
+
+  if (!creatorTokenPayload) {
     return { ok: false as const, status: 401, message: 'Unauthorized' };
   }
 
-  return { ok: true as const, supabase: supabase.client, user: data.user as User };
+  return {
+    ok: true as const,
+    supabase: supabase.client,
+    user: {
+      id: creatorTokenPayload.sub,
+      email: '',
+      app_metadata: { role: 'creator' },
+      user_metadata: {},
+    } as unknown as User,
+  };
 }
 
 export async function getCreatorProfileByUserId(userId: string) {
@@ -134,7 +194,7 @@ export async function getCreatorProfileByUserId(userId: string) {
   const { data, error } = await supabase.client
     .from('creator_profiles')
     .select(
-      'id, user_id, email, display_name, bio, phone, website_url, facebook_url, avatar_url, status, reviewed_at, reject_reason, created_at, updated_at'
+      'id, user_id, email, display_name, bio, phone, province_code, website_url, facebook_url, avatar_url, status, reviewed_at, reject_reason, created_at, updated_at'
     )
     .eq('user_id', userId)
     .maybeSingle();

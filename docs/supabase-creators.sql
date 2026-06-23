@@ -19,6 +19,7 @@ create table if not exists public.creator_profiles (
   display_name text not null,
   bio text,
   phone text,
+  province_code text,
   website_url text,
   facebook_url text,
   avatar_url text,
@@ -99,6 +100,12 @@ create table if not exists public.creator_articles (
 
 create index if not exists creator_profiles_status_idx
   on public.creator_profiles (status, created_at desc);
+
+alter table public.creator_profiles
+  add column if not exists province_code text;
+
+create index if not exists creator_profiles_province_code_idx
+  on public.creator_profiles (province_code);
 
 create index if not exists creator_articles_creator_status_idx
   on public.creator_articles (creator_id, status, updated_at desc);

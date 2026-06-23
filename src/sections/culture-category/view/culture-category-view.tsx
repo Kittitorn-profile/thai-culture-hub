@@ -18,14 +18,20 @@ import Typography from '@mui/material/Typography';
 import LoadingButton from '@mui/lab/LoadingButton';
 
 import { RouterLink } from 'src/routes/components';
-import { useParams, useRouter } from 'src/routes/hooks';
+import { useParams } from 'src/routes/hooks';
 
 import provinces from 'src/data/thailand-culture/provinces';
 
 import { Logo } from 'src/components/logo';
 import { Iconify } from 'src/components/iconify';
 
+import { useAuthContext } from 'src/auth/hooks';
+import { isCreatorUser } from 'src/auth/utils/role-redirect';
+
 import { ProvincePlaceCard } from 'src/sections/province/view/province-place-card';
+import { ProvincePlaceDialog } from 'src/sections/province/view/province-place-dialog';
+import { getPlaceImages } from 'src/sections/province/view/province-detail-utils';
+import { getCreatorProfile } from 'src/sections/creator/creator-api';
 import {
   getCategoryColor,
   getCategoryLabel,
@@ -84,7 +90,7 @@ const LIKE_BATCH_SIZE = 80;
 const PLACES_PAGE_SIZE = 16;
 
 export function CultureCategoryView({ allCategories = false }: Props) {
-  const router = useRouter();
+  const { user } = useAuthContext();
   const categoryConfig = useCategoryConfig();
   const params = useParams<{ categoryKey: string }>();
   const categoryKey = allCategories ? '' : params.categoryKey;
@@ -104,10 +110,21 @@ export function CultureCategoryView({ allCategories = false }: Props) {
   const [totalPlaces, setTotalPlaces] = useState(0);
   const [nextOffset, setNextOffset] = useState(0);
   const [hasMore, setHasMore] = useState(false);
+  const [selectedPlace, setSelectedPlace] = useState<CategoryPlace | null>(null);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const isLoadingMoreRef = useRef(false);
+  const isCreatorProvinceAppliedRef = useRef(false);
+  const accessToken = user?.accessToken ?? user?.access_token ?? '';
+  const isCreator = isCreatorUser(user);
 
   const provinceOptions = useMemo(() => [{ code: '', name: 'ทุกจังหวัด' }, ...provinces], []);
+  const selectedPlaceIndex = selectedPlace
+    ? places.findIndex((place) => place.id === selectedPlace.id)
+    : -1;
+  const selectedPlaceImages = selectedPlace ? getPlaceImages(selectedPlace, selectedPlaceIndex) : [];
+  const selectedPlaceCoordinates = selectedPlace
+    ? `${selectedPlace.lat}, ${selectedPlace.lng}`
+    : '';
 
   const loadPlaces = useCallback(
     async (options?: { append?: boolean; offset?: number }) => {
@@ -186,6 +203,22 @@ export function CultureCategoryView({ allCategories = false }: Props) {
   useEffect(() => {
     loadPlaces();
   }, [loadPlaces]);
+
+  useEffect(() => {
+    if (!allCategories || !isCreator || !accessToken || isCreatorProvinceAppliedRef.current) {
+      return;
+    }
+
+    isCreatorProvinceAppliedRef.current = true;
+
+    getCreatorProfile(accessToken)
+      .then((result) => {
+        if (result.data.provinceCode) {
+          setProvinceCode(result.data.provinceCode);
+        }
+      })
+      .catch(() => {});
+  }, [accessToken, allCategories, isCreator]);
 
   const handleSearch = () => {
     setAppliedQuery(query.trim());
@@ -452,7 +485,7 @@ export function CultureCategoryView({ allCategories = false }: Props) {
                 likeState={placeLikes[place.id]}
                 categoryConfig={categoryConfig}
                 onPlaceLike={handlePlaceLike}
-                onPlaceSelect={() => router.push(`/province/${place.provinceCode}`)}
+                onPlaceSelect={() => setSelectedPlace(place)}
               />
             </Stack>
           ))}
@@ -484,6 +517,16 @@ export function CultureCategoryView({ allCategories = false }: Props) {
           </Stack>
         )}
       </Stack>
+
+      <ProvincePlaceDialog
+        place={selectedPlace}
+        placeIndex={selectedPlaceIndex}
+        placeImages={selectedPlaceImages}
+        provinceDisplayName={selectedPlace?.provinceName ?? ''}
+        coordinates={selectedPlaceCoordinates}
+        categoryConfig={categoryConfig}
+        onClose={() => setSelectedPlace(null)}
+      />
 
       <Container sx={{ textAlign: 'center', mt: 4 }}>
         <Logo sx={{ width: 200, height: '100%' }} />
