@@ -21,7 +21,13 @@ import { useAuthContext } from 'src/auth/hooks';
 import { isCreatorUser } from 'src/auth/utils/role-redirect';
 
 import { getCategoryColor, getCategoryLabel } from '../category-config';
-import { getSourceLabel, cleanCulturalUrl, cleanCulturalText } from './province-detail-utils';
+import {
+  getSourceLabel,
+  cleanCulturalUrl,
+  cleanCulturalText,
+  getPlaceProvinceCode,
+  getCorrectionRequestEntryHref,
+} from './province-detail-utils';
 
 // ----------------------------------------------------------------------
 
@@ -74,25 +80,6 @@ function getSharePageUrl(place: CulturalPlace) {
   return `${SHARE_SITE_URL}/culture-place/${encodeURIComponent(place.id)}`;
 }
 
-function getCorrectionRequestHref(place: CulturalPlace) {
-  const params = new URLSearchParams({ placeId: place.id });
-  const provinceCode = getPlaceProvinceCode(place);
-
-  if (provinceCode) {
-    params.set('provinceCode', provinceCode);
-  }
-
-  return `/creator/place-corrections/new?${params.toString()}`;
-}
-
-function getPlaceProvinceCode(place: CulturalPlace) {
-  return (
-    place.details?.provinceCode ??
-    (place as CulturalPlace & { provinceCode?: string }).provinceCode ??
-    ''
-  );
-}
-
 function getPlainText(value?: string | null) {
   return cleanCulturalText(value);
 }
@@ -105,7 +92,7 @@ export function ProvincePlaceCard({
   onPlaceSelect,
 }: ProvincePlaceCardProps) {
   const theme = useTheme();
-  const { user } = useAuthContext();
+  const { user, loading: authLoading } = useAuthContext();
   const isCreator = isCreatorUser(user);
   const accentColor = getCategoryColor(categoryConfig, place.category);
   const cleanHighlight = cleanCulturalText(place.highlight);
@@ -123,6 +110,7 @@ export function ProvincePlaceCard({
   const descriptionText =
     getPlainText(place.description) ||
     (isCreator ? 'ยังไม่มีคำอธิบายเพิ่มเติมสำหรับสถานที่นี้' : '-');
+  const correctionRequestHref = getCorrectionRequestEntryHref(place, isCreator);
 
   return (
     <Box
@@ -368,39 +356,42 @@ export function ProvincePlaceCard({
         </Box>
 
         <Stack spacing={1} sx={{ mt: { xs: 1.25, sm: 1.6 } }}>
-          {isCreator && (
-            <Button
-              fullWidth
-              component={RouterLink}
-              href={getCorrectionRequestHref(place)}
-              startIcon={<Iconify icon="solar:pen-bold" />}
-              sx={{
-                m: 0,
-                px: 1.4,
-                py: 0.95,
-                border: 0,
-                color: accentColor,
-                cursor: 'pointer',
-                fontWeight: 950,
-                borderRadius: 1.2,
-                bgcolor: alpha(accentColor, 0.12),
-                whiteSpace: 'nowrap',
-                boxShadow: `inset 0 0 0 1px ${alpha(accentColor, 0.16)}`,
-                '&:hover': {
-                  bgcolor: alpha(accentColor, 0.18),
-                },
-              }}
-            >
-              ช่วยแก้ไขข้อมูล
-            </Button>
-          )}
+          <Button
+            fullWidth
+            component={RouterLink}
+            href={correctionRequestHref}
+            disabled={authLoading}
+            startIcon={<Iconify icon="solar:pen-bold" />}
+            sx={{
+              m: 0,
+              px: 1.4,
+              py: 0.95,
+              border: 0,
+              color: accentColor,
+              cursor: 'pointer',
+              fontWeight: 950,
+              borderRadius: 1.2,
+              bgcolor: alpha(accentColor, 0.12),
+              whiteSpace: 'nowrap',
+              boxShadow: `inset 0 0 0 1px ${alpha(accentColor, 0.16)}`,
+              '&:hover': {
+                bgcolor: alpha(accentColor, 0.18),
+              },
+              '&.Mui-disabled': {
+                color: alpha(accentColor, 0.52),
+                bgcolor: alpha(accentColor, 0.08),
+              },
+            }}
+          >
+            ขอเพิ่มเติมข้อมูล
+          </Button>
 
           <Box
             sx={{
               display: 'grid',
               gap: 0.8,
               gridTemplateColumns: {
-                xs: '1fr',
+                xs: 'auto auto',
                 sm: googleMapsUrl ? 'minmax(0, 1fr) minmax(0, 1fr)' : '1fr',
               },
             }}

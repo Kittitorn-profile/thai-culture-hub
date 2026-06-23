@@ -189,7 +189,7 @@ export function CultureHeader({ pathname }: CultureHeaderProps) {
         ) : (
           <Stack alignItems="flex-end" spacing={0.25}>
             <Typography variant="subtitle1">Thailand Cultural Hub</Typography>
-            {/* <Stack direction="row" alignItems="center" spacing={0.75}>
+            <Stack direction="row" alignItems="center" spacing={0.75}>
               <Link
                 component={RouterLink}
                 href="/creator/register"
@@ -219,7 +219,7 @@ export function CultureHeader({ pathname }: CultureHeaderProps) {
               >
                 เข้าสู่ระบบ
               </Link>
-            </Stack> */}
+            </Stack>
           </Stack>
         )}
       </Stack>

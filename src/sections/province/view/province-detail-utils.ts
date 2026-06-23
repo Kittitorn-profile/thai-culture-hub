@@ -52,6 +52,35 @@ export function cleanCulturalUrl(value?: string | null) {
   return url;
 }
 
+export function getPlaceProvinceCode(place: CulturalPlace) {
+  return (
+    place.details?.provinceCode ??
+    (place as CulturalPlace & { provinceCode?: string }).provinceCode ??
+    ''
+  );
+}
+
+export function getCorrectionRequestHref(place: CulturalPlace) {
+  const params = new URLSearchParams({ placeId: place.id });
+  const provinceCode = getPlaceProvinceCode(place);
+
+  if (provinceCode) {
+    params.set('provinceCode', provinceCode);
+  }
+
+  return `/creator/place-corrections/new?${params.toString()}`;
+}
+
+export function getCorrectionRequestEntryHref(place: CulturalPlace, isCreator: boolean) {
+  const correctionRequestHref = getCorrectionRequestHref(place);
+
+  if (isCreator) {
+    return correctionRequestHref;
+  }
+
+  return `/creator/sign-in?returnTo=${encodeURIComponent(correctionRequestHref)}`;
+}
+
 export function mergeCulturalPlaces(...placeGroups: CulturalPlace[][]) {
   const placeMap = new Map<string, CulturalPlace>();
 

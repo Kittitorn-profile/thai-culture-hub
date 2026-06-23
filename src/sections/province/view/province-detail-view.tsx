@@ -2,8 +2,8 @@
 
 import type { CulturalPlace } from '../province-data';
 
-import { useMemo, useState, useEffect } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
+import { useMemo, useState, useEffect, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
@@ -46,6 +46,20 @@ type DistrictCenter = {
   name: string;
   lat: number;
   lng: number;
+};
+
+type PlaceLikeState = {
+  liked: boolean;
+  likeCount: number;
+  loading?: boolean;
+};
+
+type PlaceLikeResponse = {
+  data?: {
+    placeId: string;
+    liked: boolean;
+    likeCount: number;
+  };
 };
 
 const PROVINCE_BG_TOP = '#6f8790';
@@ -144,6 +158,7 @@ export function ProvinceDetailView() {
   const [isPlacesDrawerOpen, setIsPlacesDrawerOpen] = useState(false);
   const [selectedDistrictDetail, setSelectedDistrictDetail] = useState<string | null>(null);
   const [selectedPlace, setSelectedPlace] = useState<CulturalPlace | null>(null);
+  const [placeLikes, setPlaceLikes] = useState<Record<string, PlaceLikeState>>({});
   const filterEventKey = [
     selectedSources.join('|'),
     selectedCategories.join('|'),
@@ -376,6 +391,89 @@ export function ProvinceDetailView() {
     setSelectedPlace(place);
   };
 
+  const handlePlaceLike = useCallback(
+    async (place: CulturalPlace) => {
+      const previousState = placeLikes[place.id] ?? { liked: false, likeCount: 0 };
+      const nextLiked = !previousState.liked;
+
+      setPlaceLikes((currentLikes) => ({
+        ...currentLikes,
+        [place.id]: {
+          liked: nextLiked,
+          likeCount: Math.max(0, previousState.likeCount + (nextLiked ? 1 : -1)),
+          loading: true,
+        },
+      }));
+
+      try {
+        const response = await fetch('/api/culture/place-likes', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ placeId: place.id }),
+        });
+        const result = (await response.json().catch(() => ({}))) as PlaceLikeResponse;
+
+        if (!response.ok || !result.data) {
+          throw new Error('Unable to update place like');
+        }
+
+        setPlaceLikes((currentLikes) => ({
+          ...currentLikes,
+          [place.id]: {
+            liked: result.data?.liked ?? nextLiked,
+            likeCount: result.data?.likeCount ?? previousState.likeCount,
+            loading: false,
+          },
+        }));
+      } catch {
+        setPlaceLikes((currentLikes) => ({
+          ...currentLikes,
+          [place.id]: {
+            ...previousState,
+            loading: false,
+          },
+        }));
+      }
+    },
+    [placeLikes]
+  );
+
+  useEffect(() => {
+    if (!selectedPlace || placeLikes[selectedPlace.id]) {
+      return undefined;
+    }
+
+    const controller = new AbortController();
+
+    fetch(`/api/culture/place-likes?placeIds=${encodeURIComponent(selectedPlace.id)}`, {
+      signal: controller.signal,
+    })
+      .then(async (response) => {
+        const result = (await response.json().catch(() => ({}))) as {
+          data?: Record<string, PlaceLikeState>;
+        };
+
+        if (response.ok && result.data?.[selectedPlace.id]) {
+          setPlaceLikes((currentLikes) => ({
+            ...currentLikes,
+            [selectedPlace.id]: result.data?.[selectedPlace.id] ?? { liked: false, likeCount: 0 },
+          }));
+        }
+      })
+      .catch((error) => {
+        if (error?.name !== 'AbortError') {
+          setPlaceLikes((currentLikes) => ({
+            ...currentLikes,
+            [selectedPlace.id]: currentLikes[selectedPlace.id] ?? { liked: false, likeCount: 0 },
+          }));
+        }
+      });
+
+    return () => {
+      controller.abort();
+    };
+  }, [placeLikes, selectedPlace]);
+
   return (
     <Box
       component="main"
@@ -501,6 +599,8 @@ export function ProvinceDetailView() {
           provinceDisplayName={provinceDisplayName}
           coordinates={selectedPlaceCoordinates}
           categoryConfig={categoryConfig}
+          likeState={selectedPlace ? placeLikes[selectedPlace.id] : undefined}
+          onPlaceLike={handlePlaceLike}
           onClose={() => setSelectedPlace(null)}
         />
       </Box>

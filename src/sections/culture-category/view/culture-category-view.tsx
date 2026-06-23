@@ -17,26 +17,26 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import LoadingButton from '@mui/lab/LoadingButton';
 
-import { RouterLink } from 'src/routes/components';
 import { useParams } from 'src/routes/hooks';
+import { RouterLink } from 'src/routes/components';
 
 import provinces from 'src/data/thailand-culture/provinces';
 
 import { Logo } from 'src/components/logo';
 import { Iconify } from 'src/components/iconify';
 
-import { useAuthContext } from 'src/auth/hooks';
-import { isCreatorUser } from 'src/auth/utils/role-redirect';
-
+import { getCreatorProfile } from 'src/sections/creator/creator-api';
+import { getPlaceImages } from 'src/sections/province/view/province-detail-utils';
 import { ProvincePlaceCard } from 'src/sections/province/view/province-place-card';
 import { ProvincePlaceDialog } from 'src/sections/province/view/province-place-dialog';
-import { getPlaceImages } from 'src/sections/province/view/province-detail-utils';
-import { getCreatorProfile } from 'src/sections/creator/creator-api';
 import {
   getCategoryColor,
   getCategoryLabel,
   useCategoryConfig,
 } from 'src/sections/province/category-config';
+
+import { useAuthContext } from 'src/auth/hooks';
+import { isCreatorUser } from 'src/auth/utils/role-redirect';
 
 type CategoryPlace = CulturalPlace & {
   provinceCode: string;
@@ -525,6 +525,8 @@ export function CultureCategoryView({ allCategories = false }: Props) {
         provinceDisplayName={selectedPlace?.provinceName ?? ''}
         coordinates={selectedPlaceCoordinates}
         categoryConfig={categoryConfig}
+        likeState={selectedPlace ? placeLikes[selectedPlace.id] : undefined}
+        onPlaceLike={handlePlaceLike}
         onClose={() => setSelectedPlace(null)}
       />
 
