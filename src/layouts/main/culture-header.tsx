@@ -1,10 +1,9 @@
 'use client';
 
-import { Typography } from 'node_modules/@mui/material/esm';
-
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
+import Typography from '@mui/material/Typography';
 import { alpha, useTheme } from '@mui/material/styles';
 
 import { paths } from 'src/routes/paths';
@@ -13,6 +12,7 @@ import { RouterLink } from 'src/routes/components';
 import { Logo } from 'src/components/logo';
 
 import { useAuthContext } from 'src/auth/hooks';
+import { isCreatorUser } from 'src/auth/utils/role-redirect';
 
 import { _account } from '../nav-config-account';
 import { AccountPopover } from '../components/account-popover';
@@ -21,8 +21,6 @@ import { AccountPopover } from '../components/account-popover';
 
 const HEADER_NAV_ITEMS = [
   { label: 'หน้าแรก', path: '/' },
-  // { label: 'แผนที่', path: '/#culture-map' },
-  // { label: 'เรื่องราว', path: '/#stories' },
   { label: 'เกี่ยวกับเรา', path: paths.about },
   { label: 'ติดต่อสอบถาม', path: paths.contact },
 ];
@@ -36,6 +34,10 @@ function isActivePath(pathname: string, path: string) {
     return false;
   }
 
+  if (path === '/creator/write') {
+    return pathname.startsWith('/creator/write') || pathname.startsWith('/creator/articles');
+  }
+
   if (path === '/') {
     return pathname === '/';
   }
@@ -46,6 +48,14 @@ function isActivePath(pathname: string, path: string) {
 export function CultureHeader({ pathname }: CultureHeaderProps) {
   const theme = useTheme();
   const { user } = useAuthContext();
+  const isCreator = isCreatorUser(user);
+  const headerNavItems = isCreator
+    ? [
+        ...HEADER_NAV_ITEMS,
+        { label: 'เขียนบทความ', path: '/creator/write' },
+        { label: 'ร่วมพัฒนาข้อมูล', path: '/creator/place-corrections' },
+      ]
+    : HEADER_NAV_ITEMS;
 
   return (
     <Box
@@ -78,7 +88,7 @@ export function CultureHeader({ pathname }: CultureHeaderProps) {
           boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.2), 0 10px 30px rgba(35,25,18,0.12)',
         }}
       >
-        {HEADER_NAV_ITEMS.map((item) => {
+        {headerNavItems.map((item) => {
           const active = isActivePath(pathname, item.path);
 
           return (
@@ -123,8 +133,44 @@ export function CultureHeader({ pathname }: CultureHeaderProps) {
         spacing={1}
         sx={{ display: { xs: 'none', md: 'flex' } }}
       >
-        <Typography variant="subtitle1">Thailand Cultural Hub</Typography>
-        {user && user?.access_token && <AccountPopover data={_account} />}
+        {user && user?.access_token ? (
+          <AccountPopover data={_account} />
+        ) : (
+          <Stack alignItems="flex-end" spacing={0.25}>
+            <Typography variant="subtitle1">Thailand Cultural Hub</Typography>
+            <Stack direction="row" alignItems="center" spacing={0.75}>
+              <Link
+                component={RouterLink}
+                href="/creator/register"
+                underline="none"
+                sx={{
+                  color: alpha(theme.palette.common.white, 0.88),
+                  fontSize: 13,
+                  fontWeight: 800,
+                  '&:hover': { color: theme.palette.common.white },
+                }}
+              >
+                ลงทะเบียน
+              </Link>
+              <Typography component="span" sx={{ color: alpha(theme.palette.common.white, 0.5) }}>
+                |
+              </Typography>
+              <Link
+                component={RouterLink}
+                href="/creator/sign-in"
+                underline="none"
+                sx={{
+                  color: alpha(theme.palette.common.white, 0.88),
+                  fontSize: 13,
+                  fontWeight: 800,
+                  '&:hover': { color: theme.palette.common.white },
+                }}
+              >
+                เข้าสู่ระบบ
+              </Link>
+            </Stack>
+          </Stack>
+        )}
       </Stack>
     </Box>
   );

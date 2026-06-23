@@ -9,14 +9,13 @@ import MenuList from '@mui/material/MenuList';
 import MenuItem from '@mui/material/MenuItem';
 import Typography from '@mui/material/Typography';
 
-import { paths } from 'src/routes/paths';
-import { usePathname } from 'src/routes/hooks';
 import { RouterLink } from 'src/routes/components';
 
 import { Label } from 'src/components/label';
 import { CustomPopover } from 'src/components/custom-popover';
 
 import { useAuthContext } from 'src/auth/hooks';
+import { getRoleHomePath, getRoleProfilePath } from 'src/auth/utils/role-redirect';
 
 import { AccountButton } from './account-button';
 import { SignOutButton } from './sign-out-button';
@@ -33,11 +32,11 @@ export type AccountPopoverProps = IconButtonProps & {
 };
 
 export function AccountPopover({ data = [], sx, ...other }: AccountPopoverProps) {
-  const pathname = usePathname();
-
   const { open, anchorEl, onClose, onOpen } = usePopover();
 
   const { user } = useAuthContext();
+  const roleHomePath = getRoleHomePath(user);
+  const roleProfilePath = getRoleProfilePath(user);
 
   const renderMenuActions = () => (
     <CustomPopover
@@ -60,14 +59,19 @@ export function AccountPopover({ data = [], sx, ...other }: AccountPopoverProps)
 
       <MenuList sx={{ p: 1, my: 1, '& li': { p: 0 } }}>
         {data.map((option) => {
-          const rootLabel = pathname.includes('/dashboard') ? 'Home' : 'Dashboard';
-          const rootHref = pathname.includes('/dashboard') ? '/' : paths.dashboard.root;
+          const isHomeOption = option.label === 'หน้าแรก' || option.label === 'Home';
+          const isProfileOption = option.label === 'Profile';
+          const href = isHomeOption
+            ? roleHomePath
+            : isProfileOption
+              ? roleProfilePath
+              : option.href;
 
           return (
             <MenuItem key={option.label}>
               <Link
                 component={RouterLink}
-                href={option.label === 'Home' ? rootHref : option.href}
+                href={href}
                 color="inherit"
                 underline="none"
                 onClick={onClose}
@@ -86,7 +90,7 @@ export function AccountPopover({ data = [], sx, ...other }: AccountPopoverProps)
                 {option.icon}
 
                 <Box component="span" sx={{ ml: 2 }}>
-                  {option.label === 'Home' ? rootLabel : option.label}
+                  {option.label}
                 </Box>
 
                 {option.info && (
@@ -115,6 +119,15 @@ export function AccountPopover({ data = [], sx, ...other }: AccountPopoverProps)
 
   return (
     <>
+      <Box sx={{ p: 2, pb: 1.5, textAlign: 'end' }}>
+        <Typography variant="subtitle2" noWrap>
+          {user?.displayName}
+        </Typography>
+
+        <Typography variant="body2" noWrap>
+          {user?.email}
+        </Typography>
+      </Box>
       <AccountButton
         onClick={onOpen}
         photoURL={user?.photoURL}

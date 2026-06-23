@@ -15,6 +15,8 @@ import DialogTitle from '@mui/material/DialogTitle';
 import { alpha, useTheme } from '@mui/material/styles';
 import DialogContent from '@mui/material/DialogContent';
 
+import { RouterLink } from 'src/routes/components';
+
 import { Iconify } from 'src/components/iconify';
 import { Markdown } from 'src/components/markdown';
 
@@ -95,6 +97,18 @@ function getSocialLinks(place: CulturalPlace) {
 
     return url ? [...links, { label: item.label, url }] : links;
   }, []);
+}
+
+function getCorrectionRequestHref(place: CulturalPlace) {
+  const params = new URLSearchParams({ placeId: place.id });
+  const provinceCode =
+    place.details?.provinceCode ?? (place as CulturalPlace & { provinceCode?: string }).provinceCode ?? '';
+
+  if (provinceCode) {
+    params.set('provinceCode', provinceCode);
+  }
+
+  return `/creator/place-corrections/new?${params.toString()}`;
 }
 
 export function ProvincePlaceDialog({
@@ -318,6 +332,23 @@ export function ProvincePlaceDialog({
                   เปิดแผนที่
                 </Button>
               )}
+
+              <Button
+                component={RouterLink}
+                href={getCorrectionRequestHref(place)}
+                size="small"
+                variant="outlined"
+                sx={{
+                  px: 2,
+                  py: 1,
+                  fontWeight: 900,
+                  borderRadius: 1,
+                  color: categoryColor,
+                  borderColor: alpha(categoryColor, 0.42),
+                }}
+              >
+                ขอปรับแก้ข้อมูล
+              </Button>
 
               {place.sourceUrl && (
                 <Box

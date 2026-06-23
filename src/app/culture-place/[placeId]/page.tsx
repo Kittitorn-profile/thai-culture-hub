@@ -53,6 +53,7 @@ type PlaceOverride = {
   map_url?: string | null;
   image_url?: string | null;
   note?: string | null;
+  detail?: string | null;
 };
 
 type SharePlace = CulturalPlace & {
@@ -153,6 +154,31 @@ function applyOverride(place: SharePlace, override?: PlaceOverride | null): Shar
   };
 }
 
+function createSharePlaceFromOverride(override: PlaceOverride): SharePlace | null {
+  if (!override.place_id || override.lat == null || override.lng == null) {
+    return null;
+  }
+
+  const provinceCode = override.province_code ?? '';
+  const category = override.category || 'cultural_attraction';
+
+  return {
+    id: override.place_id,
+    provinceCode,
+    provinceName: getProvinceName(provinceCode),
+    name: override.name || 'สถานที่ใหม่',
+    source: (override.source as CulturalPlace['source']) || 'thailand_cultural_hub',
+    category,
+    district: override.district || '',
+    lat: override.lat,
+    lng: override.lng,
+    description: override.detail || override.note || '',
+    highlight: override.note || category,
+    mapUrl: override.map_url || undefined,
+    imageUrls: override.image_url ? [override.image_url] : [],
+  };
+}
+
 async function getSharePlace(placeId: string) {
   const supabase = getSupabaseAdmin();
 
@@ -171,19 +197,24 @@ async function getSharePlace(placeId: string) {
     supabase.client
       .from(process.env.CULTURAL_PLACE_OVERRIDES_TABLE ?? 'cultural_place_overrides')
       .select(
-        'place_id, province_code, name, source, category, district, lat, lng, map_url, image_url, note'
+        'place_id, province_code, name, source, category, district, lat, lng, map_url, image_url, note, detail'
       )
       .eq('place_id', placeId)
       .maybeSingle(),
   ]);
 
-  if (placeResult.error || !placeResult.data) {
+  if (placeResult.error && !overrideResult.data) {
     return null;
   }
 
-  const place = mapPlaceRow(placeResult.data as CulturalPlaceRow);
+  const override = overrideResult.data as PlaceOverride | null;
+  const place = placeResult.data ? mapPlaceRow(placeResult.data as CulturalPlaceRow) : null;
 
-  return place ? applyOverride(place, overrideResult.data as PlaceOverride | null) : null;
+  if (place) {
+    return applyOverride(place, override);
+  }
+
+  return override ? createSharePlaceFromOverride(override) : null;
 }
 
 function getSeoDescription(place: SharePlace) {

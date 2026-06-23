@@ -2,8 +2,11 @@
 
 import { useState, useEffect } from 'react';
 
+import Box from '@mui/material/Box';
 import Dialog from '@mui/material/Dialog';
+import Checkbox from '@mui/material/Checkbox';
 import IconButton from '@mui/material/IconButton';
+import FormControlLabel from '@mui/material/FormControlLabel';
 
 import { Image } from 'src/components/image';
 import { Iconify } from 'src/components/iconify';
@@ -20,15 +23,22 @@ type PopupBanner = {
   updated_at?: string | null;
 };
 
+const POPUP_BANNER_HIDDEN_KEY = 'thai-culture-hub-popup-banner-hidden';
+
 export function HomePopupBanner() {
   const [banner, setBanner] = useState<PopupBanner | null>(null);
   const [open, setOpen] = useState(false);
+  const [doNotShowAgain, setDoNotShowAgain] = useState(false);
 
   useEffect(() => {
     const controller = new AbortController();
 
     async function loadPopupBanner() {
       try {
+        if (window.localStorage.getItem(POPUP_BANNER_HIDDEN_KEY) === '1') {
+          return;
+        }
+
         const response = await fetch('/api/popup-banners', { signal: controller.signal });
 
         if (!response.ok) {
@@ -58,6 +68,15 @@ export function HomePopupBanner() {
 
   const handleClose = () => {
     setOpen(false);
+  };
+
+  const handleDoNotShowAgain = (checked: boolean) => {
+    setDoNotShowAgain(checked);
+
+    if (checked) {
+      window.localStorage.setItem(POPUP_BANNER_HIDDEN_KEY, '1');
+      setOpen(false);
+    }
   };
 
   if (!banner) {
@@ -104,13 +123,32 @@ export function HomePopupBanner() {
       )}
 
       {banner.image_url && (
-        <Image
-          alt={banner.title || 'Popup banner'}
-          src={banner.image_url}
-          ratio="9/16"
-          visibleByDefault
-          sx={{ bgcolor: 'background.neutral' }}
-        />
+        <>
+          <Image
+            alt={banner.title || 'Popup banner'}
+            src={banner.image_url}
+            ratio="9/16"
+            visibleByDefault
+            sx={{ bgcolor: 'background.neutral' }}
+          />
+          <Box sx={{ px: 1.5, py: 1, bgcolor: 'background.paper' }}>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  size="small"
+                  checked={doNotShowAgain}
+                  onChange={(event) => handleDoNotShowAgain(event.target.checked)}
+                />
+              }
+              label="ไม่ต้องแสดงอีก"
+              sx={{
+                m: 0,
+                color: 'text.primary',
+                '& .MuiFormControlLabel-label': { fontSize: 14, fontWeight: 800 },
+              }}
+            />
+          </Box>
+        </>
       )}
     </Dialog>
   );

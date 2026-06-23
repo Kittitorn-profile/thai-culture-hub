@@ -5,11 +5,10 @@ import { safeReturnUrl } from 'minimal-shared/utils';
 
 import { useRouter, useSearchParams } from 'src/routes/hooks';
 
-import { CONFIG } from 'src/global-config';
-
 import { SplashScreen } from 'src/components/loading-screen';
 
 import { useAuthContext } from '../hooks';
+import { getRoleHomePath, getSafeRoleRedirectPath } from '../utils/role-redirect';
 
 // ----------------------------------------------------------------------
 
@@ -20,12 +19,13 @@ type GuestGuardProps = {
 export function GuestGuard({ children }: GuestGuardProps) {
   const router = useRouter();
 
-  const { loading, authenticated } = useAuthContext();
+  const { user, loading, authenticated } = useAuthContext();
 
   const [isChecking, setIsChecking] = useState(true);
 
   const searchParams = useSearchParams();
-  const redirectUrl = safeReturnUrl(searchParams.get('returnTo'), CONFIG.auth.redirectPath);
+  const returnTo = searchParams.get('returnTo');
+  const redirectUrl = safeReturnUrl(returnTo, getRoleHomePath(user));
 
   const checkPermissions = async (): Promise<void> => {
     if (loading) {
@@ -33,7 +33,7 @@ export function GuestGuard({ children }: GuestGuardProps) {
     }
 
     if (authenticated) {
-      router.replace(redirectUrl);
+      router.replace(getSafeRoleRedirectPath(user, redirectUrl));
       return;
     }
 

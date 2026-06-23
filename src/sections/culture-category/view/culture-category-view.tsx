@@ -92,8 +92,9 @@ export function CultureCategoryView({ allCategories = false }: Props) {
     ? 'ข้อมูลวัฒนธรรมทั้งหมด'
     : getCategoryLabel(categoryConfig, categoryKey);
   const categoryColor = getCategoryColor(categoryConfig, categoryKey);
+  const defaultProvinceCode = allCategories ? (provinces[0]?.code ?? '') : '';
   const [places, setPlaces] = useState<CategoryPlace[]>([]);
-  const [provinceCode, setProvinceCode] = useState('');
+  const [provinceCode, setProvinceCode] = useState(defaultProvinceCode);
   const [query, setQuery] = useState('');
   const [appliedQuery, setAppliedQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);

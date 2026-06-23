@@ -24,6 +24,52 @@ type Props = {
   children: React.ReactNode;
 };
 
+function normalizeAuthUser(session: Awaited<ReturnType<typeof supabase.auth.getSession>>['data']['session']) {
+  if (!session?.user) {
+    return null;
+  }
+
+  const { user } = session;
+  const userMetadata = user.user_metadata ?? {};
+  const appMetadata = user.app_metadata ?? {};
+  const displayName =
+    typeof userMetadata.display_name === 'string' ? userMetadata.display_name : '';
+  const firstName = typeof userMetadata.first_name === 'string' ? userMetadata.first_name : '';
+  const lastName = typeof userMetadata.last_name === 'string' ? userMetadata.last_name : '';
+  const photoURL = typeof userMetadata.photo_url === 'string' ? userMetadata.photo_url : '';
+  const role = typeof appMetadata.role === 'string' ? appMetadata.role : 'admin';
+  const adminPermissions = Array.isArray(appMetadata.admin_permissions)
+    ? appMetadata.admin_permissions
+    : [];
+
+  return {
+    id: user.id,
+    email: user.email ?? '',
+    accessToken: session.access_token,
+    access_token: session.access_token,
+    displayName,
+    name: displayName,
+    firstName,
+    lastName,
+    photoURL,
+    role,
+    adminPermissions,
+    app_metadata: {
+      role,
+      admin_permissions: adminPermissions,
+      ...(typeof appMetadata.creator_status === 'string'
+        ? { creator_status: appMetadata.creator_status }
+        : {}),
+    },
+  };
+}
+
+async function clearLocalAuthSession() {
+  await supabase.auth.signOut({ scope: 'local' }).catch((error) => {
+    console.error(error);
+  });
+}
+
 export function AuthProvider({ children }: Props) {
   const { state, setState } = useSetState<AuthState>({ user: null, loading: true });
 
@@ -35,16 +81,18 @@ export function AuthProvider({ children }: Props) {
       } = await supabase.auth.getSession();
 
       if (error) {
+        await clearLocalAuthSession();
         setState({ user: null, loading: false });
         console.error(error);
-        throw error;
+        delete axios.defaults.headers.common.Authorization;
+        return;
       }
 
       if (session) {
         const accessToken = session?.access_token;
 
         setAdminAnalyticsDisabled(true);
-        setState({ user: { ...session, ...session?.user }, loading: false });
+        setState({ user: normalizeAuthUser(session), loading: false });
         axios.defaults.headers.common.Authorization = `Bearer ${accessToken}`;
       } else {
         setAdminAnalyticsDisabled(false);
@@ -53,8 +101,10 @@ export function AuthProvider({ children }: Props) {
       }
     } catch (error) {
       console.error(error);
+      await clearLocalAuthSession();
       setAdminAnalyticsDisabled(false);
       setState({ user: null, loading: false });
+      delete axios.defaults.headers.common.Authorization;
     }
   }, [setState]);
 
@@ -71,21 +121,7 @@ export function AuthProvider({ children }: Props) {
 
   const memoizedValue = useMemo(
     () => ({
-      user: state.user
-        ? {
-            ...state.user,
-            id: state.user?.id,
-            accessToken: state.user?.access_token,
-            displayName: state.user?.user_metadata.display_name,
-            name: state.user?.user_metadata.display_name,
-            firstName: state.user?.user_metadata.first_name,
-            lastName: state.user?.user_metadata.last_name,
-            photoURL: state.user?.user_metadata.photo_url,
-            app_metadata: state.user?.app_metadata ?? {},
-            role: state.user?.app_metadata?.role ?? 'admin',
-            adminPermissions: state.user?.app_metadata?.admin_permissions ?? [],
-          }
-        : null,
+      user: state.user,
       checkUserSession,
       loading: status === 'loading',
       authenticated: status === 'authenticated',

@@ -257,6 +257,28 @@ async function getPlaceOverrides(provinceCode?: string | null) {
   return (data ?? []) as PlaceOverride[];
 }
 
+async function getPlaceOverrideByPlaceId(placeId: string) {
+  const supabase = getSupabaseAdmin();
+
+  if (!supabase.ok) {
+    return null;
+  }
+
+  const { data, error } = await supabase.client
+    .from(OVERRIDES_TABLE)
+    .select(
+      'place_id, province_code, name, source, category, district, lat, lng, map_url, image_url, note, detail, updated_at, updated_by_id, updated_by_email, updated_by_name'
+    )
+    .eq('place_id', placeId)
+    .maybeSingle();
+
+  if (error) {
+    return null;
+  }
+
+  return (data ?? null) as PlaceOverride | null;
+}
+
 function mapPlaceDetail(row: PlaceDetailRow): CulturalPlaceDetails {
   return {
     placeId: row.place_id,
@@ -637,6 +659,28 @@ async function getStoredPlacesPage({
       .filter((place): place is CulturalPlaceRecord => Boolean(place)),
     total: count ?? 0,
   };
+}
+
+async function getStoredPlaceById(placeId: string) {
+  const supabase = getSupabaseAdmin();
+
+  if (!supabase.ok) {
+    return null;
+  }
+
+  const { data, error } = await supabase.client
+    .from(PLACES_TABLE)
+    .select(
+      'id, province_code, name, district, category, lat, lng, description, highlight, image_urls, source_url, map_url, source, payload'
+    )
+    .eq('id', placeId)
+    .maybeSingle();
+
+  if (error || !data) {
+    return null;
+  }
+
+  return mapPlaceRow(data as CulturalPlaceRow);
 }
 
 type CulturalPlaceWithOverride = CulturalPlaceRecord & {
@@ -1027,6 +1071,7 @@ export const runtime = 'nodejs';
 export const revalidate = 3600;
 
 export async function GET(request: NextRequest) {
+  const placeId = request.nextUrl.searchParams.get('placeId')?.trim();
   const provinceCodeParam = request.nextUrl.searchParams.get('provinceCode');
   const provinceCode =
     provinceCodeParam && provinceCodeParam !== 'all' ? provinceCodeParam : '';
@@ -1043,6 +1088,58 @@ export async function GET(request: NextRequest) {
   const shouldReturnAllProvinceSummary =
     !provinceCode &&
     (isSummary || (!provinceCodeParam && !limitParam && !pageSizeParam && !district && !query && !source));
+
+  if (placeId) {
+    const [storedPlace, override, details] = await Promise.all([
+      getStoredPlaceById(placeId),
+      getPlaceOverrideByPlaceId(placeId),
+      getPlaceDetailsByPlaceIds([placeId]),
+    ]);
+    let place = storedPlace
+      ? applyPlaceDetails(applyPlaceOverrides([storedPlace], override ? [override] : []), details)[0]
+      : override
+        ? applyPlaceDetails([createPlaceFromOverride(override)].filter(Boolean) as CulturalPlaceRecord[], details)[0]
+        : null;
+
+    if (!place && provinceCode) {
+      const storedPlaces = await getStoredPlaces(provinceCode);
+      const ethnicGroupPlaces = await getEthnicGroupPlaces(provinceCode);
+      const sourceResults = storedPlaces.length
+        ? []
+        : await Promise.all(
+            SOURCE_KEYS.map((key) =>
+              fetchSourcePlaces({
+                key,
+                summary: false,
+                signal: request.signal,
+                origin: request.nextUrl.origin,
+                provinceCode,
+                limit: null,
+              })
+            )
+          );
+      const mergedData = storedPlaces.length
+        ? [...storedPlaces, ...ethnicGroupPlaces]
+        : mergeCulturalPlaces(...sourceResults.map((result) => result.data), ethnicGroupPlaces);
+      const allData = dedupePlaces(
+        applyPlaceDetails(
+          applyPlaceOverrides(mergedData, await getPlaceOverrides(provinceCode)),
+          await getPlaceDetails(provinceCode)
+        )
+      );
+
+      place = allData.find((item) => item.id === placeId) ?? null;
+    }
+
+    if (!place) {
+      return NextResponse.json({ data: null, message: 'Place not found' }, { status: 404 });
+    }
+
+    return NextResponse.json({
+      data: place,
+      source: 'supabase-cultural-places',
+    });
+  }
 
   if (shouldReturnAllProvinceSummary) {
     const storedSummaries = shouldRefreshSummary ? null : await getStoredProvincePlaceSummaries();

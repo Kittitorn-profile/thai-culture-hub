@@ -13,6 +13,7 @@ export const ADMIN_PERMISSION = {
   culturalPlaces: 'cultural_places',
   analytics: 'analytics',
   feedback: 'feedback',
+  creators: 'creators',
   users: 'users',
   profile: 'profile',
 } as const;
@@ -25,6 +26,7 @@ export const ADMIN_PERMISSION_OPTIONS: { value: AdminPermission; label: string }
   { value: ADMIN_PERMISSION.culturalPlaces, label: 'Cultural Places' },
   { value: ADMIN_PERMISSION.analytics, label: 'Analytics' },
   { value: ADMIN_PERMISSION.feedback, label: 'Feedback' },
+  { value: ADMIN_PERMISSION.creators, label: 'Creators' },
   { value: ADMIN_PERMISSION.users, label: 'Admin Users' },
   { value: ADMIN_PERMISSION.profile, label: 'Profile' },
 ];
@@ -103,7 +105,7 @@ export function getAdminPermissionFromPath(pathname: string): AdminPermission | 
     return ADMIN_PERMISSION.categories;
   }
 
-  if (pathname.startsWith('/admin/cultural-places')) {
+  if (pathname.startsWith('/admin/cultural-places') || pathname.startsWith('/admin/place-corrections')) {
     return ADMIN_PERMISSION.culturalPlaces;
   }
 
@@ -113,6 +115,10 @@ export function getAdminPermissionFromPath(pathname: string): AdminPermission | 
 
   if (pathname.startsWith('/admin/feedback')) {
     return ADMIN_PERMISSION.feedback;
+  }
+
+  if (pathname.startsWith('/admin/creators') || pathname.startsWith('/admin/creator-articles')) {
+    return ADMIN_PERMISSION.creators;
   }
 
   if (pathname.startsWith('/admin/users')) {
@@ -138,6 +144,8 @@ export function getFirstAllowedAdminPath(user: Record<string, any> | null | unde
       return '/admin/analytics';
     case ADMIN_PERMISSION.feedback:
       return '/admin/feedback';
+    case ADMIN_PERMISSION.creators:
+      return '/admin/creators';
     case ADMIN_PERMISSION.users:
       return '/admin/users';
     case ADMIN_PERMISSION.profile:

@@ -87,7 +87,7 @@ export function NotFoundView() {
             borderRadius: 2,
           }}
         >
-          <Logo sx={{ width: 200, height: '100%' }} />
+          <Logo sx={{ width: 200, height: '100%' }} isSingle />
 
           <m.div variants={varBounce('in')}>
             <Typography

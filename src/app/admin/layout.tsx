@@ -13,6 +13,7 @@ import { SvgColor } from 'src/components/svg-color';
 
 import { AuthGuard } from 'src/auth/guard';
 import { useAuthContext } from 'src/auth/hooks';
+import { isCreatorUser, getRoleHomePath } from 'src/auth/utils/role-redirect';
 import {
   ADMIN_PERMISSION,
   type AdminNavGroup,
@@ -57,6 +58,7 @@ const navData: AdminNavGroup[] = [
         permission: ADMIN_PERMISSION.culturalPlaces,
         children: [
           { title: 'รายการสถานที่', path: '/admin/cultural-places' },
+          { title: 'คำขอแก้ไข', path: '/admin/cultural-places/place-corrections' },
           { title: 'Sync ข้อมูล', path: '/admin/cultural-places/sync' },
         ],
       },
@@ -71,6 +73,16 @@ const navData: AdminNavGroup[] = [
         path: '/admin/feedback',
         icon: icon('ic-mail'),
         permission: ADMIN_PERMISSION.feedback,
+      },
+      {
+        title: 'Creators',
+        path: '/admin/creators',
+        icon: icon('ic-blog'),
+        permission: ADMIN_PERMISSION.creators,
+        children: [
+          { title: 'ผู้สมัคร creator', path: '/admin/creators' },
+          { title: 'Review บทความ', path: '/admin/creators/articles' },
+        ],
       },
       {
         title: 'Admin Users',
@@ -97,15 +109,21 @@ function AdminPermissionGuard({ children }: Props) {
   const pathname = usePathname();
   const { user, loading } = useAuthContext();
   const requiredPermission = getAdminPermissionFromPath(pathname);
+  const isCreator = isCreatorUser(user);
   const allowed = canAccessAdminPermission(user, requiredPermission ?? undefined);
 
   useEffect(() => {
+    if (!loading && isCreator) {
+      router.replace(getRoleHomePath(user));
+      return;
+    }
+
     if (!loading && !allowed) {
       router.replace(getFirstAllowedAdminPath(user));
     }
-  }, [allowed, loading, router, user]);
+  }, [allowed, isCreator, loading, router, user]);
 
-  if (!loading && !allowed) {
+  if (!loading && (isCreator || !allowed)) {
     return null;
   }
 

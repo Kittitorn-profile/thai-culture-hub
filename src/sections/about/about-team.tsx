@@ -151,7 +151,7 @@ export function AboutTeam({ sx, ...other }: BoxProps) {
           component={MotionViewport}
           viewport={{ amount: 0.01 }}
           sx={{
-            pt: { xs: 2, md: 7 },
+            pt: { xs: 2, md: 0 },
             pb: { xs: 8, md: 12 },
             backgroundSize: { xs: '72px 72px', md: '120px 120px' },
           }}

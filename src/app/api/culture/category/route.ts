@@ -321,7 +321,8 @@ export const runtime = 'nodejs';
 
 export async function GET(request: NextRequest) {
   const categoryKey = request.nextUrl.searchParams.get('categoryKey')?.trim();
-  const provinceCode = request.nextUrl.searchParams.get('provinceCode')?.trim();
+  const requestedProvinceCode = request.nextUrl.searchParams.get('provinceCode')?.trim();
+  const provinceCode = requestedProvinceCode || (!categoryKey ? provinces[0]?.code : undefined);
   const query = request.nextUrl.searchParams.get('q')?.trim().toLowerCase() ?? '';
   const limit = getPositiveInteger(request.nextUrl.searchParams.get('limit'), DEFAULT_LIMIT, MAX_LIMIT);
   const offset = getPositiveInteger(request.nextUrl.searchParams.get('offset'), 0);

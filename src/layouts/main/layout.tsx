@@ -5,11 +5,15 @@ import type { FooterProps } from './footer';
 import type { NavMainProps } from './nav/types';
 import type { MainSectionProps, HeaderSectionProps, LayoutSectionProps } from '../core';
 
+import { useMemo } from 'react';
 import { useBoolean } from 'minimal-shared/hooks';
 
 import Alert from '@mui/material/Alert';
 
 import { usePathname } from 'src/routes/hooks';
+
+import { useAuthContext } from 'src/auth/hooks';
+import { isCreatorUser } from 'src/auth/utils/role-redirect';
 
 import { NavMobile } from './nav/mobile';
 import { Footer, HomeFooter } from './footer';
@@ -42,12 +46,32 @@ export function MainLayout({
   layoutQuery = 'md',
 }: MainLayoutProps) {
   const pathname = usePathname();
+  const { user } = useAuthContext();
 
   const { value: open, onFalse: onClose, onTrue: onOpen } = useBoolean();
 
   const isHomePage = pathname === '/';
 
-  const navData = slotProps?.nav?.data ?? mainNavData;
+  const isCreator = isCreatorUser(user);
+  const navData = useMemo(() => {
+    const baseNavData = slotProps?.nav?.data ?? mainNavData;
+
+    if (!isCreator) {
+      return baseNavData;
+    }
+
+    return [
+      ...baseNavData,
+      {
+        title: 'เขียนบทความ',
+        path: '/creator/write',
+      },
+      {
+        title: 'ร่วมพัฒนาข้อมูล',
+        path: '/creator/place-corrections',
+      },
+    ];
+  }, [isCreator, slotProps?.nav?.data]);
 
   const renderHeader = () => {
     const headerSlots: HeaderSectionProps['slots'] = {

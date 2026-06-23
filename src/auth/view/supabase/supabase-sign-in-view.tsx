@@ -24,6 +24,7 @@ import { useAuthContext } from '../../hooks';
 import { getErrorMessage } from '../../utils';
 import { FormHead } from '../../components/form-head';
 import { signInWithPassword } from '../../context/supabase';
+import { getRoleHomePath } from '../../utils/role-redirect';
 
 // ----------------------------------------------------------------------
 
@@ -65,10 +66,10 @@ export function SupabaseSignInView() {
 
   const onSubmit = handleSubmit(async (data) => {
     try {
-      await signInWithPassword({ email: data.email, password: data.password });
+      const result = await signInWithPassword({ email: data.email, password: data.password });
       await checkUserSession?.();
 
-      router.refresh();
+      router.replace(getRoleHomePath(result.data.user));
     } catch (error) {
       console.error(error);
       const feedbackMessage = getErrorMessage(error);

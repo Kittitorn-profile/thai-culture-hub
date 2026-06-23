@@ -183,7 +183,7 @@ export function ContactView() {
         <Box
           sx={{
             px: { xs: 2.25, md: 5 },
-            py: { xs: 2.25, md: 10 },
+            py: { xs: 2.25, md: 0 },
 
             backgroundSize: { xs: '72px 72px', md: '120px 120px' },
           }}
@@ -193,7 +193,7 @@ export function ContactView() {
               direction={{ xs: 'column', md: 'row' }}
               spacing={{ xs: 5, md: 7 }}
               alignItems="stretch"
-              sx={{ mt: { xs: 7, md: 9 } }}
+              sx={{ mt: { xs: 7 } }}
             >
               <Box sx={{ flex: 1 }}>
                 <Typography
