@@ -31,71 +31,82 @@ const icon = (name: string) => (
 
 const navData: AdminNavGroup[] = [
   {
-    subheader: 'Admin',
+    subheader: 'เมนู',
     items: [
       {
-        title: 'Home Content',
-        path: '/admin/home-content',
-        icon: icon('ic-blog'),
-        permission: ADMIN_PERMISSION.homeContent,
-        children: [
-          { title: 'เรื่องเล่าและสื่อ', path: '/admin/home-content' },
-          { title: 'หมวดวัฒนธรรม', path: '/admin/home-content/culture-categories' },
-          { title: 'ภูมิปัญญาท้องถิ่น', path: '/admin/home-content/local-wisdom' },
-          { title: 'กิจกรรมที่จะจัดขึ้น', path: '/admin/home-content/events' },
-          { title: 'Popup Banner', path: '/admin/home-content/popup-banner' },
-        ],
-      },
-      {
-        title: 'Categories',
-        path: '/admin/categories',
-        icon: icon('ic-menu-item'),
-        permission: ADMIN_PERMISSION.categories,
-      },
-      {
-        title: 'Cultural Places',
-        path: '/admin/cultural-places',
-        icon: icon('ic-params'),
-        permission: ADMIN_PERMISSION.culturalPlaces,
-        children: [
-          { title: 'รายการสถานที่', path: '/admin/cultural-places' },
-          { title: 'คำขอแก้ไข', path: '/admin/cultural-places/place-corrections' },
-          { title: 'Sync ข้อมูล', path: '/admin/cultural-places/sync' },
-        ],
-      },
-      {
-        title: 'Analytics',
+        title: 'แดชบอร์ด',
         path: '/admin/analytics',
         icon: icon('ic-analytics'),
         permission: ADMIN_PERMISSION.analytics,
       },
       {
-        title: 'Feedback',
+        title: 'หน้าหลัก',
+        path: '/admin/home-content',
+        icon: icon('ic-blog'),
+        permission: ADMIN_PERMISSION.homeContent,
+        children: [
+          { title: 'เรื่องเล่าและสื่อ', path: '/admin/home-content' },
+          { title: 'หมวดหมู่วัฒนธรรม', path: '/admin/home-content/culture-categories' },
+          { title: 'ภูมิปัญญาท้องถิ่น', path: '/admin/home-content/local-wisdom' },
+          { title: 'กิจกรรม', path: '/admin/home-content/events' },
+          { title: 'ป๊อปอัปแบนเนอร์', path: '/admin/home-content/popup-banner' },
+        ],
+      },
+      {
+        title: 'ข้อมูลสถานที่',
+        path: '/admin/cultural-places',
+        icon: icon('ic-params'),
+        permission: ADMIN_PERMISSION.culturalPlaces,
+        children: [
+          { title: 'รายการสถานที่', path: '/admin/cultural-places' },
+          { title: 'จัดการคำขอแก้ไขข้อมูล', path: '/admin/cultural-places/place-corrections' },
+          { title: 'ซิงก์ข้อมูล', path: '/admin/cultural-places/sync' },
+        ],
+      },
+
+      {
+        title: 'ข้อเสนอแนะ',
         path: '/admin/feedback',
         icon: icon('ic-mail'),
         permission: ADMIN_PERMISSION.feedback,
       },
       {
-        title: 'Creators',
+        title: 'จัดการบทความ',
         path: '/admin/creators',
         icon: icon('ic-blog'),
         permission: ADMIN_PERMISSION.creators,
         children: [
-          { title: 'ผู้สมัคร creator', path: '/admin/creators' },
-          { title: 'Review บทความ', path: '/admin/creators/articles' },
+          { title: 'จัดการผู้เขียน', path: '/admin/creators' },
+          { title: 'ตรวจสอบบทความ', path: '/admin/creators/articles' },
+          { title: 'ตั้งค่าระดับ Creator', path: '/admin/creators/settings' },
         ],
       },
       {
-        title: 'Admin Users',
+        title: 'จัดการผู้ตรวจสอบ',
+        path: '/admin/reviewers',
+        icon: icon('ic-user'),
+        permission: ADMIN_PERMISSION.reviewers,
+        children: [
+          { title: 'รายชื่อผู้ตรวจสอบ', path: '/admin/reviewers' },
+          { title: 'ตั้งค่าผู้ตรวจสอบ', path: '/admin/reviewers/settings' },
+        ],
+      },
+      {
+        title: 'จัดการผู้ใช้งาน',
         path: '/admin/users',
         icon: icon('ic-user'),
         permission: ADMIN_PERMISSION.users,
+        children: [
+          { title: 'ผู้ใช้งาน', path: '/admin/users' },
+          { title: 'จัดการสิทธิ์', path: '/admin/users/permissions' },
+        ],
       },
+
       {
-        title: 'Profile',
-        path: '/admin/profile',
-        icon: icon('ic-user'),
-        permission: ADMIN_PERMISSION.profile,
+        title: 'หมวดหมู่',
+        path: '/admin/categories',
+        icon: icon('ic-menu-item'),
+        permission: ADMIN_PERMISSION.categories,
       },
     ],
   },

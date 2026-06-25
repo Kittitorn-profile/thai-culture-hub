@@ -1,18 +1,30 @@
 import type {
-  StoryContent,
-  LocalWisdomContent,
   StoredHomeContent,
+  LocalWisdomContent,
   CultureCategoriesContent,
 } from './home-types';
 
-import { CATEGORY_KEY_BY_TITLE } from './home-constants';
+import {
+  getTodayCalendarDate,
+  formatThaiCalendarDate,
+  isSameOrAfterCalendarDate,
+} from 'src/utils/calendar-date';
+
+import {
+  getCultureCategoryKeyByTitle,
+  getCultureCategoryHref as getSharedCultureCategoryHref,
+} from 'src/lib/culture-categories';
 
 export function getFilledText(value: unknown) {
   return typeof value === 'string' ? value.trim() : '';
 }
 
 export function getCultureCategoryKey(title: string) {
-  return CATEGORY_KEY_BY_TITLE[title] ?? 'cultural_attraction';
+  return getCultureCategoryKeyByTitle(title);
+}
+
+export function getCultureCategoryHref(categoryKey?: string, categoryLabel?: string) {
+  return getSharedCultureCategoryHref(categoryKey, categoryLabel);
 }
 
 export function formatCreatorArticleDate(value: string) {
@@ -26,33 +38,16 @@ export function formatCreatorArticleDate(value: string) {
 }
 
 export function formatHomeEventDate(value: string) {
-  if (!value) {
-    return '';
-  }
-
-  return new Intl.DateTimeFormat('th-TH', {
+  return formatThaiCalendarDate(value, {
     weekday: 'short',
     day: 'numeric',
     month: 'short',
     year: 'numeric',
-  }).format(new Date(value));
+  });
 }
 
 export function isUpcomingHomeEvent(value: string) {
-  if (!value) {
-    return false;
-  }
-
-  const eventDate = new Date(value);
-
-  if (Number.isNaN(eventDate.getTime())) {
-    return false;
-  }
-
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  return eventDate >= today;
+  return isSameOrAfterCalendarDate(value, getTodayCalendarDate());
 }
 
 export function normalizeStoryContent(story?: StoredHomeContent['story']) {

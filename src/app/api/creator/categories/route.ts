@@ -1,6 +1,14 @@
 import { NextResponse } from 'next/server';
 
 import { getSupabaseAdmin } from 'src/server/supabase-admin';
+import {
+  SYSTEM_CULTURE_CATEGORIES,
+  getCultureCategoryLabel,
+  getSystemCultureCategoryKey,
+  getCultureCategoryHashColor,
+  normalizeCultureCategoryLabel,
+  CULTURE_CATEGORY_KEY_BY_NORMALIZED_LABEL,
+} from 'src/lib/culture-categories';
 
 export const runtime = 'nodejs';
 
@@ -17,6 +25,7 @@ type PlaceSubCategoryRow = {
 
 type CreatorArticleCategoryRow = {
   category_key?: string | null;
+  category_label?: string | null;
 };
 
 type CategoryRow = {
@@ -93,27 +102,15 @@ function toCategoryRow(row: PlaceSubCategoryRow): CategoryRow {
 }
 
 function getSystemCategoryRows(): CategoryRow[] {
-  return [];
-}
-
-const CULTURE_CATEGORY_LABELS: Record<string, string> = {
-  community_wisdom: 'ภูมิปัญญาชุมชน',
-  craftsmanship: 'งานช่างฝีมือ',
-  cultural_attraction: 'แหล่งท่องเที่ยวทางวัฒนธรรม',
-  folk_art: 'ศิลปะพื้นบ้าน',
-  learning_center: 'แหล่งเรียนรู้',
-  local_food: 'อาหารพื้นบ้าน',
-  local_tradition: 'ประเพณีท้องถิ่น',
-  moral_community: 'ชุมชนคุณธรรม',
-  museum: 'พิพิธภัณฑ์',
-  performing_art: 'ศิลปะการแสดง',
-  ritual: 'พิธีกรรม',
-  temple: 'ศาสนสถาน',
-  tourist_attraction: 'สถานที่ท่องเที่ยว',
-};
-
-function getCultureCategoryLabel(categoryKey: string) {
-  return CULTURE_CATEGORY_LABELS[categoryKey] ?? categoryKey;
+  return SYSTEM_CULTURE_CATEGORIES.map((category, index) => ({
+    category_key: category.key,
+    label: category.label,
+    color: getCultureCategoryHashColor(category.key),
+    sort_order: index,
+    is_active: true,
+    source: 'culture_category',
+    source_label: 'หมวดวัฒนธรรมของระบบ',
+  }));
 }
 
 function getHashColor(value: string) {
@@ -257,7 +254,7 @@ export async function GET() {
       .from(TAT_PLACES_TABLE)
       .select('category_id, category_name, sub_category_ids, payload')
       .limit(50000),
-    supabase.client.from('creator_articles').select('category_key'),
+    supabase.client.from('creator_articles').select('category_key, category_label'),
   ]);
 
   if (error) {
@@ -268,7 +265,7 @@ export async function GET() {
 
   if (!articlesResult.error) {
     ((articlesResult.data ?? []) as CreatorArticleCategoryRow[]).forEach((article) => {
-      const categoryKey = article.category_key?.trim();
+      const categoryKey = getSystemCultureCategoryKey(article.category_key, article.category_label);
 
       if (categoryKey) {
         usageCountMap.set(categoryKey, (usageCountMap.get(categoryKey) ?? 0) + 1);
@@ -278,6 +275,10 @@ export async function GET() {
 
   const sourceCategoryRows = ((data ?? []) as PlaceSubCategoryRow[])
     .map(toCategoryRow)
+    .filter(
+      (row) =>
+        !CULTURE_CATEGORY_KEY_BY_NORMALIZED_LABEL[normalizeCultureCategoryLabel(row.label)]
+    )
     .sort((first, second) => (first.sort_order ?? 0) - (second.sort_order ?? 0));
 
   const categoryRows = [

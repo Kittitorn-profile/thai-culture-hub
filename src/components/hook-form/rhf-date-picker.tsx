@@ -49,7 +49,7 @@ export function RHFDatePicker({ name, slotProps, ...other }: PickerProps<DatePic
             }
 
             const parsedValue = dayjs(newValue);
-            field.onChange(parsedValue.isValid() ? parsedValue.format() : newValue);
+            field.onChange(parsedValue.isValid() ? parsedValue.format('YYYY-MM-DD') : newValue);
           }}
           slotProps={{
             ...slotProps,

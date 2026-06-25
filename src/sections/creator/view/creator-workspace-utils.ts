@@ -10,11 +10,12 @@ export function getStatusColor(status: string) {
 export function getStatusLabel(status: string) {
   const labels: Record<string, string> = {
     pending: 'รออนุมัติ',
-    approved: 'อนุมัติแล้ว',
+    approved: 'เผยแพร่แล้ว',
     rejected: 'ไม่อนุมัติ',
     draft: 'ฉบับร่าง',
     pending_review: 'รอตรวจบทความ',
     published: 'เผยแพร่แล้ว',
+    inactive: 'ปิดใช้งาน',
   };
 
   return labels[status] ?? status;

@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState, useEffect } from 'react';
+import { useForm, Controller } from 'react-hook-form';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -14,22 +15,39 @@ import Autocomplete from '@mui/material/Autocomplete';
 
 import { useRouter, useSearchParams } from 'src/routes/hooks';
 
-import { Editor } from 'src/components/editor';
+import { Form, RHFUpload, RHFEditor, RHFTextField } from 'src/components/hook-form';
 
 import { useThailandDistrictCenters } from 'src/sections/province/thailand-geojson';
 
 import { useAuthContext } from 'src/auth/hooks';
 import { isCreatorUser, getRoleHomePath } from 'src/auth/utils/role-redirect';
 
+import { uploadCreatorPlaceCorrectionImage } from '../creator-api';
 import { creatorTone, creatorPosterPattern, creatorPageBackground } from '../creator-theme';
 
-const initialForm = {
+const MAX_PLACE_CORRECTION_IMAGE_SIZE = 2 * 1024 * 1024;
+
+type PlaceCorrectionFormValues = {
+  name: string;
+  district: string;
+  lat: string;
+  lng: string;
+  mapUrl: string;
+  imageUrl: string;
+  imageFile: File | null;
+  description: string;
+  detail: string;
+  reason: string;
+};
+
+const initialForm: PlaceCorrectionFormValues = {
   name: '',
   district: '',
   lat: '',
   lng: '',
   mapUrl: '',
   imageUrl: '',
+  imageFile: null,
   description: '',
   detail: '',
   reason: '',
@@ -65,13 +83,22 @@ export function PlaceCorrectionRequestView() {
   const accessToken = user?.accessToken ?? user?.access_token ?? '';
   const queryPlaceId = cleanParam(searchParams.get('placeId'));
   const queryProvinceCode = cleanParam(searchParams.get('provinceCode'));
+  const methods = useForm<PlaceCorrectionFormValues>({
+    defaultValues: initialForm,
+  });
+  const {
+    reset,
+    control,
+    setValue,
+    handleSubmit,
+    watch,
+    formState: { isSubmitting },
+  } = methods;
   const [placeDetail, setPlaceDetail] = useState<CorrectionPlaceDetail | null>(null);
-  const [form, setForm] = useState(initialForm);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [placeError, setPlaceError] = useState('');
   const [isLoadingPlace, setIsLoadingPlace] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const placeId = placeDetail?.id ?? queryPlaceId;
   const placeName = placeDetail?.name ?? '';
   const provinceCode =
@@ -82,6 +109,13 @@ export function PlaceCorrectionRequestView() {
   const currentLng = toDisplayNumber(placeDetail?.lng);
   const currentMapUrl = placeDetail?.mapUrl ?? '';
   const currentImageUrl = placeDetail?.imageUrls?.find(Boolean) ?? '';
+  const watchedImageUrl = watch('imageUrl');
+  const watchedImageFile = watch('imageFile');
+  const proposedImageUrl = watchedImageUrl.trim();
+  const hasProposedImage = Boolean(proposedImageUrl);
+  const hasProposedImageFile = watchedImageFile instanceof File;
+  const isProposingCoverChange =
+    hasProposedImageFile || (hasProposedImage && proposedImageUrl !== currentImageUrl);
   const { data: districtCentersData, isFetching: isLoadingDistricts } =
     useThailandDistrictCenters(provinceCode);
   const districtOptions = useMemo(
@@ -159,12 +193,8 @@ export function PlaceCorrectionRequestView() {
     return () => controller.abort();
   }, [queryPlaceId, queryProvinceCode]);
 
-  const updateForm = (field: keyof typeof initialForm, value: string) => {
-    setForm((current) => ({ ...current, [field]: value }));
-  };
-
   const cancelRequest = () => {
-    setForm(initialForm);
+    reset(initialForm);
     setError('');
     setMessage('');
 
@@ -176,12 +206,24 @@ export function PlaceCorrectionRequestView() {
     router.push(placeId ? `/culture-place/${encodeURIComponent(placeId)}` : '/');
   };
 
-  const submitRequest = async () => {
+  const submitRequest = async (values: PlaceCorrectionFormValues) => {
     setError('');
     setMessage('');
-    setIsSubmitting(true);
 
     try {
+      let imageUrl = values.imageUrl.trim();
+
+      if (values.imageFile instanceof File) {
+        const uploadResult = await uploadCreatorPlaceCorrectionImage(
+          accessToken,
+          values.imageFile,
+          placeId
+        );
+
+        imageUrl = uploadResult.data.url ?? imageUrl;
+      }
+
+      const payloadValues = { ...values, imageFile: undefined };
       const response = await fetch('/api/creator/place-corrections', {
         method: 'POST',
         headers: {
@@ -189,7 +231,8 @@ export function PlaceCorrectionRequestView() {
           Authorization: `Bearer ${accessToken}`,
         },
         body: JSON.stringify({
-          ...form,
+          ...payloadValues,
+          imageUrl,
           placeId,
           placeName,
           provinceCode,
@@ -211,11 +254,9 @@ export function PlaceCorrectionRequestView() {
       }
 
       setMessage('ส่งคำขอแก้ไขแล้ว รอ admin ตรวจสอบก่อนนำข้อมูลไปใช้งาน');
-      setForm(initialForm);
+      reset(initialForm);
     } catch (caughtError) {
       setError(caughtError instanceof Error ? caughtError.message : 'ส่งคำขอแก้ไขไม่สำเร็จ');
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -266,27 +307,46 @@ export function PlaceCorrectionRequestView() {
                 ข้อมูลปัจจุบัน
               </Typography>
               {isLoadingPlace && <Alert severity="info">กำลังโหลดรายละเอียดสถานที่...</Alert>}
-              {currentImageUrl && (
+
+              <Box>
+                <Typography sx={{ mb: 0.75, color: 'text.secondary', fontSize: 12 }}>
+                  ภาพปัจจุบัน
+                </Typography>
                 <Box
-                  component="img"
-                  src={currentImageUrl}
-                  alt={placeName || 'ภาพสถานที่'}
                   sx={{
-                    width: 1,
-                    height: 190,
-                    objectFit: 'cover',
+                    height: 170,
                     borderRadius: 1.5,
+                    overflow: 'hidden',
+                    display: 'grid',
+                    placeItems: 'center',
                     bgcolor: 'grey.200',
+                    border: '1px solid rgba(32,42,43,0.08)',
                   }}
-                />
-              )}
-              <Typography sx={{ color: 'text.secondary', fontSize: 13 }}>Place ID</Typography>
-              <Typography sx={{ fontWeight: 800, wordBreak: 'break-word' }}>
+                >
+                  {currentImageUrl ? (
+                    <Box
+                      component="img"
+                      src={currentImageUrl}
+                      alt={placeName || 'ภาพปัจจุบัน'}
+                      sx={{ width: 1, height: 1, objectFit: 'cover' }}
+                    />
+                  ) : (
+                    <Typography sx={{ color: 'text.secondary', fontSize: 13 }}>
+                      ยังไม่มีภาพปก
+                    </Typography>
+                  )}
+                </Box>
+              </Box>
+
+              {/* <Typography sx={{ color: 'text.secondary', fontSize: 13 }}>Place ID</Typography> */}
+              {/* <Typography sx={{ fontWeight: 800, wordBreak: 'break-word' }}>
                 {placeId || '-'}
-              </Typography>
+              </Typography> */}
               <Divider />
               <Typography sx={{ color: 'text.secondary', fontSize: 13 }}>ชื่อสถานที่</Typography>
-              <Typography sx={{ fontWeight: 800 }}>{placeName || '-'}</Typography>
+              <Typography sx={{ fontWeight: 800 }} variant="h6">
+                {placeName || '-'}
+              </Typography>
               <Typography sx={{ color: 'text.secondary', fontSize: 13 }}>อำเภอ / หมวด</Typography>
               <Typography sx={{ fontWeight: 800 }}>
                 {currentDistrict || '-'} / {currentCategory || '-'}
@@ -299,107 +359,157 @@ export function PlaceCorrectionRequestView() {
           </Card>
 
           <Card sx={{ p: { xs: 2.5, md: 3 }, borderRadius: 2, bgcolor: 'rgba(248,246,238,0.94)' }}>
-            <Stack spacing={2.25}>
-              <Typography variant="h5" sx={{ fontWeight: 900 }}>
-                ข้อมูลที่เสนอแก้
-              </Typography>
-              <TextField
-                label="ชื่อสถานที่ใหม่"
-                value={form.name}
-                onChange={(event) => updateForm('name', event.target.value)}
-              />
-              <Autocomplete
-                freeSolo
-                fullWidth
-                options={districtOptions}
-                value={form.district}
-                inputValue={form.district}
-                loading={isLoadingDistricts}
-                disabled={!provinceCode}
-                onChange={(_, value) => updateForm('district', value ?? '')}
-                onInputChange={(_, value) => updateForm('district', value)}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    label="อำเภอ"
-                    helperText={
-                      provinceCode
-                        ? 'เลือกจากอำเภอในจังหวัดนี้ หรือพิมพ์เองหากไม่พบในรายการ'
-                        : 'ไม่พบจังหวัดของสถานที่นี้'
-                    }
-                  />
-                )}
-              />
-              <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-                <TextField
-                  fullWidth
-                  label="Latitude"
-                  value={form.lat}
-                  onChange={(event) => updateForm('lat', event.target.value)}
-                />
-                <TextField
-                  fullWidth
-                  label="Longitude"
-                  value={form.lng}
-                  onChange={(event) => updateForm('lng', event.target.value)}
-                />
-              </Stack>
-              <TextField
-                label="Map URL"
-                value={form.mapUrl}
-                onChange={(event) => updateForm('mapUrl', event.target.value)}
-              />
-              <TextField
-                label="Image URL"
-                value={form.imageUrl}
-                onChange={(event) => updateForm('imageUrl', event.target.value)}
-              />
-              <TextField
-                multiline
-                minRows={3}
-                label="คำอธิบาย/สรุปที่ควรแก้"
-                value={form.description}
-                onChange={(event) => updateForm('description', event.target.value)}
-              />
-              <Box>
-                <Typography sx={{ mb: 1, fontWeight: 800, color: 'text.primary' }}>
-                  รายละเอียดเพิ่มเติม
+            <Form methods={methods} onSubmit={handleSubmit(submitRequest)}>
+              <Stack spacing={2.25}>
+                <Typography variant="h5" sx={{ fontWeight: 900 }}>
+                  ข้อมูลที่เสนอแก้
                 </Typography>
-                <Editor
-                  fullItem
-                  value={form.detail}
-                  sx={{ minHeight: 300, bgcolor: 'background.paper' }}
-                  onChange={(value) => updateForm('detail', value)}
-                  placeholder="ใส่รายละเอียดเพิ่มเติมหรือแหล่งอ้างอิงที่ช่วยยืนยันข้อมูล..."
+                <RHFTextField name="name" label="ชื่อสถานที่ใหม่" />
+                <Controller
+                  name="district"
+                  control={control}
+                  render={({ field }) => (
+                    <Autocomplete
+                      freeSolo
+                      fullWidth
+                      options={districtOptions}
+                      value={field.value}
+                      inputValue={field.value}
+                      loading={isLoadingDistricts}
+                      disabled={!provinceCode}
+                      onChange={(_, value) => field.onChange(value ?? '')}
+                      onInputChange={(_, value) => field.onChange(value)}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          label="อำเภอ"
+                          helperText={
+                            provinceCode
+                              ? 'เลือกจากอำเภอในจังหวัดนี้ หรือพิมพ์เองหากไม่พบในรายการ'
+                              : 'ไม่พบจังหวัดของสถานที่นี้'
+                          }
+                        />
+                      )}
+                    />
+                  )}
                 />
-              </Box>
-              <TextField
-                multiline
-                minRows={3}
-                label="เหตุผลหรือแหล่งอ้างอิง"
-                value={form.reason}
-                onChange={(event) => updateForm('reason', event.target.value)}
-              />
-              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
-                <Button
-                  variant="contained"
-                  size="large"
-                  disabled={!placeId || !placeName || isLoadingPlace}
-                  loading={isSubmitting}
-                  onClick={submitRequest}
+                <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+                  <RHFTextField fullWidth name="lat" label="Latitude" />
+                  <RHFTextField fullWidth name="lng" label="Longitude" />
+                </Stack>
+                <RHFTextField name="mapUrl" label="Map URL" />
+                <Box
+                  sx={{
+                    p: { xs: 1.5, sm: 2 },
+                    borderRadius: 2,
+                    bgcolor: 'rgba(255,255,255,0.72)',
+                    border: '1px solid rgba(32,42,43,0.1)',
+                  }}
                 >
-                  ส่งคำขอให้ Admin ตรวจสอบ
-                </Button>
-                <Button
-                  size="large"
-                  color="inherit"
-                  disabled={isSubmitting}
-                  onClick={cancelRequest}
-                >
-                  ยกเลิก
-                </Button>
+                  <Stack spacing={1.5}>
+                    <Stack
+                      direction={{ xs: 'column', sm: 'row' }}
+                      spacing={1.5}
+                      alignItems={{ xs: 'flex-start', sm: 'center' }}
+                      justifyContent="space-between"
+                    >
+                      <Box>
+                        <Typography sx={{ fontWeight: 900, color: 'text.primary' }}>
+                          ภาพปกสถานที่
+                        </Typography>
+                        <Typography sx={{ mt: 0.25, color: 'text.secondary', fontSize: 13 }}>
+                          วาง URL รูปภาพใหม่เพื่อเสนอให้ Admin เปลี่ยนภาพปก
+                        </Typography>
+                      </Box>
+                      {currentImageUrl && (
+                        <Button
+                          size="small"
+                          color="inherit"
+                          disabled={watchedImageUrl === currentImageUrl}
+                          onClick={() =>
+                            setValue('imageUrl', currentImageUrl, { shouldDirty: true })
+                          }
+                        >
+                          ใช้ภาพปัจจุบัน
+                        </Button>
+                      )}
+                    </Stack>
+
+                    <RHFTextField
+                      name="imageUrl"
+                      label="URL ภาพปกใหม่"
+                      helperText={
+                        isProposingCoverChange
+                          ? 'คำขอนี้จะเสนอเปลี่ยนภาพปกของสถานที่'
+                          : 'ปล่อยว่างไว้หากไม่ต้องการเปลี่ยนภาพปก'
+                      }
+                    />
+
+                    <Stack spacing={1}>
+                      <RHFUpload
+                        name="imageFile"
+                        maxSize={MAX_PLACE_CORRECTION_IMAGE_SIZE}
+                        helperText="หรือวาง/เลือกไฟล์รูปภาพใหม่ ขนาดไม่เกิน 2 MB ระบบจะอัปโหลดหลังจากกดส่งคำขอ"
+                        onDelete={() => {
+                          setValue('imageFile', null, { shouldValidate: true, shouldDirty: true });
+                        }}
+                        slotProps={{
+                          wrapper: {
+                            sx: {
+                              '& .upload__default': {
+                                minHeight: 180,
+                              },
+                            },
+                          },
+                        }}
+                      />
+                      {hasProposedImageFile && (
+                        <Typography sx={{ color: 'text.secondary', fontSize: 12 }}>
+                          หากมีทั้งไฟล์และ URL ระบบจะใช้ไฟล์ที่อัปโหลดเป็นภาพที่เสนอ
+                        </Typography>
+                      )}
+                    </Stack>
+                  </Stack>
+                </Box>
+                <RHFTextField
+                  name="description"
+                  multiline
+                  minRows={3}
+                  label="คำอธิบาย/สรุปที่ควรแก้"
+                />
+                <Box>
+                  <Typography sx={{ mb: 1, fontWeight: 800, color: 'text.primary' }}>
+                    รายละเอียดเพิ่มเติม
+                  </Typography>
+                  <RHFEditor
+                    name="detail"
+                    fullItem
+                    sx={{ minHeight: 300, bgcolor: 'background.paper' }}
+                    placeholder="ใส่รายละเอียดเพิ่มเติมหรือแหล่งอ้างอิงที่ช่วยยืนยันข้อมูล..."
+                  />
+                </Box>
+                <RHFTextField name="reason" multiline minRows={3} label="เหตุผลหรือแหล่งอ้างอิง" />
+                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    size="large"
+                    disabled={!placeId || !placeName || isLoadingPlace || isSubmitting}
+                    loading={isSubmitting}
+                  >
+                    ส่งคำขอให้ Admin ตรวจสอบ
+                  </Button>
+                  <Button
+                    size="large"
+                    color="inherit"
+                    disabled={isSubmitting}
+                    onClick={cancelRequest}
+                  >
+                    ยกเลิก
+                  </Button>
+                </Stack>
               </Stack>
-            </Stack>
+            </Form>
           </Card>
         </Box>
       </Stack>

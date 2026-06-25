@@ -1,8 +1,8 @@
 'use client';
 
-import type { FeedbackItem } from './types';
+import type { FeedbackItem, FeedbackStatus } from './types';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useMemo, useState, useEffect, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -12,8 +12,10 @@ import Table from '@mui/material/Table';
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
 import TableRow from '@mui/material/TableRow';
+import MenuItem from '@mui/material/MenuItem';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
+import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import TableContainer from '@mui/material/TableContainer';
 
@@ -21,7 +23,7 @@ import { fDateTime } from 'src/utils/format-time';
 
 import { DashboardContent } from 'src/layouts/dashboard';
 
-import { TableNoData, TableHeadCustom } from 'src/components/table';
+import { TableNoData, TableHeadCustom, TablePaginationCustom } from 'src/components/table';
 
 import { useAuthContext } from 'src/auth/hooks';
 
@@ -35,6 +37,13 @@ const TABLE_HEAD = [
   { id: 'sender', label: 'ผู้ส่ง', width: 220 },
   { id: 'path', label: 'หน้าเว็บ', width: 220 },
   { id: 'status', label: 'สถานะ', width: 120 },
+];
+
+const STATUS_OPTIONS: Array<{ value: 'all' | FeedbackStatus; label: string }> = [
+  { value: 'all', label: 'ทุกสถานะ' },
+  { value: 'new', label: 'ใหม่' },
+  { value: 'reviewed', label: 'อ่านแล้ว' },
+  { value: 'archived', label: 'เก็บถาวร' },
 ];
 
 function getStatusLabel(status: FeedbackItem['status']) {
@@ -52,9 +61,38 @@ function getStatusLabel(status: FeedbackItem['status']) {
 export function FeedbackAdminClient() {
   const { user, checkUserSession } = useAuthContext();
   const [items, setItems] = useState<FeedbackItem[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'all' | FeedbackStatus>('all');
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const accessToken = user?.accessToken ?? user?.access_token ?? '';
+
+  const filteredItems = useMemo(() => {
+    const normalizedQuery = searchQuery.trim().toLowerCase();
+
+    return items.filter((item) => {
+      if (statusFilter !== 'all' && item.status !== statusFilter) {
+        return false;
+      }
+
+      if (!normalizedQuery) {
+        return true;
+      }
+
+      return [item.message, item.name, item.contact, item.path, item.userAgent]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase()
+        .includes(normalizedQuery);
+    });
+  }, [items, searchQuery, statusFilter]);
+
+  const paginatedItems = useMemo(
+    () => filteredItems.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
+    [filteredItems, page, rowsPerPage]
+  );
 
   const loadFeedback = useCallback(async () => {
     if (!accessToken) {
@@ -87,6 +125,14 @@ export function FeedbackAdminClient() {
     loadFeedback();
   }, [loadFeedback]);
 
+  useEffect(() => {
+    const maxPage = Math.max(Math.ceil(filteredItems.length / rowsPerPage) - 1, 0);
+
+    if (page > maxPage) {
+      setPage(maxPage);
+    }
+  }, [filteredItems.length, page, rowsPerPage]);
+
   return (
     <DashboardContent maxWidth="xl">
       <Stack spacing={3}>
@@ -108,12 +154,48 @@ export function FeedbackAdminClient() {
         {error && <Alert severity="error">{error}</Alert>}
         {isLoading && <Alert severity="info">กำลังโหลดความคิดเห็น...</Alert>}
 
+        <Card sx={{ p: 2.5 }}>
+          <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+            <TextField
+              fullWidth
+              label="ค้นหา feedback"
+              placeholder="ข้อความ, ผู้ส่ง, ติดต่อ, path"
+              value={searchQuery}
+              onChange={(event) => {
+                setSearchQuery(event.target.value);
+                setPage(0);
+              }}
+            />
+            <TextField
+              select
+              fullWidth
+              label="สถานะ"
+              value={statusFilter}
+              onChange={(event) => {
+                setStatusFilter(event.target.value as 'all' | FeedbackStatus);
+                setPage(0);
+              }}
+              sx={{ maxWidth: { md: 220 } }}
+            >
+              {STATUS_OPTIONS.map((option) => (
+                <MenuItem key={option.value} value={option.value}>
+                  {option.label}
+                </MenuItem>
+              ))}
+            </TextField>
+          </Stack>
+          <Typography sx={{ mt: 1.5, color: 'text.secondary', fontSize: 13 }}>
+            แสดง {filteredItems.length.toLocaleString('th-TH')} จาก{' '}
+            {items.length.toLocaleString('th-TH')} feedback
+          </Typography>
+        </Card>
+
         <Card>
           <TableContainer sx={{ overflow: 'auto' }}>
             <Table sx={{ minWidth: 980 }}>
               <TableHeadCustom headCells={TABLE_HEAD} />
               <TableBody>
-                {items.map((item) => (
+                {paginatedItems.map((item) => (
                   <TableRow key={item.id} hover>
                     <TableCell sx={{ whiteSpace: 'nowrap' }}>
                       {item.createdAt ? fDateTime(item.createdAt) : '-'}
@@ -148,10 +230,23 @@ export function FeedbackAdminClient() {
                     </TableCell>
                   </TableRow>
                 ))}
-                <TableNoData notFound={!items.length && !isLoading} />
+                <TableNoData notFound={!filteredItems.length && !isLoading} />
               </TableBody>
             </Table>
           </TableContainer>
+
+          <TablePaginationCustom
+            page={page}
+            count={filteredItems.length}
+            rowsPerPage={rowsPerPage}
+            labelRowsPerPage="Page size:"
+            rowsPerPageOptions={[5, 10, 25, 50]}
+            onPageChange={(_, newPage) => setPage(newPage)}
+            onRowsPerPageChange={(event) => {
+              setRowsPerPage(Number(event.target.value));
+              setPage(0);
+            }}
+          />
         </Card>
       </Stack>
     </DashboardContent>

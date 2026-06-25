@@ -20,6 +20,8 @@ import MenuItem from '@mui/material/MenuItem';
 import Typography from '@mui/material/Typography';
 import LoadingButton from '@mui/lab/LoadingButton';
 
+import { normalizeCalendarDate } from 'src/utils/calendar-date';
+
 import { DashboardContent } from 'src/layouts/dashboard';
 import provinces from 'src/data/thailand-culture/provinces';
 import { AdminApiError, adminApiRequest } from 'src/lib/admin-api';
@@ -27,6 +29,7 @@ import { AdminApiError, adminApiRequest } from 'src/lib/admin-api';
 import { Image } from 'src/components/image';
 import { Iconify } from 'src/components/iconify';
 import { TablePaginationCustom } from 'src/components/table';
+import { useFilePreview } from 'src/components/file-thumbnail';
 import {
   Form,
   RHFUpload,
@@ -133,7 +136,7 @@ const EventFormSchema = zod
     (values) =>
       !values.startsAt ||
       !values.endsAt ||
-      !dayjs(values.endsAt).isBefore(dayjs(values.startsAt), 'day'),
+      normalizeCalendarDate(values.endsAt) >= normalizeCalendarDate(values.startsAt),
     {
       path: ['endsAt'],
       message: 'วันที่สิ้นสุดต้องไม่ก่อนวันที่เริ่ม',
@@ -208,8 +211,8 @@ function toEventFormValues(eventItem?: EditingEventItem | null): EventFormValues
     id: eventItem.id,
     title: eventItem.title,
     description: eventItem.description,
-    startsAt: getDateInputValue(eventItem.startsAt),
-    endsAt: getDateInputValue(eventItem.endsAt),
+    startsAt: normalizeCalendarDate(eventItem.startsAt),
+    endsAt: normalizeCalendarDate(eventItem.endsAt),
     time: eventItem.time,
     provinceCode: eventItem.provinceCode,
     location: eventItem.location,
@@ -227,20 +230,6 @@ function toEventFormValues(eventItem?: EditingEventItem | null): EventFormValues
     sourceEventId: eventItem.sourceEventId ?? '',
     syncedAt: eventItem.syncedAt ?? '',
   };
-}
-
-function getDateInputValue(value: string) {
-  if (!value) {
-    return '';
-  }
-
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return value.slice(0, 10);
-  }
-
-  return date.toISOString().slice(0, 10);
 }
 
 export default function HomeEventsAdminPage() {
@@ -270,6 +259,8 @@ export default function HomeEventsAdminPage() {
   const watchedTitle = watchEventForm('title');
   const watchedImageFile = watchEventForm('imageFile');
   const watchedIsFeatured = watchEventForm('isFeatured');
+  const { previewUrl: imageFilePreviewUrl } = useFilePreview(watchedImageFile);
+  const imagePreviewUrl = imageFilePreviewUrl || watchedCoverUrl || watchedMediaUrl;
 
   const eventsQuery = useQuery({
     queryKey: [EVENTS_QUERY_KEY, accessToken],
@@ -317,8 +308,8 @@ export default function HomeEventsAdminPage() {
           items: eventItems.map((eventItem, index) => ({
             ...eventItem,
             sortOrder: index,
-            startsAt: getDateInputValue(eventItem.startsAt),
-            endsAt: getDateInputValue(eventItem.endsAt),
+            startsAt: normalizeCalendarDate(eventItem.startsAt),
+            endsAt: normalizeCalendarDate(eventItem.endsAt),
           })),
         },
       }),
@@ -342,8 +333,8 @@ export default function HomeEventsAdminPage() {
         accessToken,
         body: {
           ...eventItem,
-          startsAt: getDateInputValue(eventItem.startsAt),
-          endsAt: getDateInputValue(eventItem.endsAt),
+          startsAt: normalizeCalendarDate(eventItem.startsAt),
+          endsAt: normalizeCalendarDate(eventItem.endsAt),
         },
       }),
     onSuccess: async (data) => {
@@ -785,8 +776,8 @@ export default function HomeEventsAdminPage() {
                         onClick={() =>
                           setEditingEvent({
                             ...eventItem,
-                            startsAt: getDateInputValue(eventItem.startsAt),
-                            endsAt: getDateInputValue(eventItem.endsAt),
+                            startsAt: normalizeCalendarDate(eventItem.startsAt),
+                            endsAt: normalizeCalendarDate(eventItem.endsAt),
                           })
                         }
                       >
@@ -962,10 +953,10 @@ export default function HomeEventsAdminPage() {
                   </Typography>
                 </Stack>
 
-                {!watchedImageFile && (watchedCoverUrl || watchedMediaUrl) && (
+                {imagePreviewUrl && (
                   <Box
                     component="img"
-                    src={watchedCoverUrl || watchedMediaUrl}
+                    src={imagePreviewUrl}
                     alt={watchedTitle || 'Event preview'}
                     sx={{
                       width: 1,

@@ -2,11 +2,13 @@ import type { NextRequest } from 'next/server';
 
 import { NextResponse } from 'next/server';
 
+import { normalizeCalendarDate } from 'src/utils/calendar-date';
+
+import provinces from 'src/data/thailand-culture/provinces';
 import { getSupabaseAdmin } from 'src/server/supabase-admin';
 import { verifyAdminRequest } from 'src/server/admin-api-auth';
 
 import { ADMIN_PERMISSION } from 'src/auth/admin-permissions';
-import provinces from 'src/data/thailand-culture/provinces';
 
 const TABLE_NAME = process.env.EVENTS_TABLE ?? 'events';
 
@@ -84,7 +86,13 @@ function optionalText(value: unknown) {
   return typeof value === 'string' && value.trim() ? value.trim() : null;
 }
 
-function optionalDate(value: unknown) {
+function optionalCalendarDate(value: unknown) {
+  const calendarDate = normalizeCalendarDate(value);
+
+  return calendarDate || null;
+}
+
+function optionalTimestamp(value: unknown) {
   if (typeof value !== 'string' || !value.trim()) {
     return null;
   }
@@ -143,7 +151,7 @@ function toEventItem(row: EventRow) {
 
 function toRow(body: EventPayload) {
   const title = optionalText(body.title);
-  const startsAt = optionalDate(body.startsAt);
+  const startsAt = optionalCalendarDate(body.startsAt);
   const provinceCode = optionalText(body.provinceCode);
   const location = optionalText(body.location);
   const organizer = optionalText(body.organizer);
@@ -171,7 +179,7 @@ function toRow(body: EventPayload) {
       title,
       description: optionalText(body.description),
       starts_at: startsAt,
-      ends_at: optionalDate(body.endsAt),
+      ends_at: optionalCalendarDate(body.endsAt),
       time_label: optionalText(body.time),
       province_code: province?.code ?? null,
       province_name: province?.name ?? null,
@@ -189,7 +197,7 @@ function toRow(body: EventPayload) {
       source_event_id: optionalText(body.sourceEventId),
       source_payload: body.sourcePayload ?? {},
       detail_payload: body.detailPayload ?? {},
-      synced_at: optionalDate(body.syncedAt),
+      synced_at: optionalTimestamp(body.syncedAt),
       updated_at: new Date().toISOString(),
     },
   };

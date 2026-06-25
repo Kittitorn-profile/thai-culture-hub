@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 
+import { getTodayCalendarDate } from 'src/utils/calendar-date';
+
 import { getSupabaseAdmin } from 'src/server/supabase-admin';
 
 const TABLE_NAME = process.env.EVENTS_TABLE ?? 'events';
@@ -73,14 +75,13 @@ export async function GET() {
     return NextResponse.json({ data: [], message: supabase.error }, { status: 200 });
   }
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  const today = getTodayCalendarDate();
 
   const { data, error } = await supabase.client
     .from(TABLE_NAME)
     .select('*')
     .eq('is_active', true)
-    .or(`is_featured.eq.true,starts_at.gte.${today.toISOString()}`)
+    .or(`is_featured.eq.true,starts_at.gte.${today}`)
     .order('is_featured', { ascending: false })
     .order('starts_at', { ascending: true })
     .order('sort_order', { ascending: true })

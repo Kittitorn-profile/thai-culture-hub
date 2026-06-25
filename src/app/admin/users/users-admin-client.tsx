@@ -1,34 +1,35 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
+import Chip from '@mui/material/Chip';
 import Alert from '@mui/material/Alert';
+import Table from '@mui/material/Table';
 import Stack from '@mui/material/Stack';
 import Drawer from '@mui/material/Drawer';
 import Button from '@mui/material/Button';
-import Select from '@mui/material/Select';
 import Divider from '@mui/material/Divider';
+import TableRow from '@mui/material/TableRow';
 import MenuItem from '@mui/material/MenuItem';
-import Checkbox from '@mui/material/Checkbox';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
 import TextField from '@mui/material/TextField';
-import InputLabel from '@mui/material/InputLabel';
 import Typography from '@mui/material/Typography';
 import LoadingButton from '@mui/lab/LoadingButton';
-import FormControl from '@mui/material/FormControl';
-import OutlinedInput from '@mui/material/OutlinedInput';
-import FormControlLabel from '@mui/material/FormControlLabel';
+import TableContainer from '@mui/material/TableContainer';
 
 import { DashboardContent } from 'src/layouts/dashboard';
 import { AdminApiError, adminApiRequest } from 'src/lib/admin-api';
+
+import { TableNoData, TableHeadCustom, TablePaginationCustom } from 'src/components/table';
 
 import { useAuthContext } from 'src/auth/hooks';
 import {
   ADMIN_ROLE,
   type AdminPermission,
-  ALL_ADMIN_PERMISSIONS,
   ADMIN_PERMISSION_OPTIONS,
 } from 'src/auth/admin-permissions';
 
@@ -37,18 +38,22 @@ type AdminUser = {
   email: string;
   role: string;
   permissions: AdminPermission[];
+  firstName?: string;
+  lastName?: string;
   displayName?: string;
   createdAt?: string;
   lastSignInAt?: string | null;
+  isActive: boolean;
 };
 
-type CreateUserForm = {
+type UserForm = {
   email: string;
   password: string;
   firstName: string;
   lastName: string;
   role: string;
   permissions: AdminPermission[];
+  isActive: boolean;
 };
 
 type AdminUsersResponse = {
@@ -56,14 +61,31 @@ type AdminUsersResponse = {
   message?: string;
 };
 
-const defaultForm: CreateUserForm = {
+const defaultForm: UserForm = {
   email: '',
   password: '',
   firstName: '',
   lastName: '',
   role: ADMIN_ROLE.manage,
   permissions: [ADMIN_PERMISSION_OPTIONS[0].value],
+  isActive: true,
 };
+
+const TABLE_HEAD = [
+  { id: 'user', label: 'ผู้ใช้งาน', width: 320 },
+  { id: 'role', label: 'Role', width: 140 },
+  { id: 'status', label: 'สถานะการใช้งาน', width: 150 },
+  { id: 'createdAt', label: 'สร้างเมื่อ', width: 180 },
+  { id: 'lastSignInAt', label: 'เข้าใช้ล่าสุด', width: 180 },
+  { id: 'actions', label: '', width: 160, align: 'right' as const },
+];
+
+function getRoleColor(role: string) {
+  if (role === ADMIN_ROLE.admin) return 'primary';
+  if (role === ADMIN_ROLE.manage) return 'info';
+  if (role === ADMIN_ROLE.reviewer) return 'secondary';
+  return 'default';
+}
 
 function formatDate(value?: string | null) {
   if (!value) {
@@ -76,17 +98,16 @@ function formatDate(value?: string | null) {
   }).format(new Date(value));
 }
 
-function getRolePermissions(role: string, permissions: AdminPermission[]) {
-  return role === ADMIN_ROLE.admin ? ALL_ADMIN_PERMISSIONS : permissions;
-}
-
 export function AdminUsersClient() {
   const { user, checkUserSession } = useAuthContext();
   const queryClient = useQueryClient();
   const accessToken = user?.accessToken ?? user?.access_token ?? '';
-  const [form, setForm] = useState<CreateUserForm>(defaultForm);
+  const [form, setForm] = useState<UserForm>(defaultForm);
+  const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
   const [isCreateDrawerOpen, setIsCreateDrawerOpen] = useState(false);
 
   const usersQuery = useQuery({
@@ -99,7 +120,11 @@ export function AdminUsersClient() {
     select: (result) => result.data ?? [],
   });
 
-  const users = usersQuery.data ?? [];
+  const users = useMemo(() => usersQuery.data ?? [], [usersQuery.data]);
+  const paginatedUsers = useMemo(
+    () => users.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
+    [page, rowsPerPage, users]
+  );
 
   useEffect(() => {
     if (
@@ -111,13 +136,18 @@ export function AdminUsersClient() {
     }
   }, [checkUserSession, usersQuery.error]);
 
-  const updateForm = (field: keyof CreateUserForm, value: string | AdminPermission[]) => {
+  useEffect(() => {
+    const maxPage = Math.max(Math.ceil(users.length / rowsPerPage) - 1, 0);
+
+    if (page > maxPage) {
+      setPage(maxPage);
+    }
+  }, [page, rowsPerPage, users.length]);
+
+  const updateForm = (field: keyof UserForm, value: string | boolean | AdminPermission[]) => {
     setForm((current) => ({
       ...current,
       [field]: value,
-      ...(field === 'role' && value === ADMIN_ROLE.admin
-        ? { permissions: ALL_ADMIN_PERMISSIONS }
-        : {}),
     }));
   };
 
@@ -128,11 +158,10 @@ export function AdminUsersClient() {
         accessToken,
         body: {
           ...form,
-          permissions: getRolePermissions(form.role, form.permissions),
         },
       }),
     onSuccess: async () => {
-      setMessage('สร้างผู้ใช้ admin แล้ว');
+      setMessage('สร้างผู้ใช้แล้ว');
       setForm(defaultForm);
       setIsCreateDrawerOpen(false);
       await queryClient.invalidateQueries({ queryKey: ['admin-users'] });
@@ -143,50 +172,101 @@ export function AdminUsersClient() {
   });
 
   const updateUserMutation = useMutation({
-    mutationFn: (targetUser: AdminUser) =>
+    mutationFn: () =>
       adminApiRequest<{ message?: string }>('/api/admin/users', {
         method: 'PATCH',
         accessToken,
         body: {
-          id: targetUser.id,
-          role: targetUser.role,
-          permissions: getRolePermissions(targetUser.role, targetUser.permissions),
+          id: selectedUser?.id,
+          email: form.email,
+          password: form.password,
+          firstName: form.firstName,
+          lastName: form.lastName,
+          isActive: form.isActive,
         },
       }),
     onSuccess: async () => {
-      setMessage('บันทึกสิทธิ์ผู้ใช้แล้ว');
+      setMessage('บันทึกข้อมูลผู้ใช้แล้ว');
+      setForm(defaultForm);
+      setSelectedUser(null);
+      setIsCreateDrawerOpen(false);
       await queryClient.invalidateQueries({ queryKey: ['admin-users'] });
     },
     onError: (caughtError) => {
-      setError(caughtError instanceof Error ? caughtError.message : 'บันทึกสิทธิ์ไม่สำเร็จ');
+      setError(caughtError instanceof Error ? caughtError.message : 'บันทึกผู้ใช้ไม่สำเร็จ');
     },
   });
 
-  const createUser = async () => {
+  const deleteUserMutation = useMutation({
+    mutationFn: (targetUser: AdminUser) =>
+      adminApiRequest<{ message?: string }>('/api/admin/users', {
+        method: 'DELETE',
+        accessToken,
+        body: {
+          id: targetUser.id,
+        },
+      }),
+    onSuccess: async () => {
+      setMessage('ลบผู้ใช้แล้ว');
+      await queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+    },
+    onError: (caughtError) => {
+      setError(caughtError instanceof Error ? caughtError.message : 'ลบผู้ใช้ไม่สำเร็จ');
+    },
+  });
+
+  const openCreateDrawer = () => {
+    setSelectedUser(null);
+    setForm(defaultForm);
+    setIsCreateDrawerOpen(true);
+  };
+
+  const openEditDrawer = (targetUser: AdminUser) => {
+    setSelectedUser(targetUser);
+    setForm({
+      email: targetUser.email,
+      password: '',
+      firstName: targetUser.firstName ?? '',
+      lastName: targetUser.lastName ?? '',
+      role: targetUser.role,
+      permissions: targetUser.permissions,
+      isActive: targetUser.isActive,
+    });
+    setIsCreateDrawerOpen(true);
+  };
+
+  const closeDrawer = () => {
+    setIsCreateDrawerOpen(false);
+    setSelectedUser(null);
+    setForm(defaultForm);
+  };
+
+  const saveUser = async () => {
     setError('');
     setMessage('');
+
+    if (selectedUser) {
+      await updateUserMutation.mutateAsync().catch(() => undefined);
+      return;
+    }
+
     await createUserMutation.mutateAsync().catch(() => undefined);
   };
 
-  const updateUserAccess = async (targetUser: AdminUser) => {
+  const deleteUser = async (targetUser: AdminUser) => {
+    const label = targetUser.displayName || targetUser.email;
+
+    if (!window.confirm(`ต้องการลบผู้ใช้ ${label} หรือไม่?`)) {
+      return;
+    }
+
     setError('');
     setMessage('');
-    await updateUserMutation.mutateAsync(targetUser).catch(() => undefined);
+    await deleteUserMutation.mutateAsync(targetUser).catch(() => undefined);
   };
 
-  const updateLocalUser = (targetUser: AdminUser, changes: Partial<AdminUser>) => {
-    queryClient.setQueryData<AdminUser[]>(['admin-users', accessToken], (current = []) =>
-      current.map((item) =>
-        item.id === targetUser.id
-          ? {
-              ...item,
-              ...changes,
-              ...(changes.role === ADMIN_ROLE.admin ? { permissions: ALL_ADMIN_PERMISSIONS } : {}),
-            }
-          : item
-      )
-    );
-  };
+  const isEditingCurrentUser =
+    Boolean(selectedUser) && (selectedUser?.id === user?.id || selectedUser?.id === user?.sub);
 
   return (
     <DashboardContent maxWidth="xl">
@@ -194,16 +274,16 @@ export function AdminUsersClient() {
         <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" spacing={2}>
           <Box>
             <Typography variant="h3" sx={{ fontWeight: 900 }}>
-              Admin Users
+              จัดการผู้ใช้งาน
             </Typography>
             <Typography sx={{ mt: 0.5, color: 'text.secondary' }}>
-              สร้างผู้ใช้ role manage และกำหนดเมนูที่เข้าใช้งานได้
+              จัดการรายชื่อและข้อมูลส่วนตัวของผู้ใช้งาน
             </Typography>
           </Box>
 
           <Button
             variant="contained"
-            onClick={() => setIsCreateDrawerOpen(true)}
+            onClick={openCreateDrawer}
             sx={{ alignSelf: { xs: 'stretch', md: 'center' } }}
           >
             สร้างผู้ใช้ใหม่
@@ -213,96 +293,154 @@ export function AdminUsersClient() {
         {(error || usersQuery.error) && (
           <Alert severity="error">
             {error ||
-              (usersQuery.error instanceof Error ? usersQuery.error.message : 'โหลดผู้ใช้ไม่สำเร็จ')}
+              (usersQuery.error instanceof Error
+                ? usersQuery.error.message
+                : 'โหลดผู้ใช้ไม่สำเร็จ')}
           </Alert>
         )}
         {message && <Alert severity="success">{message}</Alert>}
         {usersQuery.isLoading && <Alert severity="info">กำลังโหลดผู้ใช้...</Alert>}
 
-        <Stack spacing={2}>
-          {users.map((adminUser) => (
-            <Card key={adminUser.id} sx={{ p: { xs: 2.5, md: 3 } }}>
-              <Stack spacing={2}>
-                <Stack
-                  direction={{ xs: 'column', md: 'row' }}
-                  justifyContent="space-between"
-                  spacing={1}
-                >
-                  <Box>
-                    <Typography sx={{ fontWeight: 900 }}>
-                      {adminUser.displayName || adminUser.email}
-                    </Typography>
-                    <Typography sx={{ color: 'text.secondary', fontSize: 13 }}>
-                      {adminUser.email} · สร้างเมื่อ {formatDate(adminUser.createdAt)} · เข้าใช้ล่าสุด{' '}
+        <Card>
+          <Stack
+            direction={{ xs: 'column', md: 'row' }}
+            alignItems={{ md: 'center' }}
+            justifyContent="space-between"
+            spacing={2}
+            sx={{ p: 2.5 }}
+          >
+            <Box>
+              <Typography variant="h6" sx={{ fontWeight: 900 }}>
+                รายชื่อผู้ใช้งาน
+              </Typography>
+              <Typography sx={{ mt: 0.5, color: 'text.secondary', fontSize: 13 }}>
+                ทั้งหมด {users.length.toLocaleString('th-TH')} ผู้ใช้
+              </Typography>
+            </Box>
+
+            <Stack direction="row" spacing={1}>
+              <Chip
+                size="small"
+                label={`Admin ${users.filter((item) => item.role === ADMIN_ROLE.admin).length}`}
+                color="primary"
+                variant="soft"
+              />
+              <Chip
+                size="small"
+                label={`Manage ${users.filter((item) => item.role !== ADMIN_ROLE.admin).length}`}
+                variant="soft"
+              />
+              <Chip
+                size="small"
+                label={`ใช้งาน ${users.filter((item) => item.isActive !== false).length}`}
+                color="success"
+                variant="soft"
+              />
+              <Chip
+                size="small"
+                label={`ปิดใช้งาน ${users.filter((item) => item.isActive === false).length}`}
+                color="default"
+                variant="soft"
+              />
+            </Stack>
+          </Stack>
+
+          <Divider />
+
+          <TableContainer sx={{ overflow: 'auto' }}>
+            <Table sx={{ minWidth: 900 }}>
+              <TableHeadCustom headCells={TABLE_HEAD} />
+              <TableBody>
+                {paginatedUsers.map((adminUser) => (
+                  <TableRow key={adminUser.id} hover>
+                    <TableCell>
+                      <Stack spacing={0.5}>
+                        <Typography sx={{ fontWeight: 800 }}>
+                          {adminUser.displayName || adminUser.email}
+                        </Typography>
+                        <Typography sx={{ color: 'text.secondary', fontSize: 13 }}>
+                          {adminUser.email}
+                        </Typography>
+                      </Stack>
+                    </TableCell>
+
+                    <TableCell>
+                      <Chip
+                        size="small"
+                        label={adminUser.role || '-'}
+                        color={getRoleColor(adminUser.role)}
+                        variant="soft"
+                      />
+                    </TableCell>
+
+                    <TableCell>
+                      <Chip
+                        size="small"
+                        label={adminUser.isActive === false ? 'ปิดใช้งาน' : 'ใช้งาน'}
+                        color={adminUser.isActive === false ? 'default' : 'success'}
+                        variant="soft"
+                      />
+                    </TableCell>
+
+                    <TableCell sx={{ whiteSpace: 'nowrap' }}>
+                      {formatDate(adminUser.createdAt)}
+                    </TableCell>
+
+                    <TableCell sx={{ whiteSpace: 'nowrap' }}>
                       {formatDate(adminUser.lastSignInAt)}
-                    </Typography>
-                  </Box>
-                  <Button
-                    variant="contained"
-                    disabled={
-                      updateUserMutation.isPending &&
-                      updateUserMutation.variables?.id === adminUser.id
-                    }
-                    onClick={() => updateUserAccess(adminUser)}
-                  >
-                    บันทึกสิทธิ์
-                  </Button>
-                </Stack>
+                    </TableCell>
 
-                <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-                  <TextField
-                    select
-                    fullWidth
-                    label="Role"
-                    value={adminUser.role}
-                    onChange={(event) =>
-                      updateLocalUser(adminUser, { role: event.target.value as string })
-                    }
-                    sx={{ maxWidth: { md: 240 } }}
-                  >
-                    <MenuItem value={ADMIN_ROLE.admin}>admin</MenuItem>
-                    <MenuItem value={ADMIN_ROLE.manage}>manage</MenuItem>
-                  </TextField>
-
-                  <Box sx={{ flex: 1 }}>
-                    <Typography sx={{ mb: 1, color: 'text.secondary', fontSize: 13 }}>
-                      เมนูที่อนุญาต
-                    </Typography>
-                    <Stack direction="row" flexWrap="wrap" gap={1}>
-                      {ADMIN_PERMISSION_OPTIONS.map((option) => (
-                        <FormControlLabel
-                          key={option.value}
-                          control={
-                            <Checkbox
-                              checked={adminUser.permissions.includes(option.value)}
-                              disabled={adminUser.role === ADMIN_ROLE.admin}
-                              onChange={(event) => {
-                                const permissions = event.target.checked
-                                  ? [...adminUser.permissions, option.value]
-                                  : adminUser.permissions.filter(
-                                      (permission) => permission !== option.value
-                                    );
-
-                                updateLocalUser(adminUser, { permissions });
-                              }}
-                            />
+                    <TableCell align="right">
+                      <Stack direction="row" spacing={1} justifyContent="flex-end">
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          onClick={() => openEditDrawer(adminUser)}
+                        >
+                          แก้ไข
+                        </Button>
+                        <Button
+                          size="small"
+                          color="error"
+                          variant="outlined"
+                          disabled={
+                            deleteUserMutation.isPending ||
+                            adminUser.id === user?.id ||
+                            adminUser.id === user?.sub
                           }
-                          label={option.label}
-                        />
-                      ))}
-                    </Stack>
-                  </Box>
-                </Stack>
-              </Stack>
-            </Card>
-          ))}
-        </Stack>
+                          onClick={() => deleteUser(adminUser)}
+                        >
+                          ลบ
+                        </Button>
+                      </Stack>
+                    </TableCell>
+                  </TableRow>
+                ))}
+
+                <TableNoData notFound={!users.length && !usersQuery.isLoading} />
+              </TableBody>
+            </Table>
+          </TableContainer>
+
+          <TablePaginationCustom
+            page={page}
+            count={users.length}
+            rowsPerPage={rowsPerPage}
+            labelRowsPerPage="Page size:"
+            rowsPerPageOptions={[5, 10, 25, 50]}
+            onPageChange={(_, newPage) => setPage(newPage)}
+            onRowsPerPageChange={(event) => {
+              setRowsPerPage(Number(event.target.value));
+              setPage(0);
+            }}
+          />
+        </Card>
       </Stack>
 
       <Drawer
         anchor="right"
         open={isCreateDrawerOpen}
-        onClose={() => setIsCreateDrawerOpen(false)}
+        onClose={closeDrawer}
         PaperProps={{
           sx: { width: { xs: 1, sm: 460 } },
         }}
@@ -310,13 +448,17 @@ export function AdminUsersClient() {
         <Stack sx={{ height: 1 }}>
           <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ p: 3 }}>
             <Box>
-              <Typography variant="h6">สร้างผู้ใช้ใหม่</Typography>
+              <Typography variant="h6">
+                {selectedUser ? 'แก้ไขผู้ใช้' : 'สร้างผู้ใช้ใหม่'}
+              </Typography>
               <Typography sx={{ mt: 0.5, color: 'text.secondary', fontSize: 13 }}>
-                กำหนด role และเมนูที่อนุญาตให้เข้าใช้งาน
+                {selectedUser
+                  ? 'แก้ไขข้อมูลส่วนตัวหรือเปลี่ยนรหัสผ่าน'
+                  : 'เพิ่มข้อมูลส่วนตัวสำหรับผู้ใช้งานใหม่'}
               </Typography>
             </Box>
 
-            <Button color="inherit" onClick={() => setIsCreateDrawerOpen(false)}>
+            <Button color="inherit" onClick={closeDrawer}>
               ปิด
             </Button>
           </Stack>
@@ -333,9 +475,10 @@ export function AdminUsersClient() {
 
             <TextField
               fullWidth
-              label="Password"
+              label={selectedUser ? 'Password ใหม่' : 'Password'}
               type="password"
               value={form.password}
+              helperText={selectedUser ? 'เว้นว่างไว้ถ้าไม่ต้องการเปลี่ยนรหัสผ่าน' : undefined}
               onChange={(event) => updateForm('password', event.target.value)}
             />
 
@@ -353,54 +496,46 @@ export function AdminUsersClient() {
               onChange={(event) => updateForm('lastName', event.target.value)}
             />
 
+            {!selectedUser && (
+              <TextField
+                select
+                fullWidth
+                label="Role"
+                value={form.role}
+                helperText="สิทธิ์เมนูหลังสร้างผู้ใช้จัดการได้ที่หน้า จัดการสิทธิ์"
+                onChange={(event) => updateForm('role', event.target.value)}
+              >
+                <MenuItem value={ADMIN_ROLE.admin}>admin</MenuItem>
+                <MenuItem value={ADMIN_ROLE.manage}>manage</MenuItem>
+              </TextField>
+            )}
+
             <TextField
               select
               fullWidth
-              label="Role"
-              value={form.role}
-              onChange={(event) => updateForm('role', event.target.value)}
+              label="สถานะการใช้งาน"
+              value={form.isActive ? 'active' : 'inactive'}
+              helperText={isEditingCurrentUser ? 'ไม่สามารถปิดใช้งานบัญชีของตัวเองได้' : undefined}
+              disabled={isEditingCurrentUser}
+              onChange={(event) => updateForm('isActive', event.target.value === 'active')}
             >
-              <MenuItem value={ADMIN_ROLE.admin}>admin</MenuItem>
-              <MenuItem value={ADMIN_ROLE.manage}>manage</MenuItem>
+              <MenuItem value="active">ใช้งาน</MenuItem>
+              <MenuItem value="inactive">ปิดใช้งาน</MenuItem>
             </TextField>
-
-            <FormControl fullWidth disabled={form.role === ADMIN_ROLE.admin}>
-              <InputLabel>เมนูที่อนุญาต</InputLabel>
-              <Select
-                multiple
-                value={form.permissions}
-                input={<OutlinedInput label="เมนูที่อนุญาต" />}
-                renderValue={(selected) =>
-                  selected
-                    .map(
-                      (permission) =>
-                        ADMIN_PERMISSION_OPTIONS.find((option) => option.value === permission)
-                          ?.label ?? permission
-                    )
-                    .join(', ')
-                }
-                onChange={(event) =>
-                  updateForm('permissions', event.target.value as AdminPermission[])
-                }
-              >
-                {ADMIN_PERMISSION_OPTIONS.map((option) => (
-                  <MenuItem key={option.value} value={option.value}>
-                    <Checkbox checked={form.permissions.includes(option.value)} />
-                    {option.label}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
           </Stack>
 
           <Divider />
 
           <Stack direction="row" justifyContent="flex-end" spacing={1.5} sx={{ p: 3 }}>
-            <Button color="inherit" onClick={() => setIsCreateDrawerOpen(false)}>
+            <Button color="inherit" onClick={closeDrawer}>
               ยกเลิก
             </Button>
-            <LoadingButton variant="contained" loading={createUserMutation.isPending} onClick={createUser}>
-              สร้างผู้ใช้
+            <LoadingButton
+              variant="contained"
+              loading={createUserMutation.isPending || updateUserMutation.isPending}
+              onClick={saveUser}
+            >
+              {selectedUser ? 'บันทึก' : 'สร้างผู้ใช้'}
             </LoadingButton>
           </Stack>
         </Stack>

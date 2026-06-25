@@ -109,17 +109,3 @@ export const DEFAULT_HOME_ANALYTICS: HomeAnalyticsSummary = {
 
 export const CREATOR_ARTICLES_LIMIT = 8;
 export const FEATURED_CULTURE_CATEGORY_LIMIT = 6;
-
-export const CATEGORY_KEY_BY_TITLE: Record<string, string> = {
-  สถานที่ท่องเที่ยว: 'tourist_attraction',
-  อาหารพื้นบ้าน: 'local_food',
-  ศิลปะการแสดง: 'performing_art',
-  ประเพณีท้องถิ่น: 'local_tradition',
-  ภูมิปัญญาชุมชน: 'community_wisdom',
-  งานช่างฝีมือ: 'craftsmanship',
-  ศิลปะพื้นบ้าน: 'folk_art',
-  พิธีกรรม: 'ritual',
-  วัด: 'temple',
-  พิพิธภัณฑ์: 'museum',
-  แหล่งเรียนรู้: 'learning_center',
-};

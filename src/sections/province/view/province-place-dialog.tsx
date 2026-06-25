@@ -189,7 +189,6 @@ export function ProvincePlaceDialog({
               pb: { xs: 1.5, sm: 2 },
               pr: { xs: 7, sm: 8 },
               color: theme.palette.grey[900],
-              borderBottom: `1px solid ${alpha(categoryColor, 0.1)}`,
             }}
           >
             <Stack direction="row" spacing={1} sx={{ mb: 1, flexWrap: 'wrap', rowGap: 0.8 }}>
@@ -695,7 +694,7 @@ export function ProvincePlaceDialog({
                   </Box>
                 )}
 
-                {!!sourceUrl && (
+                {/* {!!sourceUrl && (
                   <Button
                     component="a"
                     href={sourceUrl}
@@ -717,7 +716,7 @@ export function ProvincePlaceDialog({
                   >
                     ดูแหล่งข้อมูล
                   </Button>
-                )}
+                )} */}
               </Box>
             </Box>
           </DialogContent>

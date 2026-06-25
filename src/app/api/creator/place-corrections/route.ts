@@ -86,6 +86,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ message: profileResult.message }, { status: profileResult.status });
   }
 
+  if (profileResult.profile.status !== 'approved' || profileResult.profile.is_active === false) {
+    return NextResponse.json({ message: 'Creator account is not active' }, { status: 403 });
+  }
+
   const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
   const placeId = cleanText(body.placeId);
   const provinceCode = cleanText(body.provinceCode);

@@ -26,6 +26,7 @@ import { useRouter, useSearchParams } from 'src/routes/hooks';
 
 import { fDateTime } from 'src/utils/format-time';
 
+import { Upload } from 'src/components/upload';
 import { Iconify } from 'src/components/iconify';
 import { Form, RHFEditor, RHFSelect, RHFTextField } from 'src/components/hook-form';
 
@@ -50,6 +51,7 @@ import {
   updateCreatorProfile,
   type CreatorCategory,
   changeCreatorPassword,
+  uploadCreatorArticleCoverImage,
 } from '../creator-api';
 import {
   emptyArticleValues,
@@ -66,6 +68,12 @@ import {
 type Props = {
   view: 'articles' | 'write' | 'profile';
 };
+
+const MAX_ARTICLE_COVER_IMAGE_SIZE = 2 * 1024 * 1024;
+
+function isPublishedArticleStatus(status: string) {
+  return status === 'published' || status === 'approved';
+}
 
 export function CreatorWorkspaceView({ view }: Props) {
   const router = useRouter();
@@ -85,9 +93,11 @@ export function CreatorWorkspaceView({ view }: Props) {
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [isUploadingArticleCover, setIsUploadingArticleCover] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [pendingAvatarFile, setPendingAvatarFile] = useState<File | null>(null);
   const [pendingAvatarPreview, setPendingAvatarPreview] = useState('');
+  const [articleCoverFile, setArticleCoverFile] = useState<File | null>(null);
   const avatarInputRef = useRef<HTMLInputElement | null>(null);
   const articleMethods = useForm<CreatorArticleFormValues>({
     resolver: zodResolver(CreatorArticleSchema),
@@ -117,7 +127,8 @@ export function CreatorWorkspaceView({ view }: Props) {
       total: articles.length,
       draft: articles.filter((article) => article.status === 'draft').length,
       review: articles.filter((article) => article.status === 'pending_review').length,
-      published: articles.filter((article) => article.status === 'published').length,
+      published: articles.filter((article) => isPublishedArticleStatus(article.status)).length,
+      inactive: articles.filter((article) => !article.isActive).length,
       rejected: articles.filter((article) => article.status === 'rejected').length,
     }),
     [articles]
@@ -188,6 +199,24 @@ export function CreatorWorkspaceView({ view }: Props) {
     () => articles.find((article) => article.id === editId),
     [articles, editId]
   );
+  const isEditingPublishedArticle = isPublishedArticleStatus(editingArticle?.status ?? '');
+  const writeStatus = editingArticle?.status ?? profile?.status ?? '';
+  const writeStatusLabel = editingArticle
+    ? getStatusLabel(editingArticle.status)
+    : isApproved
+      ? 'บัญชี Creator อนุมัติแล้ว'
+      : 'รออนุมัติ Creator';
+  const writeStatusColor = editingArticle
+    ? getStatusColor(editingArticle.status)
+    : isApproved
+      ? 'success'
+      : 'warning';
+  const writeStatusIcon =
+    isPublishedArticleStatus(writeStatus)
+      ? 'solar:check-circle-bold'
+      : writeStatus === 'rejected'
+        ? 'solar:info-circle-bold'
+        : 'solar:clock-circle-bold';
 
   useEffect(() => {
     if (editingArticle && view === 'write') {
@@ -200,6 +229,7 @@ export function CreatorWorkspaceView({ view }: Props) {
         coverImageUrl: editingArticle.coverImageUrl,
         contentHtml: editingArticle.contentHtml,
       });
+      setArticleCoverFile(null);
     }
   }, [articleMethods, editingArticle, view]);
 
@@ -218,12 +248,32 @@ export function CreatorWorkspaceView({ view }: Props) {
 
     try {
       const values = articleMethods.getValues();
+      let coverImageUrl = values.coverImageUrl;
+
+      if (articleCoverFile) {
+        setIsUploadingArticleCover(true);
+        const uploadResult = await uploadCreatorArticleCoverImage(accessToken, articleCoverFile);
+        coverImageUrl = uploadResult.data.url ?? coverImageUrl;
+        articleMethods.setValue('coverImageUrl', coverImageUrl, {
+          shouldDirty: true,
+          shouldValidate: true,
+        });
+      }
+
       const result = await saveCreatorArticle(accessToken, {
         ...values,
+        coverImageUrl,
         categoryLabel: selectedCategory?.label ?? values.categoryLabel,
         action,
       });
-      setMessage(action === 'submit' ? 'ส่งบทความให้ admin review แล้ว' : 'บันทึกฉบับร่างแล้ว');
+      setMessage(
+        isEditingPublishedArticle
+          ? 'บันทึกบทความที่เผยแพร่แล้ว'
+          : action === 'submit'
+            ? 'ส่งบทความให้ admin review แล้ว'
+            : 'บันทึกฉบับร่างแล้ว'
+      );
+      setArticleCoverFile(null);
       articleMethods.reset({
         id: result.data.id,
         categoryKey: result.data.categoryKey,
@@ -237,6 +287,7 @@ export function CreatorWorkspaceView({ view }: Props) {
     } catch (caughtError) {
       setError(caughtError instanceof Error ? caughtError.message : 'บันทึกบทความไม่สำเร็จ');
     } finally {
+      setIsUploadingArticleCover(false);
       setIsSubmitting(false);
     }
   };
@@ -366,6 +417,23 @@ export function CreatorWorkspaceView({ view }: Props) {
 
     articleMethods.setValue('categoryKey', categoryKey, { shouldValidate: true });
     articleMethods.setValue('categoryLabel', nextCategory?.label ?? '', { shouldValidate: true });
+  };
+
+  const previewArticleCover = (acceptedFiles: File[]) => {
+    const file = acceptedFiles[0];
+
+    if (!file) {
+      return;
+    }
+
+    setArticleCoverFile(file);
+    setError('');
+    setMessage('เลือกภาพปกแล้ว ตรวจ preview แล้วกดบันทึกหรือส่ง review เพื่ออัปโหลด');
+  };
+
+  const clearArticleCover = () => {
+    setArticleCoverFile(null);
+    articleMethods.setValue('coverImageUrl', '', { shouldDirty: true, shouldValidate: true });
   };
 
   const renderHeader = (creatorProfile: CreatorProfile | null) => (
@@ -626,8 +694,8 @@ export function CreatorWorkspaceView({ view }: Props) {
                         </Box>
                         <Chip
                           size="small"
-                          label={getStatusLabel(article.status)}
-                          color={getStatusColor(article.status) as any}
+                          label={article.isActive ? getStatusLabel(article.status) : 'ปิดใช้งาน'}
+                          color={(article.isActive ? getStatusColor(article.status) : 'default') as any}
                           sx={{ flexShrink: 0, fontWeight: 800 }}
                         />
                       </Stack>
@@ -651,12 +719,26 @@ export function CreatorWorkspaceView({ view }: Props) {
                         <Alert severity="error">{article.rejectReason}</Alert>
                       )}
 
+                      {article.status === 'pending_review' && article.approvalRequiredCount > 1 && (
+                        <Alert severity="info">
+                          รออนุมัติ {article.approvalReviews.length}/
+                          {article.approvalRequiredCount} คน
+                        </Alert>
+                      )}
+
+                      {!article.isActive && (
+                        <Alert severity="warning">
+                          บทความนี้ถูกปิดใช้งาน ไม่แสดงบนหน้าบ้าน
+                          {article.inactiveReason ? `: ${article.inactiveReason}` : ''}
+                        </Alert>
+                      )}
+
                       <Stack
                         direction={{ xs: 'column', sm: 'row' }}
                         spacing={1}
                         justifyContent="flex-end"
                       >
-                        {article.status === 'published' && article.slug && (
+                        {article.isActive && isPublishedArticleStatus(article.status) && article.slug && (
                           <Button
                             size="small"
                             component={RouterLink}
@@ -729,13 +811,9 @@ export function CreatorWorkspaceView({ view }: Props) {
 
                   <Stack direction="row" gap={2}>
                     <Chip
-                      icon={
-                        <Iconify
-                          icon={isApproved ? 'solar:check-circle-bold' : 'solar:clock-circle-bold'}
-                        />
-                      }
-                      label={isApproved ? 'พร้อมส่งตรวจ' : 'รออนุมัติ Creator'}
-                      color={isApproved ? 'success' : 'warning'}
+                      icon={<Iconify icon={writeStatusIcon} />}
+                      label={writeStatusLabel}
+                      color={writeStatusColor as any}
                       sx={{ fontWeight: 800 }}
                     />
                     <Button
@@ -935,26 +1013,39 @@ export function CreatorWorkspaceView({ view }: Props) {
                         />
                       )}
 
+                      <Stack spacing={1.25}>
+                        <Typography sx={{ fontWeight: 900 }}>ภาพปกบทความ</Typography>
+                        <Upload
+                          value={articleCoverFile ?? articleForm.coverImageUrl ?? null}
+                          accept={{ 'image/*': [] }}
+                          maxSize={MAX_ARTICLE_COVER_IMAGE_SIZE}
+                          loading={isUploadingArticleCover}
+                          disabled={!isApproved || isUploadingArticleCover}
+                          helperText={
+                            isApproved
+                              ? 'วาง/เลือกไฟล์รูปภาพ ขนาดไม่เกิน 2 MB เพื่อตรวจ preview ก่อน ระบบจะอัปโหลดเมื่อกดบันทึกหรือส่ง review'
+                              : 'ต้องรอ admin approve ก่อนจึงจะอัปโหลดภาพปกได้'
+                          }
+                          onDrop={previewArticleCover}
+                          onDelete={clearArticleCover}
+                          slotProps={{
+                            wrapper: {
+                              sx: {
+                                '& .upload__default': {
+                                  minHeight: 180,
+                                },
+                              },
+                            },
+                          }}
+                        />
+                      </Stack>
+
                       <RHFTextField
                         name="coverImageUrl"
                         label="Cover image URL"
                         placeholder="https://..."
+                        helperText="ใช้ช่องนี้ได้หากต้องการวาง URL รูปจากแหล่งอื่น"
                       />
-
-                      {articleForm.coverImageUrl && (
-                        <Box
-                          component="img"
-                          src={articleForm.coverImageUrl}
-                          alt={articleForm.title || 'cover'}
-                          sx={{
-                            width: 1,
-                            height: 180,
-                            objectFit: 'cover',
-                            borderRadius: 1.5,
-                            bgcolor: 'grey.200',
-                          }}
-                        />
-                      )}
 
                       <Divider />
 
@@ -983,9 +1074,13 @@ export function CreatorWorkspaceView({ view }: Props) {
                         </Stack>
                       </Box>
 
-                      <Alert severity="info" sx={{ alignItems: 'flex-start' }}>
-                        บทความที่ส่งตรวจจะยังไม่เผยแพร่ทันที
-                        ทีมงานจะอ่านและเปลี่ยนสถานะเมื่อพร้อมเผยแพร่
+                      <Alert
+                        severity={isEditingPublishedArticle ? 'success' : 'info'}
+                        sx={{ alignItems: 'flex-start' }}
+                      >
+                        {isEditingPublishedArticle
+                          ? 'บทความนี้เผยแพร่แล้ว การบันทึกจะคงสถานะเผยแพร่ไว้'
+                          : 'บทความที่ส่งตรวจจะยังไม่เผยแพร่ทันที ทีมงานจะอ่านและเปลี่ยนสถานะเมื่อพร้อมเผยแพร่'}
                       </Alert>
 
                       <Stack direction={{ xs: 'column', sm: 'row', lg: 'column' }} spacing={1.5}>
@@ -996,17 +1091,19 @@ export function CreatorWorkspaceView({ view }: Props) {
                           loading={isSubmitting}
                           onClick={() => saveArticle('draft')}
                         >
-                          บันทึกฉบับร่าง
+                          {isEditingPublishedArticle ? 'บันทึกการแก้ไข' : 'บันทึกฉบับร่าง'}
                         </Button>
-                        <Button
-                          fullWidth
-                          variant="contained"
-                          disabled={!isApproved || isSubmitting}
-                          loading={isSubmitting}
-                          onClick={() => saveArticle('submit')}
-                        >
-                          ส่งให้ Admin Review
-                        </Button>
+                        {!isEditingPublishedArticle && (
+                          <Button
+                            fullWidth
+                            variant="contained"
+                            disabled={!isApproved || isSubmitting}
+                            loading={isSubmitting}
+                            onClick={() => saveArticle('submit')}
+                          >
+                            ส่งให้ Admin Review
+                          </Button>
+                        )}
                       </Stack>
                     </Stack>
                   </Paper>

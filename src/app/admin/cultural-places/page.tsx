@@ -28,6 +28,7 @@ import TableContainer from '@mui/material/TableContainer';
 import { DashboardContent } from 'src/layouts/dashboard';
 import provinces from 'src/data/thailand-culture/provinces';
 import { AdminApiError, adminApiRequest } from 'src/lib/admin-api';
+import { SYSTEM_CULTURE_CATEGORIES } from 'src/lib/culture-categories';
 
 import { Editor } from 'src/components/editor';
 import { TableNoData, TableHeadCustom, TablePaginationCustom } from 'src/components/table';
@@ -119,14 +120,14 @@ type RemapResponse = {
 };
 
 const TABLE_HEAD = [
-  { id: 'image', label: 'ภาพ', width: 96 },
-  { id: 'name', label: 'ชื่อสถานที่' },
+  { id: 'image', label: 'ภาพ', width: 120 },
+  { id: 'name', label: 'ชื่อสถานที่', width: 200 },
+  { id: 'source', label: 'แหล่งข้อมูล', width: 150 },
   { id: 'province', label: 'จังหวัด', width: 100 },
-  { id: 'source', label: 'แหล่งข้อมูล', width: 140 },
   { id: 'district', label: 'อำเภอ', width: 160 },
-  { id: 'coordinate', label: 'พิกัด', width: 120 },
+  { id: 'coordinate', label: 'พิกัด', width: 100 },
   { id: 'override', label: 'Override', width: 150 },
-  { id: 'updatedBy', label: 'แก้ไขล่าสุดโดย', width: 120 },
+  { id: 'updatedBy', label: 'แก้ไขล่าสุดโดย', width: 180 },
   { id: 'actions', label: '', width: 240, align: 'right' as const },
 ];
 
@@ -143,23 +144,10 @@ const SOURCE_OPTIONS: Array<{ value: NonNullable<CulturalPlace['source']>; label
   { value: 'ethnic_groups', label: 'กลุ่มชาติพันธุ์' },
   { value: 'thailand_cultural_hub', label: 'ข้อมูลจาก Thailand Cultural Hub' },
 ];
-const DEFAULT_CATEGORY_OPTIONS: CategoryOption[] = [
-  { value: 'tourist_attraction', label: 'สถานที่ท่องเที่ยว' },
-  { value: 'cultural_attraction', label: 'แหล่งท่องเที่ยวทางวัฒนธรรม' },
-  { value: 'temple', label: 'ศาสนสถาน' },
-  { value: 'museum', label: 'พิพิธภัณฑ์' },
-  { value: 'learning_center', label: 'แหล่งเรียนรู้' },
-  { value: 'heritage', label: 'โบราณสถานและมรดกทางวัฒนธรรม' },
-  { value: 'local_food', label: 'อาหารพื้นบ้าน' },
-  { value: 'performing_art', label: 'ศิลปะการแสดง' },
-  { value: 'local_tradition', label: 'ประเพณีท้องถิ่น' },
-  { value: 'craftsmanship', label: 'งานช่างฝีมือ' },
-  { value: 'costume', label: 'ผ้าและเครื่องแต่งกาย' },
-  { value: 'community_wisdom', label: 'ภูมิปัญญาชุมชน' },
-  { value: 'ethnic_group', label: 'กลุ่มชาติพันธุ์' },
-  { value: 'folk_art', label: 'ศิลปะพื้นบ้าน' },
-  { value: 'ritual', label: 'พิธีกรรม' },
-];
+const DEFAULT_CATEGORY_OPTIONS: CategoryOption[] = SYSTEM_CULTURE_CATEGORIES.map((category) => ({
+  value: category.key,
+  label: category.label,
+}));
 const ALL_PROVINCES_OPTION: ProvinceOption = { code: '', name: 'ทุกจังหวัด' };
 
 function getSourceText(source?: CulturalPlace['source']) {
@@ -333,7 +321,15 @@ export default function CulturalPlacesCmsPage() {
     }
 
     return params.toString();
-  }, [appliedQuery, districtFilter, page, provinceCode, readinessFilter, rowsPerPage, sourceFilter]);
+  }, [
+    appliedQuery,
+    districtFilter,
+    page,
+    provinceCode,
+    readinessFilter,
+    rowsPerPage,
+    sourceFilter,
+  ]);
 
   const placesQuery = useQuery({
     queryKey: ['admin-cultural-places', placesQueryParams, accessToken],
@@ -606,7 +602,9 @@ export default function CulturalPlacesCmsPage() {
             ? `, ข้าม ${data.skipped.toLocaleString('th-TH')} รายการ`
             : ''
         } และ refresh summary แล้ว${
-          typeof summary.total === 'number' ? ` ${summary.total.toLocaleString('th-TH')} รายการ` : ''
+          typeof summary.total === 'number'
+            ? ` ${summary.total.toLocaleString('th-TH')} รายการ`
+            : ''
         }`
       );
       await queryClient.invalidateQueries({ queryKey: ['admin-cultural-places'] });
@@ -691,7 +689,11 @@ export default function CulturalPlacesCmsPage() {
               แก้พิกัด lat/lng โดยเก็บเป็น override ไม่ทับข้อมูลต้นทาง
             </Typography>
           </Box>
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} sx={{ alignSelf: { md: 'flex-start' } }}>
+          <Stack
+            direction={{ xs: 'column', sm: 'row' }}
+            spacing={1.5}
+            sx={{ alignSelf: { md: 'flex-start' } }}
+          >
             <LoadingButton
               color="inherit"
               variant="outlined"
@@ -887,7 +889,9 @@ export default function CulturalPlacesCmsPage() {
                                   </Typography>
                                 </>
                               ) : (
-                                <Typography sx={{ color: 'error.main', fontSize: 13, fontWeight: 800 }}>
+                                <Typography
+                                  sx={{ color: 'error.main', fontSize: 13, fontWeight: 800 }}
+                                >
                                   ยังไม่มีพิกัด
                                 </Typography>
                               )}

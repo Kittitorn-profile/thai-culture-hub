@@ -2,11 +2,13 @@ import type { NextRequest } from 'next/server';
 
 import { NextResponse } from 'next/server';
 
+import { normalizeCalendarDate } from 'src/utils/calendar-date';
+
+import provinces from 'src/data/thailand-culture/provinces';
 import { getSupabaseAdmin } from 'src/server/supabase-admin';
 import { verifyAdminRequest } from 'src/server/admin-api-auth';
 
 import { ADMIN_PERMISSION } from 'src/auth/admin-permissions';
-import provinces from 'src/data/thailand-culture/provinces';
 
 const TABLE_NAME = process.env.EVENTS_TABLE ?? 'events';
 const TAT_API_BASE_URL = 'https://tatdataapi.io/api/v2';
@@ -163,13 +165,9 @@ function getProvinceByName(name: string) {
 }
 
 function parseDate(value: unknown) {
-  if (typeof value !== 'string' || !value.trim()) {
-    return null;
-  }
+  const calendarDate = normalizeCalendarDate(value);
 
-  const date = new Date(value);
-
-  return Number.isNaN(date.getTime()) ? null : date.toISOString();
+  return calendarDate || null;
 }
 
 function toNumber(value: unknown) {

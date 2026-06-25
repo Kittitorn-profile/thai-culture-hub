@@ -11,6 +11,8 @@ import Typography from '@mui/material/Typography';
 
 import provinces from 'src/data/thailand-culture/provinces';
 import { getSupabaseAdmin } from 'src/server/supabase-admin';
+import { getCultureCategoryLabel } from 'src/lib/culture-categories';
+
 import { cleanCulturalText, cleanCulturalUrl } from 'src/sections/province/view/province-detail-utils';
 
 // ----------------------------------------------------------------------
@@ -62,22 +64,6 @@ type SharePlace = CulturalPlace & {
   provinceName: string;
 };
 
-const CATEGORY_LABELS: Record<string, string> = {
-  community_wisdom: 'ภูมิปัญญาชุมชน',
-  craftsmanship: 'งานช่างฝีมือ',
-  cultural_attraction: 'แหล่งท่องเที่ยวทางวัฒนธรรม',
-  folk_art: 'ศิลปะพื้นบ้าน',
-  learning_center: 'แหล่งเรียนรู้',
-  local_food: 'อาหารพื้นบ้าน',
-  local_tradition: 'ประเพณีท้องถิ่น',
-  moral_community: 'ชุมชนคุณธรรม',
-  museum: 'พิพิธภัณฑ์',
-  performing_art: 'ศิลปะการแสดง',
-  ritual: 'พิธีกรรม',
-  temple: 'ศาสนสถาน',
-  tourist_attraction: 'สถานที่ท่องเที่ยว',
-};
-
 function getAbsoluteUrl(value?: string | null) {
   const url = cleanCulturalUrl(value);
 
@@ -97,7 +83,7 @@ function getProvinceName(provinceCode: string) {
 }
 
 function getCategoryLabel(category?: string | null) {
-  return category ? (CATEGORY_LABELS[category] ?? category) : 'วัฒนธรรมไทย';
+  return category ? getCultureCategoryLabel(category) : 'วัฒนธรรมไทย';
 }
 
 function getShareUrl(placeId: string) {

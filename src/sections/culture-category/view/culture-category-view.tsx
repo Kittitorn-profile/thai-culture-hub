@@ -111,13 +111,26 @@ export function CultureCategoryView({ allCategories = false }: Props) {
   const [nextOffset, setNextOffset] = useState(0);
   const [hasMore, setHasMore] = useState(false);
   const [selectedPlace, setSelectedPlace] = useState<CategoryPlace | null>(null);
+  const [isCreatorProvinceChecked, setIsCreatorProvinceChecked] = useState(false);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const isLoadingMoreRef = useRef(false);
   const isCreatorProvinceAppliedRef = useRef(false);
+  const loadRequestIdRef = useRef(0);
   const accessToken = user?.accessToken ?? user?.access_token ?? '';
   const isCreator = isCreatorUser(user);
+  const shouldLoadCreatorProvince = allCategories && isCreator && Boolean(accessToken);
 
   const provinceOptions = useMemo(() => [{ code: '', name: 'ทุกจังหวัด' }, ...provinces], []);
+  const selectedProvinceName = provinceCode
+    ? provinces.find((province) => province.code === provinceCode)?.name
+    : '';
+  const pageDescription = selectedProvinceName
+    ? allCategories
+      ? `แสดงข้อมูลวัฒนธรรมทั้งหมดในจังหวัด${selectedProvinceName} โดยใช้ข้อมูลหลักจากฐานข้อมูล cultural_places และค่าที่แก้ไขล่าสุดจาก cultural_place_overrides`
+      : `แสดงข้อมูลวัฒนธรรมหมวดนี้ในจังหวัด${selectedProvinceName} โดยใช้ข้อมูลหลักจากฐานข้อมูล cultural_places และค่าที่แก้ไขล่าสุดจาก cultural_place_overrides`
+    : allCategories
+      ? 'รวมข้อมูลวัฒนธรรมทั้งหมดที่มีจากทุกจังหวัด โดยใช้ข้อมูลหลักจากฐานข้อมูล cultural_places และค่าที่แก้ไขล่าสุดจาก cultural_place_overrides'
+      : 'รวมข้อมูลวัฒนธรรมในหมวดนี้จากทุกจังหวัด โดยใช้ข้อมูลหลักจากฐานข้อมูล cultural_places และค่าที่แก้ไขล่าสุดจาก cultural_place_overrides';
   const selectedPlaceIndex = selectedPlace
     ? places.findIndex((place) => place.id === selectedPlace.id)
     : -1;
@@ -130,6 +143,11 @@ export function CultureCategoryView({ allCategories = false }: Props) {
     async (options?: { append?: boolean; offset?: number }) => {
       const append = options?.append === true;
       const offset = append ? (options.offset ?? 0) : 0;
+      const requestId = append ? loadRequestIdRef.current : loadRequestIdRef.current + 1;
+
+      if (!append) {
+        loadRequestIdRef.current = requestId;
+      }
 
       if (append) {
         if (isLoadingMoreRef.current) {
@@ -172,6 +190,10 @@ export function CultureCategoryView({ allCategories = false }: Props) {
           throw new Error(json.message ?? 'โหลดข้อมูลหมวดไม่สำเร็จ');
         }
 
+        if (requestId !== loadRequestIdRef.current) {
+          return;
+        }
+
         const nextPlaces = Array.isArray(json.data) ? json.data : [];
 
         setPlaces((currentPlaces) => (append ? [...currentPlaces, ...nextPlaces] : nextPlaces));
@@ -181,19 +203,23 @@ export function CultureCategoryView({ allCategories = false }: Props) {
         );
         setHasMore(Boolean(json.hasMore));
       } catch (caughtError) {
-        if (!append) {
-          setPlaces([]);
-          setTotalPlaces(0);
-          setNextOffset(0);
-          setHasMore(false);
+        if (requestId === loadRequestIdRef.current) {
+          if (!append) {
+            setPlaces([]);
+            setTotalPlaces(0);
+            setNextOffset(0);
+            setHasMore(false);
+          }
+          setError(caughtError instanceof Error ? caughtError.message : 'โหลดข้อมูลหมวดไม่สำเร็จ');
         }
-        setError(caughtError instanceof Error ? caughtError.message : 'โหลดข้อมูลหมวดไม่สำเร็จ');
       } finally {
-        if (append) {
-          isLoadingMoreRef.current = false;
-          setIsLoadingMore(false);
-        } else {
-          setIsLoading(false);
+        if (requestId === loadRequestIdRef.current) {
+          if (append) {
+            isLoadingMoreRef.current = false;
+            setIsLoadingMore(false);
+          } else {
+            setIsLoading(false);
+          }
         }
       }
     },
@@ -201,11 +227,21 @@ export function CultureCategoryView({ allCategories = false }: Props) {
   );
 
   useEffect(() => {
+    if (shouldLoadCreatorProvince && !isCreatorProvinceChecked) {
+      return;
+    }
+
     loadPlaces();
-  }, [loadPlaces]);
+  }, [isCreatorProvinceChecked, loadPlaces, shouldLoadCreatorProvince]);
 
   useEffect(() => {
-    if (!allCategories || !isCreator || !accessToken || isCreatorProvinceAppliedRef.current) {
+    if (!shouldLoadCreatorProvince) {
+      setIsCreatorProvinceChecked(false);
+      return;
+    }
+
+    if (isCreatorProvinceAppliedRef.current) {
+      setIsCreatorProvinceChecked(true);
       return;
     }
 
@@ -217,8 +253,11 @@ export function CultureCategoryView({ allCategories = false }: Props) {
           setProvinceCode(result.data.provinceCode);
         }
       })
-      .catch(() => {});
-  }, [accessToken, allCategories, isCreator]);
+      .catch(() => {})
+      .finally(() => {
+        setIsCreatorProvinceChecked(true);
+      });
+  }, [shouldLoadCreatorProvince, accessToken]);
 
   const handleSearch = () => {
     setAppliedQuery(query.trim());
@@ -403,9 +442,7 @@ export function CultureCategoryView({ allCategories = false }: Props) {
               </Typography>
             </Stack>
             <Typography sx={{ mt: 1.2, color: 'rgba(248,246,238,0.78)', maxWidth: 760 }}>
-              {allCategories
-                ? 'รวมข้อมูลวัฒนธรรมทั้งหมดที่มีจากทุกจังหวัด โดยใช้ข้อมูลหลักจากฐานข้อมูล cultural_places และค่าที่แก้ไขล่าสุดจาก cultural_place_overrides'
-                : 'รวมข้อมูลวัฒนธรรมในหมวดนี้จากทุกจังหวัด โดยใช้ข้อมูลหลักจากฐานข้อมูล cultural_places และค่าที่แก้ไขล่าสุดจาก cultural_place_overrides'}
+              {pageDescription}
             </Typography>
           </Box>
         </Stack>

@@ -31,12 +31,12 @@ import { useAuthContext } from 'src/auth/hooks';
 import { saveCategoryAction, getCategoriesAction } from './actions';
 
 const TABLE_HEAD = [
-  { id: 'sort', label: 'ลำดับ', width: 90 },
+  { id: 'sort', label: 'ลำดับ', width: 60 },
   { id: 'key', label: 'Key', width: 220 },
-  { id: 'label', label: 'ชื่อหมวด' },
+  { id: 'label', label: 'ชื่อหมวด', width: 200 },
   { id: 'source', label: 'แหล่งที่มา', width: 180 },
   { id: 'count', label: 'จำนวน', width: 110, align: 'right' as const },
-  { id: 'style', label: 'สี/Icon', width: 180 },
+  { id: 'style', label: 'สี/Icon', width: 120 },
   { id: 'status', label: 'สถานะ', width: 120 },
   { id: 'actions', label: '', width: 190, align: 'right' as const },
 ];
@@ -206,7 +206,7 @@ export function CategoriesAdminClient() {
         <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" spacing={2}>
           <Box>
             <Typography variant="h3" sx={{ fontWeight: 900 }}>
-              Categories
+              จัดการหมวดหมู่
             </Typography>
             <Typography sx={{ mt: 0.5, color: 'text.secondary' }}>
               แสดงหมวดระบบ และหมวด/หมวดย่อยที่พบจริงจากข้อมูลต้นทาง
@@ -273,7 +273,9 @@ export function CategoriesAdminClient() {
                     </TableCell>
                     <TableCell>{category.source_label ?? category.source ?? '-'}</TableCell>
                     <TableCell align="right">
-                      {typeof category.count === 'number' ? category.count.toLocaleString('th-TH') : '-'}
+                      {typeof category.count === 'number'
+                        ? category.count.toLocaleString('th-TH')
+                        : '-'}
                     </TableCell>
                     <TableCell>
                       <Stack direction="row" spacing={1.2} alignItems="center">
@@ -426,7 +428,12 @@ export function CategoriesAdminClient() {
             <Divider />
 
             <Stack direction="row" spacing={1.5} sx={{ p: 2.5 }}>
-              <LoadingButton fullWidth variant="contained" loading={isSaving} onClick={saveCategory}>
+              <LoadingButton
+                fullWidth
+                variant="contained"
+                loading={isSaving}
+                onClick={saveCategory}
+              >
                 บันทึก
               </LoadingButton>
               <Button fullWidth color="inherit" onClick={() => setEditingCategory(null)}>

@@ -18,6 +18,7 @@ import LoadingButton from '@mui/lab/LoadingButton';
 
 import { DashboardContent } from 'src/layouts/dashboard';
 import { AdminApiError, adminApiRequest } from 'src/lib/admin-api';
+import { getCultureCategoryLabel } from 'src/lib/culture-categories';
 
 import { Iconify } from 'src/components/iconify';
 
@@ -74,7 +75,7 @@ const DEFAULT_CONTENT: CultureCategoriesContent = {
 const DEFAULT_CATEGORY_ITEMS: CultureCategoryItem[] = [
   {
     id: 'culture-category-attraction',
-    title: 'สถานที่ท่องเที่ยว',
+    title: getCultureCategoryLabel('tourist_attraction'),
     description: 'แหล่งท่องเที่ยว วัด เมืองเก่า และจุดหมายสำคัญทางวัฒนธรรม',
     icon: 'custom:location-fill',
     imageUrl: '/assets/background/akhahas-sri-1.jpg',
@@ -83,7 +84,7 @@ const DEFAULT_CATEGORY_ITEMS: CultureCategoryItem[] = [
   },
   {
     id: 'culture-category-food',
-    title: 'อาหารพื้นบ้าน',
+    title: getCultureCategoryLabel('local_food'),
     description: 'รสชาติท้องถิ่น วัตถุดิบตามฤดูกาล และครัวชุมชนไทย',
     icon: 'solar:tea-cup-bold',
     imageUrl: '/assets/background/akhahas-sri-2.jpg',
@@ -92,7 +93,7 @@ const DEFAULT_CATEGORY_ITEMS: CultureCategoryItem[] = [
   },
   {
     id: 'culture-category-performance',
-    title: 'ศิลปะการแสดง',
+    title: getCultureCategoryLabel('performing_art'),
     description: 'นาฏศิลป์ ดนตรีไทย การแสดงพื้นบ้านที่งดงามและทรงคุณค่า',
     icon: 'solar:palette-bold',
     imageUrl: '/assets/background/akhahas-sri-3.jpg',
@@ -101,7 +102,7 @@ const DEFAULT_CATEGORY_ITEMS: CultureCategoryItem[] = [
   },
   {
     id: 'culture-category-tradition',
-    title: 'ประเพณีท้องถิ่น',
+    title: getCultureCategoryLabel('local_tradition'),
     description: 'เทศกาล งานบุญ และขนบธรรมเนียมที่สืบทอดในแต่ละพื้นที่',
     icon: 'solar:confetti-minimalistic-outline',
     imageUrl: '/assets/background/akhahas-sri-4.jpg',
@@ -110,7 +111,7 @@ const DEFAULT_CATEGORY_ITEMS: CultureCategoryItem[] = [
   },
   {
     id: 'culture-category-wisdom',
-    title: 'ภูมิปัญญาชุมชน',
+    title: getCultureCategoryLabel('community_wisdom'),
     description: 'ความรู้ท้องถิ่น วิธีคิด และทักษะที่เกิดจากชีวิตในชุมชน',
     icon: 'solar:notebook-bold-duotone',
     imageUrl: '/assets/background/akhahas-sri-5.jpg',
@@ -119,7 +120,7 @@ const DEFAULT_CATEGORY_ITEMS: CultureCategoryItem[] = [
   },
   {
     id: 'culture-category-craft',
-    title: 'งานช่างฝีมือ',
+    title: getCultureCategoryLabel('craftsmanship'),
     description: 'งานจักสาน ผ้าทอ เครื่องปั้น และฝีมือช่างพื้นถิ่น',
     icon: 'solar:settings-bold',
     imageUrl: '/assets/background/akhahas-sri-6.jpg',
@@ -128,7 +129,7 @@ const DEFAULT_CATEGORY_ITEMS: CultureCategoryItem[] = [
   },
   {
     id: 'culture-category-folk-art',
-    title: 'ศิลปะพื้นบ้าน',
+    title: getCultureCategoryLabel('folk_art'),
     description: 'ลวดลาย สีสัน เครื่องแต่งกาย และงานศิลป์จากชุมชน',
     icon: 'solar:gallery-wide-bold',
     imageUrl: '/assets/background/akhahas-sri-7.jpg',
@@ -137,7 +138,7 @@ const DEFAULT_CATEGORY_ITEMS: CultureCategoryItem[] = [
   },
   {
     id: 'culture-category-ritual',
-    title: 'พิธีกรรม',
+    title: getCultureCategoryLabel('ritual'),
     description: 'ความเชื่อ พิธีบูชา และเรื่องเล่าศักดิ์สิทธิ์ของท้องถิ่น',
     icon: 'solar:shield-check-bold',
     imageUrl: '/assets/akhahas-sri/hero-1.jpg',

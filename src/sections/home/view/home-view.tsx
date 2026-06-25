@@ -22,6 +22,7 @@ import { Box } from '@mui/material';
 import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
+import Avatar from '@mui/material/Avatar';
 import Typography from '@mui/material/Typography';
 import CircularProgress from '@mui/material/CircularProgress';
 
@@ -32,6 +33,8 @@ import { HomeFooter } from 'src/layouts/main/footer';
 
 import { Image } from 'src/components/image';
 import { Iconify } from 'src/components/iconify';
+
+import { CreatorArticleEngagement } from 'src/sections/creator/components/creator-article-engagement';
 
 import { HomePlayButton } from '../components/home-play-button';
 import { HomeMapSection } from '../components/home-map-section';
@@ -45,6 +48,7 @@ import {
   formatHomeEventDate,
   getCultureCategoryKey,
   normalizeStoryContent,
+  getCultureCategoryHref,
   formatCreatorArticleDate,
   normalizeLocalWisdomContent,
   normalizeCultureCategoriesContent,
@@ -92,7 +96,7 @@ export function HomeView() {
   const [creatorArticlesOffset, setCreatorArticlesOffset] = useState(0);
   const [hasMoreCreatorArticles, setHasMoreCreatorArticles] = useState(false);
   const [isLoadingCreatorArticles, setIsLoadingCreatorArticles] = useState(false);
-  const shouldShowCreatorArticles = creatorArticlesTotal > 1;
+  const shouldShowCreatorArticles = creatorArticlesTotal > 0;
   const featuredCultureCategoryCards = cultureCategoryCards.slice(
     0,
     FEATURED_CULTURE_CATEGORY_LIMIT
@@ -1445,11 +1449,10 @@ export function HomeView() {
               {creatorArticles.map((article) => (
                 <Box
                   key={article.id}
-                  component={RouterLink}
-                  href={`/creator-stories/${encodeURIComponent(article.slug || article.id)}`}
                   sx={{
                     minWidth: 0,
                     overflow: 'hidden',
+
                     borderRadius: 1.5,
                     color: HOME_DEEP,
                     bgcolor: 'rgba(250,244,232,0.95)',
@@ -1468,45 +1471,74 @@ export function HomeView() {
                       width: 1,
                       aspectRatio: '4 / 3',
                       overflow: 'hidden',
+                      display: 'block',
+                      position: 'relative',
                       bgcolor: 'rgba(42,55,54,0.16)',
                     }}
                   >
-                    {article.coverImageUrl ? (
-                      <Image
-                        src={article.coverImageUrl}
-                        alt={article.title}
-                        ratio="4/3"
-                        visibleByDefault
-                        disablePlaceholder
-                        sx={{ width: 1, height: 1, '& img': { objectFit: 'cover' } }}
-                      />
-                    ) : (
-                      <Box
-                        sx={{
-                          height: 1,
-                          display: 'grid',
-                          placeItems: 'center',
-                          backgroundImage: `
-                            radial-gradient(circle at 24% 18%, rgba(234,215,161,0.5), transparent 30%),
-                            linear-gradient(135deg, rgba(96,141,140,0.42), rgba(143,124,92,0.36))
-                          `,
-                        }}
-                      >
-                        <Iconify icon="solar:notebook-bold-duotone" width={52} />
-                      </Box>
-                    )}
+                    <CreatorArticleEngagement
+                      compact
+                      overlay
+                      articleId={article.id}
+                      shareTitle={article.title}
+                      shareUrl={`/creator-stories/${encodeURIComponent(article.slug || article.id)}`}
+                      initialStats={{
+                        liked: article.liked ?? false,
+                        likeCount: article.likeCount ?? 0,
+                        viewCount: article.viewCount ?? 0,
+                      }}
+                    />
+
+                    <Box
+                      component={RouterLink}
+                      href={`/creator-stories/${encodeURIComponent(article.slug || article.id)}`}
+                      sx={{ position: 'absolute', inset: 0, display: 'block' }}
+                    >
+                      {article.coverImageUrl ? (
+                        <Image
+                          src={article.coverImageUrl}
+                          alt={article.title}
+                          ratio="4/3"
+                          visibleByDefault
+                          disablePlaceholder
+                          sx={{ width: 1, height: 1, '& img': { objectFit: 'cover' } }}
+                        />
+                      ) : (
+                        <Box
+                          sx={{
+                            height: 1,
+                            display: 'grid',
+                            placeItems: 'center',
+                            backgroundImage: `
+                              radial-gradient(circle at 24% 18%, rgba(234,215,161,0.5), transparent 30%),
+                              linear-gradient(135deg, rgba(96,141,140,0.42), rgba(143,124,92,0.36))
+                            `,
+                          }}
+                        >
+                          <Iconify icon="solar:notebook-bold-duotone" width={52} />
+                        </Box>
+                      )}
+                    </Box>
                   </Box>
 
                   <Stack spacing={1.25} sx={{ p: { xs: 2, md: 2.25 } }}>
                     <Stack direction="row" spacing={1} alignItems="center" sx={{ minWidth: 0 }}>
                       <Chip
                         size="small"
+                        component={RouterLink}
+                        href={getCultureCategoryHref(article.categoryKey, article.categoryLabel)}
+                        clickable
                         label={article.categoryLabel || 'บทความ'}
                         sx={{
                           height: 24,
                           maxWidth: 150,
                           color: '#4b3523',
                           bgcolor: 'rgba(234,215,161,0.58)',
+                          fontWeight: 800,
+                          textDecoration: 'none',
+                          '&:hover': {
+                            bgcolor: 'rgba(234,215,161,0.78)',
+                          },
                           '& .MuiChip-label': {
                             overflow: 'hidden',
                             textOverflow: 'ellipsis',
@@ -1519,6 +1551,8 @@ export function HomeView() {
                     </Stack>
 
                     <Typography
+                      component={RouterLink}
+                      href={`/creator-stories/${encodeURIComponent(article.slug || article.id)}`}
                       sx={{
                         color: '#3b2f24',
                         minHeight: 56,
@@ -1529,6 +1563,10 @@ export function HomeView() {
                         overflow: 'hidden',
                         WebkitLineClamp: 2,
                         WebkitBoxOrient: 'vertical',
+                        textDecoration: 'none',
+                        '&:hover': {
+                          color: '#7b5a31',
+                        },
                       }}
                     >
                       {article.title}
@@ -1556,12 +1594,42 @@ export function HomeView() {
                       alignItems="center"
                       justifyContent="space-between"
                     >
-                      <Typography sx={{ color: 'rgba(75,53,35,0.62)', fontSize: 12 }}>
-                        โดย {article.creatorName || 'Creator'}
-                      </Typography>
-                      <Typography sx={{ color: '#7b5a31', fontSize: 13, fontWeight: 900 }}>
+                      <Stack
+                        component={RouterLink}
+                        href={`/creator-stories/creator/${encodeURIComponent(article.creatorId)}`}
+                        direction="row"
+                        spacing={0.85}
+                        alignItems="center"
+                        sx={{
+                          minWidth: 0,
+                          color: 'inherit',
+                          textDecoration: 'none',
+                          '&:hover .creator-name': {
+                            color: '#7b5a31',
+                          },
+                        }}
+                      >
+                        <Avatar
+                          src={article.creatorAvatarUrl || undefined}
+                          alt={article.creatorName || 'Creator'}
+                          sx={{ width: 28, height: 28, bgcolor: '#7b8476', fontSize: 12 }}
+                        />
+                        <Typography
+                          className="creator-name"
+                          sx={{ color: 'rgba(75,53,35,0.62)', fontSize: 12 }}
+                          noWrap
+                        >
+                          {article.creatorName || 'Creator'}
+                        </Typography>
+                      </Stack>
+                      <Button
+                        size="small"
+                        component={RouterLink}
+                        href={`/creator-stories/${encodeURIComponent(article.slug || article.id)}`}
+                        sx={{ color: '#7b5a31', fontSize: 13, fontWeight: 900 }}
+                      >
                         อ่านต่อ
-                      </Typography>
+                      </Button>
                     </Stack>
                   </Stack>
                 </Box>

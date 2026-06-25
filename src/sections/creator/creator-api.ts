@@ -1,5 +1,12 @@
 import type { CreatorArticle, CreatorProfile, CreatorPlaceCorrection } from './types';
 
+export type AdminArticleReviewer = {
+  id: string;
+  email: string;
+  role: string;
+  displayName: string;
+};
+
 export type CreatorCategory = {
   key: string;
   label: string;
@@ -177,6 +184,63 @@ export async function uploadCreatorAvatar(accessToken: string, file: File) {
   return { data: data.data };
 }
 
+export async function uploadCreatorPlaceCorrectionImage(
+  accessToken: string,
+  file: File,
+  placeId: string
+) {
+  const formData = new FormData();
+  formData.set('file', file);
+  formData.set('placeId', placeId);
+
+  const response = await fetch('/api/creator/place-corrections/upload', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: formData,
+  });
+  const data = (await response.json().catch(() => ({}))) as {
+    data?: {
+      url?: string;
+      path?: string;
+    };
+    message?: string;
+  };
+
+  if (!response.ok || !data.data?.url) {
+    throw new Error(data.message ?? 'อัปโหลดรูปไม่สำเร็จ');
+  }
+
+  return { data: data.data };
+}
+
+export async function uploadCreatorArticleCoverImage(accessToken: string, file: File) {
+  const formData = new FormData();
+  formData.set('file', file);
+
+  const response = await fetch('/api/creator/articles/upload', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: formData,
+  });
+  const data = (await response.json().catch(() => ({}))) as {
+    data?: {
+      url?: string;
+      path?: string;
+    };
+    message?: string;
+  };
+
+  if (!response.ok || !data.data?.url) {
+    throw new Error(data.message ?? 'อัปโหลดรูปไม่สำเร็จ');
+  }
+
+  return { data: data.data };
+}
+
 export function changeCreatorPassword(accessToken: string, body: Record<string, unknown>) {
   return request<{ message: string }>('/api/creator/password', {
     method: 'PATCH',
@@ -220,12 +284,26 @@ export function reviewAdminCreator(accessToken: string, body: Record<string, unk
 }
 
 export function getAdminCreatorArticles(accessToken: string) {
-  return request<{ data: CreatorArticle[] }>('/api/admin/creator-articles', { accessToken });
+  return request<{ data: CreatorArticle[]; reviewers?: AdminArticleReviewer[] }>(
+    '/api/admin/creator-articles',
+    { accessToken }
+  );
 }
 
 export function reviewAdminCreatorArticle(accessToken: string, body: Record<string, unknown>) {
   return request<{ data: CreatorArticle }>('/api/admin/creator-articles', {
     method: 'PATCH',
+    accessToken,
+    body,
+  });
+}
+
+export function configureAdminCreatorArticleApproval(
+  accessToken: string,
+  body: Record<string, unknown>
+) {
+  return request<{ data: CreatorArticle[] }>('/api/admin/creator-articles', {
+    method: 'PUT',
     accessToken,
     body,
   });

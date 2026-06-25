@@ -11,6 +11,8 @@ import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
 import Typography from '@mui/material/Typography';
 
+import { formatThaiCalendarDate } from 'src/utils/calendar-date';
+
 import { DashboardContent } from 'src/layouts/dashboard';
 import { AdminApiError, adminApiRequest } from 'src/lib/admin-api';
 
@@ -71,6 +73,14 @@ type EventResponse = {
 const EVENTS_QUERY_KEY = 'admin-events';
 
 function formatDate(value?: string) {
+  return formatThaiCalendarDate(value, {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  }) || '-';
+}
+
+function formatDateTime(value?: string) {
   if (!value) {
     return '-';
   }
@@ -81,11 +91,11 @@ function formatDate(value?: string) {
     return value;
   }
 
-  return date.toLocaleDateString('th-TH', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
+  return new Intl.DateTimeFormat('th-TH', {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+    timeZone: 'Asia/Bangkok',
+  }).format(date);
 }
 
 function DetailRow({ label, value }: { label: string; value?: string }) {
@@ -242,8 +252,8 @@ export default function HomeEventDetailAdminPage() {
                   <DetailRow label="ลิงก์ติดตาม" value={eventItem.sourceUrl} />
                   <DetailRow label="แหล่งข้อมูล" value={eventItem.source === 'tat' ? 'TAT' : 'Manual'} />
                   <DetailRow label="TAT Event ID" value={eventItem.sourceEventId} />
-                  <DetailRow label="Sync ล่าสุด" value={eventItem.syncedAt ? formatDate(eventItem.syncedAt) : '-'} />
-                  <DetailRow label="อัปเดตล่าสุด" value={eventItem.updatedAt ? formatDate(eventItem.updatedAt) : '-'} />
+                  <DetailRow label="Sync ล่าสุด" value={formatDateTime(eventItem.syncedAt)} />
+                  <DetailRow label="อัปเดตล่าสุด" value={formatDateTime(eventItem.updatedAt)} />
                 </Box>
                 {eventItem.sourceUrl && (
                   <Button

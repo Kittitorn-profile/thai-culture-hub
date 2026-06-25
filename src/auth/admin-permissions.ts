@@ -3,6 +3,7 @@ import type { NavSectionProps } from 'src/components/nav-section';
 export const ADMIN_ROLE = {
   admin: 'admin',
   manage: 'manage',
+  reviewer: 'reviewer',
 } as const;
 
 export type AdminRole = (typeof ADMIN_ROLE)[keyof typeof ADMIN_ROLE] | string;
@@ -14,6 +15,7 @@ export const ADMIN_PERMISSION = {
   analytics: 'analytics',
   feedback: 'feedback',
   creators: 'creators',
+  reviewers: 'reviewers',
   users: 'users',
   profile: 'profile',
 } as const;
@@ -27,6 +29,7 @@ export const ADMIN_PERMISSION_OPTIONS: { value: AdminPermission; label: string }
   { value: ADMIN_PERMISSION.analytics, label: 'Analytics' },
   { value: ADMIN_PERMISSION.feedback, label: 'Feedback' },
   { value: ADMIN_PERMISSION.creators, label: 'Creators' },
+  { value: ADMIN_PERMISSION.reviewers, label: 'Reviewers' },
   { value: ADMIN_PERMISSION.users, label: 'Admin Users' },
   { value: ADMIN_PERMISSION.profile, label: 'Profile' },
 ];
@@ -48,6 +51,10 @@ function getUserAppMetadata(user: Record<string, any> | null | undefined) {
 }
 
 export function getAdminRole(user: Record<string, any> | null | undefined): AdminRole {
+  if (!user) {
+    return '';
+  }
+
   const metadataRole = getUserAppMetadata(user).role;
 
   if (typeof metadataRole === 'string' && metadataRole) {
@@ -58,7 +65,7 @@ export function getAdminRole(user: Record<string, any> | null | undefined): Admi
 }
 
 export function isSuperAdminRole(role: AdminRole | null | undefined) {
-  return !role || role === ADMIN_ROLE.admin;
+  return role === ADMIN_ROLE.admin;
 }
 
 export function getAdminPermissions(user: Record<string, any> | null | undefined) {
@@ -85,6 +92,10 @@ export function canAccessAdminPermission(
 ) {
   if (!permission) {
     return true;
+  }
+
+  if (permission === ADMIN_PERMISSION.profile) {
+    return Boolean(user);
   }
 
   const role = getAdminRole(user);
@@ -121,6 +132,10 @@ export function getAdminPermissionFromPath(pathname: string): AdminPermission | 
     return ADMIN_PERMISSION.creators;
   }
 
+  if (pathname.startsWith('/admin/reviewers')) {
+    return ADMIN_PERMISSION.reviewers;
+  }
+
   if (pathname.startsWith('/admin/users')) {
     return ADMIN_PERMISSION.users;
   }
@@ -146,6 +161,8 @@ export function getFirstAllowedAdminPath(user: Record<string, any> | null | unde
       return '/admin/feedback';
     case ADMIN_PERMISSION.creators:
       return '/admin/creators';
+    case ADMIN_PERMISSION.reviewers:
+      return '/admin/reviewers';
     case ADMIN_PERMISSION.users:
       return '/admin/users';
     case ADMIN_PERMISSION.profile:
@@ -156,12 +173,17 @@ export function getFirstAllowedAdminPath(user: Record<string, any> | null | unde
   }
 }
 
-function filterNavItem(user: Record<string, any> | null | undefined, item: AdminNavItem) {
+function filterNavItem(
+  user: Record<string, any> | null | undefined,
+  item: AdminNavItem,
+  inheritedPermission?: AdminPermission
+) {
+  const effectivePermission = item.permission ?? inheritedPermission;
   const children = item.children
-    ?.map((child) => filterNavItem(user, child))
+    ?.map((child) => filterNavItem(user, child, effectivePermission))
     .filter(Boolean) as AdminNavItem[] | undefined;
 
-  if (!canAccessAdminPermission(user, item.permission) && !children?.length) {
+  if (!canAccessAdminPermission(user, effectivePermission) && !children?.length) {
     return null;
   }
 

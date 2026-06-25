@@ -14,14 +14,24 @@ import {
 export const runtime = 'nodejs';
 
 const ARTICLE_SELECT =
-  'id, creator_id, category_key, category_label, title, slug, excerpt, cover_image_url, content_html, status, submitted_at, reviewed_at, reject_reason, published_at, created_at, updated_at';
+  'id, creator_id, category_key, category_label, title, slug, excerpt, cover_image_url, content_html, status, is_active, inactive_reason, inactivated_at, approval_required_count, approval_reviewer_ids, approval_reviews, approval_requested_at, submitted_at, reviewed_at, reject_reason, published_at, created_at, updated_at';
 const LEGACY_ARTICLE_SELECT =
   'id, creator_id, title, slug, excerpt, cover_image_url, content_html, status, submitted_at, reviewed_at, reject_reason, published_at, created_at, updated_at';
 
 function isMissingCategoryColumn(error: { message?: string; details?: string; hint?: string } | null) {
   const text = [error?.message, error?.details, error?.hint].filter(Boolean).join(' ');
 
-  return text.includes('category_key') || text.includes('category_label');
+  return (
+    text.includes('category_key') ||
+    text.includes('category_label') ||
+    text.includes('is_active') ||
+    text.includes('inactive_reason') ||
+    text.includes('inactivated_at') ||
+    text.includes('approval_required_count') ||
+    text.includes('approval_reviewer_ids') ||
+    text.includes('approval_reviews') ||
+    text.includes('approval_requested_at')
+  );
 }
 
 async function requireApprovedCreator(request: NextRequest) {
@@ -42,6 +52,14 @@ async function requireApprovedCreator(request: NextRequest) {
       ok: false as const,
       status: 403,
       message: 'Creator profile is not approved yet',
+    };
+  }
+
+  if (profileResult.profile.is_active === false) {
+    return {
+      ok: false as const,
+      status: 403,
+      message: 'Creator account is inactive',
     };
   }
 
@@ -183,7 +201,33 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ message: 'Article id, title, category and content are required' }, { status: 400 });
   }
 
-  const status = action === 'submit' ? 'pending_review' : 'draft';
+  const { data: existingArticle, error: existingArticleError } = await auth.supabase
+    .from('creator_articles')
+    .select('id, status, submitted_at, reviewed_at, reject_reason, published_at')
+    .eq('id', id)
+    .eq('creator_id', auth.profile.id)
+    .maybeSingle();
+
+  if (existingArticleError) {
+    return NextResponse.json({ message: existingArticleError.message }, { status: 500 });
+  }
+
+  if (!existingArticle) {
+    return NextResponse.json({ message: 'Article not found' }, { status: 404 });
+  }
+
+  const currentStatus = cleanText((existingArticle as any).status);
+  const isAlreadyPublished = currentStatus === 'published' || currentStatus === 'approved';
+  const status = isAlreadyPublished ? 'published' : action === 'submit' ? 'pending_review' : 'draft';
+  const submittedAt = isAlreadyPublished
+    ? ((existingArticle as any).submitted_at ?? null)
+    : status === 'pending_review'
+      ? new Date().toISOString()
+      : null;
+  const publishedAt = isAlreadyPublished
+    ? ((existingArticle as any).published_at ?? new Date().toISOString())
+    : null;
+  const reviewedAt = isAlreadyPublished ? ((existingArticle as any).reviewed_at ?? null) : null;
 
   const { data, error } = await auth.supabase
     .from('creator_articles')
@@ -195,11 +239,10 @@ export async function PATCH(request: NextRequest) {
       cover_image_url: cleanText(body.coverImageUrl),
       content_html: contentHtml,
       status,
-      submitted_at: status === 'pending_review' ? new Date().toISOString() : null,
-      reviewed_at: null,
-      reviewed_by: null,
+      submitted_at: submittedAt,
+      reviewed_at: reviewedAt,
       reject_reason: null,
-      published_at: null,
+      published_at: publishedAt,
     })
     .eq('id', id)
     .eq('creator_id', auth.profile.id)
@@ -216,11 +259,10 @@ export async function PATCH(request: NextRequest) {
           cover_image_url: cleanText(body.coverImageUrl),
           content_html: contentHtml,
           status,
-          submitted_at: status === 'pending_review' ? new Date().toISOString() : null,
-          reviewed_at: null,
-          reviewed_by: null,
+          submitted_at: submittedAt,
+          reviewed_at: reviewedAt,
           reject_reason: null,
-          published_at: null,
+          published_at: publishedAt,
         })
         .eq('id', id)
         .eq('creator_id', auth.profile.id)

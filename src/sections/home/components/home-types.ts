@@ -89,6 +89,7 @@ export type HomeAnalyticsSummary = {
 
 export type CreatorArticlePreview = {
   id: string;
+  creatorId: string;
   title: string;
   slug: string;
   excerpt: string;
@@ -96,6 +97,10 @@ export type CreatorArticlePreview = {
   categoryKey: string;
   categoryLabel: string;
   creatorName: string;
+  creatorAvatarUrl: string;
+  likeCount?: number;
+  liked?: boolean;
+  viewCount?: number;
   publishedAt: string;
   updatedAt: string;
 };

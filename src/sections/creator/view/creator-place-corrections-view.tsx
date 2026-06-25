@@ -35,7 +35,7 @@ const FIELD_LABELS: Record<string, string> = {
   lat: 'Latitude',
   lng: 'Longitude',
   mapUrl: 'Map URL',
-  imageUrl: 'Image URL',
+  imageUrl: 'ภาพปก',
   description: 'คำอธิบาย',
   detail: 'รายละเอียด',
 };
@@ -208,13 +208,7 @@ function EmptyState() {
   );
 }
 
-function CorrectionCard({
-  item,
-  onOpen,
-}: {
-  item: CreatorPlaceCorrection;
-  onOpen: () => void;
-}) {
+function CorrectionCard({ item, onOpen }: { item: CreatorPlaceCorrection; onOpen: () => void }) {
   const statusMeta = getStatusMeta(item.status);
   const suggestedCount = getPayloadEntries(item.suggestedPayload).length;
 
@@ -495,16 +489,36 @@ export function CreatorPlaceCorrectionsView() {
 
         <Grid container spacing={2}>
           <Grid size={{ xs: 6, md: 3 }}>
-            <StatCard icon="solar:add-folder-bold" label="ทั้งหมด" value={stats.total} tone="#52615d" />
+            <StatCard
+              icon="solar:add-folder-bold"
+              label="ทั้งหมด"
+              value={stats.total}
+              tone="#52615d"
+            />
           </Grid>
           <Grid size={{ xs: 6, md: 3 }}>
-            <StatCard icon="solar:clock-circle-bold" label="รอตรวจ" value={stats.pending} tone="#9a5b12" />
+            <StatCard
+              icon="solar:clock-circle-bold"
+              label="รอตรวจ"
+              value={stats.pending}
+              tone="#9a5b12"
+            />
           </Grid>
           <Grid size={{ xs: 6, md: 3 }}>
-            <StatCard icon="solar:check-circle-bold" label="ผ่านแล้ว" value={stats.approved} tone="#1b7f4c" />
+            <StatCard
+              icon="solar:check-circle-bold"
+              label="ผ่านแล้ว"
+              value={stats.approved}
+              tone="#1b7f4c"
+            />
           </Grid>
           <Grid size={{ xs: 6, md: 3 }}>
-            <StatCard icon="solar:close-circle-bold" label="ไม่ผ่าน" value={stats.rejected} tone="#b42318" />
+            <StatCard
+              icon="solar:close-circle-bold"
+              label="ไม่ผ่าน"
+              value={stats.rejected}
+              tone="#b42318"
+            />
           </Grid>
         </Grid>
 

@@ -6,6 +6,7 @@ import { NextResponse } from 'next/server';
 
 import provinces from 'src/data/thailand-culture/provinces';
 import { getSupabaseAdmin } from 'src/server/supabase-admin';
+import { getCultureCategoryLabel } from 'src/lib/culture-categories';
 
 const PLACES_TABLE = process.env.CULTURAL_PLACES_TABLE ?? 'cultural_places';
 const OVERRIDES_TABLE = process.env.CULTURAL_PLACE_OVERRIDES_TABLE ?? 'cultural_place_overrides';
@@ -14,22 +15,6 @@ const QUERY_BATCH_SIZE = 1000;
 const MAX_QUERY_ROWS = 50000;
 const DEFAULT_LIMIT = 16;
 const MAX_LIMIT = 100;
-
-const DEFAULT_CATEGORY_LABELS: Record<string, string> = {
-  community_wisdom: 'ภูมิปัญญาชุมชน',
-  craftsmanship: 'งานช่างฝีมือ',
-  cultural_attraction: 'แหล่งท่องเที่ยวทางวัฒนธรรม',
-  folk_art: 'ศิลปะพื้นบ้าน',
-  learning_center: 'แหล่งเรียนรู้',
-  local_food: 'อาหารพื้นบ้าน',
-  local_tradition: 'ประเพณีท้องถิ่น',
-  moral_community: 'ชุมชนคุณธรรม',
-  museum: 'พิพิธภัณฑ์',
-  performing_art: 'ศิลปะการแสดง',
-  ritual: 'พิธีกรรม',
-  temple: 'ศาสนสถาน',
-  tourist_attraction: 'สถานที่ท่องเที่ยว',
-};
 
 type CulturalPlaceRow = {
   id: string;
@@ -187,10 +172,6 @@ function mapEthnicGroupRow(row: EthnicGroupRow): (CulturalPlace & { provinceCode
     mapUrl: `https://www.google.com/maps/search/?api=1&query=${row.lat},${row.lng}`,
     source: 'ethnic_groups',
   };
-}
-
-function getCategoryLabel(categoryKey: string) {
-  return DEFAULT_CATEGORY_LABELS[categoryKey] ?? categoryKey;
 }
 
 function getPositiveInteger(value: string | null, fallback: number, maxValue?: number) {
@@ -399,7 +380,7 @@ export async function GET(request: NextRequest) {
     category: categoryKey
       ? {
           key: categoryKey,
-          label: getCategoryLabel(categoryKey),
+          label: getCultureCategoryLabel(categoryKey),
         }
       : null,
     total: places.length,

@@ -26,8 +26,15 @@ function base64UrlEncode(value: string) {
   return Buffer.from(value).toString('base64url');
 }
 
-function getAdminSecret() {
-  return process.env.ADMIN_AUTH_SECRET ?? process.env.NEXTAUTH_SECRET ?? '';
+export function getAdminSecret() {
+  return (
+    process.env.ADMIN_AUTH_SECRET ??
+    process.env.NEXTAUTH_SECRET ??
+    process.env.AUTH_SECRET ??
+    process.env.SUPABASE_JWT_SECRET ??
+    process.env.SUPABASE_SECRET_KEY ??
+    ''
+  );
 }
 
 export function hasAdminAuthConfig() {
@@ -38,7 +45,7 @@ export function createAdminToken(userId: string, role?: string | null) {
   const secret = getAdminSecret();
 
   if (!secret) {
-    return { ok: false as const, error: 'Missing ADMIN_AUTH_SECRET or NEXTAUTH_SECRET' };
+    return { ok: false as const, error: 'Missing server auth secret' };
   }
 
   const payload: AdminTokenPayload = {

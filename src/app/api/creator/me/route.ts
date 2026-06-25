@@ -12,6 +12,17 @@ import {
 
 export const runtime = 'nodejs';
 
+const CREATOR_PROFILE_SELECT =
+  'id, user_id, email, display_name, bio, phone, province_code, website_url, facebook_url, avatar_url, status, warning_note, warned_at, reviewed_at, reject_reason, created_at, updated_at';
+const LEGACY_CREATOR_PROFILE_SELECT =
+  'id, user_id, email, display_name, bio, phone, province_code, website_url, facebook_url, avatar_url, status, reviewed_at, reject_reason, created_at, updated_at';
+
+function isMissingCreatorWarningColumn(error: { message?: string; details?: string; hint?: string } | null) {
+  const text = [error?.message, error?.details, error?.hint].filter(Boolean).join(' ');
+
+  return text.includes('warning_note') || text.includes('warned_at');
+}
+
 export async function GET(request: NextRequest) {
   const auth = await verifyCreatorAccessToken(getBearerToken(request.headers));
 
@@ -48,7 +59,7 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ message: 'Display name is required' }, { status: 400 });
   }
 
-  const { data, error } = await auth.supabase
+  const updateResult = await auth.supabase
     .from('creator_profiles')
     .update({
       display_name: displayName,
@@ -59,10 +70,29 @@ export async function PATCH(request: NextRequest) {
       avatar_url: cleanText(body.avatarUrl),
     })
     .eq('id', profileResult.profile.id)
-    .select(
-      'id, user_id, email, display_name, bio, phone, province_code, website_url, facebook_url, avatar_url, status, reviewed_at, reject_reason, created_at, updated_at'
-    )
+    .select(CREATOR_PROFILE_SELECT)
     .single();
+  let data = updateResult.data as any;
+  let error = updateResult.error;
+
+  if (error && isMissingCreatorWarningColumn(error)) {
+    const legacyResult = await auth.supabase
+      .from('creator_profiles')
+      .update({
+        display_name: displayName,
+        bio: cleanText(body.bio),
+        phone: cleanText(body.phone),
+        website_url: cleanText(body.websiteUrl),
+        facebook_url: cleanText(body.facebookUrl),
+        avatar_url: cleanText(body.avatarUrl),
+      })
+      .eq('id', profileResult.profile.id)
+      .select(LEGACY_CREATOR_PROFILE_SELECT)
+      .single();
+
+    data = legacyResult.data;
+    error = legacyResult.error;
+  }
 
   if (error) {
     return NextResponse.json({ message: error.message }, { status: 500 });

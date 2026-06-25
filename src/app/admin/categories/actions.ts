@@ -4,6 +4,11 @@ import type { CategoryRow, CategoryFormInput } from './types';
 
 import { getSupabaseAdmin } from 'src/server/supabase-admin';
 import { verifyAdminAccessToken } from 'src/server/admin-api-auth';
+import {
+  getCultureCategoryLabel,
+  SYSTEM_CULTURE_CATEGORIES,
+  getCultureCategoryHashColor,
+} from 'src/lib/culture-categories';
 
 import { ADMIN_PERMISSION } from 'src/auth/admin-permissions';
 
@@ -95,27 +100,16 @@ function toCategoryRow(row: PlaceSubCategoryRow): CategoryRow {
 }
 
 function getSystemCategoryRows(): CategoryRow[] {
-  return [];
-}
-
-const CULTURE_CATEGORY_LABELS: Record<string, string> = {
-  community_wisdom: 'ภูมิปัญญาชุมชน',
-  craftsmanship: 'งานช่างฝีมือ',
-  cultural_attraction: 'แหล่งท่องเที่ยวทางวัฒนธรรม',
-  folk_art: 'ศิลปะพื้นบ้าน',
-  learning_center: 'แหล่งเรียนรู้',
-  local_food: 'อาหารพื้นบ้าน',
-  local_tradition: 'ประเพณีท้องถิ่น',
-  moral_community: 'ชุมชนคุณธรรม',
-  museum: 'พิพิธภัณฑ์',
-  performing_art: 'ศิลปะการแสดง',
-  ritual: 'พิธีกรรม',
-  temple: 'ศาสนสถาน',
-  tourist_attraction: 'สถานที่ท่องเที่ยว',
-};
-
-function getCultureCategoryLabel(categoryKey: string) {
-  return CULTURE_CATEGORY_LABELS[categoryKey] ?? categoryKey;
+  return SYSTEM_CULTURE_CATEGORIES.map((category, index) => ({
+    category_key: category.key,
+    label: category.label,
+    color: getCultureCategoryHashColor(category.key),
+    sort_order: index,
+    is_active: true,
+    source: 'culture_category',
+    source_label: 'หมวดวัฒนธรรมของระบบ',
+    editable: false,
+  }));
 }
 
 function getHashColor(value: string) {

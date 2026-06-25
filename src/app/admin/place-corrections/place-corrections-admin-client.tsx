@@ -12,6 +12,7 @@ import Button from '@mui/material/Button';
 import Drawer from '@mui/material/Drawer';
 import Divider from '@mui/material/Divider';
 import TableRow from '@mui/material/TableRow';
+import MenuItem from '@mui/material/MenuItem';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TextField from '@mui/material/TextField';
@@ -23,7 +24,7 @@ import { fDateTime } from 'src/utils/format-time';
 import { DashboardContent } from 'src/layouts/dashboard';
 import { AdminApiError, adminApiRequest } from 'src/lib/admin-api';
 
-import { TableNoData, TableHeadCustom } from 'src/components/table';
+import { TableNoData, TableHeadCustom, TablePaginationCustom } from 'src/components/table';
 
 import { useAuthContext } from 'src/auth/hooks';
 
@@ -59,6 +60,13 @@ const TABLE_HEAD = [
   { id: 'actions', label: '', width: 180 },
 ];
 
+const STATUS_OPTIONS: Array<{ value: 'all' | PlaceCorrection['status']; label: string }> = [
+  { value: 'all', label: 'ทุกสถานะ' },
+  { value: 'pending', label: 'รอตรวจ' },
+  { value: 'approved', label: 'อนุมัติแล้ว' },
+  { value: 'rejected', label: 'ไม่อนุมัติ' },
+];
+
 function getStatusColor(status: PlaceCorrection['status']) {
   if (status === 'approved') return 'success';
   if (status === 'rejected') return 'error';
@@ -78,7 +86,7 @@ function getPayloadEntries(payload: Record<string, unknown>) {
     lat: 'Latitude',
     lng: 'Longitude',
     mapUrl: 'Map URL',
-    imageUrl: 'Image URL',
+    imageUrl: 'ภาพปก',
     description: 'คำอธิบาย',
     detail: 'รายละเอียด',
   };
@@ -120,6 +128,10 @@ export function AdminPlaceCorrectionsClient() {
   const [items, setItems] = useState<PlaceCorrection[]>([]);
   const [selected, setSelected] = useState<PlaceCorrection | null>(null);
   const [reviewNote, setReviewNote] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'all' | PlaceCorrection['status']>('all');
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -142,6 +154,39 @@ export function AdminPlaceCorrectionsClient() {
         getTimeValue(secondItem.createdAt) - getTimeValue(firstItem.createdAt)
     );
   }, [items]);
+
+  const filteredItems = useMemo(() => {
+    const normalizedQuery = searchQuery.trim().toLowerCase();
+
+    return latestItems.filter((item) => {
+      if (statusFilter !== 'all' && item.status !== statusFilter) {
+        return false;
+      }
+
+      if (!normalizedQuery) {
+        return true;
+      }
+
+      return [
+        item.placeName,
+        item.placeId,
+        item.provinceCode,
+        item.requesterName,
+        item.requesterEmail,
+        item.reason,
+        getPayloadSummary(item.suggestedPayload),
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase()
+        .includes(normalizedQuery);
+    });
+  }, [latestItems, searchQuery, statusFilter]);
+
+  const paginatedItems = useMemo(
+    () => filteredItems.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
+    [filteredItems, page, rowsPerPage]
+  );
 
   const selectedLogs = useMemo(() => {
     if (!selected) {
@@ -186,6 +231,14 @@ export function AdminPlaceCorrectionsClient() {
     loadItems();
   }, [loadItems]);
 
+  useEffect(() => {
+    const maxPage = Math.max(Math.ceil(filteredItems.length / rowsPerPage) - 1, 0);
+
+    if (page > maxPage) {
+      setPage(maxPage);
+    }
+  }, [filteredItems.length, page, rowsPerPage]);
+
   const reviewCorrection = async (status: 'approved' | 'rejected') => {
     if (!selected) return;
 
@@ -220,7 +273,7 @@ export function AdminPlaceCorrectionsClient() {
         <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" spacing={2}>
           <Box>
             <Typography variant="h3" sx={{ fontWeight: 900 }}>
-              Place Correction Requests
+              จัดการคำขอแก้ไขข้อมูล
             </Typography>
             <Typography sx={{ mt: 0.5, color: 'text.secondary' }}>
               ตรวจคำขอแก้ไขข้อมูลสถานที่จากผู้ใช้ก่อนนำไปอัปเดตเป็น override
@@ -235,14 +288,57 @@ export function AdminPlaceCorrectionsClient() {
         {message && <Alert severity="success">{message}</Alert>}
         {isLoading && <Alert severity="info">กำลังโหลดคำขอ...</Alert>}
 
+        <Card sx={{ p: 2.5 }}>
+          <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+            <TextField
+              fullWidth
+              label="ค้นหาคำขอแก้ไข"
+              placeholder="สถานที่, ผู้ขอแก้, จังหวัด, รายละเอียด"
+              value={searchQuery}
+              onChange={(event) => {
+                setSearchQuery(event.target.value);
+                setPage(0);
+              }}
+            />
+            <TextField
+              select
+              fullWidth
+              label="สถานะ"
+              value={statusFilter}
+              onChange={(event) => {
+                setStatusFilter(event.target.value as 'all' | PlaceCorrection['status']);
+                setPage(0);
+              }}
+              sx={{ maxWidth: { md: 220 } }}
+            >
+              {STATUS_OPTIONS.map((option) => (
+                <MenuItem key={option.value} value={option.value}>
+                  {option.label}
+                </MenuItem>
+              ))}
+            </TextField>
+          </Stack>
+          <Typography sx={{ mt: 1.5, color: 'text.secondary', fontSize: 13 }}>
+            แสดง {filteredItems.length.toLocaleString('th-TH')} จาก{' '}
+            {latestItems.length.toLocaleString('th-TH')} สถานที่ล่าสุด
+          </Typography>
+        </Card>
+
         <Card>
           <TableContainer sx={{ overflow: 'auto' }}>
             <Table sx={{ minWidth: 980 }}>
               <TableHeadCustom headCells={TABLE_HEAD} />
               <TableBody>
-                {latestItems.map((item) => (
+                {paginatedItems.map((item) => (
                   <TableRow key={item.id} hover>
-                    <TableCell sx={{ whiteSpace: 'nowrap' }}>{fDateTime(item.createdAt)}</TableCell>
+                    <TableCell sx={{ whiteSpace: 'nowrap' }}>
+                      <Typography variant="subtitle2">
+                        {fDateTime(item.createdAt, 'YYYY/MM/DD')}
+                      </Typography>
+                      <Typography variant="caption">
+                        {fDateTime(item.createdAt, 'HH:MM:ss')}
+                      </Typography>
+                    </TableCell>
                     <TableCell>
                       <Typography sx={{ fontWeight: 800 }}>{item.placeName}</Typography>
                       <Typography sx={{ color: 'text.secondary', fontSize: 13 }}>
@@ -276,10 +372,23 @@ export function AdminPlaceCorrectionsClient() {
                     </TableCell>
                   </TableRow>
                 ))}
-                <TableNoData notFound={!latestItems.length && !isLoading} />
+                <TableNoData notFound={!filteredItems.length && !isLoading} />
               </TableBody>
             </Table>
           </TableContainer>
+
+          <TablePaginationCustom
+            page={page}
+            count={filteredItems.length}
+            rowsPerPage={rowsPerPage}
+            labelRowsPerPage="Page size:"
+            rowsPerPageOptions={[5, 10, 25, 50]}
+            onPageChange={(_, newPage) => setPage(newPage)}
+            onRowsPerPageChange={(event) => {
+              setRowsPerPage(Number(event.target.value));
+              setPage(0);
+            }}
+          />
         </Card>
       </Stack>
 
@@ -304,7 +413,8 @@ export function AdminPlaceCorrectionsClient() {
             />
             {selectedLogs.length > 1 && (
               <Alert severity="info">
-                มีคำขอแก้ไขสถานที่นี้ทั้งหมด {selectedLogs.length} ครั้ง ตารางแสดงรายการล่าสุดไว้แล้ว
+                มีคำขอแก้ไขสถานที่นี้ทั้งหมด {selectedLogs.length} ครั้ง
+                ตารางแสดงรายการล่าสุดไว้แล้ว
               </Alert>
             )}
             {selected.reason && <Alert severity="info">{selected.reason}</Alert>}
@@ -369,7 +479,10 @@ export function AdminPlaceCorrectionsClient() {
                               zIndex: 1,
                               borderRadius: '50%',
                               position: 'absolute',
-                              bgcolor: theme.palette[getStatusColor(logItem.status) as 'success' | 'error' | 'warning'].main,
+                              bgcolor:
+                                theme.palette[
+                                  getStatusColor(logItem.status) as 'success' | 'error' | 'warning'
+                                ].main,
                               border: '3px solid',
                               borderColor: 'background.paper',
                               boxShadow: `0 0 0 1px ${theme.palette.divider}`,
@@ -397,7 +510,9 @@ export function AdminPlaceCorrectionsClient() {
                           >
                             <Stack spacing={1.1}>
                               <Stack direction="row" alignItems="center" spacing={1}>
-                                <Typography sx={{ minWidth: 92, color: 'text.secondary', fontSize: 13 }}>
+                                <Typography
+                                  sx={{ minWidth: 92, color: 'text.secondary', fontSize: 13 }}
+                                >
                                   Submitted by
                                 </Typography>
                                 <Typography sx={{ fontWeight: 800, fontSize: 13 }}>
@@ -405,7 +520,9 @@ export function AdminPlaceCorrectionsClient() {
                                 </Typography>
                               </Stack>
                               <Stack direction="row" alignItems="center" spacing={1}>
-                                <Typography sx={{ minWidth: 92, color: 'text.secondary', fontSize: 13 }}>
+                                <Typography
+                                  sx={{ minWidth: 92, color: 'text.secondary', fontSize: 13 }}
+                                >
                                   Status
                                 </Typography>
                                 <Chip
@@ -415,7 +532,9 @@ export function AdminPlaceCorrectionsClient() {
                                 />
                               </Stack>
                               <Stack direction="row" alignItems="flex-start" spacing={1}>
-                                <Typography sx={{ minWidth: 92, color: 'text.secondary', fontSize: 13 }}>
+                                <Typography
+                                  sx={{ minWidth: 92, color: 'text.secondary', fontSize: 13 }}
+                                >
                                   Context
                                 </Typography>
                                 <Typography sx={{ fontSize: 13, lineHeight: 1.55 }}>
@@ -424,7 +543,9 @@ export function AdminPlaceCorrectionsClient() {
                               </Stack>
                               {logItem.reviewNote && (
                                 <Stack direction="row" alignItems="flex-start" spacing={1}>
-                                  <Typography sx={{ minWidth: 92, color: 'text.secondary', fontSize: 13 }}>
+                                  <Typography
+                                    sx={{ minWidth: 92, color: 'text.secondary', fontSize: 13 }}
+                                  >
                                     Note
                                   </Typography>
                                   <Typography sx={{ fontSize: 13, lineHeight: 1.55 }}>

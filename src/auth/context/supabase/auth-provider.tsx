@@ -26,12 +26,15 @@ type Props = {
   children: React.ReactNode;
 };
 
-function normalizeAuthUser(session: Awaited<ReturnType<typeof supabase.auth.getSession>>['data']['session']) {
+function normalizeAuthUser(
+  session: Awaited<ReturnType<typeof supabase.auth.getSession>>['data']['session'],
+  authUser = session?.user
+) {
   if (!session?.user) {
     return null;
   }
 
-  const { user } = session;
+  const user = authUser ?? session.user;
   const userMetadata = user.user_metadata ?? {};
   const appMetadata = user.app_metadata ?? {};
   const displayName =
@@ -140,9 +143,13 @@ export function AuthProvider({ children }: Props) {
 
       if (session) {
         const accessToken = session?.access_token;
+        const { data: userResult, error: userError } = await supabase.auth.getUser(accessToken);
 
         setAdminAnalyticsDisabled(true);
-        setState({ user: normalizeAuthUser(session), loading: false });
+        setState({
+          user: normalizeAuthUser(session, userError ? session.user : userResult.user),
+          loading: false,
+        });
         axios.defaults.headers.common.Authorization = `Bearer ${accessToken}`;
       } else {
         const creatorUser = await getCreatorTableSession();

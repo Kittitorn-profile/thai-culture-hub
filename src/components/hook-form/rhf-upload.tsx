@@ -28,7 +28,7 @@ export function RHFUploadAvatar({ name, slotProps, ...other }: RHFUploadProps) {
         const onDrop = (acceptedFiles: File[]) => {
           const value = acceptedFiles[0];
 
-          setValue(name, value, { shouldValidate: true });
+          setValue(name, value, { shouldValidate: true, shouldDirty: true });
         };
 
         return (
@@ -78,7 +78,7 @@ export function RHFUpload({ name, multiple, helperText, ...other }: RHFUploadPro
         const onDrop = (acceptedFiles: File[]) => {
           const value = multiple ? [...field.value, ...acceptedFiles] : acceptedFiles[0];
 
-          setValue(name, value, { shouldValidate: true });
+          setValue(name, value, { shouldValidate: true, shouldDirty: true });
         };
 
         return <Upload {...uploadProps} value={field.value} onDrop={onDrop} {...other} />;

@@ -3,9 +3,15 @@ import type { User } from '@supabase/supabase-js';
 import crypto from 'node:crypto';
 
 import { getSupabaseAdmin } from './supabase-admin';
+import { getAdminSecret } from './admin-api-auth';
 
 export type CreatorStatus = 'pending' | 'approved' | 'rejected';
 export type CreatorArticleStatus = 'draft' | 'pending_review' | 'approved' | 'rejected' | 'published';
+
+const CREATOR_PROFILE_SELECT =
+  'id, user_id, email, display_name, bio, phone, province_code, website_url, facebook_url, avatar_url, status, warning_note, warned_at, reviewed_at, reject_reason, created_at, updated_at';
+const LEGACY_CREATOR_PROFILE_SELECT =
+  'id, user_id, email, display_name, bio, phone, province_code, website_url, facebook_url, avatar_url, status, reviewed_at, reject_reason, created_at, updated_at';
 
 export type CreatorProfileRow = {
   id: string;
@@ -19,10 +25,13 @@ export type CreatorProfileRow = {
   facebook_url: string | null;
   avatar_url: string | null;
   status: CreatorStatus;
+  warning_note?: string | null;
+  warned_at?: string | null;
   reviewed_at: string | null;
   reject_reason: string | null;
   created_at: string;
   updated_at: string;
+  is_active?: boolean | null;
 };
 
 export type CreatorArticleRow = {
@@ -36,13 +45,20 @@ export type CreatorArticleRow = {
   cover_image_url: string | null;
   content_html: string;
   status: CreatorArticleStatus;
+  is_active?: boolean | null;
+  inactive_reason?: string | null;
+  inactivated_at?: string | null;
+  approval_required_count?: number | null;
+  approval_reviewer_ids?: string[] | null;
+  approval_reviews?: unknown;
+  approval_requested_at?: string | null;
   submitted_at: string | null;
   reviewed_at: string | null;
   reject_reason: string | null;
   published_at: string | null;
   created_at: string;
   updated_at: string;
-  creator_profiles?: Pick<CreatorProfileRow, 'display_name' | 'email'> | null;
+  creator_profiles?: Pick<CreatorProfileRow, 'display_name' | 'email' | 'avatar_url'> | null;
 };
 
 export function getBearerToken(headers: Headers) {
@@ -51,6 +67,12 @@ export function getBearerToken(headers: Headers) {
 
 export function cleanText(value: unknown) {
   return typeof value === 'string' ? value.trim() : '';
+}
+
+function isMissingCreatorWarningColumn(error: { message?: string; details?: string; hint?: string } | null) {
+  const text = [error?.message, error?.details, error?.hint].filter(Boolean).join(' ');
+
+  return text.includes('warning_note') || text.includes('warned_at');
 }
 
 export function slugify(value: string) {
@@ -76,7 +98,7 @@ function safeCompare(value: string, expectedValue: string) {
 }
 
 function verifyCreatorTableToken(accessToken: string) {
-  const secret = process.env.ADMIN_AUTH_SECRET ?? process.env.NEXTAUTH_SECRET ?? '';
+  const secret = getAdminSecret();
   const [body, signature] = accessToken.split('.');
 
   if (!secret || !body || !signature) {
@@ -119,6 +141,9 @@ export function mapCreatorProfile(row: CreatorProfileRow) {
     facebookUrl: row.facebook_url ?? '',
     avatarUrl: row.avatar_url ?? '',
     status: row.status,
+    isActive: row.is_active !== false,
+    warningNote: row.warning_note ?? '',
+    warnedAt: row.warned_at ?? '',
     reviewedAt: row.reviewed_at ?? '',
     rejectReason: row.reject_reason ?? '',
     createdAt: row.created_at,
@@ -127,6 +152,9 @@ export function mapCreatorProfile(row: CreatorProfileRow) {
 }
 
 export function mapCreatorArticle(row: CreatorArticleRow) {
+  const status = row.status === 'approved' ? 'published' : row.status;
+  const approvalReviews = Array.isArray(row.approval_reviews) ? row.approval_reviews : [];
+
   return {
     id: row.id,
     creatorId: row.creator_id,
@@ -137,7 +165,14 @@ export function mapCreatorArticle(row: CreatorArticleRow) {
     excerpt: row.excerpt ?? '',
     coverImageUrl: row.cover_image_url ?? '',
     contentHtml: row.content_html ?? '',
-    status: row.status,
+    status,
+    isActive: row.is_active !== false,
+    inactiveReason: row.inactive_reason ?? '',
+    inactivatedAt: row.inactivated_at ?? '',
+    approvalRequiredCount: row.approval_required_count ?? 1,
+    approvalReviewerIds: Array.isArray(row.approval_reviewer_ids) ? row.approval_reviewer_ids : [],
+    approvalReviews,
+    approvalRequestedAt: row.approval_requested_at ?? '',
     submittedAt: row.submitted_at ?? '',
     reviewedAt: row.reviewed_at ?? '',
     rejectReason: row.reject_reason ?? '',
@@ -146,6 +181,7 @@ export function mapCreatorArticle(row: CreatorArticleRow) {
     updatedAt: row.updated_at,
     creatorName: row.creator_profiles?.display_name ?? '',
     creatorEmail: row.creator_profiles?.email ?? '',
+    creatorAvatarUrl: row.creator_profiles?.avatar_url ?? '',
   };
 }
 
@@ -191,13 +227,24 @@ export async function getCreatorProfileByUserId(userId: string) {
     return { ok: false as const, status: 500, message: supabase.error };
   }
 
-  const { data, error } = await supabase.client
+  const profileResult = await supabase.client
     .from('creator_profiles')
-    .select(
-      'id, user_id, email, display_name, bio, phone, province_code, website_url, facebook_url, avatar_url, status, reviewed_at, reject_reason, created_at, updated_at'
-    )
+    .select(CREATOR_PROFILE_SELECT)
     .eq('user_id', userId)
     .maybeSingle();
+  let data = profileResult.data as any;
+  let error = profileResult.error;
+
+  if (error && isMissingCreatorWarningColumn(error)) {
+    const legacyResult = await supabase.client
+      .from('creator_profiles')
+      .select(LEGACY_CREATOR_PROFILE_SELECT)
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    data = legacyResult.data;
+    error = legacyResult.error;
+  }
 
   if (error) {
     return { ok: false as const, status: 500, message: error.message };
@@ -207,5 +254,17 @@ export async function getCreatorProfileByUserId(userId: string) {
     return { ok: false as const, status: 404, message: 'Creator profile not found' };
   }
 
-  return { ok: true as const, profile: data as CreatorProfileRow };
+  const { data: userRow } = await supabase.client
+    .from('user')
+    .select('is_active')
+    .eq('id', userId)
+    .maybeSingle();
+
+  return {
+    ok: true as const,
+    profile: {
+      ...(data as CreatorProfileRow),
+      is_active: (userRow as { is_active?: boolean | null } | null)?.is_active ?? true,
+    },
+  };
 }

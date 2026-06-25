@@ -265,7 +265,7 @@ export default function LocalWisdomContentPage() {
                   gap: 3,
                   display: 'grid',
                   alignItems: 'center',
-                  gridTemplateColumns: { xs: '1fr', md: '0.9fr 1.1fr' },
+                  gridTemplateColumns: { xs: '1fr', md: '1fr' },
                   position: 'relative',
                 }}
               >
