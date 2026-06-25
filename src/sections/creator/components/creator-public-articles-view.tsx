@@ -283,7 +283,7 @@ export function CreatorPublicArticlesView({
           </Stack>
           <Stack direction="row">
             <Box mr={2}>
-              {creator.awards?.length ? (
+              {creator.awards?.length && (
                 <Stack spacing={1} sx={{ mt: 1 }}>
                   {creator.awards.map((award) => (
                     <Stack
@@ -338,10 +338,6 @@ export function CreatorPublicArticlesView({
                     </Stack>
                   ))}
                 </Stack>
-              ) : (
-                <Typography sx={{ mt: 0.75, color: 'rgba(42,55,54,0.52)', fontSize: 12 }}>
-                  ยังไม่มี badge ที่แสดง
-                </Typography>
               )}
             </Box>
 

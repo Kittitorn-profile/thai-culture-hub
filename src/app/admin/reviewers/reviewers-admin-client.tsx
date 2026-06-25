@@ -217,7 +217,10 @@ function getOptionLabel(value: string, options: MasterOption[]) {
 }
 
 function formatValues(values: string[], options: MasterOption[]) {
-  return values.map((value) => getOptionLabel(value, options)).filter(Boolean).join(', ');
+  return values
+    .map((value) => getOptionLabel(value, options))
+    .filter(Boolean)
+    .join(', ');
 }
 
 function getSelectedOptions(value: string, options: MasterOption[]) {
@@ -289,7 +292,8 @@ export function AdminReviewersClient() {
     () => items.find((item) => item.userId === form.userId) ?? null,
     [form.userId, items]
   );
-  const formAvatarUrl = selectedReviewer?.avatarUrl ?? selectedAvailableUser?.photoUrl ?? form.avatarUrl;
+  const formAvatarUrl =
+    selectedReviewer?.avatarUrl ?? selectedAvailableUser?.photoUrl ?? form.avatarUrl;
   const formAvatarName =
     form.displayName ||
     selectedReviewer?.displayName ||
@@ -512,7 +516,11 @@ export function AdminReviewersClient() {
             </Typography>
           </Box>
 
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
+          <Stack
+            direction={{ xs: 'column', sm: 'row' }}
+            spacing={1.5}
+            sx={{ alignSelf: { md: 'flex-start' } }}
+          >
             <Button variant="outlined" onClick={loadItems} disabled={isLoading}>
               รีเฟรช
             </Button>
@@ -613,7 +621,11 @@ export function AdminReviewersClient() {
                           color={statusColor(reviewer.reviewerStatus)}
                           variant="soft"
                         />
-                        <Chip size="small" label={getLevelLabel(reviewer.reviewerLevel)} variant="outlined" />
+                        <Chip
+                          size="small"
+                          label={getLevelLabel(reviewer.reviewerLevel)}
+                          variant="outlined"
+                        />
                       </Stack>
                     </TableCell>
 
@@ -631,8 +643,12 @@ export function AdminReviewersClient() {
 
                     <TableCell>
                       <Stack direction="row" spacing={0.75} flexWrap="wrap" useFlexGap>
-                        {reviewer.canApprove && <Chip size="small" label="อนุมัติได้" variant="soft" />}
-                        {reviewer.canPublish && <Chip size="small" label="เผยแพร่ได้" variant="soft" />}
+                        {reviewer.canApprove && (
+                          <Chip size="small" label="อนุมัติได้" variant="soft" />
+                        )}
+                        {reviewer.canPublish && (
+                          <Chip size="small" label="เผยแพร่ได้" variant="soft" />
+                        )}
                         {!reviewer.canApprove && !reviewer.canPublish && (
                           <Typography sx={{ color: 'text.secondary', fontSize: 13 }}>-</Typography>
                         )}
@@ -645,7 +661,11 @@ export function AdminReviewersClient() {
 
                     <TableCell align="right">
                       <Stack direction="row" spacing={1} justifyContent="flex-end">
-                        <Button size="small" variant="outlined" onClick={() => openEditDrawer(reviewer)}>
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          onClick={() => openEditDrawer(reviewer)}
+                        >
                           แก้ไข
                         </Button>
                         <LoadingButton
@@ -664,7 +684,9 @@ export function AdminReviewersClient() {
                           size="small"
                           color="error"
                           variant="outlined"
-                          loading={activeAction?.id === reviewer.id && activeAction.type === 'delete'}
+                          loading={
+                            activeAction?.id === reviewer.id && activeAction.type === 'delete'
+                          }
                           onClick={() => deleteReviewer(reviewer)}
                         >
                           ลบ

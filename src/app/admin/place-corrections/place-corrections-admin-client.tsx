@@ -279,9 +279,15 @@ export function AdminPlaceCorrectionsClient() {
               ตรวจคำขอแก้ไขข้อมูลสถานที่จากผู้ใช้ก่อนนำไปอัปเดตเป็น override
             </Typography>
           </Box>
-          <Button variant="outlined" onClick={loadItems} disabled={isLoading}>
-            Refresh
-          </Button>
+          <Stack
+            direction={{ xs: 'column', sm: 'row' }}
+            spacing={1.5}
+            sx={{ alignSelf: { md: 'flex-start' } }}
+          >
+            <Button size="medium" variant="outlined" onClick={loadItems} disabled={isLoading}>
+              Refresh
+            </Button>
+          </Stack>
         </Stack>
 
         {error && <Alert severity="error">{error}</Alert>}

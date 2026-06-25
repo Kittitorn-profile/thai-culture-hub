@@ -63,8 +63,7 @@ const DEFAULT_STORY_CONTENT: HomeStoryContent = {
   eyebrow: 'เปิดดูรายละเอียด',
   title: 'เรื่องเล่า ภาพ และสื่อประกอบ',
   actionLabel: 'เปิดดูรายละเอียด',
-  body:
-    'รายการวัฒนธรรมไม่ได้มีแค่ชื่อและพิกัด แต่ยังมีคำอธิบาย ไฮไลต์ หมวดหมู่ และลิงก์แหล่งข้อมูลต้นทาง เพื่อให้การสำรวจบนหน้าเว็บต่อยอดไปสู่การเรียนรู้จริงได้',
+  body: 'รายการวัฒนธรรมไม่ได้มีแค่ชื่อและพิกัด แต่ยังมีคำอธิบาย ไฮไลต์ หมวดหมู่ และลิงก์แหล่งข้อมูลต้นทาง เพื่อให้การสำรวจบนหน้าเว็บต่อยอดไปสู่การเรียนรู้จริงได้',
 };
 
 const DEFAULT_MEDIA_ITEMS: HomeMediaItem[] = [
@@ -268,7 +267,11 @@ export default function HomeContentAdminPage() {
             </Typography>
           </Box>
 
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
+          <Stack
+            direction={{ xs: 'column', sm: 'row' }}
+            spacing={1.5}
+            sx={{ alignSelf: { md: 'flex-start' } }}
+          >
             <Button color="inherit" variant="outlined" onClick={handleReset}>
               คืนค่าเริ่มต้น
             </Button>
@@ -297,87 +300,6 @@ export default function HomeContentAdminPage() {
         </Alert>
 
         {contentQuery.isLoading && <Alert severity="info">กำลังโหลดข้อมูลจาก database...</Alert>}
-
-        <Card sx={{ p: 2.5 }}>
-          <Stack
-            direction={{ xs: 'column', md: 'row' }}
-            alignItems={{ md: 'center' }}
-            justifyContent="space-between"
-            spacing={2}
-          >
-            <Box>
-              <Typography variant="h5" sx={{ fontWeight: 900 }}>
-                ข้อมูลพื้นที่และภูมิปัญญาท้องถิ่น
-              </Typography>
-              <Typography sx={{ mt: 0.5, color: 'text.secondary', fontSize: 13 }}>
-                แก้ section ก่อนหน้าเรื่องเล่า ที่มีกล่องสื่อและข้อความภูมิปัญญาท้องถิ่น
-              </Typography>
-            </Box>
-
-            <Button
-              component="a"
-              href="/admin/home-content/local-wisdom"
-              variant="outlined"
-              endIcon={<Iconify icon="solar:pen-bold" />}
-            >
-              แก้ section นี้
-            </Button>
-          </Stack>
-        </Card>
-
-        <Card sx={{ p: 2.5 }}>
-          <Stack
-            direction={{ xs: 'column', md: 'row' }}
-            alignItems={{ md: 'center' }}
-            justifyContent="space-between"
-            spacing={2}
-          >
-            <Box>
-              <Typography variant="h5" sx={{ fontWeight: 900 }}>
-                กิจกรรมที่จะจัดขึ้น
-              </Typography>
-              <Typography sx={{ mt: 0.5, color: 'text.secondary', fontSize: 13 }}>
-                จัดการ event ที่แสดงบนหน้า home-view ผ่าน database table events
-              </Typography>
-            </Box>
-
-            <Button
-              component="a"
-              href="/admin/home-content/events"
-              variant="outlined"
-              endIcon={<Iconify icon="solar:pen-bold" />}
-            >
-              แก้ section นี้
-            </Button>
-          </Stack>
-        </Card>
-
-        <Card sx={{ p: 2.5 }}>
-          <Stack
-            direction={{ xs: 'column', md: 'row' }}
-            alignItems={{ md: 'center' }}
-            justifyContent="space-between"
-            spacing={2}
-          >
-            <Box>
-              <Typography variant="h5" sx={{ fontWeight: 900 }}>
-                สำรวจวัฒนธรรมไทยผ่านหมวดข้อมูล
-              </Typography>
-              <Typography sx={{ mt: 0.5, color: 'text.secondary', fontSize: 13 }}>
-                แก้ section การ์ดหมวดข้อมูล 8 ใบ พร้อมรูป ไอคอน สี และคำอธิบาย
-              </Typography>
-            </Box>
-
-            <Button
-              component="a"
-              href="/admin/home-content/culture-categories"
-              variant="outlined"
-              endIcon={<Iconify icon="solar:pen-bold" />}
-            >
-              แก้ section นี้
-            </Button>
-          </Stack>
-        </Card>
 
         <Box
           sx={{
@@ -584,7 +506,6 @@ export default function HomeContentAdminPage() {
             )}
           </Box>
         </Card>
-
       </Stack>
 
       <Drawer
@@ -615,9 +536,7 @@ export default function HomeContentAdminPage() {
                 fullWidth
                 label="ชื่อรายการ"
                 value={editingItem.title}
-                onChange={(event) =>
-                  setEditingItem({ ...editingItem, title: event.target.value })
-                }
+                onChange={(event) => setEditingItem({ ...editingItem, title: event.target.value })}
               />
 
               <TextField
@@ -712,7 +631,6 @@ export default function HomeContentAdminPage() {
           </Stack>
         )}
       </Drawer>
-
     </DashboardContent>
   );
 }

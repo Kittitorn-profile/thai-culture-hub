@@ -20,8 +20,8 @@ import { getCreatorProfile } from 'src/sections/creator/creator-api';
 import { useAuthContext } from 'src/auth/hooks';
 import { isCreatorUser } from 'src/auth/utils/role-redirect';
 
-import { _account } from '../nav-config-account';
 import { AccountPopover } from '../components/account-popover';
+import { _account, _accountCreator } from '../nav-config-account';
 
 // ----------------------------------------------------------------------
 
@@ -108,6 +108,8 @@ export function CultureHeader({ pathname }: CultureHeaderProps) {
     };
   }, [loadCreatorProfile]);
 
+  console.log('user?.role', user?.role);
+
   return (
     <Box
       sx={{
@@ -185,7 +187,10 @@ export function CultureHeader({ pathname }: CultureHeaderProps) {
         sx={{ display: { xs: 'none', md: 'flex' } }}
       >
         {user && user?.access_token ? (
-          <AccountPopover data={_account} account={accountProfile} />
+          <AccountPopover
+            data={user?.role === 'creator' ? _accountCreator : _account}
+            account={accountProfile}
+          />
         ) : (
           <Stack alignItems="flex-end" spacing={0.25}>
             <Typography variant="subtitle1">Thailand Cultural Hub</Typography>

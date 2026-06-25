@@ -126,15 +126,17 @@ export function CultureCategoryView({ allCategories = false }: Props) {
     : '';
   const pageDescription = selectedProvinceName
     ? allCategories
-      ? `แสดงข้อมูลวัฒนธรรมทั้งหมดในจังหวัด${selectedProvinceName} โดยใช้ข้อมูลหลักจากฐานข้อมูล cultural_places และค่าที่แก้ไขล่าสุดจาก cultural_place_overrides`
-      : `แสดงข้อมูลวัฒนธรรมหมวดนี้ในจังหวัด${selectedProvinceName} โดยใช้ข้อมูลหลักจากฐานข้อมูล cultural_places และค่าที่แก้ไขล่าสุดจาก cultural_place_overrides`
+      ? `ค้นหาสถานที่ท่องเที่ยวทางวัฒนธรรม ประเพณี วัด พิพิธภัณฑ์ อาหารพื้นถิ่น ศิลปะ และภูมิปัญญาท้องถิ่นในจังหวัด${selectedProvinceName} พร้อมข้อมูลและรูปภาพที่อัปเดตล่าสุด`
+      : `ค้นหาข้อมูล${categoryLabel}ในจังหวัด${selectedProvinceName} พร้อมรายละเอียด แผนที่ รูปภาพ และข้อมูลที่น่าเชื่อถือ`
     : allCategories
-      ? 'รวมข้อมูลวัฒนธรรมทั้งหมดที่มีจากทุกจังหวัด โดยใช้ข้อมูลหลักจากฐานข้อมูล cultural_places และค่าที่แก้ไขล่าสุดจาก cultural_place_overrides'
-      : 'รวมข้อมูลวัฒนธรรมในหมวดนี้จากทุกจังหวัด โดยใช้ข้อมูลหลักจากฐานข้อมูล cultural_places และค่าที่แก้ไขล่าสุดจาก cultural_place_overrides';
+      ? 'Thailand Cultural Hub รวมข้อมูลวัฒนธรรมไทยจากทุกจังหวัด ทั้งสถานที่ท่องเที่ยว ประเพณี เทศกาล อาหาร ศิลปะ การแสดง และภูมิปัญญาท้องถิ่น'
+      : `รวมข้อมูล${categoryLabel}จากทั่วประเทศไทย พร้อมรายละเอียด รูปภาพ แผนที่ และข้อมูลวัฒนธรรมที่น่าเชื่อถือ`;
   const selectedPlaceIndex = selectedPlace
     ? places.findIndex((place) => place.id === selectedPlace.id)
     : -1;
-  const selectedPlaceImages = selectedPlace ? getPlaceImages(selectedPlace, selectedPlaceIndex) : [];
+  const selectedPlaceImages = selectedPlace
+    ? getPlaceImages(selectedPlace, selectedPlaceIndex)
+    : [];
   const selectedPlaceCoordinates = selectedPlace
     ? `${selectedPlace.lat}, ${selectedPlace.lng}`
     : '';
@@ -422,7 +424,7 @@ export function CultureCategoryView({ allCategories = false }: Props) {
 
           <Box>
             <Chip
-              label="Culture category"
+              label="หมวดหมู่"
               sx={{
                 color: PAGE_TEXT,
                 fontWeight: 800,

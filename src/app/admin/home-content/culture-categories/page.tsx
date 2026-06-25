@@ -409,7 +409,11 @@ export default function CultureCategoriesContentPage() {
             </Typography>
           </Box>
 
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
+          <Stack
+            direction={{ xs: 'column', sm: 'row' }}
+            spacing={1.5}
+            sx={{ alignSelf: { md: 'flex-start' } }}
+          >
             <Button component="a" href="/admin/home-content" color="inherit" variant="outlined">
               กลับ Home Content
             </Button>

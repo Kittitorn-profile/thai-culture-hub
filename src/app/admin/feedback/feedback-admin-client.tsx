@@ -146,9 +146,15 @@ export function FeedbackAdminClient() {
             </Typography>
           </Box>
 
-          <Button variant="outlined" onClick={loadFeedback} disabled={isLoading}>
-            Refresh
-          </Button>
+          <Stack
+            direction={{ xs: 'column', sm: 'row' }}
+            spacing={1.5}
+            sx={{ alignSelf: { md: 'flex-start' } }}
+          >
+            <Button variant="outlined" onClick={loadFeedback} disabled={isLoading}>
+              Refresh
+            </Button>
+          </Stack>
         </Stack>
 
         {error && <Alert severity="error">{error}</Alert>}

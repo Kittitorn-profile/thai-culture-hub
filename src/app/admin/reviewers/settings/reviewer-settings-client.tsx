@@ -107,7 +107,10 @@ function numberValue(value: string, fallback = 0) {
 }
 
 function getTotalWeight(settings: ReviewerSettings) {
-  return Object.values(settings.scoringWeights).reduce((total, value) => total + Number(value || 0), 0);
+  return Object.values(settings.scoringWeights).reduce(
+    (total, value) => total + Number(value || 0),
+    0
+  );
 }
 
 function LevelPreview({
@@ -265,7 +268,11 @@ export function ReviewerSettingsClient() {
             </Typography>
           </Box>
 
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
+          <Stack
+            direction={{ xs: 'column', sm: 'row' }}
+            spacing={1.5}
+            sx={{ alignSelf: { md: 'flex-start' } }}
+          >
             <Button
               component={RouterLink}
               href="/admin/reviewers"
@@ -482,9 +489,7 @@ export function ReviewerSettingsClient() {
                     control={
                       <Switch
                         checked={settings.reviewPolicy.autoLevelEnabled}
-                        onChange={(event) =>
-                          updatePolicy('autoLevelEnabled', event.target.checked)
-                        }
+                        onChange={(event) => updatePolicy('autoLevelEnabled', event.target.checked)}
                       />
                     }
                     label="เปิดการปรับระดับอัตโนมัติจากคะแนน"
@@ -519,10 +524,7 @@ export function ReviewerSettingsClient() {
                     label="จำนวนงานตรวจขั้นต่ำก่อนเผยแพร่"
                     value={settings.reviewPolicy.minVerifiedReviewsForPublish}
                     onChange={(event) =>
-                      updatePolicy(
-                        'minVerifiedReviewsForPublish',
-                        numberValue(event.target.value)
-                      )
+                      updatePolicy('minVerifiedReviewsForPublish', numberValue(event.target.value))
                     }
                   />
                   <TextField

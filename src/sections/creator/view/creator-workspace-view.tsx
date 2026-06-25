@@ -211,12 +211,11 @@ export function CreatorWorkspaceView({ view }: Props) {
     : isApproved
       ? 'success'
       : 'warning';
-  const writeStatusIcon =
-    isPublishedArticleStatus(writeStatus)
-      ? 'solar:check-circle-bold'
-      : writeStatus === 'rejected'
-        ? 'solar:info-circle-bold'
-        : 'solar:clock-circle-bold';
+  const writeStatusIcon = isPublishedArticleStatus(writeStatus)
+    ? 'solar:check-circle-bold'
+    : writeStatus === 'rejected'
+      ? 'solar:info-circle-bold'
+      : 'solar:clock-circle-bold';
 
   useEffect(() => {
     if (editingArticle && view === 'write') {
@@ -441,7 +440,7 @@ export function CreatorWorkspaceView({ view }: Props) {
       <Box>
         <Stack sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 2 }}>
           <Typography variant="h3" sx={{ fontWeight: 900 }}>
-            พื้นที่ Creator
+            พื้นที่ผู้ร่วมสร้างข้อมูล
           </Typography>
         </Stack>
         <Typography sx={{ mt: 0.5 }}>
@@ -695,7 +694,9 @@ export function CreatorWorkspaceView({ view }: Props) {
                         <Chip
                           size="small"
                           label={article.isActive ? getStatusLabel(article.status) : 'ปิดใช้งาน'}
-                          color={(article.isActive ? getStatusColor(article.status) : 'default') as any}
+                          color={
+                            (article.isActive ? getStatusColor(article.status) : 'default') as any
+                          }
                           sx={{ flexShrink: 0, fontWeight: 800 }}
                         />
                       </Stack>
@@ -719,36 +720,45 @@ export function CreatorWorkspaceView({ view }: Props) {
                         <Alert severity="error">{article.rejectReason}</Alert>
                       )}
 
-                      {article.status === 'pending_review' && article.approvalRequiredCount > 1 && (
-                        <Alert severity="info">
-                          รออนุมัติ {article.approvalReviews.length}/
-                          {article.approvalRequiredCount} คน
-                        </Alert>
-                      )}
-
-                      {!article.isActive && (
-                        <Alert severity="warning">
-                          บทความนี้ถูกปิดใช้งาน ไม่แสดงบนหน้าบ้าน
-                          {article.inactiveReason ? `: ${article.inactiveReason}` : ''}
-                        </Alert>
-                      )}
-
                       <Stack
                         direction={{ xs: 'column', sm: 'row' }}
                         spacing={1}
                         justifyContent="flex-end"
                       >
-                        {article.isActive && isPublishedArticleStatus(article.status) && article.slug && (
-                          <Button
+                        {article.status === 'pending_review' &&
+                          article.approvalRequiredCount > 1 && (
+                            <Chip
+                              size="small"
+                              label={`รออนุมัติ ${article.approvalReviews.length}/
+                              ${article.approvalRequiredCount} คน`}
+                              color="info"
+                              sx={{ flexShrink: 0, fontWeight: 800, py: 2 }}
+                            />
+                          )}
+
+                        {!article.isActive && (
+                          <Chip
                             size="small"
-                            component={RouterLink}
-                            href={`/creator-stories/${encodeURIComponent(article.slug)}`}
-                            variant="outlined"
-                            startIcon={<Iconify icon="solar:eye-bold" />}
-                          >
-                            ดูบทความ
-                          </Button>
+                            label={` บทความนี้ถูกปิดใช้งาน ไม่แสดงบนหน้าบ้าน
+                            ${article.inactiveReason ? `: ${article.inactiveReason}` : ''}`}
+                            color="warning"
+                            sx={{ flexShrink: 0, fontWeight: 800, py: 2 }}
+                          />
                         )}
+
+                        {article.isActive &&
+                          isPublishedArticleStatus(article.status) &&
+                          article.slug && (
+                            <Button
+                              size="small"
+                              component={RouterLink}
+                              href={`/creator-stories/${encodeURIComponent(article.slug)}`}
+                              variant="outlined"
+                              startIcon={<Iconify icon="solar:eye-bold" />}
+                            >
+                              ดูบทความ
+                            </Button>
+                          )}
                         <Button
                           size="small"
                           component={RouterLink}
@@ -810,12 +820,12 @@ export function CreatorWorkspaceView({ view }: Props) {
                   </Stack>
 
                   <Stack direction="row" gap={2}>
-                    <Chip
+                    {/* <Chip
                       icon={<Iconify icon={writeStatusIcon} />}
                       label={writeStatusLabel}
                       color={writeStatusColor as any}
                       sx={{ fontWeight: 800 }}
-                    />
+                    /> */}
                     <Button
                       component={RouterLink}
                       href="/creator/articles/"
@@ -985,6 +995,7 @@ export function CreatorWorkspaceView({ view }: Props) {
                                   </Typography>
                                 )}
                               </Box>
+
                               <Chip
                                 size="small"
                                 label={`${category.usageCount.toLocaleString('th-TH')} รายการ`}
@@ -1001,18 +1012,6 @@ export function CreatorWorkspaceView({ view }: Props) {
                         ))}
                       </RHFSelect>
 
-                      {selectedCategory && (
-                        <Chip
-                          label={selectedCategory.label}
-                          sx={{
-                            alignSelf: 'flex-start',
-                            color: '#2a3736',
-                            bgcolor: `${selectedCategory.color}33`,
-                            border: `1px solid ${selectedCategory.color}66`,
-                          }}
-                        />
-                      )}
-
                       <Stack spacing={1.25}>
                         <Typography sx={{ fontWeight: 900 }}>ภาพปกบทความ</Typography>
                         <Upload
@@ -1023,8 +1022,8 @@ export function CreatorWorkspaceView({ view }: Props) {
                           disabled={!isApproved || isUploadingArticleCover}
                           helperText={
                             isApproved
-                              ? 'วาง/เลือกไฟล์รูปภาพ ขนาดไม่เกิน 2 MB เพื่อตรวจ preview ก่อน ระบบจะอัปโหลดเมื่อกดบันทึกหรือส่ง review'
-                              : 'ต้องรอ admin approve ก่อนจึงจะอัปโหลดภาพปกได้'
+                              ? 'วาง/เลือกไฟล์รูปภาพ ขนาดไม่เกิน 2 MB'
+                              : 'ต้องรอผุ้ดูแลระบบ ตรวจสอบก่อนจึงจะอัปโหลดภาพปกได้'
                           }
                           onDrop={previewArticleCover}
                           onDelete={clearArticleCover}
@@ -1040,12 +1039,12 @@ export function CreatorWorkspaceView({ view }: Props) {
                         />
                       </Stack>
 
-                      <RHFTextField
+                      {/* <RHFTextField
                         name="coverImageUrl"
                         label="Cover image URL"
                         placeholder="https://..."
                         helperText="ใช้ช่องนี้ได้หากต้องการวาง URL รูปจากแหล่งอื่น"
-                      />
+                      /> */}
 
                       <Divider />
 
@@ -1101,7 +1100,7 @@ export function CreatorWorkspaceView({ view }: Props) {
                             loading={isSubmitting}
                             onClick={() => saveArticle('submit')}
                           >
-                            ส่งให้ Admin Review
+                            ส่งตรวจ
                           </Button>
                         )}
                       </Stack>
@@ -1185,14 +1184,14 @@ export function CreatorWorkspaceView({ view }: Props) {
                     <Typography variant="h5" sx={{ fontWeight: 950 }}>
                       รูปส่วนตัว
                     </Typography>
-                  <Typography sx={{ mt: 0.5, color: 'text.secondary', fontSize: 13 }}>
-                    อัปโหลดรูปเพื่อใช้แสดงบนโปรไฟล์และบทความของคุณ
-                  </Typography>
-                  <Typography sx={{ mt: 0.75, color: 'text.secondary', fontSize: 12 }}>
-                    รองรับไฟล์ต้นฉบับไม่เกิน 1 MB และระบบจะย่อ/บีบอัดให้เหลือไม่เกิน 0.5 MB
-                    ก่อนบันทึกลง storage
-                  </Typography>
-                </Box>
+                    <Typography sx={{ mt: 0.5, color: 'text.secondary', fontSize: 13 }}>
+                      อัปโหลดรูปเพื่อใช้แสดงบนโปรไฟล์และบทความของคุณ
+                    </Typography>
+                    <Typography sx={{ mt: 0.75, color: 'text.secondary', fontSize: 12 }}>
+                      รองรับไฟล์ต้นฉบับไม่เกิน 1 MB และระบบจะย่อ/บีบอัดให้เหลือไม่เกิน 0.5 MB
+                      ก่อนบันทึกลง storage
+                    </Typography>
+                  </Box>
 
                   <Button
                     fullWidth
@@ -1207,7 +1206,8 @@ export function CreatorWorkspaceView({ view }: Props) {
                   {pendingAvatarFile && (
                     <Stack spacing={1} sx={{ width: 1 }}>
                       <Alert severity="info" sx={{ alignItems: 'flex-start' }}>
-                        ตรวจรูป preview ก่อนกดยืนยัน รูปจะยังไม่ถูกบันทึกลง storage จนกว่าจะกดยืนยันอัปโหลด
+                        ตรวจรูป preview ก่อนกดยืนยัน รูปจะยังไม่ถูกบันทึกลง storage
+                        จนกว่าจะกดยืนยันอัปโหลด
                       </Alert>
                       <Stack direction="row" spacing={1} sx={{ width: 1 }}>
                         <Button

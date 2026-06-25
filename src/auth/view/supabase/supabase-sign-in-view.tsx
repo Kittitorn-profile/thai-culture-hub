@@ -79,26 +79,14 @@ export function SupabaseSignInView() {
 
   const renderForm = () => (
     <Box sx={{ gap: 3, display: 'flex', flexDirection: 'column' }}>
-      <Field.Text name="email" label="Email address" slotProps={{ inputLabel: { shrink: true } }} />
+      <Field.Text name="email" label="อีเมล" />
 
       <Box sx={{ gap: 1.5, display: 'flex', flexDirection: 'column' }}>
-        {/* <Link
-          component={RouterLink}
-          href={paths.auth.supabase.resetPassword}
-          variant="body2"
-          color="inherit"
-          sx={{ alignSelf: 'flex-end' }}
-        >
-          Forgot password?
-        </Link> */}
-
         <Field.Text
           name="password"
-          label="Password"
-          placeholder="6+ characters"
+          label="รหัสผ่าน"
           type={showPassword.value ? 'text' : 'password'}
           slotProps={{
-            inputLabel: { shrink: true },
             input: {
               endAdornment: (
                 <InputAdornment position="end">
@@ -123,7 +111,7 @@ export function SupabaseSignInView() {
         loading={isSubmitting}
         loadingIndicator="Sign in..."
       >
-        Sign in
+        ลงชื่อเข้าใช้งาน
       </Button>
     </Box>
   );
@@ -131,7 +119,7 @@ export function SupabaseSignInView() {
   return (
     <>
       <FormHead
-        title="Sign in to your account"
+        title="ลงชื่อเข้าใช้งาน"
         description={
           <>
             {`Don’t have an account? `}

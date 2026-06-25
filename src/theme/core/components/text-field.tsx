@@ -156,6 +156,17 @@ const MuiInputBase: Components<Theme>['MuiInputBase'] = {
   },
 };
 
+// const MuiInputLabel: Components<Theme>['MuiInputLabel'] = {
+//   styleOverrides: {
+//     root: {
+//       '&.Mui-focused': {
+//         color: '#000000',
+//         fontWeight: '600 !important',
+//       },
+//     },
+//   },
+// };
+
 /* **********************************************************************
  * 🧩 Input
  * **********************************************************************/
@@ -342,4 +353,5 @@ export const textField: Components<Theme> = {
   MuiTextField,
   MuiFilledInput,
   MuiOutlinedInput,
+  // MuiInputLabel,
 };

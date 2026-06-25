@@ -60,7 +60,7 @@ function getStatusMeta(status: CreatorPlaceCorrection['status']): StatusMeta {
     return {
       icon: 'solar:check-circle-bold',
       title: 'ผ่านแล้ว',
-      description: 'Admin ตรวจสอบและนำข้อมูลไปใช้งานแล้ว',
+      description: 'ผู้ดูแลระบบตรวจสอบและนำข้อมูลไปใช้งานแล้ว',
       color: 'success' as const,
       tone: '#1b7f4c',
       bg: 'rgba(42, 157, 106, 0.1)',
@@ -281,28 +281,28 @@ function CorrectionCard({ item, onOpen }: { item: CreatorPlaceCorrection; onOpen
           </Alert>
         )}
 
-        <Stack
-          direction={{ xs: 'column', sm: 'row' }}
-          spacing={1}
-          sx={{ color: 'text.secondary', fontSize: 13 }}
-        >
-          <Chip
-            size="small"
-            variant="outlined"
-            icon={<Iconify icon="solar:file-text-bold" />}
-            label={`${suggestedCount} รายการที่เสนอแก้`}
-            sx={{ alignSelf: { xs: 'flex-start', sm: 'center' } }}
-          />
-          <Chip
-            size="small"
-            variant="outlined"
-            icon={<Iconify icon="solar:calendar-date-bold" />}
-            label={item.provinceCode || item.placeId}
-            sx={{ alignSelf: { xs: 'flex-start', sm: 'center' }, maxWidth: 1 }}
-          />
-        </Stack>
+        <Stack direction="row" spacing={1} justifyContent="space-between">
+          <Stack
+            direction={{ xs: 'column', sm: 'row' }}
+            spacing={1}
+            sx={{ color: 'text.secondary', fontSize: 13 }}
+          >
+            <Chip
+              size="small"
+              variant="outlined"
+              icon={<Iconify icon="solar:file-text-bold" />}
+              label={`${suggestedCount} รายการที่เสนอแก้`}
+              sx={{ alignSelf: { xs: 'flex-start', sm: 'center' } }}
+            />
+            <Chip
+              size="small"
+              variant="outlined"
+              icon={<Iconify icon="solar:calendar-date-bold" />}
+              label={item.provinceCode || item.placeId}
+              sx={{ alignSelf: { xs: 'flex-start', sm: 'center' }, maxWidth: 1 }}
+            />
+          </Stack>
 
-        <Stack direction="row" spacing={1} justifyContent="flex-end">
           <Button
             size="small"
             variant="outlined"

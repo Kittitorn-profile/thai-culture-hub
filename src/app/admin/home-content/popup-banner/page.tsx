@@ -250,14 +250,19 @@ export default function PopupBannerAdminPage() {
               จัดการ popup banner ที่จะแสดงบนหน้า home-view
             </Typography>
           </Box>
-
-          <Button
-            variant="contained"
-            startIcon={<Iconify icon="solar:add-circle-bold" />}
-            onClick={() => setEditingBanner(EMPTY_FORM)}
+          <Stack
+            direction={{ xs: 'column', sm: 'row' }}
+            spacing={1.5}
+            sx={{ alignSelf: { md: 'flex-start' } }}
           >
-            สร้าง popup
-          </Button>
+            <Button
+              variant="contained"
+              startIcon={<Iconify icon="solar:add-circle-bold" />}
+              onClick={() => setEditingBanner(EMPTY_FORM)}
+            >
+              สร้าง popup
+            </Button>
+          </Stack>
         </Stack>
 
         {(error || bannersQuery.error) && (

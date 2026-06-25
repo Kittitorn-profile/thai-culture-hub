@@ -145,10 +145,11 @@ export default function LocalWisdomContentPage() {
             </Typography>
           </Box>
 
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
-            <Button component="a" href="/admin/home-content" color="inherit" variant="outlined">
-              กลับ Home Content
-            </Button>
+          <Stack
+            direction={{ xs: 'column', sm: 'row' }}
+            spacing={1.5}
+            sx={{ alignSelf: { md: 'flex-start' } }}
+          >
             <Button color="inherit" variant="outlined" size="small" onClick={handleReset}>
               คืนค่าเริ่มต้น
             </Button>

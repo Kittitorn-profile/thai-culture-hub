@@ -53,10 +53,11 @@ export function Upload({
       <UploadIllustration hideBackground sx={{ width: 200 }} />
       <div className={uploadClasses.placeholder.content}>
         <div className={uploadClasses.placeholder.title}>
-          {multiple ? 'Drop or select files' : 'Drop or select a file'}
+          {multiple ? 'ลากและวางไฟล์' : 'ลากและวางไฟล์'}
         </div>
         <div className={uploadClasses.placeholder.description}>
-          {multiple ? 'Drag files here' : 'Drag a file here'}, or <span>browse</span> your device.
+          {multiple ? 'ลากไฟล์มาวางที่นี่' : 'ลากไฟล์มาวางที่นี่'} หรือ <span>เลือกไฟล์</span>{' '}
+          จากอุปกรณ์ของคุณ
         </div>
       </div>
     </PlaceholderContainer>

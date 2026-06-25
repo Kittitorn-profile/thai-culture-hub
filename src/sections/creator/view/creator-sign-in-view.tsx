@@ -138,7 +138,7 @@ export function CreatorSignInView() {
       >
         <Box>
           <Typography variant="h3" sx={{ fontWeight: 900 }}>
-            Creator Login
+            เข้าสู่ระบบสำหรับผู้ร่วมสร้างข้อมูล
           </Typography>
           <Typography sx={{ mt: 1, color: 'text.secondary' }}>
             เข้าสู่ระบบเพื่อจัดการโปรไฟล์และบทความของคุณ
@@ -150,10 +150,10 @@ export function CreatorSignInView() {
 
         <Form methods={methods} onSubmit={onSubmit}>
           <Stack spacing={2.5}>
-            <Field.Text name="email" label="Email" />
+            <Field.Text name="email" label="อีเมล" />
             <Field.Text
               name="password"
-              label="Password"
+              label="รหัสผ่าน"
               type={showPassword.value ? 'text' : 'password'}
               slotProps={{
                 input: {
@@ -179,7 +179,7 @@ export function CreatorSignInView() {
         <Typography variant="body2" sx={{ color: 'text.secondary' }}>
           ยังไม่มีบัญชี?{' '}
           <Link component={RouterLink} href={registerHref}>
-            สมัครเป็น Creator
+            สมัครเป็นผู้ร่วมสร้างข้อมูล
           </Link>
         </Typography>
       </Stack>

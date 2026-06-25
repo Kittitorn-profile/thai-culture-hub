@@ -263,9 +263,16 @@ export function AdminCreatorsClient() {
               จัดการ user ที่ลงทะเบียนเป็น creator, เปิด/ปิด active และบันทึกคำเตือน
             </Typography>
           </Box>
-          <Button variant="outlined" onClick={loadItems} disabled={isLoading}>
-            Refresh
-          </Button>
+
+          <Stack
+            direction={{ xs: 'column', sm: 'row' }}
+            spacing={1.5}
+            sx={{ alignSelf: { md: 'flex-start' } }}
+          >
+            <Button variant="outlined" onClick={loadItems} disabled={isLoading}>
+              Refresh
+            </Button>
+          </Stack>
         </Stack>
 
         {error && <Alert severity="error">{error}</Alert>}

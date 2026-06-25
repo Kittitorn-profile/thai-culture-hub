@@ -153,8 +153,9 @@ function getArticleApprovalCount(article: CreatorArticle) {
     return article.approvalReviews.length;
   }
 
-  return article.approvalReviews.filter((review) => article.approvalReviewerIds.includes(review.userId))
-    .length;
+  return article.approvalReviews.filter((review) =>
+    article.approvalReviewerIds.includes(review.userId)
+  ).length;
 }
 
 function numberValue(value: string, fallback = 0) {
@@ -164,7 +165,10 @@ function numberValue(value: string, fallback = 0) {
 }
 
 function getTotalScoreWeight(settings: ArticleReviewSettings) {
-  return Object.values(settings.scoreWeights).reduce((total, value) => total + Number(value || 0), 0);
+  return Object.values(settings.scoreWeights).reduce(
+    (total, value) => total + Number(value || 0),
+    0
+  );
 }
 
 function getPlainArticleText(html: string) {
@@ -280,14 +284,9 @@ export function AdminCreatorArticlesClient() {
   const [isApplyingPolicy, setIsApplyingPolicy] = useState(false);
   const [isSavingScoreSettings, setIsSavingScoreSettings] = useState(false);
   const scoreWeightTotal = getTotalScoreWeight(articleReviewSettings);
-  const selectedScore = selected
-    ? calculateArticleScore(selected, articleReviewSettings)
-    : null;
+  const selectedScore = selected ? calculateArticleScore(selected, articleReviewSettings) : null;
 
-  const reviewableItems = useMemo(
-    () => items.filter((item) => item.status !== 'draft'),
-    [items]
-  );
+  const reviewableItems = useMemo(() => items.filter((item) => item.status !== 'draft'), [items]);
 
   const categoryOptions = useMemo(() => {
     const categoryMap = new Map<string, string>();
@@ -387,7 +386,9 @@ export function AdminCreatorArticlesClient() {
         setMessage(result.message);
       }
     } catch (caughtError) {
-      setError(caughtError instanceof Error ? caughtError.message : 'โหลดเกณฑ์คะแนนบทความไม่สำเร็จ');
+      setError(
+        caughtError instanceof Error ? caughtError.message : 'โหลดเกณฑ์คะแนนบทความไม่สำเร็จ'
+      );
     }
   }, [accessToken]);
 
@@ -512,7 +513,9 @@ export function AdminCreatorArticlesClient() {
       setScoreDialogOpen(false);
       setMessage('บันทึกเกณฑ์คะแนนบทความแล้ว');
     } catch (caughtError) {
-      setError(caughtError instanceof Error ? caughtError.message : 'บันทึกเกณฑ์คะแนนบทความไม่สำเร็จ');
+      setError(
+        caughtError instanceof Error ? caughtError.message : 'บันทึกเกณฑ์คะแนนบทความไม่สำเร็จ'
+      );
     } finally {
       setIsSavingScoreSettings(false);
     }
@@ -559,7 +562,11 @@ export function AdminCreatorArticlesClient() {
               ตรวจบทความที่ผู้สร้างส่งเข้ามาก่อนเผยแพร่
             </Typography>
           </Box>
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
+          <Stack
+            direction={{ xs: 'column', sm: 'row' }}
+            spacing={1.5}
+            sx={{ alignSelf: { md: 'flex-start' } }}
+          >
             <Button variant="outlined" onClick={() => setScoreDialogOpen(true)}>
               ตั้งค่าคะแนนบทความ
             </Button>
@@ -641,87 +648,93 @@ export function AdminCreatorArticlesClient() {
               <TableBody>
                 {paginatedItems.map((item) => {
                   const articleScore = calculateArticleScore(item, articleReviewSettings);
-                  const passedCheckCount = articleScore.checks.filter((check) => check.passed).length;
+                  const passedCheckCount = articleScore.checks.filter(
+                    (check) => check.passed
+                  ).length;
 
                   return (
                     <TableRow key={item.id} hover>
-                    <TableCell sx={{ whiteSpace: 'nowrap' }}>
-                      <Typography variant="subtitle2">
-                        {fDateTime(item.updatedAt, 'YYYY/MM/DD')}
-                      </Typography>
-                      <Typography variant="caption">
-                        {fDateTime(item.updatedAt, 'HH:MM:ss')}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <TruncatedTypography line={1} variant="subtitle2">
-                        {item.title}
-                      </TruncatedTypography>
-                      <TruncatedTypography line={1} variant="caption">
-                        {item.excerpt || '-'}
-                      </TruncatedTypography>
-                    </TableCell>
-                    <TableCell>
-                      <Chip size="small" label={item.categoryLabel || item.categoryKey || '-'} />
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="subtitle2">{item.creatorName || '-'}</Typography>
-                      <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                        {item.creatorEmail || '-'}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Chip
-                        size="small"
-                        label={statusLabel(item.status)}
-                        color={statusColor(item.status) as any}
-                      />
-                      {item.approvalRequiredCount > 1 && (
-                        <Typography sx={{ mt: 0.5, color: 'text.secondary', fontSize: 12 }}>
-                          อนุมัติ {getArticleApprovalCount(item)}/{item.approvalRequiredCount}
+                      <TableCell sx={{ whiteSpace: 'nowrap' }}>
+                        <Typography variant="subtitle2">
+                          {fDateTime(item.updatedAt, 'YYYY/MM/DD')}
                         </Typography>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <Stack spacing={0.5} alignItems="flex-start">
+                        <Typography variant="caption">
+                          {fDateTime(item.updatedAt, 'HH:MM:ss')}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <TruncatedTypography line={1} variant="subtitle2">
+                          {item.title}
+                        </TruncatedTypography>
+                        <TruncatedTypography line={1} variant="caption">
+                          {item.excerpt || '-'}
+                        </TruncatedTypography>
+                      </TableCell>
+                      <TableCell>
+                        <Chip size="small" label={item.categoryLabel || item.categoryKey || '-'} />
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="subtitle2">{item.creatorName || '-'}</Typography>
+                        <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                          {item.creatorEmail || '-'}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
                         <Chip
                           size="small"
-                          label={`${articleScore.score}/100`}
-                          color={getScoreColor(articleScore.score, articleReviewSettings)}
-                          variant="soft"
+                          label={statusLabel(item.status)}
+                          color={statusColor(item.status) as any}
                         />
-                        <Typography sx={{ color: 'text.secondary', fontSize: 12 }}>
-                          ผ่าน {passedCheckCount}/{articleScore.checks.length} เกณฑ์
-                        </Typography>
-                      </Stack>
-                    </TableCell>
-                    <TableCell>
-                      <Stack spacing={0.5}>
-                        <Chip
-                          size="small"
-                          label={item.isActive ? 'เปิดใช้งาน' : 'ปิดใช้งาน'}
-                          color={item.isActive ? 'success' : 'default'}
-                          variant={item.isActive ? 'soft' : 'outlined'}
-                          sx={{ alignSelf: 'flex-start' }}
-                        />
-                        {!item.isActive && item.inactiveReason && (
-                          <Typography sx={{ color: 'text.secondary', fontSize: 12 }} noWrap>
-                            {item.inactiveReason}
+                        {item.approvalRequiredCount > 1 && (
+                          <Typography sx={{ mt: 0.5, color: 'text.secondary', fontSize: 12 }}>
+                            อนุมัติ {getArticleApprovalCount(item)}/{item.approvalRequiredCount}
                           </Typography>
                         )}
-                      </Stack>
-                    </TableCell>
-                    <TableCell align="right">
-                      <Stack direction="row" spacing={1} justifyContent="flex-end">
-                        <Button size="small" color="inherit" onClick={() => setPreviewArticle(item)}>
-                          ดูตัวอย่าง
-                        </Button>
-                        <Button size="small" variant="outlined" onClick={() => setSelected(item)}>
-                          จัดการ
-                        </Button>
-                      </Stack>
-                    </TableCell>
-                  </TableRow>
+                      </TableCell>
+                      <TableCell>
+                        <Stack spacing={0.5} alignItems="flex-start">
+                          <Chip
+                            size="small"
+                            label={`${articleScore.score}/100`}
+                            color={getScoreColor(articleScore.score, articleReviewSettings)}
+                            variant="soft"
+                          />
+                          <Typography sx={{ color: 'text.secondary', fontSize: 12 }}>
+                            ผ่าน {passedCheckCount}/{articleScore.checks.length} เกณฑ์
+                          </Typography>
+                        </Stack>
+                      </TableCell>
+                      <TableCell>
+                        <Stack spacing={0.5}>
+                          <Chip
+                            size="small"
+                            label={item.isActive ? 'เปิดใช้งาน' : 'ปิดใช้งาน'}
+                            color={item.isActive ? 'success' : 'default'}
+                            variant={item.isActive ? 'soft' : 'outlined'}
+                            sx={{ alignSelf: 'flex-start' }}
+                          />
+                          {!item.isActive && item.inactiveReason && (
+                            <Typography sx={{ color: 'text.secondary', fontSize: 12 }} noWrap>
+                              {item.inactiveReason}
+                            </Typography>
+                          )}
+                        </Stack>
+                      </TableCell>
+                      <TableCell align="right">
+                        <Stack direction="row" spacing={1} justifyContent="flex-end">
+                          <Button
+                            size="small"
+                            color="inherit"
+                            onClick={() => setPreviewArticle(item)}
+                          >
+                            ดูตัวอย่าง
+                          </Button>
+                          <Button size="small" variant="outlined" onClick={() => setSelected(item)}>
+                            จัดการ
+                          </Button>
+                        </Stack>
+                      </TableCell>
+                    </TableRow>
                   );
                 })}
                 <TableNoData notFound={!filteredItems.length && !isLoading} />
@@ -766,7 +779,11 @@ export function AdminCreatorArticlesClient() {
                     {selected.title}
                   </Typography>
                   <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap sx={{ mt: 1 }}>
-                    <Chip size="small" label={statusLabel(selected.status)} color={statusColor(selected.status) as any} />
+                    <Chip
+                      size="small"
+                      label={statusLabel(selected.status)}
+                      color={statusColor(selected.status) as any}
+                    />
                     <Chip
                       size="small"
                       variant="outlined"
@@ -896,9 +913,11 @@ export function AdminCreatorArticlesClient() {
                       color={
                         selectedScore.score >= articleReviewSettings.scoreThresholds.publishMinScore
                           ? 'success'
-                          : selectedScore.score >= articleReviewSettings.scoreThresholds.approveMinScore
+                          : selectedScore.score >=
+                              articleReviewSettings.scoreThresholds.approveMinScore
                             ? 'primary'
-                            : selectedScore.score < articleReviewSettings.scoreThresholds.rejectBelowScore
+                            : selectedScore.score <
+                                articleReviewSettings.scoreThresholds.rejectBelowScore
                               ? 'error'
                               : 'warning'
                       }
@@ -1100,7 +1119,10 @@ export function AdminCreatorArticlesClient() {
                 },
               }}
             >
-              <Stack spacing={3} sx={{ mx: 'auto', maxWidth: 960, position: 'relative', zIndex: 1 }}>
+              <Stack
+                spacing={3}
+                sx={{ mx: 'auto', maxWidth: 960, position: 'relative', zIndex: 1 }}
+              >
                 <Box
                   sx={{
                     borderRadius: 1.5,
@@ -1149,7 +1171,9 @@ export function AdminCreatorArticlesClient() {
                       </Stack>
 
                       <Chip
-                        label={previewArticle.categoryLabel || previewArticle.categoryKey || 'บทความ'}
+                        label={
+                          previewArticle.categoryLabel || previewArticle.categoryKey || 'บทความ'
+                        }
                         sx={{
                           flexShrink: 0,
                           color: '#4b3523',
@@ -1429,10 +1453,17 @@ export function AdminCreatorArticlesClient() {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setScoreDialogOpen(false)}>ยกเลิก</Button>
-          <Button color="inherit" onClick={() => setArticleReviewSettings(DEFAULT_ARTICLE_REVIEW_SETTINGS)}>
+          <Button
+            color="inherit"
+            onClick={() => setArticleReviewSettings(DEFAULT_ARTICLE_REVIEW_SETTINGS)}
+          >
             คืนค่าเริ่มต้น
           </Button>
-          <Button variant="contained" loading={isSavingScoreSettings} onClick={saveArticleReviewSettings}>
+          <Button
+            variant="contained"
+            loading={isSavingScoreSettings}
+            onClick={saveArticleReviewSettings}
+          >
             บันทึกเกณฑ์คะแนน
           </Button>
         </DialogActions>

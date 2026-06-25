@@ -116,7 +116,10 @@ export function getAdminPermissionFromPath(pathname: string): AdminPermission | 
     return ADMIN_PERMISSION.categories;
   }
 
-  if (pathname.startsWith('/admin/cultural-places') || pathname.startsWith('/admin/place-corrections')) {
+  if (
+    pathname.startsWith('/admin/cultural-places') ||
+    pathname.startsWith('/admin/place-corrections')
+  ) {
     return ADMIN_PERMISSION.culturalPlaces;
   }
 
