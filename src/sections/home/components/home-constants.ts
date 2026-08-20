@@ -5,7 +5,7 @@ export const HOME_BG_TOP = '#6f8790';
 export const HOME_BG_MIDDLE = '#7b8476';
 export const HOME_BG_BOTTOM = '#8f7c5c';
 export const HOME_TEXT = '#f8f6ee';
-export const HOME_DEEP = '#2a3736';
+export const HOME_DEEP = '#f8f6ee';
 export const HOME_SECTION_MAX_WIDTH = 1280;
 export const HOME_SECTION_PX = { xs: 2.5, sm: 4, md: 6, lg: 8 };
 export const HOME_SHARED_BACKGROUND = `
@@ -15,7 +15,7 @@ export const HOME_SHARED_BACKGROUND = `
 export const HOME_POSTER_PATTERN = `
   repeating-radial-gradient(circle at 78% 12%, transparent 0 44px, rgba(230,236,232,0.22) 46px 48px),
   repeating-radial-gradient(circle at 10% 82%, transparent 0 52px, rgba(230,236,232,0.12) 54px 56px),
-  linear-gradient(120deg, transparent 0 58%, rgba(229,221,198,0.13) 58% 59%, transparent 59% 100%)
+  linear-gradient(120deg, transparent 0 58%, rgba(229,221,198,0ป.13) 58% 59%, transparent 59% 100%)
 `;
 
 export const POSTER_FRAME_IMAGES = [
@@ -51,6 +51,7 @@ export const HOME_HIGHLIGHTS = [
 export const STORY_MEDIA_SECTION_KEY = 'story-media';
 export const LOCAL_WISDOM_SECTION_KEY = 'local-wisdom';
 export const CULTURE_CATEGORIES_SECTION_KEY = 'culture-categories';
+export const PERFORMANCE_GROUPS_SECTION_KEY = 'performance-groups';
 
 export const DATA_FEATURES = [
   {

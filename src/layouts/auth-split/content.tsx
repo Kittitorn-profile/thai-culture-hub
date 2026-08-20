@@ -14,15 +14,21 @@ import { layoutClasses } from '../core';
 
 // ----------------------------------------------------------------------
 
-export type AuthSplitContentProps = BoxProps & { layoutQuery?: Breakpoint };
+export type AuthSplitContentProps = BoxProps & {
+  layoutQuery?: Breakpoint;
+  variant?: 'default' | 'admin';
+};
 
 export function AuthSplitContent({
   sx,
   children,
   className,
   layoutQuery = 'md',
+  variant = 'default',
   ...other
 }: AuthSplitContentProps) {
+  const isAdmin = variant === 'admin';
+
   return (
     <Box
       className={mergeClasses([layoutClasses.content, className])}
@@ -31,11 +37,13 @@ export function AuthSplitContent({
           display: 'flex',
           flex: '1 1 auto',
           alignItems: 'center',
+          justifyContent: 'center',
           flexDirection: 'column',
-          p: theme.spacing(3, 2, 10, 2),
+          minHeight: '100dvh',
+          p: theme.spacing(3, 2),
           [theme.breakpoints.up(layoutQuery)]: {
             justifyContent: 'center',
-            p: theme.spacing(10, 2, 10, 2),
+            p: theme.spacing(4, 2),
           },
         }),
         ...(Array.isArray(sx) ? sx : [sx]),
@@ -50,34 +58,60 @@ export function AuthSplitContent({
           maxWidth: 'var(--layout-auth-content-width)',
         }}
       >
-        <Stack
-          spacing={2}
-          sx={{
-            p: 3,
-            height: 1,
-            borderRadius: 1,
-            justifyContent: 'space-between',
-            bgcolor: 'rgba(42,55,54,0.28)',
-            border: '1px solid rgba(255,255,255,0.24)',
-          }}
-        >
+        <Stack spacing={1}>
           <Box sx={{ textAlign: 'center', color: '#fff' }}>
             <Image
               alt="Single logo"
               sx={{
-                width: { xs: 96, md: 200 },
+                width: isAdmin ? { xs: 104, md: 140 } : { xs: 96, md: 200 },
                 mb: { xs: 0.5, md: 0 },
               }}
               src="/logo/logo-single.png"
             />
 
-            <Typography sx={{ mt: 2.5, fontSize: { xs: 25, md: 30 }, fontWeight: 950 }}>
-              Thai Culture Hub
+            {isAdmin && (
+              <Box
+                sx={{
+                  px: 1.5,
+                  py: 0.5,
+                  mt: 2,
+                  mx: 'auto',
+                  width: 'fit-content',
+                  borderRadius: 999,
+                  color: '#2a3736',
+                  bgcolor: '#ead7a1',
+                  fontSize: 11,
+                  fontWeight: 950,
+                  letterSpacing: 1.2,
+                }}
+              >
+                ADMIN PORTAL
+              </Box>
+            )}
+
+            <Typography
+              sx={{
+                mt: isAdmin ? 1.5 : 2.5,
+                fontSize: isAdmin ? { xs: 23, md: 27 } : { xs: 25, md: 30 },
+                fontWeight: 950,
+              }}
+            >
+              {isAdmin ? 'ระบบจัดการ Thai Culture Hub' : 'Thai Culture Hub'}
             </Typography>
 
-            <Typography sx={{ mt: 1, lineHeight: 1.8 }}>
-              ขอบคุณทุกแหล่งข้อมูลที่เปิดให้เข้าถึงและนำมาต่อยอด
-              เรานำข้อมูลมาจัดระเบียบเพื่อการสำรวจและการเรียนรู้ โดยยังคงอ้างอิงที่มาของข้อมูล
+            <Typography
+              sx={{
+                mt: 1,
+                mx: 'auto',
+                maxWidth: 360,
+                opacity: 0.76,
+                fontSize: isAdmin ? 13 : 16,
+                lineHeight: isAdmin ? 1.65 : 1.8,
+              }}
+            >
+              {isAdmin
+                ? 'พื้นที่สำหรับผู้ดูแลระบบและทีมงานที่ได้รับอนุญาต'
+                : 'ขอบคุณทุกแหล่งข้อมูลที่เปิดให้เข้าถึงและนำมาต่อยอด เรานำข้อมูลมาจัดระเบียบเพื่อการสำรวจและการเรียนรู้ โดยยังคงอ้างอิงที่มาของข้อมูล'}
             </Typography>
           </Box>
 

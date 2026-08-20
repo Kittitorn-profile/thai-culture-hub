@@ -133,7 +133,9 @@ export function AuthSplitLayout({
           },
         ]}
       /> */}
-      <AuthSplitContent layoutQuery={layoutQuery}>{children}</AuthSplitContent>
+      <AuthSplitContent layoutQuery={layoutQuery} {...slotProps?.content}>
+        {children}
+      </AuthSplitContent>
     </MainSection>
   );
 

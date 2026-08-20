@@ -16,6 +16,7 @@ const ROOTS = {
 // ----------------------------------------------------------------------
 
 export const paths = {
+  adminLogin: '/admin-login',
   comingSoon: '/coming-soon',
   maintenance: '/maintenance',
   pricing: '/pricing',
@@ -30,6 +31,9 @@ export const paths = {
   },
   cultureCategory: {
     details: (categoryKey: string) => `/culture-category/${categoryKey}`,
+  },
+  performanceGroup: {
+    details: (groupId: string) => `/performance-groups/${encodeURIComponent(groupId)}`,
   },
   faqs: '/faqs',
   page403: '/error/403',

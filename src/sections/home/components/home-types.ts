@@ -49,6 +49,70 @@ export type LocalWisdomContent = {
   coverUrl: string;
 };
 
+export type PerformanceGroupAward = {
+  year: string;
+  title: string;
+  description?: string;
+};
+
+export type PerformanceGroupEntry = {
+  id?: string;
+  name: string;
+  logoUrl?: string;
+  coverImageUrl?: string;
+  primaryColor?: string;
+  provinceCode?: string;
+  provinceName?: string;
+  isPublished?: boolean;
+  isFeatured?: boolean;
+  acceptsBookings?: boolean;
+  contactPhone?: string;
+  contactEmail?: string;
+  lineUrl?: string;
+  facebookUrl?: string;
+  youtubeUrl?: string;
+  category: string;
+  managers: string[];
+  coManagers: string[];
+  principalMembers: string[];
+  leadRoles: string[];
+  otherPositions: string[];
+  personnel: Array<{
+    id: string;
+    role: string;
+    fullName: string;
+    nickname: string;
+    imageUrl: string;
+    yearsWithGroup: number;
+    age: number;
+    education: string;
+    otherDetails: string;
+  }>;
+  totalMembers: number;
+  description?: string;
+  yearlyData: Array<{
+    year: string;
+    logoUrl?: string;
+    details?: string;
+    about?: string;
+    storyTypes?: string[];
+    bookletUrl?: string;
+    bookletName?: string;
+    youtubeUrl?: string;
+    singerIds?: string[];
+    leadPerformerIds?: string[];
+    performanceImages?: string[];
+    awards: PerformanceGroupAward[];
+    note?: string;
+  }>;
+};
+
+export type PerformanceGroupsContent = {
+  title: string;
+  description: string;
+  groups: PerformanceGroupEntry[];
+};
+
 export type CultureCategoriesContent = {
   title: string;
   description: string;

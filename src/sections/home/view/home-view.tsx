@@ -3,8 +3,8 @@
 import type { IconifyName } from 'src/components/iconify/register-icons';
 import type {
   StoryContent,
-  HomeVideoItem,
   HomeEventItem,
+  HomeVideoItem,
   StoredHomeContent,
   LocalWisdomContent,
   CultureCategoryCard,
@@ -12,6 +12,7 @@ import type {
   CreatorArticlePreview,
   CreatorArticleResponse,
   CultureCategoriesContent,
+  PerformanceGroupsContent,
   StoredCultureCategoriesContent,
 } from '../components/home-types';
 
@@ -21,8 +22,8 @@ import { useRef, useState, useEffect, useCallback } from 'react';
 import { Box } from '@mui/material';
 import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
-import Button from '@mui/material/Button';
 import Avatar from '@mui/material/Avatar';
+import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import CircularProgress from '@mui/material/CircularProgress';
 
@@ -33,41 +34,49 @@ import { HomeFooter } from 'src/layouts/main/footer';
 
 import { Image } from 'src/components/image';
 import { Iconify } from 'src/components/iconify';
+import { Markdown } from 'src/components/markdown';
+import { trackAnalyticsEvent } from 'src/components/analytics';
 
 import { CreatorArticleEngagement } from 'src/sections/creator/components/creator-article-engagement';
 
-import { HomePlayButton } from '../components/home-play-button';
 import { HomeMapSection } from '../components/home-map-section';
-import { HomePopupBanner } from '../components/home-popup-banner';
+import { HomePlayButton } from '../components/home-play-button';
 import { HomeHeroSection } from '../components/home-hero-section';
+import { HomePopupBanner } from '../components/home-popup-banner';
 import { HomeVideoDialog } from '../components/home-video-dialog';
 import { HomeAnalyticsSection } from '../components/home-analytics-section';
 import {
+  MOCK_PERFORMANCE_GROUPS,
+  mergeWithMockPerformanceGroups,
+} from '../components/home-mock-data';
+import {
   getFilledText,
-  isUpcomingHomeEvent,
   formatHomeEventDate,
+  isUpcomingHomeEvent,
   getCultureCategoryKey,
   normalizeStoryContent,
   getCultureCategoryHref,
   formatCreatorArticleDate,
   normalizeLocalWisdomContent,
   normalizeCultureCategoriesContent,
+  normalizePerformanceGroupsContent,
 } from '../components/home-utils';
 import {
-  HOME_TEXT,
   HOME_DEEP,
+  HOME_TEXT,
   HOME_BG_TOP,
   HOME_BG_MIDDLE,
   DATA_FLOW_STEPS,
   HOME_SECTION_PX,
   HOME_POSTER_PATTERN,
   CREATOR_ARTICLES_LIMIT,
-  HOME_SHARED_BACKGROUND,
   DEFAULT_HOME_ANALYTICS,
   HOME_SECTION_MAX_WIDTH,
+  HOME_SHARED_BACKGROUND,
   STORY_MEDIA_SECTION_KEY,
   LOCAL_WISDOM_SECTION_KEY,
   CULTURE_CATEGORIES_SECTION_KEY,
+  PERFORMANCE_GROUPS_SECTION_KEY,
   FEATURED_CULTURE_CATEGORY_LIMIT,
 } from '../components/home-constants';
 
@@ -80,11 +89,14 @@ const ReactPlayer = dynamic(() => import('react-player'), {
 
 export function HomeView() {
   const creatorLoadMoreRef = useRef<HTMLDivElement | null>(null);
+  const performanceGroupsLoadMoreRef = useRef<HTMLDivElement | null>(null);
   const creatorArticlesLoadingRef = useRef(false);
   const [selectedVideo, setSelectedVideo] = useState<HomeVideoItem | null>(null);
   const [videoPreviewKey, setVideoPreviewKey] = useState(0);
   const [storyContent, setStoryContent] = useState<StoryContent>();
   const [localWisdomContent, setLocalWisdomContent] = useState<LocalWisdomContent>();
+  const [performanceGroupsContent, setPerformanceGroupsContent] =
+    useState<PerformanceGroupsContent>(MOCK_PERFORMANCE_GROUPS);
   const [cultureCategoriesContent, setCultureCategoriesContent] =
     useState<CultureCategoriesContent>();
   const [cultureCategoryCards, setCultureCategoryCards] = useState<CultureCategoryCard[]>([]);
@@ -96,7 +108,22 @@ export function HomeView() {
   const [creatorArticlesOffset, setCreatorArticlesOffset] = useState(0);
   const [hasMoreCreatorArticles, setHasMoreCreatorArticles] = useState(false);
   const [isLoadingCreatorArticles, setIsLoadingCreatorArticles] = useState(false);
+  const [visiblePerformanceGroupCount, setVisiblePerformanceGroupCount] = useState(6);
+  const [performanceGroupCounts, setPerformanceGroupCounts] = useState<
+    Record<string, { views: number; shares: number }>
+  >({});
   const shouldShowCreatorArticles = creatorArticlesTotal > 0;
+  const shouldShowExpandedPerformanceGroups = false;
+  const publishedPerformanceGroups = (performanceGroupsContent?.groups ?? [])
+    .filter((group) => group.isPublished !== false)
+    .slice()
+    .sort((first, second) => Number(second.isFeatured) - Number(first.isFeatured));
+  const visiblePerformanceGroups = publishedPerformanceGroups.slice(
+    0,
+    visiblePerformanceGroupCount
+  );
+  const hasMorePerformanceGroups =
+    visiblePerformanceGroupCount < publishedPerformanceGroups.length;
   const featuredCultureCategoryCards = cultureCategoryCards.slice(
     0,
     FEATURED_CULTURE_CATEGORY_LIMIT
@@ -178,6 +205,14 @@ export function HomeView() {
           | undefined;
 
         setLocalWisdomContent(normalizeLocalWisdomContent(localWisdomDraft));
+
+        const performanceGroupsDraft = sections[PERFORMANCE_GROUPS_SECTION_KEY] as
+          | PerformanceGroupsContent
+          | undefined;
+
+        const normalizedPerformanceGroups =
+          normalizePerformanceGroupsContent(performanceGroupsDraft);
+        setPerformanceGroupsContent(mergeWithMockPerformanceGroups(normalizedPerformanceGroups));
 
         const cultureCategoriesDraft = sections[CULTURE_CATEGORIES_SECTION_KEY] as
           | StoredCultureCategoriesContent
@@ -271,6 +306,60 @@ export function HomeView() {
   }, [loadCreatorArticles]);
 
   useEffect(() => {
+    setVisiblePerformanceGroupCount(6);
+  }, [performanceGroupsContent]);
+
+  useEffect(() => {
+    const target = performanceGroupsLoadMoreRef.current;
+
+    if (!target || !hasMorePerformanceGroups) {
+      return undefined;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting) {
+          setVisiblePerformanceGroupCount((currentCount) => currentCount + 6);
+        }
+      },
+      { rootMargin: '240px 0px' }
+    );
+
+    observer.observe(target);
+
+    return () => observer.disconnect();
+  }, [hasMorePerformanceGroups, visiblePerformanceGroupCount]);
+
+  useEffect(() => {
+    const groupIds = (performanceGroupsContent?.groups ?? [])
+      .filter((group) => group.isPublished !== false)
+      .map((group) => group.id || group.name);
+
+    if (groupIds.length === 0) {
+      return undefined;
+    }
+
+    const controller = new AbortController();
+
+    fetch(`/api/performance-groups/counts?groupIds=${encodeURIComponent(groupIds.join(','))}`, {
+      signal: controller.signal,
+    })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((json: { data?: Record<string, { views: number; shares: number }> } | null) => {
+        if (json?.data) {
+          setPerformanceGroupCounts(json.data);
+        }
+      })
+      .catch((error) => {
+        if (error instanceof Error && error.name !== 'AbortError') {
+          console.warn('Unable to load performance group counts', error);
+        }
+      });
+
+    return () => controller.abort();
+  }, [performanceGroupsContent]);
+
+  useEffect(() => {
     const target = creatorLoadMoreRef.current;
 
     if (!target || !hasMoreCreatorArticles || !shouldShowCreatorArticles) {
@@ -329,6 +418,26 @@ export function HomeView() {
   const handleCloseVideo = () => {
     setSelectedVideo(null);
     setVideoPreviewKey((currentValue) => currentValue + 1);
+  };
+
+  const handleSharePerformanceGroup = (platform: 'facebook' | 'line', groupId: string) => {
+    trackAnalyticsEvent('performance_group_share', groupId, { platform, groupId });
+    setPerformanceGroupCounts((currentCounts) => ({
+      ...currentCounts,
+      [groupId]: {
+        views: currentCounts[groupId]?.views ?? 0,
+        shares: (currentCounts[groupId]?.shares ?? 0) + 1,
+      },
+    }));
+
+    const detailUrl = new URL(paths.performanceGroup.details(groupId), window.location.origin);
+    const encodedUrl = encodeURIComponent(detailUrl.toString());
+    const shareUrl =
+      platform === 'facebook'
+        ? `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`
+        : `https://social-plugins.line.me/lineit/share?url=${encodedUrl}`;
+
+    window.open(shareUrl, '_blank', 'noopener,noreferrer,width=720,height=640');
   };
 
   return (
@@ -1088,6 +1197,914 @@ export function HomeView() {
               >
                 {localWisdomContent.caption}
               </Typography>
+            </Box>
+          </Box>
+        </Box>
+      )}
+
+      {performanceGroupsContent && (
+        <Box
+          sx={{
+            px: HOME_SECTION_PX,
+            py: { xs: 8, md: 12 },
+            position: 'relative',
+            zIndex: 1,
+            background: 'rgba(42,55,54,0.06)',
+          }}
+        >
+          <Box sx={{ mx: 'auto', maxWidth: HOME_SECTION_MAX_WIDTH }}>
+            <Typography
+              variant="overline"
+              sx={{ display: 'block', letterSpacing: 2, fontWeight: 900 }}
+            >
+              วงศิลปินและวงดนตรี
+            </Typography>
+            <Typography
+              component="h2"
+              sx={{ mt: 1, mb: 2, fontSize: { xs: 28, md: 40 }, fontWeight: 900 }}
+            >
+              {performanceGroupsContent.title}
+            </Typography>
+            {performanceGroupsContent.description && (
+              <Typography sx={{ mb: 4, maxWidth: 760, lineHeight: 1.75 }}>
+                {performanceGroupsContent.description}
+              </Typography>
+            )}
+
+            <Box
+              sx={{
+                gap: 3,
+                display: 'grid',
+                gridTemplateColumns: { xs: '1fr', lg: 'repeat(3, minmax(0, 1fr))' },
+              }}
+            >
+              {visiblePerformanceGroups.map((group) => {
+                  const groupId = group.id || group.name;
+
+                  return (
+                    <Box
+                      key={groupId}
+                      sx={{
+                        p: { xs: 2, md: 3 },
+                        minWidth: 0,
+                        height: '100%',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        borderRadius: 3,
+                        position: 'relative',
+                        color: HOME_TEXT,
+                        bgcolor: 'rgba(42,55,54,0.32)',
+                        border: '1px solid rgba(248,246,238,0.2)',
+                        borderTop: `4px solid ${group.primaryColor || HOME_DEEP}`,
+                        boxShadow: '0 18px 42px rgba(31,40,38,0.16)',
+                        backdropFilter: 'blur(7px)',
+                        transition: 'transform 180ms ease, box-shadow 180ms ease',
+                        '&:hover': {
+                          transform: 'translateY(-4px)',
+                          borderColor: 'rgba(248,246,238,0.4)',
+                          boxShadow: '0 24px 54px rgba(31,40,38,0.24)',
+                        },
+                      }}
+                    >
+                      <Box
+                        component={RouterLink}
+                        href={paths.performanceGroup.details(groupId)}
+                        aria-label={`ดูรายละเอียด ${group.name}`}
+                        sx={{ position: 'absolute', inset: 0, zIndex: 1, borderRadius: 'inherit' }}
+                      />
+
+                      {group.coverImageUrl && (
+                        <Box
+                          component="img"
+                          src={group.coverImageUrl}
+                          alt={`ภาพปก ${group.name}`}
+                          sx={{
+                            width: '100%',
+                            mb: 2.5,
+                            display: 'block',
+                            aspectRatio: '16 / 9',
+                            objectFit: 'cover',
+                            borderRadius: 2,
+                          }}
+                        />
+                      )}
+
+                      <Stack
+                        direction="row"
+                        justifyContent="space-between"
+                        spacing={1.5}
+                        alignItems="center"
+                      >
+                        <Stack
+                          direction="row"
+                          spacing={1.5}
+                          alignItems="center"
+                          sx={{ minWidth: 0 }}
+                        >
+                          {group.logoUrl && (
+                            <Avatar
+                              variant="rounded"
+                              src={group.logoUrl}
+                              alt={`โลโก้ ${group.name}`}
+                              sx={{ width: 56, height: 56, flexShrink: 0 }}
+                            />
+                          )}
+                          <Typography variant="h5" sx={{ fontWeight: 900, color: HOME_DEEP }}>
+                            {group.name}
+                          </Typography>
+                        </Stack>
+                        <Chip
+                          label={group.category}
+                          size="small"
+                          sx={{
+                            flexShrink: 0,
+                            color: '#4b402d',
+                            fontWeight: 800,
+                            bgcolor: 'rgba(234,215,161,0.88)',
+                            border: '1px solid rgba(255,255,255,0.2)',
+                            '& .MuiChip-label': { px: 1.4 },
+                          }}
+                        />
+                      </Stack>
+
+                      <Stack
+                        direction="row"
+                        spacing={0.75}
+                        useFlexGap
+                        flexWrap="wrap"
+                        sx={{ mt: 1.5 }}
+                      >
+                        {group.provinceName && (
+                          <Chip
+                            label={`จังหวัด${group.provinceName}`}
+                            size="small"
+                            variant="outlined"
+                            sx={{
+                              color: HOME_TEXT,
+                              fontWeight: 700,
+                              bgcolor: 'rgba(248,246,238,0.08)',
+                              borderColor: 'rgba(248,246,238,0.48)',
+                            }}
+                          />
+                        )}
+                        {group.isFeatured && (
+                          <Chip
+                            label="วงแนะนำ"
+                            size="small"
+                            sx={{
+                              color: '#4b402d',
+                              fontWeight: 800,
+                              bgcolor: 'rgba(234,215,161,0.82)',
+                              border: '1px solid rgba(234,215,161,0.95)',
+                            }}
+                          />
+                        )}
+                        {group.acceptsBookings && (
+                          <Chip
+                            label="เปิดรับงาน"
+                            size="small"
+                            variant="outlined"
+                            sx={{
+                              color: '#b9f6ca',
+                              fontWeight: 800,
+                              bgcolor: 'rgba(46,125,50,0.16)',
+                              borderColor: 'rgba(105,240,174,0.72)',
+                            }}
+                          />
+                        )}
+                      </Stack>
+
+                      {group.description && (
+                        <Typography
+                          sx={{
+                            mt: 2,
+                            color: 'rgba(248,246,238,0.76)',
+                            lineHeight: 1.7,
+                            display: '-webkit-box',
+                            overflow: 'hidden',
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: 'vertical',
+                          }}
+                        >
+                          {group.description}
+                        </Typography>
+                      )}
+
+                      <Box
+                        sx={{
+                          mt: 'auto',
+                          pt: 2.25,
+                          position: 'relative',
+                          zIndex: 2,
+                          borderTop: '1px solid rgba(248,246,238,0.16)',
+                        }}
+                      >
+                        <Stack
+                          direction="row"
+                          spacing={1}
+                          useFlexGap
+                          flexWrap="wrap"
+                          alignItems="center"
+                        >
+                          <Button
+                            component={RouterLink}
+                            href={paths.performanceGroup.details(groupId)}
+                            variant="contained"
+                            size="small"
+                            endIcon={<Iconify icon="eva:diagonal-arrow-right-up-fill" width={17} />}
+                            sx={{ minHeight: 36, px: 1.75, fontSize: 13, fontWeight: 900 }}
+                          >
+                            ดูรายละเอียด
+                          </Button>
+                          {group.contactPhone && (
+                            <Button
+                              component="a"
+                              href={`tel:${group.contactPhone}`}
+                              variant="outlined"
+                              size="small"
+                              sx={{
+                                minHeight: 36,
+                                px: 1.5,
+                                color: HOME_TEXT,
+                                fontSize: 13,
+                                borderColor: 'rgba(248,246,238,0.32)',
+                              }}
+                            >
+                              โทรติดต่อ
+                            </Button>
+                          )}
+                          {group.facebookUrl && (
+                            <Button
+                              component="a"
+                              href={group.facebookUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              size="small"
+                              sx={{
+                                minWidth: 0,
+                                px: 0.75,
+                                color: 'rgba(248,246,238,0.72)',
+                                fontSize: 12,
+                                whiteSpace: 'nowrap',
+                              }}
+                            >
+                              Facebook
+                            </Button>
+                          )}
+                          {group.youtubeUrl && (
+                            <Button
+                              component="a"
+                              href={group.youtubeUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              size="small"
+                              sx={{
+                                minWidth: 0,
+                                px: 0.75,
+                                color: 'rgba(248,246,238,0.72)',
+                                fontSize: 12,
+                                whiteSpace: 'nowrap',
+                              }}
+                            >
+                              YouTube
+                            </Button>
+                          )}
+                        </Stack>
+
+                        <Stack
+                          direction={{ xs: 'column', sm: 'row' }}
+                          spacing={1.5}
+                          alignItems={{ xs: 'flex-start', sm: 'center' }}
+                          justifyContent="space-between"
+                          sx={{ mt: 2 }}
+                        >
+                          <Stack direction="row" spacing={0.75} alignItems="center">
+                            <Typography
+                              variant="caption"
+                              sx={{ mr: 0.25, color: 'rgba(248,246,238,0.62)', fontWeight: 800 }}
+                            >
+                              แชร์
+                            </Typography>
+                            <Button
+                              type="button"
+                              size="small"
+                              onClick={() => handleSharePerformanceGroup('facebook', groupId)}
+                              sx={{
+                                minWidth: 0,
+                                minHeight: 32,
+                                px: 1.25,
+                                color: '#dceaff',
+                                fontSize: 12,
+                                fontWeight: 800,
+                                bgcolor: 'rgba(24,119,242,0.2)',
+                                border: '1px solid rgba(112,169,244,0.48)',
+                              }}
+                            >
+                              Facebook
+                            </Button>
+                            <Button
+                              type="button"
+                              size="small"
+                              onClick={() => handleSharePerformanceGroup('line', groupId)}
+                              sx={{
+                                minWidth: 0,
+                                minHeight: 32,
+                                px: 1.25,
+                                color: '#c9f8dc',
+                                fontSize: 12,
+                                fontWeight: 800,
+                                bgcolor: 'rgba(6,199,85,0.16)',
+                                border: '1px solid rgba(105,240,174,0.46)',
+                              }}
+                            >
+                              LINE
+                            </Button>
+                          </Stack>
+
+                          <Stack
+                            direction="row"
+                            spacing={1.75}
+                            alignItems="center"
+                            sx={{ color: 'rgba(248,246,238,0.68)' }}
+                          >
+                            <Stack direction="row" spacing={0.55} alignItems="center">
+                              <Iconify icon="solar:eye-bold" width={17} />
+                              <Typography variant="caption" sx={{ fontWeight: 800 }}>
+                                {performanceGroupCounts[groupId]?.views ?? 0} ครั้ง
+                              </Typography>
+                            </Stack>
+                            <Stack direction="row" spacing={0.55} alignItems="center">
+                              <Iconify icon="solar:share-bold" width={17} />
+                              <Typography variant="caption" sx={{ fontWeight: 800 }}>
+                                {performanceGroupCounts[groupId]?.shares ?? 0} แชร์
+                              </Typography>
+                            </Stack>
+                          </Stack>
+                        </Stack>
+                      </Box>
+                    </Box>
+                  );
+                })}
+            </Box>
+            {hasMorePerformanceGroups && (
+              <Stack
+                ref={performanceGroupsLoadMoreRef}
+                direction="row"
+                spacing={1.25}
+                alignItems="center"
+                justifyContent="center"
+                sx={{ minHeight: 80, mt: 2, color: 'rgba(248,246,238,0.76)' }}
+              >
+                <CircularProgress size={22} color="inherit" />
+                <Typography variant="body2" sx={{ fontWeight: 800 }}>
+                  กำลังโหลดวงเพิ่มเติม
+                </Typography>
+              </Stack>
+            )}
+          </Box>
+        </Box>
+      )}
+
+      {shouldShowExpandedPerformanceGroups && performanceGroupsContent && (
+        <Box
+          sx={{
+            px: HOME_SECTION_PX,
+            py: { xs: 8, md: 12 },
+            position: 'relative',
+            zIndex: 1,
+            background: 'rgba(42,55,54,0.06)',
+          }}
+        >
+          <Box sx={{ mx: 'auto', maxWidth: HOME_SECTION_MAX_WIDTH }}>
+            <Typography
+              variant="overline"
+              sx={{ display: 'block', letterSpacing: 2, fontWeight: 900 }}
+            >
+              วงศิลปินและวงดนตรี
+            </Typography>
+            <Typography
+              component="h2"
+              sx={{ mt: 1, mb: 3, fontSize: { xs: 28, md: 40 }, fontWeight: 900 }}
+            >
+              {performanceGroupsContent.title}
+            </Typography>
+            {performanceGroupsContent.description && (
+              <Typography sx={{ mb: 4, maxWidth: 760, lineHeight: 1.75 }}>
+                {performanceGroupsContent.description}
+              </Typography>
+            )}
+
+            <Box
+              sx={{
+                gap: 3,
+                display: 'grid',
+                gridTemplateColumns: { xs: '1fr', md: 'repeat(2, minmax(0, 1fr))' },
+              }}
+            >
+              {performanceGroupsContent.groups
+                .filter((group) => group.isPublished !== false)
+                .sort((first, second) => Number(second.isFeatured) - Number(first.isFeatured))
+                .map((group) => (
+                  <Box
+                    key={group.name}
+                    sx={{
+                      p: 3,
+                      borderRadius: 3,
+                      bgcolor: 'rgba(255,255,255,0.7)',
+                      border: '1px solid rgba(42,55,54,0.12)',
+                      borderTop: `4px solid ${group.primaryColor || HOME_DEEP}`,
+                      boxShadow: '0 18px 45px rgba(42,55,54,0.08)',
+                    }}
+                  >
+                    {group.coverImageUrl ? (
+                      <Box
+                        component="img"
+                        src={group.coverImageUrl}
+                        alt={`ภาพปก ${group.name}`}
+                        sx={{
+                          width: '100%',
+                          mb: 2.5,
+                          display: 'block',
+                          aspectRatio: '16 / 9',
+                          objectFit: 'cover',
+                          borderRadius: 2,
+                        }}
+                      />
+                    ) : null}
+                    <Stack
+                      direction="row"
+                      justifyContent="space-between"
+                      spacing={1.5}
+                      alignItems="center"
+                    >
+                      <Stack direction="row" spacing={1.5} alignItems="center">
+                        {group.logoUrl ? (
+                          <Avatar
+                            variant="rounded"
+                            src={group.logoUrl}
+                            alt={`โลโก้ ${group.name}`}
+                            sx={{ width: 56, height: 56 }}
+                          />
+                        ) : null}
+                        <Typography variant="h5" sx={{ fontWeight: 900, color: HOME_DEEP }}>
+                          {group.name}
+                        </Typography>
+                      </Stack>
+                      <Chip label={group.category} size="small" color="secondary" />
+                    </Stack>
+
+                    {group.provinceName ? (
+                      <Chip
+                        label={`จังหวัด${group.provinceName}`}
+                        size="small"
+                        variant="outlined"
+                        sx={{ mt: 1.5, borderColor: group.primaryColor || undefined }}
+                      />
+                    ) : null}
+
+                    <Stack direction="row" spacing={0.75} useFlexGap flexWrap="wrap" sx={{ mt: 1 }}>
+                      {group.isFeatured ? (
+                        <Chip label="วงแนะนำ" size="small" color="warning" />
+                      ) : null}
+                      {group.acceptsBookings ? (
+                        <Chip label="เปิดรับงาน" size="small" color="success" variant="outlined" />
+                      ) : null}
+                    </Stack>
+
+                    {group.description && (
+                      <Typography sx={{ mt: 1.5, color: 'text.secondary', lineHeight: 1.7 }}>
+                        {group.description}
+                      </Typography>
+                    )}
+
+                    {group.acceptsBookings &&
+                    (group.contactPhone ||
+                      group.contactEmail ||
+                      group.lineUrl ||
+                      group.facebookUrl ||
+                      group.youtubeUrl) ? (
+                      <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap" sx={{ mt: 2 }}>
+                        {group.contactPhone ? (
+                          <Button
+                            size="small"
+                            variant="contained"
+                            component="a"
+                            href={`tel:${group.contactPhone}`}
+                          >
+                            โทรติดต่อ
+                          </Button>
+                        ) : null}
+                        {group.contactEmail ? (
+                          <Button
+                            size="small"
+                            variant="outlined"
+                            component="a"
+                            href={`mailto:${group.contactEmail}`}
+                          >
+                            อีเมล
+                          </Button>
+                        ) : null}
+                        {group.lineUrl ? (
+                          <Button
+                            size="small"
+                            variant="outlined"
+                            component="a"
+                            href={group.lineUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            LINE
+                          </Button>
+                        ) : null}
+                        {group.facebookUrl ? (
+                          <Button
+                            size="small"
+                            variant="outlined"
+                            component="a"
+                            href={group.facebookUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            Facebook
+                          </Button>
+                        ) : null}
+                        {group.youtubeUrl ? (
+                          <Button
+                            size="small"
+                            variant="outlined"
+                            component="a"
+                            href={group.youtubeUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            YouTube
+                          </Button>
+                        ) : null}
+                      </Stack>
+                    ) : null}
+
+                    {group.personnel.length > 0 && (
+                      <Box sx={{ mt: 2.5 }}>
+                        <Typography variant="subtitle1" sx={{ color: HOME_DEEP, fontWeight: 900 }}>
+                          บุคลากรและตำแหน่ง
+                        </Typography>
+                        <Box
+                          sx={{
+                            mt: 1.5,
+                            gap: 1.5,
+                            display: 'grid',
+                            gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))' },
+                          }}
+                        >
+                          {group.personnel.map((person) => (
+                            <Box
+                              key={person.id}
+                              sx={{
+                                p: 1.5,
+                                display: 'flex',
+                                gap: 1.5,
+                                borderRadius: 2,
+                                border: '1px solid rgba(42,55,54,0.12)',
+                              }}
+                            >
+                              <Avatar
+                                src={person.imageUrl}
+                                alt={person.fullName}
+                                sx={{ width: 64, height: 64 }}
+                              />
+                              <Box sx={{ minWidth: 0 }}>
+                                <Typography sx={{ fontWeight: 800, color: HOME_DEEP }}>
+                                  {person.fullName || 'ไม่ระบุชื่อ'}
+                                  {person.nickname ? ` (${person.nickname})` : ''}
+                                </Typography>
+                                {person.role && (
+                                  <Typography variant="body2" sx={{ color: 'secondary.main' }}>
+                                    {person.role}
+                                  </Typography>
+                                )}
+                                <Typography variant="caption" sx={{ display: 'block', mt: 0.5 }}>
+                                  {[
+                                    person.age ? `อายุ ${person.age} ปี` : '',
+                                    person.yearsWithGroup
+                                      ? `อยู่กับวง ${person.yearsWithGroup} ปี`
+                                      : '',
+                                  ]
+                                    .filter(Boolean)
+                                    .join(' · ')}
+                                </Typography>
+                                {person.education && (
+                                  <Typography variant="caption" sx={{ display: 'block' }}>
+                                    การศึกษา: {person.education}
+                                  </Typography>
+                                )}
+                                {person.otherDetails && (
+                                  <Markdown
+                                    sx={{
+                                      mt: 0.5,
+                                      color: 'text.secondary',
+                                      fontSize: '0.75rem',
+                                      '& p': { m: 0 },
+                                    }}
+                                  >
+                                    {person.otherDetails}
+                                  </Markdown>
+                                )}
+                              </Box>
+                            </Box>
+                          ))}
+                        </Box>
+                      </Box>
+                    )}
+
+                    <Box sx={{ mt: 2, display: 'grid', gap: 1.5 }}>
+                      {group.personnel.length === 0 && group.managers.length > 0 && (
+                        <Box>
+                          <Typography
+                            variant="subtitle2"
+                            sx={{ color: HOME_DEEP, fontWeight: 800 }}
+                          >
+                            ผู้จัดการวง
+                          </Typography>
+                          <Stack
+                            direction="row"
+                            spacing={1}
+                            useFlexGap
+                            flexWrap="wrap"
+                            sx={{ mt: 0.5 }}
+                          >
+                            {group.managers.map((manager) => (
+                              <Chip key={manager} label={manager} size="small" />
+                            ))}
+                          </Stack>
+                        </Box>
+                      )}
+
+                      {group.personnel.length === 0 && group.coManagers.length > 0 && (
+                        <Box>
+                          <Typography
+                            variant="subtitle2"
+                            sx={{ color: HOME_DEEP, fontWeight: 800 }}
+                          >
+                            ผู้จัดการร่วม
+                          </Typography>
+                          <Stack
+                            direction="row"
+                            spacing={1}
+                            useFlexGap
+                            flexWrap="wrap"
+                            sx={{ mt: 0.5 }}
+                          >
+                            {group.coManagers.map((manager) => (
+                              <Chip key={manager} label={manager} size="small" variant="outlined" />
+                            ))}
+                          </Stack>
+                        </Box>
+                      )}
+
+                      {group.personnel.length === 0 && group.principalMembers.length > 0 && (
+                        <Box>
+                          <Typography
+                            variant="subtitle2"
+                            sx={{ color: HOME_DEEP, fontWeight: 800 }}
+                          >
+                            ตัวหลักวง
+                          </Typography>
+                          <Stack
+                            direction="row"
+                            spacing={1}
+                            useFlexGap
+                            flexWrap="wrap"
+                            sx={{ mt: 0.5 }}
+                          >
+                            {group.principalMembers.map((person) => (
+                              <Chip key={person} label={person} size="small" color="warning" />
+                            ))}
+                          </Stack>
+                        </Box>
+                      )}
+
+                      {group.personnel.length === 0 && group.leadRoles.length > 0 && (
+                        <Box>
+                          <Typography
+                            variant="subtitle2"
+                            sx={{ color: HOME_DEEP, fontWeight: 800 }}
+                          >
+                            บทบาทหลัก
+                          </Typography>
+                          <Stack
+                            direction="row"
+                            spacing={1}
+                            useFlexGap
+                            flexWrap="wrap"
+                            sx={{ mt: 0.5 }}
+                          >
+                            {group.leadRoles.map((role) => (
+                              <Chip
+                                key={role}
+                                label={role}
+                                size="small"
+                                color="warning"
+                                variant="outlined"
+                              />
+                            ))}
+                          </Stack>
+                        </Box>
+                      )}
+
+                      <Box
+                        sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}
+                      >
+                        <Typography variant="subtitle2" sx={{ color: HOME_DEEP, fontWeight: 800 }}>
+                          จำนวนทั้งหมด
+                        </Typography>
+                        <Typography sx={{ fontWeight: 700, color: HOME_DEEP }}>
+                          {group.totalMembers}
+                        </Typography>
+                      </Box>
+
+                      {group.otherPositions.length > 0 && (
+                        <Box>
+                          <Typography
+                            variant="subtitle2"
+                            sx={{ color: HOME_DEEP, fontWeight: 800 }}
+                          >
+                            ตำแหน่งอื่น ๆ
+                          </Typography>
+                          <Stack
+                            direction="row"
+                            spacing={1}
+                            useFlexGap
+                            flexWrap="wrap"
+                            sx={{ mt: 0.5 }}
+                          >
+                            {group.otherPositions.map((position) => (
+                              <Chip
+                                key={position}
+                                label={position}
+                                size="small"
+                                variant="outlined"
+                              />
+                            ))}
+                          </Stack>
+                        </Box>
+                      )}
+                    </Box>
+
+                    {group.yearlyData.length > 0 && (
+                      <Box sx={{ mt: 3 }}>
+                        <Typography
+                          variant="subtitle2"
+                          sx={{ mb: 1, color: HOME_DEEP, fontWeight: 800 }}
+                        >
+                          ข้อมูลรายปีและรางวัล
+                        </Typography>
+                        <Stack spacing={1.5}>
+                          {group.yearlyData.map((yearRecord, yearIndex) => (
+                            <Box
+                              key={`${group.name}-${yearRecord.year}-${yearIndex}`}
+                              sx={{
+                                p: 1.5,
+                                borderRadius: 2,
+                                border: '1px solid rgba(42,55,54,0.12)',
+                                bgcolor: 'rgba(111,135,144,0.04)',
+                              }}
+                            >
+                              <Stack direction="row" spacing={1} alignItems="center">
+                                {yearRecord.logoUrl ? (
+                                  <Avatar
+                                    variant="rounded"
+                                    src={yearRecord.logoUrl}
+                                    alt={`โลโก้ปี ${yearRecord.year}`}
+                                    sx={{ width: 40, height: 40 }}
+                                  />
+                                ) : null}
+                                <Typography sx={{ fontWeight: 800, color: HOME_DEEP }}>
+                                  ปี {yearRecord.year}
+                                </Typography>
+                              </Stack>
+                              {yearRecord.note && (
+                                <Typography sx={{ mt: 0.5, color: 'text.secondary' }}>
+                                  {yearRecord.note}
+                                </Typography>
+                              )}
+                              {yearRecord.about ? (
+                                <Typography sx={{ mt: 1 }}>
+                                  <strong>เกี่ยวกับ:</strong> {yearRecord.about}
+                                </Typography>
+                              ) : null}
+                              {yearRecord.details ? (
+                                <Typography sx={{ mt: 0.5, color: 'text.secondary' }}>
+                                  {yearRecord.details}
+                                </Typography>
+                              ) : null}
+                              {yearRecord.performanceImages?.length ? (
+                                <Box
+                                  sx={{
+                                    mt: 1.5,
+                                    gap: 1,
+                                    display: 'grid',
+                                    gridTemplateColumns: {
+                                      xs: 'repeat(2, minmax(0, 1fr))',
+                                      sm: 'repeat(3, minmax(0, 1fr))',
+                                    },
+                                  }}
+                                >
+                                  {yearRecord.performanceImages.map((imageUrl, imageIndex) => (
+                                    <Box
+                                      key={`${imageUrl}-${imageIndex}`}
+                                      component="img"
+                                      src={imageUrl}
+                                      alt={`ภาพการแสดง ${group.name} ปี ${yearRecord.year}`}
+                                      sx={{
+                                        width: '100%',
+                                        aspectRatio: '4 / 3',
+                                        objectFit: 'cover',
+                                        borderRadius: 1,
+                                      }}
+                                    />
+                                  ))}
+                                </Box>
+                              ) : null}
+                              {yearRecord.storyTypes?.length ? (
+                                <Stack
+                                  direction="row"
+                                  spacing={0.75}
+                                  useFlexGap
+                                  flexWrap="wrap"
+                                  sx={{ mt: 1 }}
+                                >
+                                  {yearRecord.storyTypes.map((storyType) => (
+                                    <Chip
+                                      key={storyType}
+                                      label={storyType}
+                                      size="small"
+                                      variant="outlined"
+                                    />
+                                  ))}
+                                </Stack>
+                              ) : null}
+                              {yearRecord.singerIds?.length ? (
+                                <Typography variant="body2" sx={{ mt: 1 }}>
+                                  <strong>ผู้ร้อง:</strong>{' '}
+                                  {group.personnel
+                                    .filter((person) => yearRecord.singerIds?.includes(person.id))
+                                    .map((person) => person.nickname || person.fullName)
+                                    .join(', ') || 'ไม่ระบุ'}
+                                </Typography>
+                              ) : null}
+                              {yearRecord.bookletUrl ? (
+                                <Button
+                                  component="a"
+                                  href={yearRecord.bookletUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  size="small"
+                                  sx={{ mt: 1 }}
+                                >
+                                  เปิดสูจิบัตร{' '}
+                                  {yearRecord.bookletName ? `(${yearRecord.bookletName})` : ''}
+                                </Button>
+                              ) : null}
+                              {yearRecord.youtubeUrl ? (
+                                <Box
+                                  sx={{
+                                    mt: 1.5,
+                                    aspectRatio: '16 / 9',
+                                    overflow: 'hidden',
+                                    borderRadius: 1,
+                                  }}
+                                >
+                                  <ReactPlayer
+                                    src={yearRecord.youtubeUrl}
+                                    controls
+                                    width="100%"
+                                    height="100%"
+                                  />
+                                </Box>
+                              ) : null}
+                              {yearRecord.awards.length > 0 && (
+                                <Stack spacing={0.75} sx={{ mt: 1 }}>
+                                  {yearRecord.awards.map((award, awardIndex) => (
+                                    <Box key={`${award.title}-${award.year}-${awardIndex}`}>
+                                      <Typography sx={{ fontWeight: 700, color: HOME_DEEP }}>
+                                        {award.title}
+                                      </Typography>
+                                      {award.description && (
+                                        <Typography sx={{ color: 'text.secondary' }}>
+                                          {award.description}
+                                        </Typography>
+                                      )}
+                                    </Box>
+                                  ))}
+                                </Stack>
+                              )}
+                            </Box>
+                          ))}
+                        </Stack>
+                      </Box>
+                    )}
+                  </Box>
+                ))}
             </Box>
           </Box>
         </Box>

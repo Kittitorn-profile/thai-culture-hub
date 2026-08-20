@@ -1,6 +1,8 @@
 import type {
   StoredHomeContent,
   LocalWisdomContent,
+  PerformanceGroupEntry,
+  PerformanceGroupsContent,
   CultureCategoriesContent,
 } from './home-types';
 
@@ -89,6 +91,149 @@ export function normalizeLocalWisdomContent(content?: LocalWisdomContent) {
     caption,
     mediaUrl,
     coverUrl,
+  };
+}
+
+function normalizeStringList(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    return value.map((item) => getFilledText(item)).filter(Boolean);
+  }
+
+  if (typeof value === 'string') {
+    return value
+      .split(',')
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+
+  return [];
+}
+
+export function normalizePerformanceGroupsContent(content?: PerformanceGroupsContent) {
+  if (!content) {
+    return undefined;
+  }
+
+  const title = getFilledText(content.title);
+  const description = getFilledText(content.description);
+
+  const groups: PerformanceGroupEntry[] = [];
+
+  for (const group of Array.isArray(content.groups) ? content.groups : []) {
+    const name = getFilledText(group?.name);
+    if (!name) {
+      continue;
+    }
+
+    const yearlyData: Array<{
+      year: string;
+      logoUrl?: string;
+      details?: string;
+      about?: string;
+      storyTypes?: string[];
+      bookletUrl?: string;
+      bookletName?: string;
+      youtubeUrl?: string;
+      singerIds?: string[];
+      leadPerformerIds?: string[];
+      performanceImages?: string[];
+      awards: Array<{ year: string; title: string; description: string }>;
+      note: string;
+    }> = [];
+
+    for (const yearRecord of Array.isArray(group?.yearlyData) ? group.yearlyData : []) {
+      const year = getFilledText(yearRecord?.year);
+      const logoUrl = getFilledText(yearRecord?.logoUrl);
+      const details = getFilledText(yearRecord?.details);
+      const about = getFilledText(yearRecord?.about);
+      const bookletUrl = getFilledText(yearRecord?.bookletUrl);
+      const youtubeUrl = getFilledText(yearRecord?.youtubeUrl);
+      const performanceImages = normalizeStringList(yearRecord?.performanceImages);
+      const awards = (Array.isArray(yearRecord?.awards) ? yearRecord.awards : [])
+        .map((award) => ({
+          year: getFilledText(award?.year) || year,
+          title: getFilledText(award?.title),
+          description: getFilledText(award?.description),
+        }))
+        .filter((award) => award.title);
+
+      if (
+        !year &&
+        !logoUrl &&
+        !details &&
+        !about &&
+        !bookletUrl &&
+        !youtubeUrl &&
+        performanceImages.length === 0 &&
+        awards.length === 0
+      ) {
+        continue;
+      }
+
+      yearlyData.push({
+        year: year || awards[0]?.year || '',
+        logoUrl: logoUrl || undefined,
+        details: details || undefined,
+        about: about || undefined,
+        storyTypes: normalizeStringList(yearRecord?.storyTypes),
+        bookletUrl: bookletUrl || undefined,
+        bookletName: getFilledText(yearRecord?.bookletName) || undefined,
+        youtubeUrl: youtubeUrl || undefined,
+        singerIds: normalizeStringList(yearRecord?.singerIds),
+        leadPerformerIds: normalizeStringList(yearRecord?.leadPerformerIds),
+        performanceImages,
+        awards,
+        note: getFilledText(yearRecord?.note),
+      });
+    }
+
+    groups.push({
+      id: getFilledText(group?.id) || undefined,
+      name,
+      logoUrl: getFilledText(group?.logoUrl) || undefined,
+      coverImageUrl: getFilledText(group?.coverImageUrl) || undefined,
+      primaryColor: getFilledText(group?.primaryColor) || undefined,
+      provinceCode: getFilledText(group?.provinceCode) || undefined,
+      provinceName: getFilledText(group?.provinceName) || undefined,
+      isPublished: group?.isPublished !== false,
+      isFeatured: group?.isFeatured === true,
+      acceptsBookings: group?.acceptsBookings !== false,
+      contactPhone: getFilledText(group?.contactPhone) || undefined,
+      contactEmail: getFilledText(group?.contactEmail) || undefined,
+      lineUrl: getFilledText(group?.lineUrl) || undefined,
+      facebookUrl: getFilledText(group?.facebookUrl) || undefined,
+      youtubeUrl: getFilledText(group?.youtubeUrl) || undefined,
+      category: getFilledText(group?.category) || 'วงดนตรี',
+      managers: normalizeStringList(group?.managers),
+      coManagers: normalizeStringList(group?.coManagers),
+      principalMembers: normalizeStringList(group?.principalMembers),
+      leadRoles: normalizeStringList(group?.leadRoles),
+      otherPositions: normalizeStringList(group?.otherPositions),
+      personnel: (Array.isArray(group?.personnel) ? group.personnel : []).map((person, index) => ({
+        id: getFilledText(person?.id) || `person-${index}`,
+        role: getFilledText(person?.role),
+        fullName: getFilledText(person?.fullName),
+        nickname: getFilledText(person?.nickname),
+        imageUrl: getFilledText(person?.imageUrl),
+        yearsWithGroup: Math.max(0, Number(person?.yearsWithGroup) || 0),
+        age: Math.max(0, Number(person?.age) || 0),
+        education: getFilledText(person?.education),
+        otherDetails: getFilledText(person?.otherDetails),
+      })),
+      totalMembers: Number(group?.totalMembers) || 0,
+      description: getFilledText(group?.description) || undefined,
+      yearlyData,
+    });
+  }
+
+  if (!title || groups.length === 0) {
+    return undefined;
+  }
+
+  return {
+    title,
+    description,
+    groups,
   };
 }
 

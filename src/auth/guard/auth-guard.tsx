@@ -15,6 +15,7 @@ import { useAuthContext } from '../hooks';
 
 type AuthGuardProps = {
   children: React.ReactNode;
+  signInPath?: string;
 };
 
 const signInPaths = {
@@ -25,7 +26,7 @@ const signInPaths = {
   supabase: paths.auth.supabase.signIn,
 };
 
-export function AuthGuard({ children }: AuthGuardProps) {
+export function AuthGuard({ children, signInPath: customSignInPath }: AuthGuardProps) {
   const router = useRouter();
   const pathname = usePathname();
 
@@ -46,7 +47,7 @@ export function AuthGuard({ children }: AuthGuardProps) {
     if (!authenticated) {
       const { method } = CONFIG.auth;
 
-      const signInPath = signInPaths[method];
+      const signInPath = customSignInPath || signInPaths[method];
       const redirectPath = createRedirectPath(signInPath);
 
       router.replace(redirectPath);

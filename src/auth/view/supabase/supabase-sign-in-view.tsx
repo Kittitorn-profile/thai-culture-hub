@@ -40,7 +40,11 @@ export const SignInSchema = z.object({
 
 // ----------------------------------------------------------------------
 
-export function SupabaseSignInView() {
+type Props = {
+  adminMode?: boolean;
+};
+
+export function SupabaseSignInView({ adminMode = false }: Props) {
   const router = useRouter();
 
   const showPassword = useBoolean();
@@ -109,7 +113,7 @@ export function SupabaseSignInView() {
         type="submit"
         variant="contained"
         loading={isSubmitting}
-        loadingIndicator="Sign in..."
+        loadingIndicator="กำลังเข้าสู่ระบบ..."
       >
         ลงชื่อเข้าใช้งาน
       </Button>
@@ -119,16 +123,20 @@ export function SupabaseSignInView() {
   return (
     <>
       <FormHead
-        title="ลงชื่อเข้าใช้งาน"
+        title={adminMode ? 'เข้าสู่ระบบผู้ดูแล' : 'ลงชื่อเข้าใช้งาน'}
         description={
-          <>
-            {`Don’t have an account? `}
-            <Link component={RouterLink} href={paths.auth.supabase.signUp} variant="subtitle2">
-              Get started
-            </Link>
-          </>
+          adminMode ? (
+            'สำหรับผู้ดูแลและทีมงาน Thailand Cultural Hub'
+          ) : (
+            <>
+              {`Don’t have an account? `}
+              <Link component={RouterLink} href={paths.auth.supabase.signUp} variant="subtitle2">
+                Get started
+              </Link>
+            </>
+          )
         }
-        sx={{ textAlign: { xs: 'center', md: 'left' } }}
+        sx={{ textAlign: adminMode ? 'center' : { xs: 'center', md: 'left' } }}
       />
 
       {!!errorMessage && (

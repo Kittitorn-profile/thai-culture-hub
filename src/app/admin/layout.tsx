@@ -4,6 +4,7 @@ import type { NavSectionProps } from 'src/components/nav-section';
 
 import { useEffect } from 'react';
 
+import { paths } from 'src/routes/paths';
 import { useRouter, usePathname } from 'src/routes/hooks';
 
 import { CONFIG } from 'src/global-config';
@@ -48,6 +49,7 @@ const navData: AdminNavGroup[] = [
           { title: 'เรื่องเล่าและสื่อ', path: '/admin/home-content' },
           { title: 'หมวดหมู่วัฒนธรรม', path: '/admin/home-content/culture-categories' },
           { title: 'ภูมิปัญญาท้องถิ่น', path: '/admin/home-content/local-wisdom' },
+          { title: 'ข้อมูลวงศิลปิน/วงดนตรี', path: '/admin/home-content/performance-groups' },
           { title: 'กิจกรรม', path: '/admin/home-content/events' },
           { title: 'ป๊อปอัปแบนเนอร์', path: '/admin/home-content/popup-banner' },
         ],
@@ -157,7 +159,7 @@ function AdminDashboard({ children }: Props) {
 
 export default function AdminLayout({ children }: Props) {
   return (
-    <AuthGuard>
+    <AuthGuard signInPath={paths.adminLogin}>
       <AdminDashboard>{children}</AdminDashboard>
     </AuthGuard>
   );

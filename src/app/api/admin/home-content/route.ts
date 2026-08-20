@@ -8,7 +8,12 @@ import { verifyAdminRequest } from 'src/server/admin-api-auth';
 import { ADMIN_PERMISSION } from 'src/auth/admin-permissions';
 
 const TABLE_NAME = process.env.HOME_CONTENT_SECTIONS_TABLE ?? 'home_content_sections';
-const ALLOWED_SECTION_KEYS = new Set(['story-media', 'local-wisdom', 'culture-categories']);
+const ALLOWED_SECTION_KEYS = new Set([
+  'story-media',
+  'local-wisdom',
+  'performance-groups',
+  'culture-categories',
+]);
 
 type HomeContentRow = {
   section_key: string;

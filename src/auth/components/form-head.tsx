@@ -1,7 +1,6 @@
 import type { BoxProps } from '@mui/material/Box';
 
 import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 
 // ----------------------------------------------------------------------
 
@@ -32,17 +31,7 @@ export function FormHead({ sx, icon, title, description, ...other }: FormHeadPro
           ...(Array.isArray(sx) ? sx : [sx]),
         ]}
         {...other}
-      >
-        <Typography variant="h5" textAlign="center">
-          {title}
-        </Typography>
-
-        {/* {description && (
-          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-            {description}
-          </Typography>
-        )} */}
-      </Box>
+      />
     </>
   );
 }
