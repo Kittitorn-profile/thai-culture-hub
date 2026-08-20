@@ -128,6 +128,10 @@ export function normalizePerformanceGroupsContent(content?: PerformanceGroupsCon
     const yearlyData: Array<{
       year: string;
       logoUrl?: string;
+      organizerId?: string;
+      organizerName?: string;
+      organizerColor?: string;
+      organizerLogoUrl?: string;
       details?: string;
       about?: string;
       storyTypes?: string[];
@@ -144,6 +148,10 @@ export function normalizePerformanceGroupsContent(content?: PerformanceGroupsCon
     for (const yearRecord of Array.isArray(group?.yearlyData) ? group.yearlyData : []) {
       const year = getFilledText(yearRecord?.year);
       const logoUrl = getFilledText(yearRecord?.logoUrl);
+      const organizerId = getFilledText(yearRecord?.organizerId);
+      const organizerName = getFilledText(yearRecord?.organizerName);
+      const organizerColor = getFilledText(yearRecord?.organizerColor);
+      const organizerLogoUrl = getFilledText(yearRecord?.organizerLogoUrl);
       const details = getFilledText(yearRecord?.details);
       const about = getFilledText(yearRecord?.about);
       const bookletUrl = getFilledText(yearRecord?.bookletUrl);
@@ -160,6 +168,8 @@ export function normalizePerformanceGroupsContent(content?: PerformanceGroupsCon
       if (
         !year &&
         !logoUrl &&
+        !organizerName &&
+        !organizerLogoUrl &&
         !details &&
         !about &&
         !bookletUrl &&
@@ -173,6 +183,10 @@ export function normalizePerformanceGroupsContent(content?: PerformanceGroupsCon
       yearlyData.push({
         year: year || awards[0]?.year || '',
         logoUrl: logoUrl || undefined,
+        organizerId: organizerId || undefined,
+        organizerName: organizerName || undefined,
+        organizerColor: organizerColor || undefined,
+        organizerLogoUrl: organizerLogoUrl || undefined,
         details: details || undefined,
         about: about || undefined,
         storyTypes: normalizeStringList(yearRecord?.storyTypes),

@@ -4,6 +4,7 @@ import type { Control } from 'react-hook-form';
 
 import { useState, useEffect } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { Grid } from 'node_modules/@mui/material/esm';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm, useWatch, Controller, useFieldArray, useFormContext } from 'react-hook-form';
 
@@ -46,6 +47,7 @@ import {
   SECTION_KEY,
   createGroup,
   type Personnel,
+  type Organizer,
   type GroupEntry,
   createPersonnel,
   PersonnelSchema,
@@ -57,7 +59,14 @@ import {
 
 type Props = { groupId?: string };
 type PositionDraft = { id: string; original: string; name: string };
-type UploadFolder = 'personnel' | 'group-logos' | 'yearly-logos' | 'group-covers' | 'booklets';
+type OrganizerDraft = Organizer;
+type UploadFolder =
+  | 'personnel'
+  | 'group-logos'
+  | 'yearly-logos'
+  | 'yearly-organizers'
+  | 'group-covers'
+  | 'booklets';
 
 export function PerformanceGroupForm({ groupId }: Props) {
   const router = useRouter();
@@ -67,6 +76,8 @@ export function PerformanceGroupForm({ groupId }: Props) {
   const [error, setError] = useState('');
   const [editingPersonIndex, setEditingPersonIndex] = useState<number | 'new' | null>(null);
   const [positionDrafts, setPositionDrafts] = useState<PositionDraft[] | null>(null);
+  const [organizers, setOrganizers] = useState<Organizer[]>([]);
+  const [organizerDrafts, setOrganizerDrafts] = useState<OrganizerDraft[] | null>(null);
   const [uploadingImageKey, setUploadingImageKey] = useState('');
   const isEditing = Boolean(groupId);
 
@@ -89,6 +100,10 @@ export function PerformanceGroupForm({ groupId }: Props) {
   });
 
   useEffect(() => {
+    if (query.data) setOrganizers(normalizeContent(query.data.data?.content).organizers);
+  }, [query.data]);
+
+  useEffect(() => {
     if (!isEditing || !query.data) return;
     const selected = normalizeContent(query.data.data?.content).groups.find(
       (item) => item.id === groupId
@@ -108,10 +123,28 @@ export function PerformanceGroupForm({ groupId }: Props) {
       const groups = isEditing
         ? content.groups.map((item) => (item.id === groupId ? nextGroup : item))
         : [...content.groups, nextGroup];
+      const organizerMap = new Map(organizers.map((organizer) => [organizer.id, organizer]));
+      const syncedGroups = groups.map((item) => ({
+        ...item,
+        yearlyData: item.yearlyData.map((record) => {
+          const organizer = organizerMap.get(record.organizerId);
+          return organizer
+            ? {
+                ...record,
+                organizerName: organizer.name,
+                organizerColor: organizer.color,
+                organizerLogoUrl: organizer.logoUrl,
+              }
+            : { ...record, organizerId: '', organizerName: '', organizerLogoUrl: '' };
+        }),
+      }));
       return adminApiRequest('/api/admin/home-content', {
         method: 'PUT',
         accessToken,
-        body: { sectionKey: SECTION_KEY, content: { ...content, groups } },
+        body: {
+          sectionKey: SECTION_KEY,
+          content: { ...content, organizers, groups: syncedGroups },
+        },
       });
     },
     onSuccess: async () => {
@@ -202,6 +235,12 @@ export function PerformanceGroupForm({ groupId }: Props) {
       }
     });
     setPositionDrafts(null);
+  };
+
+  const saveOrganizers = () => {
+    if (!organizerDrafts) return;
+    setOrganizers(organizerDrafts.filter((organizer) => organizer.name.trim()));
+    setOrganizerDrafts(null);
   };
 
   const editingPerson =
@@ -518,28 +557,40 @@ export function PerformanceGroupForm({ groupId }: Props) {
                       ทั้งหมด {group.yearlyData.length} ปี
                     </Typography>
                   </Box>
-                  <Button
-                    variant="outlined"
-                    onClick={() =>
-                      yearlyFieldArray.append({
-                        year: '',
-                        note: '',
-                        logoUrl: '',
-                        details: '',
-                        about: '',
-                        storyTypes: [],
-                        bookletUrl: '',
-                        bookletName: '',
-                        youtubeUrl: '',
-                        singerIds: [],
-                        leadPerformerIds: [],
-                        performanceImages: [],
-                        awards: [],
-                      })
-                    }
-                  >
-                    + เพิ่มปี
-                  </Button>
+                  <Stack direction="row" spacing={1}>
+                    <Button
+                      variant="outlined"
+                      onClick={() => setOrganizerDrafts(organizers.map((item) => ({ ...item })))}
+                    >
+                      จัดการผู้จัด
+                    </Button>
+                    <Button
+                      variant="contained"
+                      onClick={() =>
+                        yearlyFieldArray.append({
+                          year: '',
+                          note: '',
+                          logoUrl: '',
+                          organizerId: '',
+                          organizerName: '',
+                          organizerColor: '#637e69',
+                          organizerLogoUrl: '',
+                          details: '',
+                          about: '',
+                          storyTypes: [],
+                          bookletUrl: '',
+                          bookletName: '',
+                          youtubeUrl: '',
+                          singerIds: [],
+                          leadPerformerIds: [],
+                          performanceImages: [],
+                          awards: [],
+                        })
+                      }
+                    >
+                      + เพิ่มปี
+                    </Button>
+                  </Stack>
                 </Stack>
 
                 {yearlyFieldArray.fields.length === 0 ? (
@@ -552,6 +603,10 @@ export function PerformanceGroupForm({ groupId }: Props) {
                     yearIndex={yearIndex}
                     primaryColor={group.primaryColor}
                     personnel={group.personnel}
+                    organizers={organizers}
+                    onManageOrganizers={() =>
+                      setOrganizerDrafts(organizers.map((item) => ({ ...item })))
+                    }
                     uploadingImageKey={uploadingImageKey}
                     onUploadLogo={(file) =>
                       uploadImage(`year-logo-${yearIndex}`, 'yearly-logos', file, (logoUrl) =>
@@ -732,7 +787,129 @@ export function PerformanceGroupForm({ groupId }: Props) {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <Dialog
+        open={Boolean(organizerDrafts)}
+        onClose={() => setOrganizerDrafts(null)}
+        fullWidth
+        maxWidth="md"
+      >
+        <DialogTitle>คลังผู้จัดส่วนกลาง</DialogTitle>
+        <DialogContent dividers>
+          <Stack spacing={2} sx={{ pt: 0.5 }}>
+            <Alert severity="info">ผู้จัดในคลังนี้เลือกใช้ซ้ำได้ทุกปีและทุกวง</Alert>
+            {organizerDrafts?.map((organizer) => (
+              <OrganizerEditor
+                key={organizer.id}
+                organizer={organizer}
+                uploading={uploadingImageKey === `organizer-${organizer.id}`}
+                onChange={(next) =>
+                  setOrganizerDrafts(
+                    (current) => current?.map((item) => (item.id === next.id ? next : item)) ?? null
+                  )
+                }
+                onDelete={() =>
+                  setOrganizerDrafts(
+                    (current) => current?.filter((item) => item.id !== organizer.id) ?? null
+                  )
+                }
+                onUpload={(file) =>
+                  uploadImage(`organizer-${organizer.id}`, 'yearly-organizers', file, (logoUrl) =>
+                    setOrganizerDrafts(
+                      (current) =>
+                        current?.map((item) =>
+                          item.id === organizer.id ? { ...item, logoUrl } : item
+                        ) ?? null
+                    )
+                  )
+                }
+              />
+            ))}
+            <Button
+              variant="outlined"
+              sx={{ alignSelf: 'flex-start' }}
+              onClick={() =>
+                setOrganizerDrafts((current) => [
+                  ...(current ?? []),
+                  { id: crypto.randomUUID(), name: '', color: '#637e69', logoUrl: '' },
+                ])
+              }
+            >
+              + เพิ่มผู้จัด
+            </Button>
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button color="inherit" onClick={() => setOrganizerDrafts(null)}>
+            ยกเลิก
+          </Button>
+          <Button variant="contained" onClick={saveOrganizers}>
+            บันทึกคลังผู้จัด
+          </Button>
+        </DialogActions>
+      </Dialog>
     </DashboardContent>
+  );
+}
+
+// ----------------------------------------------------------------------
+
+function OrganizerEditor({
+  organizer,
+  uploading,
+  onChange,
+  onDelete,
+  onUpload,
+}: {
+  organizer: Organizer;
+  uploading: boolean;
+  onChange: (organizer: Organizer) => void;
+  onDelete: () => void;
+  onUpload: (file: File | undefined) => void;
+}) {
+  return (
+    <Card variant="outlined" sx={{ p: 2 }}>
+      <Box
+        sx={{
+          display: 'grid',
+          gap: 2,
+          alignItems: 'center',
+          gridTemplateColumns: { xs: '1fr', sm: '110px minmax(0, 1fr) auto' },
+        }}
+      >
+        <ImageDropUpload
+          imageUrl={organizer.logoUrl}
+          alt={`โลโก้ ${organizer.name}`}
+          size={96}
+          uploading={uploading}
+          onFile={onUpload}
+        />
+        <Stack spacing={1.5}>
+          <TextField
+            fullWidth
+            required
+            label="ชื่อผู้จัด"
+            value={organizer.name}
+            onChange={(event) => onChange({ ...organizer, name: event.target.value })}
+          />
+          <Stack direction="row" spacing={1.5} alignItems="center">
+            <TextField
+              type="color"
+              label="สีประจำผู้จัด"
+              value={organizer.color}
+              onChange={(event) => onChange({ ...organizer, color: event.target.value })}
+              sx={{ width: 130 }}
+            />
+            <Typography variant="body2" color="text.secondary">
+              {organizer.color}
+            </Typography>
+          </Stack>
+        </Stack>
+        <Button color="error" onClick={onDelete}>
+          ลบ
+        </Button>
+      </Box>
+    </Card>
   );
 }
 
@@ -799,6 +976,8 @@ type YearRecordFieldsProps = {
   yearIndex: number;
   primaryColor: string;
   personnel: Personnel[];
+  organizers: Organizer[];
+  onManageOrganizers: () => void;
   uploadingImageKey: string;
   onUploadLogo: (file: File | undefined) => void;
   onUploadPerformanceImages: (files: File[]) => void;
@@ -812,6 +991,8 @@ function YearRecordFields({
   yearIndex,
   primaryColor,
   personnel,
+  organizers,
+  onManageOrganizers,
   uploadingImageKey,
   onUploadLogo,
   onUploadPerformanceImages,
@@ -879,22 +1060,85 @@ function YearRecordFields({
               ลบปี
             </Button>
           </Stack>
+
           <Box>
-            <Typography variant="subtitle2" sx={{ mb: 1 }}>
-              โลโก้ประจำปี
-            </Typography>
-            <ImageDropUpload
-              imageUrl={record.logoUrl}
-              alt={`โลโก้ปี ${record.year}`}
-              size={160}
-              uploading={uploadingImageKey === `year-logo-${yearIndex}`}
-              onFile={onUploadLogo}
-            />
+            <Grid container spacing={2}>
+              <Grid size={{ xs: 12, lg: 2 }}>
+                <Box>
+                  <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                    โลโก้ประจำปี
+                  </Typography>
+                  <ImageDropUpload
+                    imageUrl={record.logoUrl}
+                    alt={`โลโก้ปี ${record.year}`}
+                    size={160}
+                    uploading={uploadingImageKey === `year-logo-${yearIndex}`}
+                    onFile={onUploadLogo}
+                  />
+                </Box>
+              </Grid>
+              <Grid size={{ xs: 12, lg: 10 }}>
+                <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                  ผู้จัดประจำปี
+                </Typography>
+                <Box
+                  sx={{
+                    p: 2.5,
+                    borderRadius: 2,
+                    bgcolor: 'background.neutral',
+                    border: '1px solid',
+                    borderColor: 'divider',
+                  }}
+                >
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                    เลือกจากคลังผู้จัดส่วนกลาง สามารถใช้ซ้ำได้ทุกปีและทุกวง
+                  </Typography>
+                  <Stack
+                    direction={{ xs: 'column', sm: 'row' }}
+                    spacing={1.5}
+                    alignItems={{ sm: 'center' }}
+                  >
+                    <Field.Select
+                      fullWidth
+                      name={`yearlyData.${yearIndex}.organizerId`}
+                      label="ผู้จัด"
+                    >
+                      <MenuItem value="">
+                        <em>ไม่ระบุผู้จัด</em>
+                      </MenuItem>
+                      {organizers.map((organizer) => (
+                        <MenuItem key={organizer.id} value={organizer.id}>
+                          <Stack direction="row" spacing={1} alignItems="center">
+                            <Avatar
+                              src={organizer.logoUrl}
+                              sx={{ width: 28, height: 28, bgcolor: organizer.color }}
+                            >
+                              {organizer.name.slice(0, 1)}
+                            </Avatar>
+                            <span>{organizer.name}</span>
+                          </Stack>
+                        </MenuItem>
+                      ))}
+                    </Field.Select>
+                    <Button
+                      variant="outlined"
+                      size="xLarge"
+                      onClick={onManageOrganizers}
+                      sx={{ flexShrink: 0 }}
+                    >
+                      จัดการผู้จัด
+                    </Button>
+                  </Stack>
+                </Box>
+              </Grid>
+            </Grid>
           </Box>
+
           <Box>
             <Typography variant="subtitle2" sx={{ mb: 1 }}>
               ภาพการแสดงประจำปี
             </Typography>
+
             <Button
               component="label"
               variant="outlined"

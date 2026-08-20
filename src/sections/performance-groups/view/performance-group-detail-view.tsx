@@ -650,6 +650,48 @@ export function PerformanceGroupDetailView({ groupId, initialGroup }: Props) {
                           />
                         </Stack>
                       </Stack>
+                      {record.organizerName && (
+                        <Stack
+                          direction="row"
+                          spacing={1.5}
+                          alignItems="center"
+                          sx={{
+                            mb: 2.5,
+                            p: 1.75,
+                            width: 'fit-content',
+                            minWidth: { sm: 320 },
+                            borderRadius: 2,
+                            bgcolor: `${record.organizerColor || '#637e69'}14`,
+                            border: '1px solid',
+                            borderColor: `${record.organizerColor || '#637e69'}45`,
+                            borderLeft: `5px solid ${record.organizerColor || '#637e69'}`,
+                          }}
+                        >
+                          <Avatar
+                            variant="rounded"
+                            src={record.organizerLogoUrl}
+                            alt={record.organizerName}
+                            sx={{
+                              width: 52,
+                              height: 52,
+                              bgcolor: record.organizerColor || '#637e69',
+                            }}
+                          >
+                            {record.organizerName.slice(0, 1)}
+                          </Avatar>
+                          <Box>
+                            <Typography
+                              variant="caption"
+                              sx={{ color: 'text.secondary', fontWeight: 800 }}
+                            >
+                              ผู้จัดการแสดงประจำปี
+                            </Typography>
+                            <Typography sx={{ fontWeight: 950 }}>
+                              {record.organizerName}
+                            </Typography>
+                          </Box>
+                        </Stack>
+                      )}
                       {record.about && <Typography sx={{ mt: 1 }}>{record.about}</Typography>}
                       {record.details && (
                         <Typography sx={{ mt: 0.75, color: 'text.secondary' }}>

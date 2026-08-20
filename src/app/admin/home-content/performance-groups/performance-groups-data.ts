@@ -30,6 +30,13 @@ export const AwardSchema = zod.object({
   description: zod.string(),
 });
 
+export const OrganizerSchema = zod.object({
+  id: zod.string(),
+  name: zod.string().trim().min(1, { message: 'กรุณากรอกชื่อผู้จัด' }),
+  color: zod.string(),
+  logoUrl: zod.string(),
+});
+
 export const PersonnelSchema = zod.object({
   id: zod.string(),
   role: zod.string().trim().min(1, { message: 'กรุณาเลือกตำแหน่ง' }),
@@ -46,6 +53,10 @@ export const YearRecordSchema = zod.object({
   year: zod.string(),
   note: zod.string(),
   logoUrl: zod.string(),
+  organizerId: zod.string(),
+  organizerName: zod.string(),
+  organizerColor: zod.string(),
+  organizerLogoUrl: zod.string(),
   details: zod.string(),
   about: zod.string(),
   storyTypes: zod.array(zod.string()),
@@ -88,15 +99,22 @@ export const GroupEntrySchema = zod.object({
 });
 
 export type Award = zod.infer<typeof AwardSchema>;
+export type Organizer = zod.infer<typeof OrganizerSchema>;
 export type YearRecord = zod.infer<typeof YearRecordSchema>;
 export type Personnel = zod.infer<typeof PersonnelSchema>;
 export type GroupEntry = zod.infer<typeof GroupEntrySchema>;
-export type GroupsContent = { title: string; description: string; groups: GroupEntry[] };
+export type GroupsContent = {
+  title: string;
+  description: string;
+  organizers: Organizer[];
+  groups: GroupEntry[];
+};
 export type HomeContentResponse = { data?: { content?: unknown } | null; message?: string };
 
 export const EMPTY_CONTENT: GroupsContent = {
   title: 'วงศิลปินและวงดนตรี',
   description: 'ข้อมูลวงโปงลาง วงหมอลำ และวงดนตรี',
+  organizers: [],
   groups: [],
 };
 
@@ -151,6 +169,22 @@ const stringList = (value: unknown) =>
 export function normalizeContent(value: unknown): GroupsContent {
   if (!value || typeof value !== 'object') return EMPTY_CONTENT;
   const content = value as Partial<GroupsContent>;
+  const storedOrganizers: Organizer[] = Array.isArray(content.organizers)
+    ? content.organizers
+        .map((organizer, index) => ({
+          id:
+            typeof organizer?.id === 'string' && organizer.id
+              ? organizer.id
+              : `legacy-organizer-${index}`,
+          name: typeof organizer?.name === 'string' ? organizer.name.trim() : '',
+          color: typeof organizer?.color === 'string' ? organizer.color : '#637e69',
+          logoUrl: typeof organizer?.logoUrl === 'string' ? organizer.logoUrl : '',
+        }))
+        .filter((organizer) => organizer.name)
+    : [];
+  const legacyOrganizerMap = new Map(
+    storedOrganizers.map((organizer) => [organizer.name, organizer])
+  );
   const groups = Array.isArray(content.groups)
     ? content.groups.map((group, index): GroupEntry => {
         const legacyPersonnel = [
@@ -213,27 +247,56 @@ export function normalizeContent(value: unknown): GroupsContent {
           totalMembers: Math.max(0, Number(group?.totalMembers) || 0),
           description: typeof group?.description === 'string' ? group.description : '',
           yearlyData: Array.isArray(group?.yearlyData)
-            ? group.yearlyData.map((record) => ({
-                year: typeof record?.year === 'string' ? record.year : '',
-                note: typeof record?.note === 'string' ? record.note : '',
-                logoUrl: typeof record?.logoUrl === 'string' ? record.logoUrl : '',
-                details: typeof record?.details === 'string' ? record.details : '',
-                about: typeof record?.about === 'string' ? record.about : '',
-                storyTypes: stringList(record?.storyTypes),
-                bookletUrl: typeof record?.bookletUrl === 'string' ? record.bookletUrl : '',
-                bookletName: typeof record?.bookletName === 'string' ? record.bookletName : '',
-                youtubeUrl: typeof record?.youtubeUrl === 'string' ? record.youtubeUrl : '',
-                singerIds: stringList(record?.singerIds),
-                leadPerformerIds: stringList(record?.leadPerformerIds),
-                performanceImages: stringList(record?.performanceImages),
-                awards: Array.isArray(record?.awards)
-                  ? record.awards.map((award) => ({
-                      year: typeof award?.year === 'string' ? award.year : '',
-                      title: typeof award?.title === 'string' ? award.title : '',
-                      description: typeof award?.description === 'string' ? award.description : '',
-                    }))
-                  : [],
-              }))
+            ? group.yearlyData.map((record) => {
+                const organizerName =
+                  typeof record?.organizerName === 'string' ? record.organizerName.trim() : '';
+                let organizer = organizerName ? legacyOrganizerMap.get(organizerName) : undefined;
+                if (organizerName && !organizer) {
+                  organizer = {
+                    id: `organizer-${legacyOrganizerMap.size + 1}-${organizerName}`,
+                    name: organizerName,
+                    color:
+                      typeof record?.organizerColor === 'string'
+                        ? record.organizerColor
+                        : '#637e69',
+                    logoUrl:
+                      typeof record?.organizerLogoUrl === 'string' ? record.organizerLogoUrl : '',
+                  };
+                  legacyOrganizerMap.set(organizerName, organizer);
+                }
+                const organizerId =
+                  typeof record?.organizerId === 'string' && record.organizerId
+                    ? record.organizerId
+                    : (organizer?.id ?? '');
+                const resolvedOrganizer =
+                  storedOrganizers.find((item) => item.id === organizerId) ?? organizer;
+                return {
+                  year: typeof record?.year === 'string' ? record.year : '',
+                  note: typeof record?.note === 'string' ? record.note : '',
+                  logoUrl: typeof record?.logoUrl === 'string' ? record.logoUrl : '',
+                  organizerId,
+                  organizerName: resolvedOrganizer?.name ?? organizerName,
+                  organizerColor: resolvedOrganizer?.color ?? '#637e69',
+                  organizerLogoUrl: resolvedOrganizer?.logoUrl ?? '',
+                  details: typeof record?.details === 'string' ? record.details : '',
+                  about: typeof record?.about === 'string' ? record.about : '',
+                  storyTypes: stringList(record?.storyTypes),
+                  bookletUrl: typeof record?.bookletUrl === 'string' ? record.bookletUrl : '',
+                  bookletName: typeof record?.bookletName === 'string' ? record.bookletName : '',
+                  youtubeUrl: typeof record?.youtubeUrl === 'string' ? record.youtubeUrl : '',
+                  singerIds: stringList(record?.singerIds),
+                  leadPerformerIds: stringList(record?.leadPerformerIds),
+                  performanceImages: stringList(record?.performanceImages),
+                  awards: Array.isArray(record?.awards)
+                    ? record.awards.map((award) => ({
+                        year: typeof award?.year === 'string' ? award.year : '',
+                        title: typeof award?.title === 'string' ? award.title : '',
+                        description:
+                          typeof award?.description === 'string' ? award.description : '',
+                      }))
+                    : [],
+                };
+              })
             : [],
         };
       })
@@ -242,6 +305,7 @@ export function normalizeContent(value: unknown): GroupsContent {
     title: typeof content.title === 'string' ? content.title : EMPTY_CONTENT.title,
     description:
       typeof content.description === 'string' ? content.description : EMPTY_CONTENT.description,
+    organizers: Array.from(legacyOrganizerMap.values()),
     groups,
   };
 }

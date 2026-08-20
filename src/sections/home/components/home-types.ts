@@ -93,6 +93,10 @@ export type PerformanceGroupEntry = {
   yearlyData: Array<{
     year: string;
     logoUrl?: string;
+    organizerId?: string;
+    organizerName?: string;
+    organizerColor?: string;
+    organizerLogoUrl?: string;
     details?: string;
     about?: string;
     storyTypes?: string[];

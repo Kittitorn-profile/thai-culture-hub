@@ -77,6 +77,9 @@ const SOUTHERN_NORA_GROUP: PerformanceGroupEntry = {
   yearlyData: [
     {
       year: '2568',
+      organizerName: 'สภาวัฒนธรรมจังหวัดนครศรีธรรมราช',
+      organizerColor: '#8b5e3c',
+      organizerLogoUrl: '/assets/images/mock/company/company-1.webp',
       details: 'ออกแสดงในเทศกาลศิลปวัฒนธรรมภาคใต้ 8 จังหวัด รวมทั้งหมด 24 รอบ',
       about: 'โครงการโนราสู่คนรุ่นใหม่ ถ่ายทอดท่ารำ บทร้อง และดนตรีผ่านเวทีร่วมสมัย',
       storyTypes: ['โนราโรงครู', 'โนราร่วมสมัย', 'บทขับร้องพื้นบ้าน'],
@@ -150,6 +153,9 @@ const PONGLANG_KALASIN_GROUP: PerformanceGroupEntry = {
     {
       year: '2568',
       logoUrl: '/assets/images/mock/avatar/avatar-12.webp',
+      organizerName: 'สมาคมศิลปินพื้นบ้านกาฬสินธุ์',
+      organizerColor: '#a85f38',
+      organizerLogoUrl: '/assets/images/mock/company/company-2.webp',
       details: 'เดินสายแสดงงานวัฒนธรรม 12 จังหวัด และจัดเวิร์กช็อปโปงลางสำหรับเยาวชน 6 รุ่น',
       about: 'ชุดการแสดง “เสียงโปงลางจากทุ่งกาฬสินธุ์” ถ่ายทอดวิถีชุมชนผ่านดนตรีและนาฏศิลป์อีสาน',
       storyTypes: ['โปงลางร่วมสมัย', 'เซิ้งกาฬสินธุ์', 'เพลงพื้นบ้านอีสาน'],
@@ -179,6 +185,9 @@ const PONGLANG_KALASIN_GROUP: PerformanceGroupEntry = {
     },
     {
       year: '2567',
+      organizerName: 'เครือข่ายเยาวชนโปงลางอีสาน',
+      organizerColor: '#637e69',
+      organizerLogoUrl: '/assets/images/mock/company/company-3.webp',
       details: 'จัดการแสดงแลกเปลี่ยนวัฒนธรรมและฝึกอบรมวงโปงลางโรงเรียนในพื้นที่ 10 แห่ง',
       about: 'โครงการลูกอีสานสืบสานเสียงโปงลาง สร้างเครือข่ายเยาวชนดนตรีพื้นบ้าน',
       storyTypes: ['ดนตรีเพื่อการศึกษา', 'โปงลางเยาวชน'],

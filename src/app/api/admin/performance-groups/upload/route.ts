@@ -40,6 +40,7 @@ export async function POST(request: NextRequest) {
       'personnel',
       'group-logos',
       'yearly-logos',
+      'yearly-organizers',
       'group-covers',
       'yearly-performances',
       'booklets',
