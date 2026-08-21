@@ -41,11 +41,6 @@ export function PerformanceGroupContestEvents({ group, record, contestEvents }: 
       <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
         {record.contestEventIds.map((eventId) => {
           const eventItem = contestEvents.find((item) => item.id === eventId);
-          const categoryLabels = (record.contestCategoryIds?.[eventId] ?? []).map(
-            (categoryId) =>
-              eventItem?.contestCategories?.find((category) => category.id === categoryId)?.name ??
-              categoryId
-          );
           const categoryIds = record.contestCategoryIds?.[eventId] ?? [];
           const categoryCast = categoryIds.flatMap((categoryId) => {
             const categoryLabel =
@@ -162,34 +157,33 @@ export function PerformanceGroupContestEvents({ group, record, contestEvents }: 
                   }}
                 />
               </Button>
-              {categoryLabels.length > 0 && (
-                <Stack direction="row" spacing={0.75} useFlexGap flexWrap="wrap" sx={{ mt: 1 }}>
-                  <Typography variant="body2" sx={{ mr: 0.25, fontWeight: 800 }}>
-                    ประเภทที่ส่งประกวด
-                  </Typography>
-                </Stack>
+              {categoryIds.length > 0 && (
+                <Typography variant="subtitle2" sx={{ mt: 1.5, fontWeight: 950 }}>
+                  ประเภทที่ส่งประกวด
+                </Typography>
               )}
-              {(record.contestCategoryIds?.[eventId] ?? []).map((categoryId) => {
+              {categoryIds.map((categoryId) => {
                 const categoryName =
                   eventItem?.contestCategories?.find((category) => category.id === categoryId)
                     ?.name ?? categoryId;
                 const categoryDetails =
                   record.contestCategoryDetails?.[eventId]?.[categoryId] ?? '';
-                const categoryResultLabels = (
-                  record.contestCategoryResultIds?.[eventId]?.[categoryId] ?? []
-                ).map(
+                const categoryResultIds =
+                  record.contestCategoryResultIds?.[eventId]?.[categoryId] ?? [];
+                const resultIds = categoryResultIds.length
+                  ? categoryResultIds
+                  : (record.contestResultIds?.[eventId] ?? []);
+                const categoryResultLabels = resultIds.map(
                   (resultId) =>
                     eventItem?.contestResultOptions?.find((option) => option.id === resultId)
                       ?.name ?? resultId
                 );
-                if (!categoryDetails && categoryResultLabels.length === 0) return null;
-
                 return (
                   <Box
-                    key={`details-${categoryId}`}
+                    key={`${eventId}-category-${categoryId}`}
                     sx={{
                       mt: 1,
-                      p: 1.5,
+                      p: { xs: 1.5, md: 2 },
                       borderRadius: 1.5,
                       bgcolor: 'background.paper',
                       border: '1px solid',
