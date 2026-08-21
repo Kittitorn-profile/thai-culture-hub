@@ -18,6 +18,7 @@ import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import Divider from '@mui/material/Divider';
 import MenuItem from '@mui/material/MenuItem';
+import Snackbar from '@mui/material/Snackbar';
 import TextField from '@mui/material/TextField';
 import Accordion from '@mui/material/Accordion';
 import Typography from '@mui/material/Typography';
@@ -41,6 +42,7 @@ import { Form, Field } from 'src/components/hook-form';
 import { useAuthContext } from 'src/auth/hooks';
 
 import { ImageDropUpload } from './image-drop-upload';
+import { resizeImageFile } from './resize-image-file';
 import {
   parseList,
   type Award,
@@ -86,6 +88,7 @@ export function PerformanceGroupForm({ groupId }: Props) {
   const { user } = useAuthContext();
   const accessToken = user?.accessToken ?? user?.access_token ?? '';
   const [error, setError] = useState('');
+  const [uploadError, setUploadError] = useState('');
   const [editingPersonIndex, setEditingPersonIndex] = useState<number | 'new' | null>(null);
   const [positionDrafts, setPositionDrafts] = useState<PositionDraft[] | null>(null);
   const [organizers, setOrganizers] = useState<Organizer[]>([]);
@@ -202,10 +205,12 @@ export function PerformanceGroupForm({ groupId }: Props) {
   ) => {
     if (!file) return;
     setError('');
+    setUploadError('');
     setUploadingImageKey(key);
     try {
+      const resizedFile = folder === 'booklets' ? file : await resizeImageFile(file);
       const body = new FormData();
-      body.append('file', file);
+      body.append('file', resizedFile);
       body.append('folder', folder);
       const response = await adminApiRequest<{ data: { url: string } }>(
         '/api/admin/performance-groups/upload',
@@ -213,7 +218,9 @@ export function PerformanceGroupForm({ groupId }: Props) {
       );
       onUploaded(response.data.url);
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : 'อัปโหลดรูปไม่สำเร็จ');
+      const message = caught instanceof Error ? caught.message : 'อัปโหลดรูปไม่สำเร็จ';
+      setError(message);
+      setUploadError(message);
     } finally {
       setUploadingImageKey('');
     }
@@ -223,12 +230,14 @@ export function PerformanceGroupForm({ groupId }: Props) {
     if (!files.length) return;
     const key = `performances-${yearIndex}`;
     setError('');
+    setUploadError('');
     setUploadingImageKey(key);
     try {
       const urls = await Promise.all(
         files.map(async (file) => {
+          const resizedFile = await resizeImageFile(file);
           const body = new FormData();
-          body.append('file', file);
+          body.append('file', resizedFile);
           body.append('folder', 'yearly-performances');
           const response = await adminApiRequest<{ data: { url: string } }>(
             '/api/admin/performance-groups/upload',
@@ -242,7 +251,9 @@ export function PerformanceGroupForm({ groupId }: Props) {
         ...urls,
       ]);
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : 'อัปโหลดภาพการแสดงไม่สำเร็จ');
+      const message = caught instanceof Error ? caught.message : 'อัปโหลดภาพการแสดงไม่สำเร็จ';
+      setError(message);
+      setUploadError(message);
     } finally {
       setUploadingImageKey('');
     }
@@ -296,6 +307,16 @@ export function PerformanceGroupForm({ groupId }: Props) {
 
   return (
     <DashboardContent maxWidth="lg">
+      <Snackbar
+        open={Boolean(uploadError)}
+        autoHideDuration={7000}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        onClose={() => setUploadError('')}
+      >
+        <Alert severity="error" variant="filled" onClose={() => setUploadError('')}>
+          {uploadError}
+        </Alert>
+      </Snackbar>
       <Form methods={methods} onSubmit={onSubmit}>
         <Stack spacing={3}>
           <Card
@@ -505,7 +526,7 @@ export function PerformanceGroupForm({ groupId }: Props) {
                     }
                   />
                   <Typography variant="caption" color="text.secondary">
-                    ภาพแนวนอน 16:9 · ไม่เกิน 2 MB
+                    ภาพแนวนอน 16:9 · ระบบย่อไฟล์อัตโนมัติให้ไม่เกิน 1 MB
                   </Typography>
                 </Box>
               </Stack>

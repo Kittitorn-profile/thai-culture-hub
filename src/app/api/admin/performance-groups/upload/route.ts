@@ -7,7 +7,7 @@ import { verifyAdminRequest } from 'src/server/admin-api-auth';
 
 import { ADMIN_PERMISSION } from 'src/auth/admin-permissions';
 
-const MAX_IMAGE_SIZE = 2 * 1024 * 1024;
+const MAX_IMAGE_SIZE = 1024 * 1024;
 const MAX_DOCUMENT_SIZE = 10 * 1024 * 1024;
 const ASSETS_BUCKET =
   process.env.PERFORMANCE_GROUPS_ASSETS_BUCKET ??
@@ -59,7 +59,11 @@ export async function POST(request: NextRequest) {
   }
   if (file.size > (isBooklet ? MAX_DOCUMENT_SIZE : MAX_IMAGE_SIZE)) {
     return NextResponse.json(
-      { message: isBooklet ? 'ไฟล์ PDF ต้องมีขนาดไม่เกิน 10 MB' : 'รูปภาพต้องมีขนาดไม่เกิน 2 MB' },
+      {
+        message: isBooklet
+          ? 'ไฟล์ PDF ต้องมีขนาดไม่เกิน 10 MB'
+          : 'รูปภาพหลังย่อต้องมีขนาดไม่เกิน 1 MB',
+      },
       { status: 400 }
     );
   }

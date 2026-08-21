@@ -1,5 +1,6 @@
 'use client';
 
+import type { MouseEvent } from 'react';
 import type { IconifyName } from 'src/components/iconify/register-icons';
 import type {
   StoryContent,
@@ -24,6 +25,7 @@ import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
+import Popover from '@mui/material/Popover';
 import Typography from '@mui/material/Typography';
 import CircularProgress from '@mui/material/CircularProgress';
 
@@ -94,6 +96,10 @@ export function HomeView() {
   const performanceGroupsLoadMoreRef = useRef<HTMLDivElement | null>(null);
   const creatorArticlesLoadingRef = useRef(false);
   const [selectedVideo, setSelectedVideo] = useState<HomeVideoItem | null>(null);
+  const [performanceGroupShareMenu, setPerformanceGroupShareMenu] = useState<{
+    anchorEl: HTMLElement;
+    groupId: string;
+  } | null>(null);
   const [videoPreviewKey, setVideoPreviewKey] = useState(0);
   const [storyContent, setStoryContent] = useState<StoryContent>();
   const [localWisdomContent, setLocalWisdomContent] = useState<LocalWisdomContent>();
@@ -110,6 +116,8 @@ export function HomeView() {
   const [creatorArticlesOffset, setCreatorArticlesOffset] = useState(0);
   const [hasMoreCreatorArticles, setHasMoreCreatorArticles] = useState(false);
   const [isLoadingCreatorArticles, setIsLoadingCreatorArticles] = useState(false);
+  const [selectedPerformanceGroupCategory, setSelectedPerformanceGroupCategory] =
+    useState('ทั้งหมด');
   const [visiblePerformanceGroupCount, setVisiblePerformanceGroupCount] = useState(6);
   const [performanceGroupCounts, setPerformanceGroupCounts] = useState<
     Record<string, { views: number; shares: number }>
@@ -120,11 +128,21 @@ export function HomeView() {
     .filter((group) => group.isPublished !== false)
     .slice()
     .sort((first, second) => Number(second.isFeatured) - Number(first.isFeatured));
-  const visiblePerformanceGroups = publishedPerformanceGroups.slice(
-    0,
-    visiblePerformanceGroupCount
+  const performanceGroupCategories = Array.from(
+    new Set(
+      publishedPerformanceGroups
+        .map((group) => group.category?.trim())
+        .filter((category): category is string => Boolean(category))
+    )
   );
-  const hasMorePerformanceGroups = visiblePerformanceGroupCount < publishedPerformanceGroups.length;
+  const filteredPerformanceGroups =
+    selectedPerformanceGroupCategory === 'ทั้งหมด'
+      ? publishedPerformanceGroups
+      : publishedPerformanceGroups.filter(
+          (group) => group.category?.trim() === selectedPerformanceGroupCategory
+        );
+  const visiblePerformanceGroups = filteredPerformanceGroups.slice(0, visiblePerformanceGroupCount);
+  const hasMorePerformanceGroups = visiblePerformanceGroupCount < filteredPerformanceGroups.length;
   const featuredCultureCategoryCards = cultureCategoryCards.slice(
     0,
     FEATURED_CULTURE_CATEGORY_LIMIT
@@ -308,7 +326,18 @@ export function HomeView() {
 
   useEffect(() => {
     setVisiblePerformanceGroupCount(6);
-  }, [performanceGroupsContent]);
+  }, [performanceGroupsContent, selectedPerformanceGroupCategory]);
+
+  useEffect(() => {
+    const categoryStillExists = (performanceGroupsContent?.groups ?? []).some(
+      (group) =>
+        group.isPublished !== false && group.category?.trim() === selectedPerformanceGroupCategory
+    );
+
+    if (selectedPerformanceGroupCategory !== 'ทั้งหมด' && !categoryStillExists) {
+      setSelectedPerformanceGroupCategory('ทั้งหมด');
+    }
+  }, [performanceGroupsContent, selectedPerformanceGroupCategory]);
 
   useEffect(() => {
     const target = performanceGroupsLoadMoreRef.current;
@@ -439,6 +468,16 @@ export function HomeView() {
         : `https://social-plugins.line.me/lineit/share?url=${encodedUrl}`;
 
     window.open(shareUrl, '_blank', 'noopener,noreferrer,width=720,height=640');
+  };
+
+  const handleOpenPerformanceGroupShareMenu = (event: MouseEvent<HTMLElement>, groupId: string) => {
+    setPerformanceGroupShareMenu({ anchorEl: event.currentTarget, groupId });
+  };
+
+  const handleSelectPerformanceGroupShare = (platform: 'facebook' | 'line') => {
+    if (!performanceGroupShareMenu) return;
+    handleSharePerformanceGroup(platform, performanceGroupShareMenu.groupId);
+    setPerformanceGroupShareMenu(null);
   };
 
   return (
@@ -1024,7 +1063,7 @@ export function HomeView() {
               variant="overline"
               sx={{ display: 'block', letterSpacing: 2, fontWeight: 900 }}
             >
-              วงศิลปินและวงดนตรี
+              ศิลปิน วงดนตรี และคณะการแสดง
             </Typography>
             <Typography
               component="h2"
@@ -1036,6 +1075,57 @@ export function HomeView() {
               <Typography sx={{ mb: 4, maxWidth: 760, lineHeight: 1.75 }}>
                 {performanceGroupsContent.description}
               </Typography>
+            )}
+
+            {performanceGroupCategories.length > 1 && (
+              <Box sx={{ mb: { xs: 3, md: 4 }, minWidth: 0 }}>
+                <Typography
+                  variant="body2"
+                  sx={{ mb: 1.25, color: 'rgba(248,246,238,0.72)', fontWeight: 800 }}
+                >
+                  เลือกหมวดหมู่วง
+                </Typography>
+                <Stack
+                  direction="row"
+                  spacing={1}
+                  useFlexGap
+                  flexWrap="wrap"
+                  aria-label="กรองวงตามหมวดหมู่"
+                >
+                  {['ทั้งหมด', ...performanceGroupCategories].map((category) => {
+                    const isSelected = selectedPerformanceGroupCategory === category;
+                    const categoryCount =
+                      category === 'ทั้งหมด'
+                        ? publishedPerformanceGroups.length
+                        : publishedPerformanceGroups.filter(
+                            (group) => group.category?.trim() === category
+                          ).length;
+
+                    return (
+                      <Chip
+                        key={category}
+                        clickable
+                        label={`${category} ${categoryCount}`}
+                        onClick={() => setSelectedPerformanceGroupCategory(category)}
+                        variant={isSelected ? 'filled' : 'outlined'}
+                        sx={{
+                          height: 38,
+                          color: isSelected ? '#35413d' : HOME_TEXT,
+                          fontWeight: 850,
+                          bgcolor: isSelected ? 'rgba(234,215,161,0.94)' : 'rgba(42,55,54,0.18)',
+                          borderColor: isSelected
+                            ? 'rgba(255,239,187,0.94)'
+                            : 'rgba(248,246,238,0.42)',
+                          '&:hover': {
+                            bgcolor: isSelected ? 'rgba(242,224,171,1)' : 'rgba(248,246,238,0.12)',
+                          },
+                          '& .MuiChip-label': { px: 1.5 },
+                        }}
+                      />
+                    );
+                  })}
+                </Stack>
+              </Box>
             )}
 
             <Box
@@ -1070,11 +1160,11 @@ export function HomeView() {
                       borderRadius: 3,
                       position: 'relative',
                       color: HOME_TEXT,
-                      bgcolor: 'rgba(42,55,54,0.32)',
+                      bgcolor: 'rgba(69,80,72,0.94)',
                       border: '1px solid rgba(248,246,238,0.2)',
                       borderTop: `4px solid ${group.primaryColor || HOME_DEEP}`,
-                      boxShadow: '0 18px 42px rgba(31,40,38,0.16)',
-                      backdropFilter: 'blur(7px)',
+                      boxShadow: '0 16px 36px rgba(31,40,38,0.18)',
+                      isolation: 'isolate',
                       transition: 'transform 180ms ease, box-shadow 180ms ease',
                       '&:hover': {
                         transform: 'translateY(-4px)',
@@ -1314,88 +1404,88 @@ export function HomeView() {
                         )}
                       </Stack>
 
-                      <Stack
-                        direction={{ xs: 'column', sm: 'row' }}
-                        spacing={1.5}
-                        alignItems={{ xs: 'flex-start', sm: 'center' }}
-                        justifyContent="space-between"
-                        sx={{ mt: 2 }}
-                      >
+                      <Stack direction="row" spacing={1.75} alignItems="center" sx={{ mt: 2 }}>
                         <Stack
                           direction="row"
-                          spacing={0.75}
-                          useFlexGap
-                          flexWrap="wrap"
-                          alignItems="center"
-                          sx={{ minWidth: 0, maxWidth: '100%' }}
-                        >
-                          <Typography
-                            variant="caption"
-                            sx={{ mr: 0.25, color: 'rgba(248,246,238,0.62)', fontWeight: 800 }}
-                          >
-                            แชร์
-                          </Typography>
-                          <Button
-                            type="button"
-                            size="small"
-                            onClick={() => handleSharePerformanceGroup('facebook', groupId)}
-                            sx={{
-                              minWidth: 0,
-                              minHeight: 32,
-                              px: 1.25,
-                              color: '#dceaff',
-                              fontSize: 12,
-                              fontWeight: 800,
-                              bgcolor: 'rgba(24,119,242,0.2)',
-                              border: '1px solid rgba(112,169,244,0.48)',
-                            }}
-                          >
-                            Facebook
-                          </Button>
-                          <Button
-                            type="button"
-                            size="small"
-                            onClick={() => handleSharePerformanceGroup('line', groupId)}
-                            sx={{
-                              minWidth: 0,
-                              minHeight: 32,
-                              px: 1.25,
-                              color: '#c9f8dc',
-                              fontSize: 12,
-                              fontWeight: 800,
-                              bgcolor: 'rgba(6,199,85,0.16)',
-                              border: '1px solid rgba(105,240,174,0.46)',
-                            }}
-                          >
-                            LINE
-                          </Button>
-                        </Stack>
-
-                        <Stack
-                          direction="row"
-                          spacing={1.75}
+                          spacing={0.55}
                           alignItems="center"
                           sx={{ color: 'rgba(248,246,238,0.68)' }}
                         >
-                          <Stack direction="row" spacing={0.55} alignItems="center">
-                            <Iconify icon="solar:eye-bold" width={17} />
-                            <Typography variant="caption" sx={{ fontWeight: 800 }}>
-                              {performanceGroupCounts[groupId]?.views ?? 0} ครั้ง
-                            </Typography>
-                          </Stack>
-                          <Stack direction="row" spacing={0.55} alignItems="center">
-                            <Iconify icon="solar:share-bold" width={17} />
-                            <Typography variant="caption" sx={{ fontWeight: 800 }}>
-                              {performanceGroupCounts[groupId]?.shares ?? 0} แชร์
-                            </Typography>
-                          </Stack>
+                          <Iconify icon="solar:eye-bold" width={18} />
+                          <Typography variant="caption" sx={{ fontWeight: 800 }}>
+                            {performanceGroupCounts[groupId]?.views ?? 0} ครั้ง
+                          </Typography>
                         </Stack>
+                        <Button
+                          type="button"
+                          size="small"
+                          aria-label={`แชร์ ${group.name}`}
+                          aria-haspopup="menu"
+                          aria-expanded={
+                            performanceGroupShareMenu?.groupId === groupId ? 'true' : undefined
+                          }
+                          startIcon={<Iconify icon="solar:share-bold" width={18} />}
+                          onClick={(event) => handleOpenPerformanceGroupShareMenu(event, groupId)}
+                          sx={{
+                            minWidth: 0,
+                            px: 0.75,
+                            color: 'rgba(248,246,238,0.78)',
+                            fontSize: 12,
+                            fontWeight: 800,
+                            '&:hover': { bgcolor: 'rgba(248,246,238,0.1)' },
+                          }}
+                        >
+                          {performanceGroupCounts[groupId]?.shares ?? 0} แชร์
+                        </Button>
                       </Stack>
                     </Box>
                   </Box>
                 );
               })}
             </Box>
+            <Popover
+              open={Boolean(performanceGroupShareMenu)}
+              anchorEl={performanceGroupShareMenu?.anchorEl}
+              onClose={() => setPerformanceGroupShareMenu(null)}
+              anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+              transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+              slotProps={{
+                paper: {
+                  sx: {
+                    mt: 1,
+                    p: 2,
+                    width: 230,
+                    borderRadius: 2,
+                    bgcolor: '#f8f6ee',
+                    boxShadow: '0 18px 44px rgba(31,40,38,0.28)',
+                  },
+                },
+              }}
+            >
+              <Typography sx={{ mb: 1.25, color: '#26312f', fontWeight: 900 }}>
+                แชร์วงนี้
+              </Typography>
+              <Stack spacing={1}>
+                <Button
+                  fullWidth
+                  variant="contained"
+                  startIcon={<Iconify icon="solar:share-bold" width={20} />}
+                  onClick={() => handleSelectPerformanceGroupShare('facebook')}
+                  sx={{ justifyContent: 'flex-start', bgcolor: '#1877f2' }}
+                >
+                  Facebook
+                </Button>
+                <Button
+                  fullWidth
+                  variant="contained"
+                  startIcon={<Iconify icon="solar:share-bold" width={20} />}
+                  onClick={() => handleSelectPerformanceGroupShare('line')}
+                  sx={{ justifyContent: 'flex-start', bgcolor: '#06c755' }}
+                >
+                  LINE
+                </Button>
+              </Stack>
+            </Popover>
             {hasMorePerformanceGroups && (
               <Stack
                 ref={performanceGroupsLoadMoreRef}
