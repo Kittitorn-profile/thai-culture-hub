@@ -3,8 +3,6 @@
 import { useRef, useEffect } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 
-import { useAuthContext } from 'src/auth/hooks';
-
 import {
   trackAnalyticsEvent,
   shouldSkipAnalytics,
@@ -26,16 +24,9 @@ export function VisitorAnalytics() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const lastTrackedUrl = useRef('');
-  const { loading, authenticated } = useAuthContext();
 
   useEffect(() => {
-    if (
-      loading ||
-      authenticated ||
-      !pathname ||
-      !shouldTrackPath(pathname) ||
-      shouldSkipAnalytics()
-    ) {
+    if (!pathname || !shouldTrackPath(pathname) || shouldSkipAnalytics()) {
       return;
     }
 
@@ -57,13 +48,9 @@ export function VisitorAnalytics() {
       visitorId,
       sessionId,
     });
-  }, [authenticated, loading, pathname, searchParams]);
+  }, [pathname, searchParams]);
 
   useEffect(() => {
-    if (loading || authenticated) {
-      return undefined;
-    }
-
     const handleClick = (event: MouseEvent) => {
       if (shouldSkipAnalytics()) {
         return;
@@ -98,7 +85,7 @@ export function VisitorAnalytics() {
     return () => {
       document.removeEventListener('click', handleClick, true);
     };
-  }, [authenticated, loading]);
+  }, []);
 
   return null;
 }

@@ -30,10 +30,10 @@ export function shouldSkipAnalytics() {
     return true;
   }
 
-  return (
-    isPrivatePath(window.location.pathname) ||
-    window.localStorage.getItem(ADMIN_ANALYTICS_KEY) === '1'
-  );
+  // Authentication must not suppress analytics on public pages. Previously the
+  // flag persisted while an admin/creator was signed in, so opening a public
+  // event or performance-group page never produced a page view.
+  return isPrivatePath(window.location.pathname);
 }
 
 function getBrowserId(storage: Storage, key: string) {

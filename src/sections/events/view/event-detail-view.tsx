@@ -81,8 +81,14 @@ function getEventBackground(backgroundColor?: string) {
   `;
 }
 
-export function EventDetailView({ eventId }: { eventId: string }) {
-  const [eventItem, setEventItem] = useState<HomeEventItem | null>();
+export function EventDetailView({
+  eventId,
+  initialEvent,
+}: {
+  eventId: string;
+  initialEvent?: HomeEventItem;
+}) {
+  const [eventItem, setEventItem] = useState<HomeEventItem | null | undefined>(initialEvent);
   const [participatingGroups, setParticipatingGroups] = useState<PerformanceGroupEntry[]>([]);
   const [counts, setCounts] = useState({ views: 0, shares: 0 });
   const gallerySlides = useMemo(
@@ -94,16 +100,26 @@ export function EventDetailView({ eventId }: { eventId: string }) {
   useEffect(() => {
     const controller = new AbortController();
 
-    fetch(`/api/events/counts?eventIds=${encodeURIComponent(eventId)}`, {
-      signal: controller.signal,
-    })
-      .then((response) => (response.ok ? response.json() : null))
-      .then((json: { data?: Record<string, { views: number; shares: number }> } | null) => {
-        if (json?.data?.[eventId]) setCounts(json.data[eventId]);
+    const loadCounts = () => {
+      fetch(`/api/events/counts?eventIds=${encodeURIComponent(eventId)}`, {
+        signal: controller.signal,
       })
-      .catch(() => undefined);
+        .then((response) => (response.ok ? response.json() : null))
+        .then((json: { data?: Record<string, { views: number; shares: number }> } | null) => {
+          if (json?.data?.[eventId]) setCounts(json.data[eventId]);
+        })
+        .catch(() => undefined);
+    };
 
-    return () => controller.abort();
+    loadCounts();
+    // Page-view analytics is sent in the background. Read again after it has
+    // reached the database so the visitor sees the current count immediately.
+    const refreshTimer = window.setTimeout(loadCounts, 1200);
+
+    return () => {
+      window.clearTimeout(refreshTimer);
+      controller.abort();
+    };
   }, [eventId]);
 
   useEffect(() => {
@@ -769,11 +785,7 @@ export function EventDetailView({ eventId }: { eventId: string }) {
                                       {group.name}
                                     </Typography>
                                     <Typography variant="body2" sx={{ mt: 0.25, opacity: 0.68 }}>
-                                      {[
-                                        group.category,
-                                        group.provinceName,
-                                        joinedYears && `ปี ${joinedYears}`,
-                                      ]
+                                      {[group.description, group.provinceName]
                                         .filter(Boolean)
                                         .join(' · ')}
                                     </Typography>
