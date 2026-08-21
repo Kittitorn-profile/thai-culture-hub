@@ -765,7 +765,7 @@ export function PerformanceGroupForm({ groupId }: Props) {
               subtitle="เปิดแก้ไขเฉพาะปีที่ต้องการ เพื่อลดความซับซ้อนของหน้า"
             />
             <Box sx={{ p: { xs: 2, md: 3 }, mb: 1 }}>
-              <Stack spacing={3}>
+              <Stack spacing={2}>
                 <Stack
                   direction={{ xs: 'column', sm: 'row' }}
                   justifyContent="space-between"
@@ -838,7 +838,7 @@ export function PerformanceGroupForm({ groupId }: Props) {
                   <Alert severity="info">ยังไม่มีข้อมูลรายปี</Alert>
                 ) : null}
                 {yearlyFieldArray.fields.map((field, yearIndex) => (
-                  <Box key={field.id} pb={1}>
+                  <Box key={field.id} sx={{ px: 0.25, pb: 1.25 }}>
                     <YearRecordFields
                       control={control}
                       yearIndex={yearIndex}
@@ -1382,12 +1382,19 @@ function YearRecordFields({
       defaultExpanded={false}
       disableGutters
       sx={{
+        px: 2,
         border: '1px solid',
         borderColor: 'divider',
+        borderBottom: '1px solid !important',
+        borderBottomColor: 'divider !important',
         borderRadius: '12px !important',
         boxShadow: 'none',
+        overflow: 'hidden',
         '&:before': { display: 'none' },
-        p: 3,
+        '&:last-of-type': {
+          borderBottom: '1px solid !important',
+          borderBottomColor: (theme) => `${theme.palette.grey[300]} !important`,
+        },
       }}
     >
       <AccordionSummary
