@@ -46,6 +46,29 @@ function findGroup(content: PerformanceGroupsContent | undefined, groupId: strin
   return content?.groups.find((group) => (group.id || group.name) === groupId);
 }
 
+function getRandomRelatedGroups(
+  groups: PerformanceGroupEntry[],
+  currentGroup: PerformanceGroupEntry,
+  limit = 3
+) {
+  const currentGroupId = currentGroup.id || currentGroup.name;
+  const currentCategory = currentGroup.category?.trim();
+  const candidates = groups.filter(
+    (item) =>
+      item.isPublished !== false &&
+      (item.id || item.name) !== currentGroupId &&
+      Boolean(currentCategory) &&
+      item.category?.trim() === currentCategory
+  );
+
+  for (let index = candidates.length - 1; index > 0; index -= 1) {
+    const randomIndex = Math.floor(Math.random() * (index + 1));
+    [candidates[index], candidates[randomIndex]] = [candidates[randomIndex], candidates[index]];
+  }
+
+  return candidates.slice(0, limit);
+}
+
 function formatUpdatedDate(value?: string) {
   if (!value) return '';
   const date = new Date(value);
@@ -66,6 +89,7 @@ export function PerformanceGroupDetailView({ groupId, initialGroup }: Props) {
   const [shareAnchor, setShareAnchor] = useState<HTMLElement | null>(null);
   const [selectedYear, setSelectedYear] = useState(initialGroup?.yearlyData[0]?.year ?? '');
   const [contestEvents, setContestEvents] = useState<HomeEventItem[]>([]);
+  const [relatedGroups, setRelatedGroups] = useState<PerformanceGroupEntry[]>([]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -94,6 +118,11 @@ export function PerformanceGroupDetailView({ groupId, initialGroup }: Props) {
           findGroup(content, groupId) ?? findGroup(MOCK_PERFORMANCE_GROUPS, groupId);
 
         setGroup(nextGroup);
+        setRelatedGroups(
+          nextGroup
+            ? getRandomRelatedGroups(content?.groups ?? MOCK_PERFORMANCE_GROUPS.groups, nextGroup)
+            : []
+        );
       } catch (error) {
         if (error instanceof Error && error.name !== 'AbortError') {
           console.warn('Unable to load performance group', error);
@@ -1350,6 +1379,163 @@ export function PerformanceGroupDetailView({ groupId, initialGroup }: Props) {
             )}
           </Box>
         </Box>
+
+        {relatedGroups.length > 0 && (
+          <Box
+            component="section"
+            aria-labelledby="related-performance-groups-title"
+            sx={{
+              mt: { xs: 3, md: 4 },
+              p: { xs: 2, sm: 3, md: 4 },
+              borderRadius: 3,
+              color: '#f8f6ee',
+              bgcolor: 'rgba(42,55,54,0.48)',
+              border: '1px solid rgba(248,246,238,0.2)',
+              boxShadow: '0 22px 58px rgba(31,40,38,0.16)',
+            }}
+          >
+            <Typography
+              id="related-performance-groups-title"
+              component="h2"
+              sx={{ fontSize: { xs: 24, md: 30 }, fontWeight: 950 }}
+            >
+              วงอื่น ๆ ในหมวดเดียวกัน
+            </Typography>
+            <Typography sx={{ mt: 0.75, color: 'rgba(248,246,238,0.7)' }}>
+              แนะนำวงในหมวด {group.category} ที่คุณอาจสนใจ
+            </Typography>
+
+            <Box
+              sx={{
+                mt: 3,
+                gap: 2,
+                display: 'grid',
+                gridTemplateColumns: {
+                  xs: 'minmax(0, 1fr)',
+                  sm: 'repeat(2, minmax(0, 1fr))',
+                  md: 'repeat(3, minmax(0, 1fr))',
+                },
+              }}
+            >
+              {relatedGroups.map((relatedGroup) => {
+                const relatedGroupId = relatedGroup.id || relatedGroup.name;
+                const performanceImage = relatedGroup.yearlyData.find(
+                  (record) => record.performanceImages?.length
+                )?.performanceImages?.[0];
+                const imageUrl =
+                  relatedGroup.coverImageUrl || performanceImage || relatedGroup.logoUrl;
+                const usesLogo = !relatedGroup.coverImageUrl && !performanceImage;
+
+                return (
+                  <Box
+                    key={relatedGroupId}
+                    component={RouterLink}
+                    href={paths.performanceGroup.details(relatedGroupId)}
+                    sx={{
+                      minWidth: 0,
+                      overflow: 'hidden',
+                      borderRadius: 2.5,
+                      color: '#26312f',
+                      textDecoration: 'none',
+                      bgcolor: '#f8f6ee',
+                      borderTop: `4px solid ${relatedGroup.primaryColor || '#637e69'}`,
+                      boxShadow: '0 14px 34px rgba(20,28,26,0.18)',
+                      transition: 'transform 180ms ease, box-shadow 180ms ease',
+                      '&:hover, &:focus-visible': {
+                        transform: 'translateY(-4px)',
+                        boxShadow: '0 20px 42px rgba(20,28,26,0.26)',
+                      },
+                      '&:focus-visible': {
+                        outline: '3px solid rgba(234,215,161,0.95)',
+                        outlineOffset: 3,
+                      },
+                    }}
+                  >
+                    {imageUrl ? (
+                      <Box
+                        component="img"
+                        src={imageUrl}
+                        loading="lazy"
+                        alt={`ภาพ ${relatedGroup.name}`}
+                        sx={{
+                          width: 1,
+                          display: 'block',
+                          aspectRatio: '16 / 9',
+                          objectFit: usesLogo ? 'contain' : 'cover',
+                          p: usesLogo ? 3 : 0,
+                          bgcolor: usesLogo ? 'rgba(99,126,105,0.12)' : 'transparent',
+                        }}
+                      />
+                    ) : (
+                      <Box
+                        sx={{
+                          width: 1,
+                          display: 'grid',
+                          placeItems: 'center',
+                          aspectRatio: '16 / 9',
+                          color: 'rgba(248,246,238,0.82)',
+                          bgcolor: relatedGroup.primaryColor || '#637e69',
+                        }}
+                      >
+                        <Iconify icon="solar:video-frame-play-horizontal-bold" width={42} />
+                      </Box>
+                    )}
+                    <Box sx={{ p: 2.25 }}>
+                      <Stack direction="row" spacing={1.25} alignItems="center">
+                        {relatedGroup.logoUrl && (
+                          <Avatar
+                            src={relatedGroup.logoUrl}
+                            alt={`โลโก้ ${relatedGroup.name}`}
+                            sx={{ width: 48, height: 48, flexShrink: 0 }}
+                          />
+                        )}
+                        <Typography
+                          sx={{
+                            minWidth: 0,
+                            fontSize: 18,
+                            fontWeight: 950,
+                            lineHeight: 1.3,
+                            overflowWrap: 'anywhere',
+                          }}
+                        >
+                          {relatedGroup.name}
+                        </Typography>
+                      </Stack>
+                      <Stack
+                        direction="row"
+                        spacing={0.75}
+                        useFlexGap
+                        flexWrap="wrap"
+                        sx={{ mt: 2 }}
+                      >
+                        <Chip label={relatedGroup.category} size="small" />
+                        {relatedGroup.provinceName && (
+                          <Chip
+                            label={`จังหวัด${relatedGroup.provinceName}`}
+                            size="small"
+                            variant="outlined"
+                          />
+                        )}
+                      </Stack>
+                      <Stack
+                        direction="row"
+                        spacing={0.5}
+                        alignItems="center"
+                        justifyContent="flex-end"
+                        sx={{ mt: 2, color: '#40514c', fontWeight: 900 }}
+                      >
+                        <Typography variant="body2" sx={{ fontWeight: 900 }}>
+                          ดูรายละเอียด
+                        </Typography>
+                        <Iconify icon="eva:arrow-ios-forward-fill" width={18} />
+                      </Stack>
+                    </Box>
+                  </Box>
+                );
+              })}
+            </Box>
+          </Box>
+        )}
       </Container>
     </Box>
   );
