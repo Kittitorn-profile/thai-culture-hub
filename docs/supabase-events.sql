@@ -13,10 +13,17 @@ create table if not exists public.events (
   organizer text,
   media_url text,
   cover_url text,
+  logo_url text,
+  image_urls text[] not null default array[]::text[],
+  background_color text not null default '#6f8790',
   media_type text not null default 'image',
   source_label text,
   source_url text,
+  note text,
   is_featured boolean not null default false,
+  is_contest boolean not null default false,
+  contest_categories jsonb not null default '[]'::jsonb,
+  contest_result_options jsonb not null default '[]'::jsonb,
   sort_order integer not null default 0,
   is_active boolean not null default true,
   source text not null default 'manual',
@@ -95,6 +102,15 @@ alter table public.events
   add column if not exists cover_url text;
 
 alter table public.events
+  add column if not exists logo_url text;
+
+alter table public.events
+  add column if not exists image_urls text[] not null default array[]::text[];
+
+alter table public.events
+  add column if not exists background_color text not null default '#6f8790';
+
+alter table public.events
   add column if not exists media_type text not null default 'image';
 
 alter table public.events
@@ -104,7 +120,19 @@ alter table public.events
   add column if not exists source_url text;
 
 alter table public.events
+  add column if not exists note text;
+
+alter table public.events
   add column if not exists is_featured boolean not null default false;
+
+alter table public.events
+  add column if not exists is_contest boolean not null default false;
+
+alter table public.events
+  add column if not exists contest_categories jsonb not null default '[]'::jsonb;
+
+alter table public.events
+  add column if not exists contest_result_options jsonb not null default '[]'::jsonb;
 
 alter table public.events
   add column if not exists sort_order integer not null default 0;

@@ -57,6 +57,11 @@ export const YearRecordSchema = zod.object({
   organizerName: zod.string(),
   organizerColor: zod.string(),
   organizerLogoUrl: zod.string(),
+  contestEventIds: zod.array(zod.string()),
+  contestCategoryIds: zod.record(zod.string(), zod.string()),
+  contestResultIds: zod.record(zod.string(), zod.array(zod.string())),
+  contestSingerIds: zod.record(zod.string(), zod.array(zod.string())),
+  contestLeadPerformerIds: zod.record(zod.string(), zod.array(zod.string())),
   details: zod.string(),
   about: zod.string(),
   storyTypes: zod.array(zod.string()),
@@ -278,6 +283,34 @@ export function normalizeContent(value: unknown): GroupsContent {
                   organizerName: resolvedOrganizer?.name ?? organizerName,
                   organizerColor: resolvedOrganizer?.color ?? '#637e69',
                   organizerLogoUrl: resolvedOrganizer?.logoUrl ?? '',
+                  contestEventIds: stringList(record?.contestEventIds),
+                  contestCategoryIds:
+                    record?.contestCategoryIds && typeof record.contestCategoryIds === 'object'
+                      ? (record.contestCategoryIds as Record<string, string>)
+                      : {},
+                  contestResultIds:
+                    record?.contestResultIds && typeof record.contestResultIds === 'object'
+                      ? (record.contestResultIds as Record<string, string[]>)
+                      : {},
+                  contestSingerIds:
+                    record?.contestSingerIds && typeof record.contestSingerIds === 'object'
+                      ? (record.contestSingerIds as Record<string, string[]>)
+                      : Object.fromEntries(
+                          stringList(record?.contestEventIds).map((eventId) => [
+                            eventId,
+                            stringList(record?.singerIds),
+                          ])
+                        ),
+                  contestLeadPerformerIds:
+                    record?.contestLeadPerformerIds &&
+                    typeof record.contestLeadPerformerIds === 'object'
+                      ? (record.contestLeadPerformerIds as Record<string, string[]>)
+                      : Object.fromEntries(
+                          stringList(record?.contestEventIds).map((eventId) => [
+                            eventId,
+                            stringList(record?.leadPerformerIds),
+                          ])
+                        ),
                   details: typeof record?.details === 'string' ? record.details : '',
                   about: typeof record?.about === 'string' ? record.about : '',
                   storyTypes: stringList(record?.storyTypes),

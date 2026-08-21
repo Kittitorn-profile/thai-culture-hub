@@ -1,5 +1,7 @@
 'use client';
 
+import type { IconifyName } from 'src/components/iconify/register-icons';
+
 import dayjs from 'dayjs';
 import { z as zod } from 'zod';
 import { useForm } from 'react-hook-form';
@@ -10,6 +12,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Box from '@mui/material/Box';
 import Tab from '@mui/material/Tab';
 import Card from '@mui/material/Card';
+import Chip from '@mui/material/Chip';
 import Tabs from '@mui/material/Tabs';
 import Alert from '@mui/material/Alert';
 import Stack from '@mui/material/Stack';
@@ -19,6 +22,8 @@ import Divider from '@mui/material/Divider';
 import MenuItem from '@mui/material/MenuItem';
 import Typography from '@mui/material/Typography';
 import LoadingButton from '@mui/lab/LoadingButton';
+
+import { RouterLink } from 'src/routes/components';
 
 import { normalizeCalendarDate } from 'src/utils/calendar-date';
 
@@ -56,10 +61,12 @@ type HomeEventItem = {
   organizer: string;
   mediaUrl: string;
   coverUrl: string;
+  backgroundColor: string;
   mediaType: 'image' | 'video';
   sourceLabel: string;
   sourceUrl: string;
   isFeatured: boolean;
+  isContest?: boolean;
   sortOrder: number;
   isActive: boolean;
   source?: string;
@@ -100,6 +107,14 @@ type SourceFilter = 'all' | 'manual' | 'tat';
 const EVENTS_QUERY_KEY = 'admin-events';
 const MAX_EVENT_IMAGE_SIZE = 2 * 1024 * 1024;
 
+function formatAdminEventDate(value?: string) {
+  if (!value) return 'ยังไม่ระบุวันที่';
+  const date = dayjs(value);
+  if (!date.isValid()) return value;
+
+  return `${date.format('DD/MM')}/${date.year() + 543}`;
+}
+
 const EventFormSchema = zod
   .object({
     id: zod.string(),
@@ -113,6 +128,7 @@ const EventFormSchema = zod
     organizer: zod.string(),
     mediaUrl: zod.string(),
     coverUrl: zod.string(),
+    backgroundColor: zod.string(),
     sourceLabel: zod.string(),
     sourceUrl: zod.string(),
     imageFile: zod
@@ -153,31 +169,6 @@ const EventFormSchema = zod
 
 type EventFormValues = zod.infer<typeof EventFormSchema>;
 
-const EMPTY_EVENT_ITEM: EditingEventItem = {
-  id: '',
-  title: '',
-  description: '',
-  startsAt: '',
-  endsAt: '',
-  time: '',
-  provinceCode: '',
-  provinceName: '',
-  location: '',
-  organizer: '',
-  mediaUrl: '',
-  coverUrl: '',
-  mediaType: 'image',
-  sourceLabel: '',
-  sourceUrl: '',
-  isFeatured: false,
-  sortOrder: 0,
-  isActive: true,
-  source: 'manual',
-  sourceEventId: '',
-  syncedAt: '',
-  isNew: true,
-};
-
 const EMPTY_EVENT_FORM_VALUES: EventFormValues = {
   id: '',
   title: '',
@@ -190,6 +181,7 @@ const EMPTY_EVENT_FORM_VALUES: EventFormValues = {
   organizer: '',
   mediaUrl: '',
   coverUrl: '',
+  backgroundColor: '#6f8790',
   imageFile: null,
   mediaType: 'image',
   sourceLabel: '',
@@ -219,6 +211,7 @@ function toEventFormValues(eventItem?: EditingEventItem | null): EventFormValues
     organizer: eventItem.organizer,
     mediaUrl: eventItem.mediaUrl,
     coverUrl: eventItem.coverUrl,
+    backgroundColor: eventItem.backgroundColor || '#6f8790',
     imageFile: null,
     mediaType: eventItem.mediaType,
     sourceLabel: eventItem.sourceLabel ?? '',
@@ -486,16 +479,6 @@ export default function HomeEventsAdminPage() {
     await saveEventsMutation.mutateAsync().catch(() => undefined);
   };
 
-  const startAddEvent = () => {
-    setEditingEvent({
-      ...EMPTY_EVENT_ITEM,
-      id: '',
-      sortOrder: eventItems.length,
-    });
-    setSourceFilter('manual');
-    setPage(0);
-  };
-
   const saveEventItem = async (values: EventFormValues) => {
     const selectedProvince = provinces.find((province) => province.code === values.provinceCode);
 
@@ -533,6 +516,7 @@ export default function HomeEventsAdminPage() {
       organizer: values.organizer.trim(),
       mediaUrl: nextMediaUrl,
       coverUrl: nextCoverUrl,
+      backgroundColor: values.backgroundColor || '#6f8790',
       mediaType: values.mediaType,
       sourceLabel: values.sourceLabel.trim(),
       sourceUrl: values.sourceUrl.trim(),
@@ -654,9 +638,10 @@ export default function HomeEventsAdminPage() {
             </Box>
 
             <Button
+              component={RouterLink}
+              href="/admin/home-content/events/new"
               variant="contained"
               startIcon={<Iconify icon="solar:add-circle-bold" />}
-              onClick={startAddEvent}
             >
               เพิ่มกิจกรรม
             </Button>
@@ -686,7 +671,7 @@ export default function HomeEventsAdminPage() {
               display: 'grid',
               gridTemplateColumns: {
                 xs: '1fr',
-                md: 'repeat(2, minmax(0, 1fr))',
+                md: 'repeat(3, minmax(0, 1fr))',
               },
             }}
           >
@@ -694,64 +679,117 @@ export default function HomeEventsAdminPage() {
               <Card
                 key={eventItem.id || `draft-${index}`}
                 variant="outlined"
-                sx={{ overflow: 'hidden' }}
+                sx={{
+                  height: 1,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  overflow: 'hidden',
+                  transition: 'transform 160ms ease, box-shadow 160ms ease',
+                  '&:hover': {
+                    transform: 'translateY(-3px)',
+                    boxShadow: '0 16px 36px rgba(0,0,0,0.10)',
+                  },
+                  '&:hover img': { transform: 'scale(1.025)' },
+                }}
               >
-                <Stack direction={{ xs: 'column', sm: 'row' }}>
-                  <Box sx={{ width: { xs: 1, sm: 220 }, flexShrink: 0, position: 'relative' }}>
+                <Stack sx={{ height: 1 }}>
+                  <Box
+                    sx={{
+                      width: 1,
+                      flexShrink: 0,
+                      position: 'relative',
+                      bgcolor: 'background.neutral',
+                    }}
+                  >
                     <Image
                       alt={eventItem.title}
                       src={eventItem.coverUrl || eventItem.mediaUrl || '/assets/th-hub/bg-1.png'}
-                      ratio="4/3"
-                      sx={{ bgcolor: 'background.neutral' }}
+                      ratio="16/9"
+                      sx={{
+                        bgcolor: 'background.neutral',
+                        '& img': { objectFit: 'cover', transition: 'transform 240ms ease' },
+                      }}
                     />
 
-                    <Box
+                    <Chip
+                      size="small"
+                      color={eventItem.mediaType === 'video' ? 'error' : 'success'}
+                      label={eventItem.mediaType === 'video' ? 'วิดีโอ' : 'ภาพ'}
                       sx={{
                         top: 12,
                         left: 12,
-                        px: 1,
-                        py: 0.5,
-                        borderRadius: 1,
                         position: 'absolute',
                         color: 'common.white',
-                        bgcolor: eventItem.mediaType === 'video' ? 'error.main' : 'success.main',
-                        typography: 'caption',
                         fontWeight: 800,
-                        textTransform: 'uppercase',
                       }}
-                    >
-                      {eventItem.mediaType}
-                    </Box>
+                    />
                   </Box>
 
-                  <Stack spacing={1.2} sx={{ p: 2, minWidth: 0, flex: 1 }}>
-                    <Typography noWrap sx={{ fontWeight: 900 }}>
+                  <Stack spacing={1.4} sx={{ p: 2.5, minWidth: 0, flex: 1 }}>
+                    <Stack direction="row" spacing={0.75} useFlexGap flexWrap="wrap">
+                      <Chip
+                        size="small"
+                        color={eventItem.isActive ? 'success' : 'default'}
+                        label={eventItem.isActive ? 'เผยแพร่' : 'ซ่อน'}
+                      />
+                      {eventItem.isFeatured && <Chip size="small" color="warning" label="สำคัญ" />}
+                      {eventItem.isContest && <Chip size="small" color="info" label="การประกวด" />}
+                      <Chip
+                        size="small"
+                        variant="outlined"
+                        label={eventItem.source === 'tat' ? 'TAT' : 'เว็บ'}
+                      />
+                    </Stack>
+                    <Typography
+                      sx={{
+                        fontWeight: 900,
+                        fontSize: { xs: 18, md: 20 },
+                        lineHeight: 1.35,
+                        minHeight: { md: 54 },
+                        display: '-webkit-box',
+                        overflow: 'hidden',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical',
+                      }}
+                    >
                       {eventItem.title}
                     </Typography>
-                    <Typography sx={{ color: 'text.secondary', fontSize: 12 }}>
-                      {eventItem.startsAt || 'ยังไม่ระบุวัน'} ·{' '}
-                      {eventItem.isActive ? 'เผยแพร่' : 'ซ่อนอยู่'}
-                      {eventItem.isFeatured ? ' · สำคัญ' : ' · ทั่วไป'}
-                    </Typography>
-                    <Typography sx={{ color: 'text.secondary', fontSize: 12 }}>
-                      แหล่งข้อมูล {eventItem.source === 'tat' ? 'TAT' : 'Manual'}
-                      {eventItem.sourceEventId ? ` · ${eventItem.sourceEventId}` : ''}
-                    </Typography>
-                    <Typography sx={{ color: 'text.secondary', fontSize: 13 }}>
-                      จังหวัด {eventItem.provinceName || '-'} · เวลา {eventItem.time || '-'}
-                    </Typography>
-                    <Typography sx={{ color: 'text.secondary', fontSize: 13 }}>
-                      สถานที่ {eventItem.location || '-'}
-                    </Typography>
-                    <Typography sx={{ color: 'text.secondary', fontSize: 13 }}>
-                      ผู้จัด {eventItem.organizer || '-'}
-                    </Typography>
-                    <Typography sx={{ color: 'text.secondary', fontSize: 13 }}>
-                      แหล่งที่มา {eventItem.sourceLabel || '-'}
-                      {eventItem.sourceUrl ? ` · ${eventItem.sourceUrl}` : ''}
-                    </Typography>
+                    {[
+                      [
+                        'solar:calendar-date-bold',
+                        `${formatAdminEventDate(eventItem.startsAt)}${eventItem.time ? ` · ${eventItem.time}` : ''}`,
+                      ],
+                      [
+                        'solar:map-point-bold',
+                        [eventItem.provinceName, eventItem.location].filter(Boolean).join(' · ') ||
+                          'ยังไม่ระบุสถานที่',
+                      ],
+                      ['solar:users-group-rounded-bold', eventItem.organizer || 'ยังไม่ระบุผู้จัด'],
+                    ].map(([icon, label]) => (
+                      <Stack key={icon} direction="row" spacing={1} alignItems="center">
+                        <Iconify
+                          icon={icon as IconifyName}
+                          width={18}
+                          sx={{ color: 'text.disabled', flexShrink: 0 }}
+                        />
+                        <Typography noWrap sx={{ color: 'text.secondary', fontSize: 13 }}>
+                          {label}
+                        </Typography>
+                      </Stack>
+                    ))}
 
-                    <Stack direction="row" spacing={1} sx={{ pt: 0.5, flexWrap: 'wrap' }}>
+                    <Stack
+                      direction="row"
+                      spacing={0.75}
+                      useFlexGap
+                      flexWrap="wrap"
+                      sx={{
+                        pt: 2,
+                        mt: 'auto!important',
+                        borderTop: '1px solid',
+                        borderColor: 'divider',
+                      }}
+                    >
                       <Button
                         size="small"
                         color={eventItem.isActive ? 'warning' : 'success'}
@@ -766,24 +804,19 @@ export default function HomeEventsAdminPage() {
                         {eventItem.isActive ? 'ปิดใช้งาน' : 'เปิดใช้งาน'}
                       </Button>
                       <Button
+                        component={RouterLink}
+                        href={`/admin/home-content/events/${eventItem.id}`}
                         size="small"
                         variant="outlined"
-                        component="a"
-                        href={`/admin/home-content/events/${eventItem.id}`}
                         disabled={!eventItem.id}
                       >
                         รายละเอียด
                       </Button>
                       <Button
+                        component={RouterLink}
+                        href={`/admin/home-content/events/${encodeURIComponent(eventItem.id)}/edit`}
                         size="small"
                         variant="outlined"
-                        onClick={() =>
-                          setEditingEvent({
-                            ...eventItem,
-                            startsAt: normalizeCalendarDate(eventItem.startsAt),
-                            endsAt: normalizeCalendarDate(eventItem.endsAt),
-                          })
-                        }
                       >
                         แก้ไข
                       </Button>
@@ -933,6 +966,29 @@ export default function HomeEventsAdminPage() {
                 />
 
                 <RHFTextField name="coverUrl" label="Cover URL" />
+
+                <Stack direction="row" spacing={1.5} alignItems="center">
+                  <RHFTextField
+                    name="backgroundColor"
+                    label="สีพื้นหลังหน้ารายละเอียด"
+                    type="color"
+                    sx={{ width: 160 }}
+                  />
+                  <Box
+                    sx={{
+                      width: 48,
+                      height: 48,
+                      flexShrink: 0,
+                      borderRadius: 1.5,
+                      bgcolor: watchEventForm('backgroundColor') || '#6f8790',
+                      border: '1px solid',
+                      borderColor: 'divider',
+                    }}
+                  />
+                  <Typography variant="body2" color="text.secondary">
+                    {watchEventForm('backgroundColor') || '#6f8790'}
+                  </Typography>
+                </Stack>
 
                 <Stack spacing={1.25}>
                   <RHFUpload

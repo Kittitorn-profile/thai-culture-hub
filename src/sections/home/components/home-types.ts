@@ -19,6 +19,7 @@ export type HomeEventItem = {
   id: string;
   title: string;
   description: string;
+  descriptionHtml?: string;
   startsAt: string;
   endsAt?: string;
   time: string;
@@ -28,10 +29,21 @@ export type HomeEventItem = {
   organizer: string;
   mediaUrl: string;
   coverUrl: string;
+  logoUrl?: string;
+  imageUrls?: string[];
+  backgroundColor?: string;
   mediaType: 'image' | 'video';
   sourceLabel?: string;
   sourceUrl?: string;
+  note?: string;
   isFeatured?: boolean;
+  isContest?: boolean;
+  contestCategories?: Array<{
+    id: string;
+    name: string;
+    maxParticipants?: number;
+  }>;
+  contestResultOptions?: Array<{ id: string; name: string }>;
 };
 
 export type StoryContent = {
@@ -94,6 +106,11 @@ export type PerformanceGroupEntry = {
     year: string;
     logoUrl?: string;
     organizerId?: string;
+    contestEventIds?: string[];
+    contestCategoryIds?: Record<string, string>;
+    contestResultIds?: Record<string, string[]>;
+    contestSingerIds?: Record<string, string[]>;
+    contestLeadPerformerIds?: Record<string, string[]>;
     organizerName?: string;
     organizerColor?: string;
     organizerLogoUrl?: string;

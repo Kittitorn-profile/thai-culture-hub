@@ -28,6 +28,7 @@ import Typography from '@mui/material/Typography';
 import CircularProgress from '@mui/material/CircularProgress';
 
 import { paths } from 'src/routes/paths';
+import { useRouter } from 'src/routes/hooks';
 import { RouterLink } from 'src/routes/components';
 
 import { HomeFooter } from 'src/layouts/main/footer';
@@ -88,6 +89,7 @@ const ReactPlayer = dynamic(() => import('react-player'), {
 });
 
 export function HomeView() {
+  const router = useRouter();
   const creatorLoadMoreRef = useRef<HTMLDivElement | null>(null);
   const performanceGroupsLoadMoreRef = useRef<HTMLDivElement | null>(null);
   const creatorArticlesLoadingRef = useRef(false);
@@ -122,8 +124,7 @@ export function HomeView() {
     0,
     visiblePerformanceGroupCount
   );
-  const hasMorePerformanceGroups =
-    visiblePerformanceGroupCount < publishedPerformanceGroups.length;
+  const hasMorePerformanceGroups = visiblePerformanceGroupCount < publishedPerformanceGroups.length;
   const featuredCultureCategoryCards = cultureCategoryCards.slice(
     0,
     FEATURED_CULTURE_CATEGORY_LIMIT
@@ -537,6 +538,20 @@ export function HomeView() {
                 return (
                   <Box
                     key={eventItem.id || `${eventItem.title}-${index}`}
+                    role="link"
+                    tabIndex={0}
+                    aria-label={`ดูรายละเอียดกิจกรรม ${eventItem.title}`}
+                    onClick={(event) => {
+                      if ((event.target as HTMLElement).closest('a, button')) return;
+                      router.push(paths.event.details(eventItem.id));
+                    }}
+                    onKeyDown={(event) => {
+                      if (event.key !== 'Enter' && event.key !== ' ') {
+                        return;
+                      }
+                      event.preventDefault();
+                      router.push(paths.event.details(eventItem.id));
+                    }}
                     sx={{
                       minWidth: 0,
                       overflow: 'hidden',
@@ -547,9 +562,21 @@ export function HomeView() {
                         ? '1px solid rgba(234,215,161,0.46)'
                         : '1px solid rgba(248,246,238,0.2)',
                       boxShadow: isFeatured
-                        ? '0 30px 76px rgba(31,40,38,0.28)'
-                        : '0 20px 48px rgba(31,40,38,0.18)',
+                        ? '0 30px 36px rgba(31,40,38,0.28)'
+                        : '0 20px 28px rgba(31,40,38,0.18)',
                       backdropFilter: 'blur(7px)',
+                      cursor: 'pointer',
+                      transition:
+                        'transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease',
+                      '&:hover': {
+                        transform: 'translateY(-4px)',
+                        borderColor: 'rgba(234,215,161,0.78)',
+                        boxShadow: '0 34px 52px rgba(31,40,38,0.34)',
+                      },
+                      '&:focus-visible': {
+                        outline: '3px solid rgba(234,215,161,0.88)',
+                        outlineOffset: 4,
+                      },
                       display: 'grid',
                       gridTemplateColumns: {
                         xs: '1fr',
@@ -558,6 +585,9 @@ export function HomeView() {
                     }}
                   >
                     <Box
+                      onClick={(event) => {
+                        if (eventItem.mediaType === 'video') event.stopPropagation();
+                      }}
                       sx={{
                         minHeight: isFeatured ? { xs: 240, md: 380 } : { xs: 210, md: 240 },
                         bgcolor: HOME_DEEP,
@@ -693,7 +723,25 @@ export function HomeView() {
                           </Stack>
                         ))}
                       </Stack>
-
+                      <Button
+                        component="a"
+                        onClick={() => router.push(paths.event.details(eventItem.id))}
+                        size="small"
+                        variant="outlined"
+                        endIcon={<Iconify icon="eva:external-link-fill" width={16} />}
+                        sx={{
+                          mt: 0.4,
+                          width: 'fit-content',
+                          color: HOME_TEXT,
+                          borderColor: 'rgba(248,246,238,0.42)',
+                          '&:hover': {
+                            borderColor: 'rgba(234,215,161,0.78)',
+                            bgcolor: 'rgba(234,215,161,0.08)',
+                          },
+                        }}
+                      >
+                        ดูรายละเอียด
+                      </Button>
                       {eventItem.sourceUrl && (
                         <Button
                           component="a"
@@ -1239,312 +1287,307 @@ export function HomeView() {
               }}
             >
               {visiblePerformanceGroups.map((group) => {
-                  const groupId = group.id || group.name;
+                const groupId = group.id || group.name;
 
-                  return (
+                return (
+                  <Box
+                    key={groupId}
+                    sx={{
+                      p: { xs: 2, md: 3 },
+                      minWidth: 0,
+                      height: '100%',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      borderRadius: 3,
+                      position: 'relative',
+                      color: HOME_TEXT,
+                      bgcolor: 'rgba(42,55,54,0.32)',
+                      border: '1px solid rgba(248,246,238,0.2)',
+                      borderTop: `4px solid ${group.primaryColor || HOME_DEEP}`,
+                      boxShadow: '0 18px 42px rgba(31,40,38,0.16)',
+                      backdropFilter: 'blur(7px)',
+                      transition: 'transform 180ms ease, box-shadow 180ms ease',
+                      '&:hover': {
+                        transform: 'translateY(-4px)',
+                        borderColor: 'rgba(248,246,238,0.4)',
+                        boxShadow: '0 24px 54px rgba(31,40,38,0.24)',
+                      },
+                    }}
+                  >
                     <Box
-                      key={groupId}
-                      sx={{
-                        p: { xs: 2, md: 3 },
-                        minWidth: 0,
-                        height: '100%',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        borderRadius: 3,
-                        position: 'relative',
-                        color: HOME_TEXT,
-                        bgcolor: 'rgba(42,55,54,0.32)',
-                        border: '1px solid rgba(248,246,238,0.2)',
-                        borderTop: `4px solid ${group.primaryColor || HOME_DEEP}`,
-                        boxShadow: '0 18px 42px rgba(31,40,38,0.16)',
-                        backdropFilter: 'blur(7px)',
-                        transition: 'transform 180ms ease, box-shadow 180ms ease',
-                        '&:hover': {
-                          transform: 'translateY(-4px)',
-                          borderColor: 'rgba(248,246,238,0.4)',
-                          boxShadow: '0 24px 54px rgba(31,40,38,0.24)',
-                        },
-                      }}
-                    >
-                      <Box
-                        component={RouterLink}
-                        href={paths.performanceGroup.details(groupId)}
-                        aria-label={`ดูรายละเอียด ${group.name}`}
-                        sx={{ position: 'absolute', inset: 0, zIndex: 1, borderRadius: 'inherit' }}
-                      />
+                      component={RouterLink}
+                      href={paths.performanceGroup.details(groupId)}
+                      aria-label={`ดูรายละเอียด ${group.name}`}
+                      sx={{ position: 'absolute', inset: 0, zIndex: 1, borderRadius: 'inherit' }}
+                    />
 
-                      {group.coverImageUrl && (
-                        <Box
-                          component="img"
-                          src={group.coverImageUrl}
-                          alt={`ภาพปก ${group.name}`}
+                    {group.coverImageUrl && (
+                      <Box
+                        component="img"
+                        src={group.coverImageUrl}
+                        alt={`ภาพปก ${group.name}`}
+                        sx={{
+                          width: '100%',
+                          mb: 2.5,
+                          display: 'block',
+                          aspectRatio: '16 / 9',
+                          objectFit: 'cover',
+                          borderRadius: 2,
+                        }}
+                      />
+                    )}
+
+                    <Stack
+                      direction="row"
+                      justifyContent="space-between"
+                      spacing={1.5}
+                      alignItems="center"
+                    >
+                      <Stack direction="row" spacing={1.5} alignItems="center" sx={{ minWidth: 0 }}>
+                        {group.logoUrl && (
+                          <Avatar
+                            variant="rounded"
+                            src={group.logoUrl}
+                            alt={`โลโก้ ${group.name}`}
+                            sx={{ width: 56, height: 56, flexShrink: 0 }}
+                          />
+                        )}
+                        <Typography variant="h5" sx={{ fontWeight: 900, color: HOME_DEEP }}>
+                          {group.name}
+                        </Typography>
+                      </Stack>
+                      {/* <Chip
+                        label={group.category}
+                        size="small"
+                        sx={{
+                          flexShrink: 0,
+                          color: '#4b402d',
+                          fontWeight: 800,
+                          bgcolor: 'rgba(234,215,161,0.88)',
+                          border: '1px solid rgba(255,255,255,0.2)',
+                          '& .MuiChip-label': { px: 1.4 },
+                        }}
+                      /> */}
+                    </Stack>
+
+                    <Stack
+                      direction="row"
+                      spacing={0.75}
+                      useFlexGap
+                      flexWrap="wrap"
+                      sx={{ mt: 1.5 }}
+                    >
+                      {group.provinceName && (
+                        <Chip
+                          label={`จังหวัด${group.provinceName}`}
+                          size="small"
+                          variant="outlined"
                           sx={{
-                            width: '100%',
-                            mb: 2.5,
-                            display: 'block',
-                            aspectRatio: '16 / 9',
-                            objectFit: 'cover',
-                            borderRadius: 2,
+                            color: HOME_TEXT,
+                            fontWeight: 700,
+                            bgcolor: 'rgba(248,246,238,0.08)',
+                            borderColor: 'rgba(248,246,238,0.48)',
                           }}
                         />
                       )}
-
-                      <Stack
-                        direction="row"
-                        justifyContent="space-between"
-                        spacing={1.5}
-                        alignItems="center"
-                      >
-                        <Stack
-                          direction="row"
-                          spacing={1.5}
-                          alignItems="center"
-                          sx={{ minWidth: 0 }}
-                        >
-                          {group.logoUrl && (
-                            <Avatar
-                              variant="rounded"
-                              src={group.logoUrl}
-                              alt={`โลโก้ ${group.name}`}
-                              sx={{ width: 56, height: 56, flexShrink: 0 }}
-                            />
-                          )}
-                          <Typography variant="h5" sx={{ fontWeight: 900, color: HOME_DEEP }}>
-                            {group.name}
-                          </Typography>
-                        </Stack>
+                      {group.isFeatured && (
                         <Chip
-                          label={group.category}
+                          label="วงแนะนำ"
                           size="small"
                           sx={{
-                            flexShrink: 0,
                             color: '#4b402d',
                             fontWeight: 800,
-                            bgcolor: 'rgba(234,215,161,0.88)',
-                            border: '1px solid rgba(255,255,255,0.2)',
-                            '& .MuiChip-label': { px: 1.4 },
+                            bgcolor: 'rgba(234,215,161,0.82)',
+                            border: '1px solid rgba(234,215,161,0.95)',
                           }}
                         />
+                      )}
+                      {group.acceptsBookings && (
+                        <Chip
+                          label="เปิดรับงาน"
+                          size="small"
+                          variant="outlined"
+                          sx={{
+                            color: '#b9f6ca',
+                            fontWeight: 800,
+                            bgcolor: 'rgba(46,125,50,0.16)',
+                            borderColor: 'rgba(105,240,174,0.72)',
+                          }}
+                        />
+                      )}
+                    </Stack>
+
+                    {group.description && (
+                      <Typography
+                        sx={{
+                          mt: 2,
+                          color: 'rgba(248,246,238,0.76)',
+                          lineHeight: 1.7,
+                          display: '-webkit-box',
+                          overflow: 'hidden',
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical',
+                        }}
+                      >
+                        {group.description}
+                      </Typography>
+                    )}
+
+                    <Box
+                      sx={{
+                        pt: 1,
+                        mt: 1,
+                        position: 'relative',
+                        zIndex: 1,
+                        borderTop: '1px solid rgba(248,246,238,0.16)',
+                      }}
+                    >
+                      <Stack
+                        direction="row"
+                        spacing={1}
+                        useFlexGap
+                        flexWrap="wrap"
+                        alignItems="center"
+                      >
+                        <Button
+                          component={RouterLink}
+                          href={paths.performanceGroup.details(groupId)}
+                          variant="contained"
+                          size="small"
+                          endIcon={<Iconify icon="eva:diagonal-arrow-right-up-fill" width={17} />}
+                          sx={{ minHeight: 36, px: 1.75, fontSize: 13, fontWeight: 900 }}
+                        >
+                          ดูรายละเอียด
+                        </Button>
+                        {group.contactPhone && (
+                          <Button
+                            component="a"
+                            href={`tel:${group.contactPhone}`}
+                            variant="outlined"
+                            size="small"
+                            sx={{
+                              minHeight: 36,
+                              px: 1.5,
+                              color: HOME_TEXT,
+                              fontSize: 13,
+                              borderColor: 'rgba(248,246,238,0.32)',
+                            }}
+                          >
+                            โทรติดต่อ
+                          </Button>
+                        )}
+                        {group.facebookUrl && (
+                          <Button
+                            component="a"
+                            href={group.facebookUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            size="small"
+                            sx={{
+                              minWidth: 0,
+                              px: 0.75,
+                              color: 'rgba(248,246,238,0.72)',
+                              fontSize: 12,
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            Facebook
+                          </Button>
+                        )}
+                        {group.youtubeUrl && (
+                          <Button
+                            component="a"
+                            href={group.youtubeUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            size="small"
+                            sx={{
+                              minWidth: 0,
+                              px: 0.75,
+                              color: 'rgba(248,246,238,0.72)',
+                              fontSize: 12,
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            YouTube
+                          </Button>
+                        )}
                       </Stack>
 
                       <Stack
-                        direction="row"
-                        spacing={0.75}
-                        useFlexGap
-                        flexWrap="wrap"
-                        sx={{ mt: 1.5 }}
+                        direction={{ xs: 'column', sm: 'row' }}
+                        spacing={1.5}
+                        alignItems={{ xs: 'flex-start', sm: 'center' }}
+                        justifyContent="space-between"
+                        sx={{ mt: 2 }}
                       >
-                        {group.provinceName && (
-                          <Chip
-                            label={`จังหวัด${group.provinceName}`}
+                        <Stack direction="row" spacing={0.75} alignItems="center">
+                          <Typography
+                            variant="caption"
+                            sx={{ mr: 0.25, color: 'rgba(248,246,238,0.62)', fontWeight: 800 }}
+                          >
+                            แชร์
+                          </Typography>
+                          <Button
+                            type="button"
                             size="small"
-                            variant="outlined"
+                            onClick={() => handleSharePerformanceGroup('facebook', groupId)}
                             sx={{
-                              color: HOME_TEXT,
-                              fontWeight: 700,
-                              bgcolor: 'rgba(248,246,238,0.08)',
-                              borderColor: 'rgba(248,246,238,0.48)',
-                            }}
-                          />
-                        )}
-                        {group.isFeatured && (
-                          <Chip
-                            label="วงแนะนำ"
-                            size="small"
-                            sx={{
-                              color: '#4b402d',
+                              minWidth: 0,
+                              minHeight: 32,
+                              px: 1.25,
+                              color: '#dceaff',
+                              fontSize: 12,
                               fontWeight: 800,
-                              bgcolor: 'rgba(234,215,161,0.82)',
-                              border: '1px solid rgba(234,215,161,0.95)',
+                              bgcolor: 'rgba(24,119,242,0.2)',
+                              border: '1px solid rgba(112,169,244,0.48)',
                             }}
-                          />
-                        )}
-                        {group.acceptsBookings && (
-                          <Chip
-                            label="เปิดรับงาน"
+                          >
+                            Facebook
+                          </Button>
+                          <Button
+                            type="button"
                             size="small"
-                            variant="outlined"
+                            onClick={() => handleSharePerformanceGroup('line', groupId)}
                             sx={{
-                              color: '#b9f6ca',
+                              minWidth: 0,
+                              minHeight: 32,
+                              px: 1.25,
+                              color: '#c9f8dc',
+                              fontSize: 12,
                               fontWeight: 800,
-                              bgcolor: 'rgba(46,125,50,0.16)',
-                              borderColor: 'rgba(105,240,174,0.72)',
+                              bgcolor: 'rgba(6,199,85,0.16)',
+                              border: '1px solid rgba(105,240,174,0.46)',
                             }}
-                          />
-                        )}
-                      </Stack>
+                          >
+                            LINE
+                          </Button>
+                        </Stack>
 
-                      {group.description && (
-                        <Typography
-                          sx={{
-                            mt: 2,
-                            color: 'rgba(248,246,238,0.76)',
-                            lineHeight: 1.7,
-                            display: '-webkit-box',
-                            overflow: 'hidden',
-                            WebkitLineClamp: 2,
-                            WebkitBoxOrient: 'vertical',
-                          }}
-                        >
-                          {group.description}
-                        </Typography>
-                      )}
-
-                      <Box
-                        sx={{
-                          mt: 'auto',
-                          pt: 2.25,
-                          position: 'relative',
-                          zIndex: 2,
-                          borderTop: '1px solid rgba(248,246,238,0.16)',
-                        }}
-                      >
                         <Stack
                           direction="row"
-                          spacing={1}
-                          useFlexGap
-                          flexWrap="wrap"
+                          spacing={1.75}
                           alignItems="center"
+                          sx={{ color: 'rgba(248,246,238,0.68)' }}
                         >
-                          <Button
-                            component={RouterLink}
-                            href={paths.performanceGroup.details(groupId)}
-                            variant="contained"
-                            size="small"
-                            endIcon={<Iconify icon="eva:diagonal-arrow-right-up-fill" width={17} />}
-                            sx={{ minHeight: 36, px: 1.75, fontSize: 13, fontWeight: 900 }}
-                          >
-                            ดูรายละเอียด
-                          </Button>
-                          {group.contactPhone && (
-                            <Button
-                              component="a"
-                              href={`tel:${group.contactPhone}`}
-                              variant="outlined"
-                              size="small"
-                              sx={{
-                                minHeight: 36,
-                                px: 1.5,
-                                color: HOME_TEXT,
-                                fontSize: 13,
-                                borderColor: 'rgba(248,246,238,0.32)',
-                              }}
-                            >
-                              โทรติดต่อ
-                            </Button>
-                          )}
-                          {group.facebookUrl && (
-                            <Button
-                              component="a"
-                              href={group.facebookUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              size="small"
-                              sx={{
-                                minWidth: 0,
-                                px: 0.75,
-                                color: 'rgba(248,246,238,0.72)',
-                                fontSize: 12,
-                                whiteSpace: 'nowrap',
-                              }}
-                            >
-                              Facebook
-                            </Button>
-                          )}
-                          {group.youtubeUrl && (
-                            <Button
-                              component="a"
-                              href={group.youtubeUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              size="small"
-                              sx={{
-                                minWidth: 0,
-                                px: 0.75,
-                                color: 'rgba(248,246,238,0.72)',
-                                fontSize: 12,
-                                whiteSpace: 'nowrap',
-                              }}
-                            >
-                              YouTube
-                            </Button>
-                          )}
-                        </Stack>
-
-                        <Stack
-                          direction={{ xs: 'column', sm: 'row' }}
-                          spacing={1.5}
-                          alignItems={{ xs: 'flex-start', sm: 'center' }}
-                          justifyContent="space-between"
-                          sx={{ mt: 2 }}
-                        >
-                          <Stack direction="row" spacing={0.75} alignItems="center">
-                            <Typography
-                              variant="caption"
-                              sx={{ mr: 0.25, color: 'rgba(248,246,238,0.62)', fontWeight: 800 }}
-                            >
-                              แชร์
+                          <Stack direction="row" spacing={0.55} alignItems="center">
+                            <Iconify icon="solar:eye-bold" width={17} />
+                            <Typography variant="caption" sx={{ fontWeight: 800 }}>
+                              {performanceGroupCounts[groupId]?.views ?? 0} ครั้ง
                             </Typography>
-                            <Button
-                              type="button"
-                              size="small"
-                              onClick={() => handleSharePerformanceGroup('facebook', groupId)}
-                              sx={{
-                                minWidth: 0,
-                                minHeight: 32,
-                                px: 1.25,
-                                color: '#dceaff',
-                                fontSize: 12,
-                                fontWeight: 800,
-                                bgcolor: 'rgba(24,119,242,0.2)',
-                                border: '1px solid rgba(112,169,244,0.48)',
-                              }}
-                            >
-                              Facebook
-                            </Button>
-                            <Button
-                              type="button"
-                              size="small"
-                              onClick={() => handleSharePerformanceGroup('line', groupId)}
-                              sx={{
-                                minWidth: 0,
-                                minHeight: 32,
-                                px: 1.25,
-                                color: '#c9f8dc',
-                                fontSize: 12,
-                                fontWeight: 800,
-                                bgcolor: 'rgba(6,199,85,0.16)',
-                                border: '1px solid rgba(105,240,174,0.46)',
-                              }}
-                            >
-                              LINE
-                            </Button>
                           </Stack>
-
-                          <Stack
-                            direction="row"
-                            spacing={1.75}
-                            alignItems="center"
-                            sx={{ color: 'rgba(248,246,238,0.68)' }}
-                          >
-                            <Stack direction="row" spacing={0.55} alignItems="center">
-                              <Iconify icon="solar:eye-bold" width={17} />
-                              <Typography variant="caption" sx={{ fontWeight: 800 }}>
-                                {performanceGroupCounts[groupId]?.views ?? 0} ครั้ง
-                              </Typography>
-                            </Stack>
-                            <Stack direction="row" spacing={0.55} alignItems="center">
-                              <Iconify icon="solar:share-bold" width={17} />
-                              <Typography variant="caption" sx={{ fontWeight: 800 }}>
-                                {performanceGroupCounts[groupId]?.shares ?? 0} แชร์
-                              </Typography>
-                            </Stack>
+                          <Stack direction="row" spacing={0.55} alignItems="center">
+                            <Iconify icon="solar:share-bold" width={17} />
+                            <Typography variant="caption" sx={{ fontWeight: 800 }}>
+                              {performanceGroupCounts[groupId]?.shares ?? 0} แชร์
+                            </Typography>
                           </Stack>
                         </Stack>
-                      </Box>
+                      </Stack>
                     </Box>
-                  );
-                })}
+                  </Box>
+                );
+              })}
             </Box>
             {hasMorePerformanceGroups && (
               <Stack

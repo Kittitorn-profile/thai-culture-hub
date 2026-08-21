@@ -35,6 +35,9 @@ export const paths = {
   performanceGroup: {
     details: (groupId: string) => `/performance-groups/${encodeURIComponent(groupId)}`,
   },
+  event: {
+    details: (eventId: string) => `/events/${encodeURIComponent(eventId)}`,
+  },
   faqs: '/faqs',
   page403: '/error/403',
   page404: '/error/404',

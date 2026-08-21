@@ -7,6 +7,9 @@ import { normalizeCalendarDate } from 'src/utils/calendar-date';
 import provinces from 'src/data/thailand-culture/provinces';
 import { getSupabaseAdmin } from 'src/server/supabase-admin';
 import { verifyAdminRequest } from 'src/server/admin-api-auth';
+import { toEventStorageUrl, toEventMediaProxyUrl } from 'src/server/event-media-url';
+
+import { DEFAULT_CONTEST_RESULT_OPTIONS } from 'src/sections/events/event-contest-options';
 
 import { ADMIN_PERMISSION } from 'src/auth/admin-permissions';
 
@@ -24,10 +27,17 @@ type EventPayload = {
   organizer?: string;
   mediaUrl?: string;
   coverUrl?: string;
+  logoUrl?: string;
+  imageUrls?: string[];
+  backgroundColor?: string;
   mediaType?: 'image' | 'video';
   sourceLabel?: string;
   sourceUrl?: string;
+  note?: string;
   isFeatured?: boolean;
+  isContest?: boolean;
+  contestCategories?: Array<{ id: string; name: string; maxParticipants?: number }>;
+  contestResultOptions?: Array<{ id: string; name: string }>;
   sortOrder?: number | string;
   isActive?: boolean;
   source?: string;
@@ -50,10 +60,17 @@ type EventRow = {
   organizer?: string | null;
   media_url?: string | null;
   cover_url?: string | null;
+  logo_url?: string | null;
+  image_urls?: string[] | null;
+  background_color?: string | null;
   media_type?: 'image' | 'video' | null;
   source_label?: string | null;
   source_url?: string | null;
+  note?: string | null;
   is_featured?: boolean | null;
+  is_contest?: boolean | null;
+  contest_categories?: Array<{ id: string; name: string; maxParticipants?: number }> | null;
+  contest_result_options?: Array<{ id: string; name: string }> | null;
   sort_order?: number | null;
   is_active?: boolean | null;
   source?: string | null;
@@ -86,6 +103,12 @@ function optionalText(value: unknown) {
   return typeof value === 'string' && value.trim() ? value.trim() : null;
 }
 
+function optionalMediaUrl(value: unknown) {
+  const url = optionalText(value);
+
+  return url ? toEventStorageUrl(url) : null;
+}
+
 function optionalCalendarDate(value: unknown) {
   const calendarDate = normalizeCalendarDate(value);
 
@@ -114,12 +137,25 @@ function toEventItem(row: EventRow) {
     provinceName: row.province_name ?? '',
     location: row.location ?? '',
     organizer: row.organizer ?? '',
-    mediaUrl: row.media_url ?? '',
-    coverUrl: row.cover_url ?? '',
+    mediaUrl: toEventMediaProxyUrl(row.media_url),
+    coverUrl: toEventMediaProxyUrl(row.cover_url),
+    logoUrl: toEventMediaProxyUrl(row.logo_url),
+    imageUrls: (row.image_urls ?? []).map(toEventMediaProxyUrl),
+    backgroundColor: row.background_color ?? '#6f8790',
     mediaType: row.media_type === 'video' ? 'video' : 'image',
     sourceLabel: row.source_label ?? '',
     sourceUrl: row.source_url ?? row.tat_url ?? '',
+    note: row.note ?? '',
     isFeatured: row.is_featured ?? false,
+    isContest: row.is_contest ?? false,
+    contestCategories: (row.contest_categories ?? []).map((category) => ({
+      ...category,
+      maxParticipants: Number(category.maxParticipants) || 0,
+    })),
+    contestResultOptions:
+      row.is_contest && !row.contest_result_options?.length
+        ? DEFAULT_CONTEST_RESULT_OPTIONS.map((option) => ({ ...option }))
+        : (row.contest_result_options ?? []),
     sortOrder: row.sort_order ?? 0,
     isActive: row.is_active ?? true,
     source: row.source ?? 'manual',
@@ -185,12 +221,27 @@ function toRow(body: EventPayload) {
       province_name: province?.name ?? null,
       location,
       organizer,
-      media_url: optionalText(body.mediaUrl),
-      cover_url: optionalText(body.coverUrl),
+      media_url: optionalMediaUrl(body.mediaUrl),
+      cover_url: optionalMediaUrl(body.coverUrl),
+      logo_url: optionalMediaUrl(body.logoUrl),
+      image_urls: (body.imageUrls ?? []).slice(0, 10).map(toEventStorageUrl).filter(Boolean),
+      background_color: optionalText(body.backgroundColor) ?? '#6f8790',
       media_type: body.mediaType === 'video' ? 'video' : 'image',
       source_label: optionalText(body.sourceLabel),
       source_url: optionalText(body.sourceUrl),
+      note: optionalText(body.note),
       is_featured: isFeatured,
+      is_contest: body.isContest ?? false,
+      contest_categories: (body.contestCategories ?? [])
+        .map((category) => ({
+          id: optionalText(category.id),
+          name: optionalText(category.name),
+          maxParticipants: Math.max(0, Number(category.maxParticipants) || 0),
+        }))
+        .filter((category) => category.id && category.name),
+      contest_result_options: (body.contestResultOptions ?? [])
+        .map((option) => ({ id: optionalText(option.id), name: optionalText(option.name) }))
+        .filter((option) => option.id && option.name),
       sort_order: Number.isFinite(sortOrder) ? sortOrder : 0,
       is_active: body.isActive ?? true,
       source: optionalText(body.source) ?? 'manual',

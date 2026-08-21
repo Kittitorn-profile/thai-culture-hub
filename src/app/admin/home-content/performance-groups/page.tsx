@@ -89,13 +89,16 @@ export default function PerformanceGroupsPage() {
               รายการวงโปงลาง วงหมอลำ และวงดนตรีทั้งหมด
             </Typography>
           </div>
-          <Button
-            component={RouterLink}
-            href="/admin/home-content/performance-groups/new"
-            variant="contained"
-          >
-            + สร้างวงใหม่
-          </Button>
+          <Box>
+            <Button
+              size="medium"
+              component={RouterLink}
+              href="/admin/home-content/performance-groups/new"
+              variant="contained"
+            >
+              + สร้างวงใหม่
+            </Button>
+          </Box>
         </Stack>
         {query.isLoading ? <CircularProgress /> : null}
         {query.error ? <Alert severity="error">โหลดข้อมูลไม่สำเร็จ</Alert> : null}

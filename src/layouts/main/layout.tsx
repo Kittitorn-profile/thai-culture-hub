@@ -86,8 +86,7 @@ export function MainLayout({
           <MenuButton
             onClick={onOpen}
             sx={(theme) => ({
-              mr: 1,
-              ml: -1,
+              mx: 1,
               [theme.breakpoints.up(layoutQuery)]: { display: 'none' },
             })}
           />

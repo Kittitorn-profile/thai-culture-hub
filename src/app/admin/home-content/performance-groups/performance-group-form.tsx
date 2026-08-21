@@ -60,6 +60,18 @@ import {
 type Props = { groupId?: string };
 type PositionDraft = { id: string; original: string; name: string };
 type OrganizerDraft = Organizer;
+type ContestEvent = {
+  id: string;
+  title: string;
+  startsAt: string;
+  isContest?: boolean;
+  isActive?: boolean;
+  organizer?: string;
+  logoUrl?: string;
+  backgroundColor?: string;
+  contestCategories?: Array<{ id: string; name: string; maxParticipants?: number }>;
+  contestResultOptions?: Array<{ id: string; name: string }>;
+};
 type UploadFolder =
   | 'personnel'
   | 'group-logos'
@@ -98,10 +110,38 @@ export function PerformanceGroupForm({ groupId }: Props) {
         accessToken,
       }),
   });
+  const contestEventsQuery = useQuery({
+    queryKey: ['admin-events', 'contests', accessToken],
+    enabled: !!accessToken,
+    queryFn: () => adminApiRequest<{ data?: ContestEvent[] }>('/api/admin/events', { accessToken }),
+  });
+  const contestEvents = (contestEventsQuery.data?.data ?? []).filter(
+    (eventItem) => eventItem.isContest && eventItem.isActive
+  );
 
   useEffect(() => {
-    if (query.data) setOrganizers(normalizeContent(query.data.data?.content).organizers);
-  }, [query.data]);
+    if (!query.data) return;
+
+    const storedOrganizers = normalizeContent(query.data.data?.content).organizers;
+    const organizerNames = new Set(storedOrganizers.map((item) => item.name.trim().toLowerCase()));
+    const eventOrganizers = (contestEventsQuery.data?.data ?? []).flatMap((eventItem) => {
+      const name = eventItem.organizer?.trim();
+
+      if (!name || organizerNames.has(name.toLowerCase())) return [];
+
+      organizerNames.add(name.toLowerCase());
+      return [
+        {
+          id: `event-organizer-${encodeURIComponent(name.toLowerCase())}`,
+          name,
+          color: eventItem.backgroundColor || '#637e69',
+          logoUrl: eventItem.logoUrl || '',
+        },
+      ];
+    });
+
+    setOrganizers([...storedOrganizers, ...eventOrganizers]);
+  }, [contestEventsQuery.data?.data, query.data]);
 
   useEffect(() => {
     if (!isEditing || !query.data) return;
@@ -575,6 +615,11 @@ export function PerformanceGroupForm({ groupId }: Props) {
                           organizerName: '',
                           organizerColor: '#637e69',
                           organizerLogoUrl: '',
+                          contestEventIds: [],
+                          contestCategoryIds: {},
+                          contestResultIds: {},
+                          contestSingerIds: {},
+                          contestLeadPerformerIds: {},
                           details: '',
                           about: '',
                           storyTypes: [],
@@ -597,33 +642,37 @@ export function PerformanceGroupForm({ groupId }: Props) {
                   <Alert severity="info">ยังไม่มีข้อมูลรายปี</Alert>
                 ) : null}
                 {yearlyFieldArray.fields.map((field, yearIndex) => (
-                  <YearRecordFields
-                    key={field.id}
-                    control={control}
-                    yearIndex={yearIndex}
-                    primaryColor={group.primaryColor}
-                    personnel={group.personnel}
-                    organizers={organizers}
-                    onManageOrganizers={() =>
-                      setOrganizerDrafts(organizers.map((item) => ({ ...item })))
-                    }
-                    uploadingImageKey={uploadingImageKey}
-                    onUploadLogo={(file) =>
-                      uploadImage(`year-logo-${yearIndex}`, 'yearly-logos', file, (logoUrl) =>
-                        setValue(`yearlyData.${yearIndex}.logoUrl`, logoUrl)
-                      )
-                    }
-                    onUploadPerformanceImages={(files) => uploadPerformanceImages(yearIndex, files)}
-                    onUploadBooklet={(file) =>
-                      uploadImage(`booklet-${yearIndex}`, 'booklets', file, (bookletUrl) =>
-                        setValue(`yearlyData.${yearIndex}.bookletUrl`, bookletUrl)
-                      )
-                    }
-                    onSetBookletName={(name) =>
-                      setValue(`yearlyData.${yearIndex}.bookletName`, name)
-                    }
-                    onRemove={() => yearlyFieldArray.remove(yearIndex)}
-                  />
+                  <Box key={field.id} pb={1}>
+                    <YearRecordFields
+                      control={control}
+                      yearIndex={yearIndex}
+                      primaryColor={group.primaryColor}
+                      personnel={group.personnel}
+                      organizers={organizers}
+                      contestEvents={contestEvents}
+                      onManageOrganizers={() =>
+                        setOrganizerDrafts(organizers.map((item) => ({ ...item })))
+                      }
+                      uploadingImageKey={uploadingImageKey}
+                      onUploadLogo={(file) =>
+                        uploadImage(`year-logo-${yearIndex}`, 'yearly-logos', file, (logoUrl) =>
+                          setValue(`yearlyData.${yearIndex}.logoUrl`, logoUrl)
+                        )
+                      }
+                      onUploadPerformanceImages={(files) =>
+                        uploadPerformanceImages(yearIndex, files)
+                      }
+                      onUploadBooklet={(file) =>
+                        uploadImage(`booklet-${yearIndex}`, 'booklets', file, (bookletUrl) =>
+                          setValue(`yearlyData.${yearIndex}.bookletUrl`, bookletUrl)
+                        )
+                      }
+                      onSetBookletName={(name) =>
+                        setValue(`yearlyData.${yearIndex}.bookletName`, name)
+                      }
+                      onRemove={() => yearlyFieldArray.remove(yearIndex)}
+                    />
+                  </Box>
                 ))}
               </Stack>
             </Box>
@@ -940,7 +989,11 @@ function SectionHeader({ title, subtitle }: { title: string; subtitle: string })
 
 type PersonnelAutocompleteProps = {
   control: Control<GroupEntry>;
-  name: `yearlyData.${number}.singerIds` | `yearlyData.${number}.leadPerformerIds`;
+  name:
+    | `yearlyData.${number}.singerIds`
+    | `yearlyData.${number}.leadPerformerIds`
+    | `yearlyData.${number}.contestSingerIds.${string}`
+    | `yearlyData.${number}.contestLeadPerformerIds.${string}`;
   label: string;
   personnel: Personnel[];
 };
@@ -954,7 +1007,7 @@ function PersonnelAutocomplete({ control, name, label, personnel }: PersonnelAut
         <Autocomplete
           multiple
           options={personnel}
-          value={personnel.filter((person) => field.value.includes(person.id))}
+          value={personnel.filter((person) => (field.value ?? []).includes(person.id))}
           getOptionLabel={(person) =>
             person.nickname ? `${person.fullName} (${person.nickname})` : person.fullName
           }
@@ -977,6 +1030,7 @@ type YearRecordFieldsProps = {
   primaryColor: string;
   personnel: Personnel[];
   organizers: Organizer[];
+  contestEvents: ContestEvent[];
   onManageOrganizers: () => void;
   uploadingImageKey: string;
   onUploadLogo: (file: File | undefined) => void;
@@ -992,6 +1046,7 @@ function YearRecordFields({
   primaryColor,
   personnel,
   organizers,
+  contestEvents,
   onManageOrganizers,
   uploadingImageKey,
   onUploadLogo,
@@ -1015,7 +1070,6 @@ function YearRecordFields({
         boxShadow: 'none',
         '&:before': { display: 'none' },
         p: 3,
-        mb: 1,
       }}
     >
       <AccordionSummary
@@ -1115,7 +1169,21 @@ function YearRecordFields({
                             >
                               {organizer.name.slice(0, 1)}
                             </Avatar>
-                            <span>{organizer.name}</span>
+                            <Box>
+                              <Typography component="span" variant="body2">
+                                {organizer.name}
+                              </Typography>
+                              {organizer.id.startsWith('event-organizer-') && (
+                                <Typography
+                                  component="span"
+                                  variant="caption"
+                                  color="text.secondary"
+                                  sx={{ ml: 0.75 }}
+                                >
+                                  จากกิจกรรม
+                                </Typography>
+                              )}
+                            </Box>
                           </Stack>
                         </MenuItem>
                       ))}
@@ -1132,6 +1200,166 @@ function YearRecordFields({
                 </Box>
               </Grid>
             </Grid>
+          </Box>
+          <Box
+            sx={{
+              p: 2.5,
+              borderRadius: 2,
+              bgcolor: 'background.neutral',
+              border: '1px solid',
+              borderColor: 'divider',
+            }}
+          >
+            <Typography variant="subtitle1" sx={{ mb: 0.5, fontWeight: 900 }}>
+              การประกวดที่เข้าร่วม
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+              เลือกจากกิจกรรมที่เปิดเผยแพร่และระบุว่าเป็นการประกวด
+            </Typography>
+            <Controller
+              name={`yearlyData.${yearIndex}.contestEventIds`}
+              control={control}
+              render={({ field }) => (
+                <Autocomplete
+                  multiple
+                  options={contestEvents}
+                  value={contestEvents.filter((eventItem) => field.value.includes(eventItem.id))}
+                  getOptionLabel={(eventItem) => eventItem.title}
+                  isOptionEqualToValue={(option, value) => option.id === value.id}
+                  onChange={(_, selected) => {
+                    const selectedIds = selected.map((eventItem) => eventItem.id);
+                    field.onChange(selectedIds);
+                    const currentCategories = record.contestCategoryIds ?? {};
+                    setValue(
+                      `yearlyData.${yearIndex}.contestCategoryIds`,
+                      Object.fromEntries(
+                        Object.entries(currentCategories).filter(([eventId]) =>
+                          selectedIds.includes(eventId)
+                        )
+                      )
+                    );
+                    const currentResults = record.contestResultIds ?? {};
+                    setValue(
+                      `yearlyData.${yearIndex}.contestResultIds`,
+                      Object.fromEntries(
+                        Object.entries(currentResults).filter(([eventId]) =>
+                          selectedIds.includes(eventId)
+                        )
+                      )
+                    );
+                    setValue(
+                      `yearlyData.${yearIndex}.contestSingerIds`,
+                      Object.fromEntries(
+                        Object.entries(record.contestSingerIds ?? {}).filter(([eventId]) =>
+                          selectedIds.includes(eventId)
+                        )
+                      )
+                    );
+                    setValue(
+                      `yearlyData.${yearIndex}.contestLeadPerformerIds`,
+                      Object.fromEntries(
+                        Object.entries(record.contestLeadPerformerIds ?? {}).filter(([eventId]) =>
+                          selectedIds.includes(eventId)
+                        )
+                      )
+                    );
+                  }}
+                  renderInput={(params) => (
+                    <TextField {...params} label="เลือกการประกวด" placeholder="ค้นหาชื่อกิจกรรม" />
+                  )}
+                />
+              )}
+            />
+            <Stack spacing={1.5} sx={{ mt: 2 }}>
+              {(record.contestEventIds ?? []).map((eventId) => {
+                const selectedEvent = contestEvents.find((eventItem) => eventItem.id === eventId);
+                const categories = selectedEvent?.contestCategories ?? [];
+                const resultOptions = selectedEvent?.contestResultOptions ?? [];
+
+                if (!selectedEvent) return null;
+
+                return (
+                  <Box
+                    key={eventId}
+                    sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2 }}
+                  >
+                    <Typography sx={{ mb: 1.5, fontWeight: 900 }}>{selectedEvent.title}</Typography>
+                    <Stack spacing={1.5}>
+                      {categories.length > 0 && (
+                        <Field.Select
+                          fullWidth
+                          name={`yearlyData.${yearIndex}.contestCategoryIds.${eventId}`}
+                          label="ประเภทที่เข้าร่วม"
+                        >
+                          <MenuItem value="">
+                            <em>เลือกประเภทที่เข้าร่วม</em>
+                          </MenuItem>
+                          {categories.map((category) => (
+                            <MenuItem key={category.id} value={category.id}>
+                              {category.name}
+                              {category.maxParticipants
+                                ? ` (รับสูงสุด ${category.maxParticipants.toLocaleString('th-TH')} วง)`
+                                : ''}
+                            </MenuItem>
+                          ))}
+                        </Field.Select>
+                      )}
+                      {resultOptions.length > 0 && (
+                        <Controller
+                          name={`yearlyData.${yearIndex}.contestResultIds.${eventId}`}
+                          control={control}
+                          render={({ field }) => (
+                            <Autocomplete
+                              multiple
+                              options={resultOptions}
+                              value={resultOptions.filter((option) =>
+                                (field.value ?? []).includes(option.id)
+                              )}
+                              getOptionLabel={(option) => option.name}
+                              isOptionEqualToValue={(option, value) => option.id === value.id}
+                              onChange={(_, selected) =>
+                                field.onChange(selected.map((option) => option.id))
+                              }
+                              renderInput={(params) => (
+                                <TextField {...params} label="ผลการแข่งขัน / รางวัล" />
+                              )}
+                            />
+                          )}
+                        />
+                      )}
+                      <Box
+                        sx={{
+                          pt: 1.5,
+                          display: 'grid',
+                          gap: 1.5,
+                          gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' },
+                          borderTop: '1px solid',
+                          borderColor: 'divider',
+                        }}
+                      >
+                        <PersonnelAutocomplete
+                          control={control}
+                          name={`yearlyData.${yearIndex}.contestSingerIds.${eventId}`}
+                          label="นักร้องนำของรายการนี้"
+                          personnel={personnel}
+                        />
+                        <PersonnelAutocomplete
+                          control={control}
+                          name={`yearlyData.${yearIndex}.contestLeadPerformerIds.${eventId}`}
+                          label="นักแสดงนำของรายการนี้"
+                          personnel={personnel}
+                        />
+                      </Box>
+                    </Stack>
+                  </Box>
+                );
+              })}
+            </Stack>
+            {!contestEvents.length && (
+              <Alert severity="info" sx={{ mt: 1.5 }}>
+                ยังไม่มีกิจกรรมการประกวดที่เปิดใช้งาน
+              </Alert>
+            )}
           </Box>
 
           <Box>
