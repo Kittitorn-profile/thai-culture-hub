@@ -445,9 +445,12 @@ export function HomeView() {
     <Box
       component="main"
       sx={{
+        width: '100%',
+        maxWidth: '100vw',
         minHeight: '100vh',
         color: HOME_TEXT,
-        overflow: 'hidden',
+        overflowX: 'clip',
+        overflowY: 'hidden',
         bgcolor: HOME_BG_MIDDLE,
         position: 'relative',
         backgroundImage: HOME_SHARED_BACKGROUND,
@@ -1000,12 +1003,23 @@ export function HomeView() {
           sx={{
             px: HOME_SECTION_PX,
             py: { xs: 8, md: 12 },
+            width: '100%',
+            minWidth: 0,
+            maxWidth: '100%',
+            overflowX: 'clip',
             position: 'relative',
             zIndex: 1,
             background: 'rgba(42,55,54,0.06)',
           }}
         >
-          <Box sx={{ mx: 'auto', maxWidth: HOME_SECTION_MAX_WIDTH }}>
+          <Box
+            sx={{
+              mx: 'auto',
+              width: '100%',
+              minWidth: 0,
+              maxWidth: HOME_SECTION_MAX_WIDTH,
+            }}
+          >
             <Typography
               variant="overline"
               sx={{ display: 'block', letterSpacing: 2, fontWeight: 900 }}
@@ -1026,9 +1040,14 @@ export function HomeView() {
 
             <Box
               sx={{
+                width: '100%',
+                minWidth: 0,
                 gap: 3,
                 display: 'grid',
-                gridTemplateColumns: { xs: '1fr', lg: 'repeat(3, minmax(0, 1fr))' },
+                gridTemplateColumns: {
+                  xs: 'minmax(0, 1fr)',
+                  lg: 'repeat(3, minmax(0, 1fr))',
+                },
               }}
             >
               {visiblePerformanceGroups.map((group) => {
@@ -1078,6 +1097,7 @@ export function HomeView() {
                         alt={`ภาพตัวอย่าง ${group.name}`}
                         sx={{
                           width: '100%',
+                          maxWidth: '100%',
                           mb: 2.5,
                           display: 'block',
                           aspectRatio: '16 / 9',
@@ -1124,7 +1144,15 @@ export function HomeView() {
                             sx={{ width: 56, height: 56, flexShrink: 0 }}
                           />
                         )}
-                        <Typography variant="h5" sx={{ fontWeight: 900, color: HOME_DEEP }}>
+                        <Typography
+                          variant="h5"
+                          sx={{
+                            minWidth: 0,
+                            fontWeight: 900,
+                            color: HOME_DEEP,
+                            overflowWrap: 'anywhere',
+                          }}
+                        >
                           {group.name}
                         </Typography>
                       </Stack>
@@ -1293,7 +1321,14 @@ export function HomeView() {
                         justifyContent="space-between"
                         sx={{ mt: 2 }}
                       >
-                        <Stack direction="row" spacing={0.75} alignItems="center">
+                        <Stack
+                          direction="row"
+                          spacing={0.75}
+                          useFlexGap
+                          flexWrap="wrap"
+                          alignItems="center"
+                          sx={{ minWidth: 0, maxWidth: '100%' }}
+                        >
                           <Typography
                             variant="caption"
                             sx={{ mr: 0.25, color: 'rgba(248,246,238,0.62)', fontWeight: 800 }}
