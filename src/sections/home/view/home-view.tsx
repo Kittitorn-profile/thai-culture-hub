@@ -995,261 +995,6 @@ export function HomeView() {
         </Box>
       )}
 
-      <Box
-        sx={{
-          px: HOME_SECTION_PX,
-          py: { xs: 7, md: 9 },
-          position: 'relative',
-          overflow: 'hidden',
-          zIndex: 1,
-        }}
-      >
-        <Box
-          sx={{
-            mx: 'auto',
-            maxWidth: HOME_SECTION_MAX_WIDTH,
-            display: 'grid',
-            gap: { xs: 3, md: 5 },
-            alignItems: 'center',
-            gridTemplateColumns: { xs: '1fr', md: '0.92fr 1.08fr' },
-          }}
-        >
-          <Box>
-            <Typography
-              sx={{
-                px: 1.4,
-                py: 0.6,
-                width: 'fit-content',
-                color: HOME_TEXT,
-                borderRadius: 999,
-                bgcolor: 'rgba(42,55,54,0.28)',
-                border: '1px solid rgba(255,255,255,0.28)',
-                fontSize: 12,
-                fontWeight: 800,
-              }}
-            >
-              Explore all data
-            </Typography>
-            <Typography
-              variant="h3"
-              sx={{
-                mt: 2,
-                color: HOME_TEXT,
-                fontSize: { xs: 28, md: 44 },
-                fontWeight: 950,
-                lineHeight: 1.15,
-              }}
-            >
-              ค้นหาสถานที่วัฒนธรรมจากข้อมูลทั้งหมด
-            </Typography>
-            <Typography
-              sx={{
-                mt: 1.5,
-                maxWidth: 560,
-                color: 'rgba(248,246,238,0.78)',
-                lineHeight: 1.75,
-              }}
-            >
-              เปิดมุมมองรวมเพื่อค้นหาชื่อสถานที่ อำเภอ จังหวัด หรือเลือกจังหวัดก่อนดูรายการ
-              เหมาะสำหรับสำรวจข้อมูลและส่งคำขอแก้ไขเมื่อพบรายละเอียดที่ควรปรับปรุง
-            </Typography>
-            <Button
-              component={RouterLink}
-              href="/culture-category"
-              variant="contained"
-              startIcon={<Iconify icon="solar:add-folder-bold" />}
-              sx={{ mt: 3, width: { xs: 1, sm: 'auto' } }}
-            >
-              สำรวจข้อมูลทั้งหมด
-            </Button>
-          </Box>
-
-          <Box
-            sx={{
-              display: 'grid',
-              gap: 1.5,
-              gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, minmax(0, 1fr))' },
-            }}
-          >
-            {[
-              {
-                icon: 'solar:file-text-bold' as IconifyName,
-                title: 'ค้นหาเร็วขึ้น',
-                body: 'เริ่มจากจังหวัดแรกเพื่อลดเวลารอโหลด แล้วค่อยขยายเป็นทุกจังหวัดได้',
-              },
-              {
-                icon: 'solar:add-folder-bold' as IconifyName,
-                title: 'ดูรวมทุกหมวด',
-                body: 'รวมสถานที่ ประเพณี อาหาร งานช่าง ภูมิปัญญา และแหล่งเรียนรู้ไว้ในหน้าเดียว',
-              },
-              {
-                icon: 'solar:check-circle-bold' as IconifyName,
-                title: 'ช่วยแก้ข้อมูล',
-                body: 'เมื่อพบข้อมูลคลาดเคลื่อน สามารถเปิดสถานที่และส่งคำขอให้ทีมงานตรวจสอบ',
-              },
-            ].map((item) => (
-              <Box
-                key={item.title}
-                sx={{
-                  p: { xs: 2, md: 2.5 },
-                  minHeight: 210,
-                  borderRadius: 1.5,
-                  color: HOME_TEXT,
-                  bgcolor: 'rgba(42,55,54,0.3)',
-                  border: '1px solid rgba(248,246,238,0.2)',
-                  backdropFilter: 'blur(7px)',
-                }}
-              >
-                <Box
-                  sx={{
-                    width: 46,
-                    height: 46,
-                    mb: 2,
-                    borderRadius: 1.25,
-                    display: 'grid',
-                    placeItems: 'center',
-                    color: HOME_DEEP,
-                    bgcolor: 'rgba(248,246,238,0.86)',
-                  }}
-                >
-                  <Iconify icon={item.icon} width={25} />
-                </Box>
-                <Typography sx={{ fontSize: 18, fontWeight: 900 }}>{item.title}</Typography>
-                <Typography
-                  sx={{ mt: 1, color: 'rgba(248,246,238,0.72)', fontSize: 13.5, lineHeight: 1.65 }}
-                >
-                  {item.body}
-                </Typography>
-              </Box>
-            ))}
-          </Box>
-        </Box>
-      </Box>
-
-      {localWisdomContent && (
-        <Box
-          sx={{
-            px: HOME_SECTION_PX,
-            py: { xs: 8, md: 12 },
-            minHeight: 670,
-            position: 'relative',
-            overflow: 'hidden',
-            zIndex: 1,
-          }}
-        >
-          <Box
-            sx={{
-              mx: 'auto',
-              gap: { xs: 6, md: 5 },
-              maxWidth: HOME_SECTION_MAX_WIDTH,
-              position: 'relative',
-              zIndex: 1,
-              display: 'grid',
-              alignItems: 'center',
-              gridTemplateColumns: { xs: '1fr', md: '0.88fr 1.12fr' },
-            }}
-          >
-            <Box
-              sx={{
-                gap: 2,
-                display: 'grid',
-                gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' },
-              }}
-            >
-              <Box
-                sx={{
-                  p: 1,
-                  borderRadius: 1.5,
-                  bgcolor: 'rgba(248,246,238,0.1)',
-                  border: '1px solid rgba(248,246,238,0.22)',
-                  boxShadow: '0 24px 60px rgba(0,0,0,0.22)',
-                }}
-              >
-                <Box
-                  sx={{
-                    width: 1,
-                    aspectRatio: '16 / 9',
-                    height: { xs: 200, md: 350 },
-                    overflow: 'hidden',
-                    borderRadius: 1,
-                    bgcolor: HOME_DEEP,
-                    '& .react-player__preview': {
-                      borderRadius: 1,
-                    },
-                    '& .react-player__shadow': {
-                      bgcolor: 'rgba(42,55,54,0.58)',
-                      boxShadow: '0 18px 40px rgba(0,0,0,0.34)',
-                    },
-                  }}
-                >
-                  <ReactPlayer
-                    src={localWisdomContent?.mediaUrl}
-                    light={localWisdomContent?.coverUrl}
-                    width="100%"
-                    height="100%"
-                    playIcon={<HomePlayButton small />}
-                    previewAriaLabel={`ดูวิดีโอ ${localWisdomContent?.title}`}
-                    onClickPreview={() =>
-                      setSelectedVideo({
-                        title: localWisdomContent?.title,
-                        src: localWisdomContent?.mediaUrl,
-                        cover: localWisdomContent?.coverUrl,
-                      })
-                    }
-                  />
-                </Box>
-              </Box>
-            </Box>
-
-            <Box>
-              <Typography
-                component="h2"
-                sx={{
-                  color: HOME_TEXT,
-                  maxWidth: 520,
-                  fontSize: { xs: 42, sm: 58, md: 68 },
-                  fontWeight: 800,
-                  lineHeight: 1.2,
-                  textTransform: 'uppercase',
-                }}
-              >
-                {localWisdomContent.title}
-              </Typography>
-
-              <Typography
-                sx={{
-                  mt: 4,
-                  maxWidth: 430,
-                  color: 'rgba(248,246,238,0.82)',
-                  lineHeight: 1.75,
-                }}
-              >
-                {localWisdomContent.body}
-              </Typography>
-
-              <Typography
-                variant="h4"
-                sx={{
-                  fontStyle: 'italic',
-                  mt: 3,
-                }}
-              >
-                {localWisdomContent.quote}
-              </Typography>
-              <Typography
-                variant="caption"
-                sx={{
-                  fontStyle: 'italic',
-                  mt: 3,
-                }}
-              >
-                {localWisdomContent.caption}
-              </Typography>
-            </Box>
-          </Box>
-        </Box>
-      )}
-
       {performanceGroupsContent && (
         <Box
           sx={{
@@ -1288,6 +1033,11 @@ export function HomeView() {
             >
               {visiblePerformanceGroups.map((group) => {
                 const groupId = group.id || group.name;
+                const yearlyThumbnail = group.yearlyData.find(
+                  (record) => record.performanceImages?.length
+                )?.performanceImages?.[0];
+                const thumbnailUrl = group.coverImageUrl || yearlyThumbnail || group.logoUrl;
+                const usesLogoAsThumbnail = !group.coverImageUrl && !yearlyThumbnail;
 
                 return (
                   <Box
@@ -1321,20 +1071,42 @@ export function HomeView() {
                       sx={{ position: 'absolute', inset: 0, zIndex: 1, borderRadius: 'inherit' }}
                     />
 
-                    {group.coverImageUrl && (
+                    {thumbnailUrl ? (
                       <Box
                         component="img"
-                        src={group.coverImageUrl}
-                        alt={`ภาพปก ${group.name}`}
+                        src={thumbnailUrl}
+                        alt={`ภาพตัวอย่าง ${group.name}`}
                         sx={{
                           width: '100%',
                           mb: 2.5,
                           display: 'block',
                           aspectRatio: '16 / 9',
-                          objectFit: 'cover',
+                          objectFit: usesLogoAsThumbnail ? 'contain' : 'cover',
+                          p: usesLogoAsThumbnail ? { xs: 4, md: 5 } : 0,
                           borderRadius: 2,
+                          bgcolor: usesLogoAsThumbnail
+                            ? `${group.primaryColor || HOME_DEEP}26`
+                            : 'transparent',
+                          backgroundImage: usesLogoAsThumbnail
+                            ? `radial-gradient(circle, rgba(248,246,238,0.2), ${group.primaryColor || HOME_DEEP}20)`
+                            : 'none',
                         }}
                       />
+                    ) : (
+                      <Box
+                        sx={{
+                          width: 1,
+                          mb: 2.5,
+                          display: 'grid',
+                          placeItems: 'center',
+                          aspectRatio: '16 / 9',
+                          borderRadius: 2,
+                          color: 'rgba(248,246,238,0.72)',
+                          background: `linear-gradient(135deg, ${group.primaryColor || HOME_DEEP}88, rgba(42,55,54,0.72))`,
+                        }}
+                      >
+                        <Iconify icon="solar:video-frame-play-horizontal-bold" width={52} />
+                      </Box>
                     )}
 
                     <Stack
@@ -1346,7 +1118,7 @@ export function HomeView() {
                       <Stack direction="row" spacing={1.5} alignItems="center" sx={{ minWidth: 0 }}>
                         {group.logoUrl && (
                           <Avatar
-                            variant="rounded"
+                            variant="circular"
                             src={group.logoUrl}
                             alt={`โลโก้ ${group.name}`}
                             sx={{ width: 56, height: 56, flexShrink: 0 }}
@@ -1604,6 +1376,261 @@ export function HomeView() {
                 </Typography>
               </Stack>
             )}
+          </Box>
+        </Box>
+      )}
+
+      <Box
+        sx={{
+          px: HOME_SECTION_PX,
+          py: { xs: 7, md: 9 },
+          position: 'relative',
+          overflow: 'hidden',
+          zIndex: 1,
+        }}
+      >
+        <Box
+          sx={{
+            mx: 'auto',
+            maxWidth: HOME_SECTION_MAX_WIDTH,
+            display: 'grid',
+            gap: { xs: 3, md: 5 },
+            alignItems: 'center',
+            gridTemplateColumns: { xs: '1fr', md: '0.92fr 1.08fr' },
+          }}
+        >
+          <Box>
+            <Typography
+              sx={{
+                px: 1.4,
+                py: 0.6,
+                width: 'fit-content',
+                color: HOME_TEXT,
+                borderRadius: 999,
+                bgcolor: 'rgba(42,55,54,0.28)',
+                border: '1px solid rgba(255,255,255,0.28)',
+                fontSize: 12,
+                fontWeight: 800,
+              }}
+            >
+              Explore all data
+            </Typography>
+            <Typography
+              variant="h3"
+              sx={{
+                mt: 2,
+                color: HOME_TEXT,
+                fontSize: { xs: 28, md: 44 },
+                fontWeight: 950,
+                lineHeight: 1.15,
+              }}
+            >
+              ค้นหาสถานที่วัฒนธรรมจากข้อมูลทั้งหมด
+            </Typography>
+            <Typography
+              sx={{
+                mt: 1.5,
+                maxWidth: 560,
+                color: 'rgba(248,246,238,0.78)',
+                lineHeight: 1.75,
+              }}
+            >
+              เปิดมุมมองรวมเพื่อค้นหาชื่อสถานที่ อำเภอ จังหวัด หรือเลือกจังหวัดก่อนดูรายการ
+              เหมาะสำหรับสำรวจข้อมูลและส่งคำขอแก้ไขเมื่อพบรายละเอียดที่ควรปรับปรุง
+            </Typography>
+            <Button
+              component={RouterLink}
+              href="/culture-category"
+              variant="contained"
+              startIcon={<Iconify icon="solar:add-folder-bold" />}
+              sx={{ mt: 3, width: { xs: 1, sm: 'auto' } }}
+            >
+              สำรวจข้อมูลทั้งหมด
+            </Button>
+          </Box>
+
+          <Box
+            sx={{
+              display: 'grid',
+              gap: 1.5,
+              gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, minmax(0, 1fr))' },
+            }}
+          >
+            {[
+              {
+                icon: 'solar:file-text-bold' as IconifyName,
+                title: 'ค้นหาเร็วขึ้น',
+                body: 'เริ่มจากจังหวัดแรกเพื่อลดเวลารอโหลด แล้วค่อยขยายเป็นทุกจังหวัดได้',
+              },
+              {
+                icon: 'solar:add-folder-bold' as IconifyName,
+                title: 'ดูรวมทุกหมวด',
+                body: 'รวมสถานที่ ประเพณี อาหาร งานช่าง ภูมิปัญญา และแหล่งเรียนรู้ไว้ในหน้าเดียว',
+              },
+              {
+                icon: 'solar:check-circle-bold' as IconifyName,
+                title: 'ช่วยแก้ข้อมูล',
+                body: 'เมื่อพบข้อมูลคลาดเคลื่อน สามารถเปิดสถานที่และส่งคำขอให้ทีมงานตรวจสอบ',
+              },
+            ].map((item) => (
+              <Box
+                key={item.title}
+                sx={{
+                  p: { xs: 2, md: 2.5 },
+                  minHeight: 210,
+                  borderRadius: 1.5,
+                  color: HOME_TEXT,
+                  bgcolor: 'rgba(42,55,54,0.3)',
+                  border: '1px solid rgba(248,246,238,0.2)',
+                  backdropFilter: 'blur(7px)',
+                }}
+              >
+                <Box
+                  sx={{
+                    width: 46,
+                    height: 46,
+                    mb: 2,
+                    borderRadius: 1.25,
+                    display: 'grid',
+                    placeItems: 'center',
+                    color: HOME_DEEP,
+                    bgcolor: 'rgba(248,246,238,0.86)',
+                  }}
+                >
+                  <Iconify icon={item.icon} width={25} />
+                </Box>
+                <Typography sx={{ fontSize: 18, fontWeight: 900 }}>{item.title}</Typography>
+                <Typography
+                  sx={{ mt: 1, color: 'rgba(248,246,238,0.72)', fontSize: 13.5, lineHeight: 1.65 }}
+                >
+                  {item.body}
+                </Typography>
+              </Box>
+            ))}
+          </Box>
+        </Box>
+      </Box>
+
+      {localWisdomContent && (
+        <Box
+          sx={{
+            px: HOME_SECTION_PX,
+            py: { xs: 8, md: 12 },
+            minHeight: 670,
+            position: 'relative',
+            overflow: 'hidden',
+            zIndex: 1,
+          }}
+        >
+          <Box
+            sx={{
+              mx: 'auto',
+              gap: { xs: 6, md: 5 },
+              maxWidth: HOME_SECTION_MAX_WIDTH,
+              position: 'relative',
+              zIndex: 1,
+              display: 'grid',
+              alignItems: 'center',
+              gridTemplateColumns: { xs: '1fr', md: '0.88fr 1.12fr' },
+            }}
+          >
+            <Box
+              sx={{
+                gap: 2,
+                display: 'grid',
+                gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' },
+              }}
+            >
+              <Box
+                sx={{
+                  p: 1,
+                  borderRadius: 1.5,
+                  bgcolor: 'rgba(248,246,238,0.1)',
+                  border: '1px solid rgba(248,246,238,0.22)',
+                  boxShadow: '0 24px 60px rgba(0,0,0,0.22)',
+                }}
+              >
+                <Box
+                  sx={{
+                    width: 1,
+                    aspectRatio: '16 / 9',
+                    height: { xs: 200, md: 350 },
+                    overflow: 'hidden',
+                    borderRadius: 1,
+                    bgcolor: HOME_DEEP,
+                    '& .react-player__preview': {
+                      borderRadius: 1,
+                    },
+                    '& .react-player__shadow': {
+                      bgcolor: 'rgba(42,55,54,0.58)',
+                      boxShadow: '0 18px 40px rgba(0,0,0,0.34)',
+                    },
+                  }}
+                >
+                  <ReactPlayer
+                    src={localWisdomContent?.mediaUrl}
+                    light={localWisdomContent?.coverUrl}
+                    width="100%"
+                    height="100%"
+                    playIcon={<HomePlayButton small />}
+                    previewAriaLabel={`ดูวิดีโอ ${localWisdomContent?.title}`}
+                    onClickPreview={() =>
+                      setSelectedVideo({
+                        title: localWisdomContent?.title,
+                        src: localWisdomContent?.mediaUrl,
+                        cover: localWisdomContent?.coverUrl,
+                      })
+                    }
+                  />
+                </Box>
+              </Box>
+            </Box>
+
+            <Box>
+              <Typography
+                component="h2"
+                sx={{
+                  color: HOME_TEXT,
+                  maxWidth: 520,
+                  fontSize: { xs: 42, sm: 58, md: 68 },
+                  fontWeight: 800,
+                  lineHeight: 1.2,
+                  textTransform: 'uppercase',
+                }}
+              >
+                {localWisdomContent.title}
+              </Typography>
+
+              <Typography
+                sx={{
+                  mt: 4,
+                  maxWidth: 430,
+                  color: 'rgba(248,246,238,0.82)',
+                  lineHeight: 1.75,
+                }}
+              >
+                {localWisdomContent.body}
+              </Typography>
+
+              <Typography
+                variant="h4"
+                sx={{
+                  fontStyle: 'italic',
+                  mt: 3,
+                }}
+              >
+                {localWisdomContent.quote}
+              </Typography>
+              <Typography
+                variant="caption"
+                sx={{
+                  fontStyle: 'italic',
+                  mt: 3,
+                }}
+              >
+                {localWisdomContent.caption}
+              </Typography>
+            </Box>
           </Box>
         </Box>
       )}

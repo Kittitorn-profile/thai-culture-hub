@@ -18,21 +18,27 @@ import InputAdornment from '@mui/material/InputAdornment';
 import { RouterLink } from 'src/routes/components';
 import { useRouter, useSearchParams } from 'src/routes/hooks';
 
+import { supabase } from 'src/lib/supabase';
+
 import { Iconify } from 'src/components/iconify';
-import { Form, Field, schemaUtils } from 'src/components/hook-form';
+import { Form, Field } from 'src/components/hook-form';
 
 import { useAuthContext } from 'src/auth/hooks';
 import { getRoleHomePath } from 'src/auth/utils/role-redirect';
 import { CREATOR_AUTH_TOKEN_KEY } from 'src/auth/context/supabase/auth-provider';
 
+import { GoogleIdentityButton } from '../components/google-identity-button';
 import { creatorTone, creatorPosterPattern, creatorPageBackground } from '../creator-theme';
 
 const SignInSchema = z.object({
-  email: schemaUtils.email(),
+  email: z.string().min(1, { error: 'กรุณากรอกอีเมล' }).email({ error: 'รูปแบบอีเมลไม่ถูกต้อง' }),
   password: z
     .string()
     .min(1, { error: 'กรุณากรอกรหัสผ่าน' })
     .min(6, { error: 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร' }),
+  acceptTerms: z.boolean().refine((value) => value, {
+    error: 'กรุณายอมรับเงื่อนไขการใช้งานก่อนเข้าสู่ระบบ',
+  }),
 });
 
 type CreatorSignInFormValues = z.infer<typeof SignInSchema>;
@@ -40,6 +46,7 @@ type CreatorSignInFormValues = z.infer<typeof SignInSchema>;
 const initialSignInForm: CreatorSignInFormValues = {
   email: '',
   password: '',
+  acceptTerms: false,
 };
 
 export function CreatorSignInView() {
@@ -48,6 +55,7 @@ export function CreatorSignInView() {
   const showPassword = useBoolean();
   const { checkUserSession } = useAuthContext();
   const [error, setError] = useState('');
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
   const methods = useForm<CreatorSignInFormValues>({
     resolver: zodResolver(SignInSchema),
@@ -57,8 +65,10 @@ export function CreatorSignInView() {
 
   const {
     handleSubmit,
+    watch,
     formState: { isSubmitting },
   } = methods;
+  const acceptTerms = watch('acceptTerms');
   const redirectMessage = searchParams.get('message') ?? '';
   const returnTo = searchParams.get('returnTo') ?? '';
   const safeReturnTo = returnTo.startsWith('/creator/') ? returnTo : '';
@@ -98,12 +108,70 @@ export function CreatorSignInView() {
     }
   });
 
+  const handleGoogleCredential = async (credential: string) => {
+    if (!acceptTerms) {
+      setError('กรุณายอมรับเงื่อนไขการใช้บริการก่อนดำเนินการด้วย Google');
+      return;
+    }
+
+    setError('');
+    setIsGoogleLoading(true);
+
+    const { data: sessionData, error: oauthError } = await supabase.auth.signInWithIdToken({
+      provider: 'google',
+      token: credential,
+    });
+
+    if (oauthError || !sessionData.session?.access_token) {
+      setError('ไม่สามารถยืนยันตัวตนด้วย Google ได้ กรุณาลองใหม่');
+      setIsGoogleLoading(false);
+      return;
+    }
+
+    const response = await fetch('/api/creator/google-auth', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${sessionData.session.access_token}` },
+    });
+    const result = (await response.json().catch(() => ({}))) as {
+      token?: string | null;
+      message?: string;
+      data?: { status?: string };
+    };
+
+    await supabase.auth.signOut({ scope: 'local' });
+
+    if (!response.ok) {
+      setError(result.message ?? 'ดำเนินการด้วย Google ไม่สำเร็จ');
+      setIsGoogleLoading(false);
+      return;
+    }
+
+    if (!result.token || result.data?.status !== 'approved') {
+      router.replace(
+        '/creator/sign-in?message=ส่งคำขอสมัครด้วย Google แล้ว กรุณารอผู้ดูแลตรวจสอบและอนุมัติบัญชี'
+      );
+      router.refresh();
+      setIsGoogleLoading(false);
+      return;
+    }
+
+    sessionStorage.setItem(CREATOR_AUTH_TOKEN_KEY, result.token);
+    await checkUserSession?.();
+    router.replace(safeReturnTo || getRoleHomePath({ role: 'creator' }));
+  };
+
   return (
     <Box
       sx={{
         px: { xs: 2, md: 4 },
-        py: { xs: 12, md: 20 },
+        pt: {
+          xs: 'calc(var(--layout-header-mobile-height) + 32px)',
+          md: 'calc(var(--layout-header-desktop-height) + 56px)',
+        },
+        pb: { xs: 5, md: 8 },
         minHeight: '100vh',
+        display: 'grid',
+        alignItems: 'center',
         color: creatorTone.text,
         overflow: 'hidden',
         position: 'relative',
@@ -125,22 +193,30 @@ export function CreatorSignInView() {
         spacing={3}
         sx={{
           mx: 'auto',
-          p: { xs: 3, sm: 4 },
-          maxWidth: 560,
+          p: { xs: 2.5, sm: 4.5 },
+          width: 1,
+          maxWidth: { xs: 400, md: 480 },
           zIndex: 1,
           color: creatorTone.deep,
           position: 'relative',
-          borderRadius: 2,
-          backdropFilter: 'blur(3px)',
-          bgcolor: 'rgba(248,246,238,0.9)',
-          boxShadow: '0 24px 80px rgba(32,42,43,0.24)',
+          border: '1px solid rgba(248,246,238,0.52)',
+          borderRadius: { xs: 2.5, sm: 3.5 },
+          backdropFilter: 'blur(14px)',
+          bgcolor: 'rgba(248,246,238,0.94)',
+          boxShadow: '0 28px 90px rgba(32,42,43,0.28)',
         }}
       >
         <Box>
-          <Typography variant="h3" sx={{ fontWeight: 900 }}>
+          <Typography variant="overline" sx={{ color: 'primary.main', fontWeight: 900 }}>
+            CREATOR CENTER
+          </Typography>
+          <Typography
+            variant="h4"
+            sx={{ mt: 0.5, fontSize: { xs: 30, sm: 40 }, lineHeight: 1.18, fontWeight: 950 }}
+          >
             เข้าสู่ระบบสำหรับผู้ร่วมสร้างข้อมูล
           </Typography>
-          <Typography sx={{ mt: 1, color: 'text.secondary' }}>
+          <Typography sx={{ mt: 1.25, color: 'text.secondary', lineHeight: 1.7 }}>
             เข้าสู่ระบบเพื่อจัดการโปรไฟล์และบทความของคุณ
           </Typography>
         </Box>
@@ -149,7 +225,10 @@ export function CreatorSignInView() {
         {redirectMessage && <Alert severity="success">{redirectMessage}</Alert>}
 
         <Form methods={methods} onSubmit={onSubmit}>
-          <Stack spacing={2.5}>
+          <Stack
+            spacing={2.5}
+            sx={{ '& .MuiOutlinedInput-root': { bgcolor: 'rgba(255,255,255,0.6)' } }}
+          >
             <Field.Text name="email" label="อีเมล" />
             <Field.Text
               name="password"
@@ -170,13 +249,73 @@ export function CreatorSignInView() {
               }}
             />
 
-            <Button size="large" type="submit" variant="contained" loading={isSubmitting}>
+            <Field.Checkbox
+              name="acceptTerms"
+              label={
+                <Typography component="span" sx={{ color: 'text.secondary', fontSize: 13 }}>
+                  ยอมรับเงื่อนไขการใช้บริการ และรับทราบว่าชื่อที่แสดง
+                  รวมถึงรูปโปรไฟล์ของฉันอาจถูกนำไปแสดงบนเว็บไซต์ในบทความหรือพื้นที่ Creator{' '}
+                  <Link
+                    component={RouterLink}
+                    href="/terms-and-conditions"
+                    target="_blank"
+                    onClick={(event) => event.stopPropagation()}
+                  >
+                    เงื่อนไขการใช้บริการ
+                  </Link>{' '}
+                  และ{' '}
+                  <Link
+                    component={RouterLink}
+                    href="/privacy-policy"
+                    target="_blank"
+                    onClick={(event) => event.stopPropagation()}
+                  >
+                    นโยบายความเป็นส่วนตัว
+                  </Link>
+                </Typography>
+              }
+              slotProps={{
+                wrapper: {
+                  sx: {
+                    px: 1.2,
+                    py: 1,
+                    borderRadius: 1.2,
+                    bgcolor: 'rgba(111,135,144,0.08)',
+                  },
+                },
+              }}
+            />
+
+            <Button
+              size="large"
+              type="submit"
+              variant="contained"
+              loading={isSubmitting}
+              disabled={!acceptTerms}
+              fullWidth
+              sx={{ minHeight: 52, fontWeight: 900 }}
+            >
               เข้าสู่ระบบ
             </Button>
+
+            <Stack direction="row" spacing={1.5} alignItems="center">
+              <Box sx={{ height: 1, flex: 1, bgcolor: 'divider' }} />
+              <Typography variant="caption" color="text.secondary">
+                หรือ
+              </Typography>
+              <Box sx={{ height: 1, flex: 1, bgcolor: 'divider' }} />
+            </Stack>
+
+            <GoogleIdentityButton
+              disabled={!acceptTerms || isSubmitting || isGoogleLoading}
+              loading={isGoogleLoading}
+              onCredential={handleGoogleCredential}
+              onConfigError={setError}
+            />
           </Stack>
         </Form>
 
-        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+        <Typography variant="body2" sx={{ color: 'text.secondary', textAlign: 'center' }}>
           ยังไม่มีบัญชี?{' '}
           <Link component={RouterLink} href={registerHref}>
             สมัครเป็นผู้ร่วมสร้างข้อมูล

@@ -95,7 +95,10 @@ export async function POST(request: NextRequest) {
   const password = body.password ?? '';
 
   if (!identity || !password) {
-    return NextResponse.json({ message: 'Username/email and password are required' }, { status: 400 });
+    return NextResponse.json(
+      { message: 'กรุณากรอกชื่อผู้ใช้หรืออีเมลและรหัสผ่าน' },
+      { status: 400 }
+    );
   }
 
   const userResult = await findUser(identity);
@@ -104,8 +107,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ message: userResult.error }, { status: 500 });
   }
 
-  if (!userResult.user || userResult.user.is_active === false || !verifyPassword(password, userResult.user)) {
-    return NextResponse.json({ message: 'Invalid username or password' }, { status: 401 });
+  if (
+    !userResult.user ||
+    userResult.user.is_active === false ||
+    !verifyPassword(password, userResult.user)
+  ) {
+    return NextResponse.json({ message: 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง' }, { status: 401 });
   }
 
   const result = createAdminToken(`${userResult.user.id ?? identity}`, userResult.user.role);
