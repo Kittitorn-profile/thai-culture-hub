@@ -451,7 +451,7 @@ export function EventDetailView({ eventId }: { eventId: string }) {
                   <Stack direction="row" justifyContent="space-between" sx={{ mb: 2 }}>
                     <Box>
                       <Typography variant="h5" sx={{ fontWeight: 900 }}>
-                        ภาพบรรยากาศกิจกรรม
+                        ภาพบรรยากาศกิจกรรม/รายละเอียด
                       </Typography>
                       <Typography variant="body2" sx={{ mt: 0.25, opacity: 0.62 }}>
                         <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
@@ -550,7 +550,7 @@ export function EventDetailView({ eventId }: { eventId: string }) {
                 </Box>
               ) : null}
 
-              {(eventItem.isContest || displayGroups.length > 0) && (
+              {displayGroups.length > 0 && (
                 <Box>
                   <Stack
                     direction={{ xs: 'column', sm: 'row' }}
