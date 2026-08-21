@@ -214,27 +214,30 @@ export function EventDetailView({
   ].filter((item) => item.label);
   const displayGroups = participatingGroups;
   const displayCategories = eventItem.contestCategories ?? [];
-  const resolveGroupCategoryId = (group: PerformanceGroupEntry) => {
+  const resolveGroupCategoryIds = (group: PerformanceGroupEntry) => {
     const participatingRecord = group.yearlyData.find((record) =>
       record.contestEventIds?.includes(eventId)
     );
-    const storedCategory = participatingRecord?.contestCategoryIds?.[eventId]?.trim();
+    const storedCategories = participatingRecord?.contestCategoryIds?.[eventId] ?? [];
 
-    if (storedCategory) {
+    const matchedCategoryIds = storedCategories.flatMap((storedCategory) => {
       const matchedCategory = displayCategories.find(
         (category) =>
           category.id === storedCategory ||
           category.name.trim().toLocaleLowerCase('th') === storedCategory.toLocaleLowerCase('th')
       );
+      return matchedCategory ? [matchedCategory.id] : [];
+    });
 
-      if (matchedCategory) return matchedCategory.id;
-    }
-
-    return displayCategories.length === 1 ? displayCategories[0].id : '';
+    return matchedCategoryIds.length
+      ? matchedCategoryIds
+      : displayCategories.length === 1
+        ? [displayCategories[0].id]
+        : [];
   };
   const participatingGroupsByCategory = displayCategories.map((category) => ({
     ...category,
-    groups: displayGroups.filter((group) => resolveGroupCategoryId(group) === category.id),
+    groups: displayGroups.filter((group) => resolveGroupCategoryIds(group).includes(category.id)),
   }));
   const categorizedGroupIds = new Set(
     participatingGroupsByCategory.flatMap((category) =>
@@ -638,15 +641,13 @@ export function EventDetailView({
                             }}
                           >
                             {section.groups.map((group) => {
-                              const joinedYears = group.yearlyData
-                                .filter((record) => record.contestEventIds?.includes(eventId))
-                                .map((record) => record.year)
-                                .filter(Boolean)
-                                .join(', ');
                               const resultIds = Array.from(
                                 new Set(
                                   group.yearlyData.flatMap(
-                                    (record) => record.contestResultIds?.[eventId] ?? []
+                                    (record) =>
+                                      record.contestCategoryResultIds?.[eventId]?.[section.id] ??
+                                      record.contestResultIds?.[eventId] ??
+                                      []
                                   )
                                 )
                               );
@@ -659,10 +660,16 @@ export function EventDetailView({
                                 ? RESULT_STYLES[highlightedResultId]
                                 : undefined;
                               const singerIds = group.yearlyData.flatMap(
-                                (record) => record.contestSingerIds?.[eventId] ?? []
+                                (record) =>
+                                  record.contestCategorySingerIds?.[eventId]?.[section.id] ??
+                                  record.contestSingerIds?.[eventId] ??
+                                  []
                               );
                               const leadPerformerIds = group.yearlyData.flatMap(
-                                (record) => record.contestLeadPerformerIds?.[eventId] ?? []
+                                (record) =>
+                                  record.contestCategoryLeadPerformerIds?.[eventId]?.[section.id] ??
+                                  record.contestLeadPerformerIds?.[eventId] ??
+                                  []
                               );
                               const castLabels = [
                                 {

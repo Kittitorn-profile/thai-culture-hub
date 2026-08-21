@@ -60,7 +60,7 @@ export const YearRecordSchema = zod.object({
   contestEventIds: zod.array(zod.string()),
   contestCategoryIds: zod.record(
     zod.string(),
-    zod.string({ error: 'กรุณาเลือกประเภทที่เข้าร่วม' })
+    zod.array(zod.string(), { error: 'กรุณาเลือกประเภทที่เข้าร่วม' })
   ),
   contestResultIds: zod.record(
     zod.string(),
@@ -73,6 +73,21 @@ export const YearRecordSchema = zod.object({
   contestLeadPerformerIds: zod.record(
     zod.string(),
     zod.array(zod.string(), { error: 'ข้อมูลนักแสดงนำไม่ถูกต้อง' })
+  ),
+  contestCategorySingerIds: zod.record(
+    zod.string(),
+    zod.record(zod.string(), zod.array(zod.string()))
+  ),
+  contestCategoryLeadPerformerIds: zod.record(
+    zod.string(),
+    zod.record(zod.string(), zod.array(zod.string()))
+  ),
+  contestCategoryBookletUrls: zod.record(zod.string(), zod.record(zod.string(), zod.string())),
+  contestCategoryBookletNames: zod.record(zod.string(), zod.record(zod.string(), zod.string())),
+  contestCategoryDetails: zod.record(zod.string(), zod.record(zod.string(), zod.string())),
+  contestCategoryResultIds: zod.record(
+    zod.string(),
+    zod.record(zod.string(), zod.array(zod.string()))
   ),
   details: zod.string(),
   about: zod.string(),
@@ -129,6 +144,7 @@ export type GroupEntry = zod.infer<typeof GroupEntrySchema>;
 export type GroupsContent = {
   title: string;
   description: string;
+  positions: string[];
   years: string[];
   organizers: Organizer[];
   groups: GroupEntry[];
@@ -138,6 +154,7 @@ export type HomeContentResponse = { data?: { content?: unknown } | null; message
 export const EMPTY_CONTENT: GroupsContent = {
   title: 'วงศิลปินและวงดนตรี',
   description: 'ข้อมูลวงโปงลาง วงหมอลำ และวงดนตรี',
+  positions: [...DEFAULT_POSITIONS],
   years: [`${new Date().getFullYear() + 543}`],
   organizers: [],
   groups: [],
@@ -312,7 +329,12 @@ export function normalizeContent(value: unknown): GroupsContent {
                   contestEventIds: stringList(record?.contestEventIds),
                   contestCategoryIds:
                     record?.contestCategoryIds && typeof record.contestCategoryIds === 'object'
-                      ? (record.contestCategoryIds as Record<string, string>)
+                      ? Object.fromEntries(
+                          Object.entries(record.contestCategoryIds).map(([eventId, itemValue]) => [
+                            eventId,
+                            stringList(itemValue),
+                          ])
+                        )
                       : {},
                   contestResultIds:
                     record?.contestResultIds && typeof record.contestResultIds === 'object'
@@ -337,6 +359,51 @@ export function normalizeContent(value: unknown): GroupsContent {
                             stringList(record?.leadPerformerIds),
                           ])
                         ),
+                  contestCategorySingerIds:
+                    record?.contestCategorySingerIds &&
+                    typeof record.contestCategorySingerIds === 'object'
+                      ? (record.contestCategorySingerIds as Record<
+                          string,
+                          Record<string, string[]>
+                        >)
+                      : {},
+                  contestCategoryLeadPerformerIds:
+                    record?.contestCategoryLeadPerformerIds &&
+                    typeof record.contestCategoryLeadPerformerIds === 'object'
+                      ? (record.contestCategoryLeadPerformerIds as Record<
+                          string,
+                          Record<string, string[]>
+                        >)
+                      : {},
+                  contestCategoryBookletUrls:
+                    record?.contestCategoryBookletUrls &&
+                    typeof record.contestCategoryBookletUrls === 'object'
+                      ? (record.contestCategoryBookletUrls as Record<
+                          string,
+                          Record<string, string>
+                        >)
+                      : {},
+                  contestCategoryBookletNames:
+                    record?.contestCategoryBookletNames &&
+                    typeof record.contestCategoryBookletNames === 'object'
+                      ? (record.contestCategoryBookletNames as Record<
+                          string,
+                          Record<string, string>
+                        >)
+                      : {},
+                  contestCategoryDetails:
+                    record?.contestCategoryDetails &&
+                    typeof record.contestCategoryDetails === 'object'
+                      ? (record.contestCategoryDetails as Record<string, Record<string, string>>)
+                      : {},
+                  contestCategoryResultIds:
+                    record?.contestCategoryResultIds &&
+                    typeof record.contestCategoryResultIds === 'object'
+                      ? (record.contestCategoryResultIds as Record<
+                          string,
+                          Record<string, string[]>
+                        >)
+                      : {},
                   details: typeof record?.details === 'string' ? record.details : '',
                   about: typeof record?.about === 'string' ? record.about : '',
                   storyTypes: stringList(record?.storyTypes),
@@ -366,11 +433,16 @@ export function normalizeContent(value: unknown): GroupsContent {
       ...groups.flatMap((group) => group.yearlyData.map((record) => record.year)).filter(Boolean),
     ])
   ).sort((first, second) => Number(second) - Number(first));
+  const storedCentralPositions = stringList(content.positions);
+  const normalizedPositions = storedCentralPositions.length
+    ? storedCentralPositions
+    : Array.from(new Set([...groups.flatMap((group) => group.positions), ...DEFAULT_POSITIONS]));
 
   return {
     title: typeof content.title === 'string' ? content.title : EMPTY_CONTENT.title,
     description:
       typeof content.description === 'string' ? content.description : EMPTY_CONTENT.description,
+    positions: normalizedPositions,
     years: normalizedYears.length ? normalizedYears : [...EMPTY_CONTENT.years],
     organizers: Array.from(legacyOrganizerMap.values()),
     groups,

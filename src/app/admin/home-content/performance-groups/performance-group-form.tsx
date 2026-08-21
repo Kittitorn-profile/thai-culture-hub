@@ -94,6 +94,7 @@ export function PerformanceGroupForm({ groupId }: Props) {
   const [editingPersonIndex, setEditingPersonIndex] = useState<number | 'new' | null>(null);
   const [personnelPage, setPersonnelPage] = useState(1);
   const [positionDrafts, setPositionDrafts] = useState<PositionDraft[] | null>(null);
+  const [positions, setPositions] = useState<string[]>([]);
   const [years, setYears] = useState<string[]>([]);
   const [yearDrafts, setYearDrafts] = useState<string[] | null>(null);
   const [organizers, setOrganizers] = useState<Organizer[]>([]);
@@ -152,6 +153,7 @@ export function PerformanceGroupForm({ groupId }: Props) {
 
     const normalizedContent = normalizeContent(query.data.data?.content);
     const storedOrganizers = normalizedContent.organizers;
+    setPositions(normalizedContent.positions);
     const organizerNames = new Set(storedOrganizers.map((item) => item.name.trim().toLowerCase()));
     const eventOrganizers = (contestEventsQuery.data?.data ?? []).flatMap((eventItem) => {
       const name = eventItem.organizer?.trim();
@@ -191,6 +193,7 @@ export function PerformanceGroupForm({ groupId }: Props) {
       const selectedProvince = provinces.find((province) => province.code === values.provinceCode);
       const nextGroup: GroupEntry = {
         ...values,
+        positions,
         provinceName: selectedProvince?.name ?? '',
         yearlyData: values.yearlyData.map((record) => ({
           ...record,
@@ -204,6 +207,7 @@ export function PerformanceGroupForm({ groupId }: Props) {
       const organizerMap = new Map(organizers.map((organizer) => [organizer.id, organizer]));
       const syncedGroups = groups.map((item) => ({
         ...item,
+        positions,
         yearlyData: item.yearlyData.map((record) => {
           const organizer = organizerMap.get(record.organizerId);
           return organizer
@@ -221,7 +225,7 @@ export function PerformanceGroupForm({ groupId }: Props) {
         accessToken,
         body: {
           sectionKey: SECTION_KEY,
-          content: { ...content, years, organizers, groups: syncedGroups },
+          content: { ...content, positions, years, organizers, groups: syncedGroups },
         },
       });
     },
@@ -308,7 +312,7 @@ export function PerformanceGroupForm({ groupId }: Props) {
 
   const savePositions = () => {
     if (!positionDrafts) return;
-    const positions = Array.from(
+    const nextPositions = Array.from(
       new Set(positionDrafts.map((position) => position.name.trim()).filter(Boolean))
     );
     const renamedPositions = new Map(
@@ -316,7 +320,8 @@ export function PerformanceGroupForm({ groupId }: Props) {
         .filter((position) => position.original && position.name.trim())
         .map((position) => [position.original, position.name.trim()])
     );
-    setValue('positions', positions, { shouldValidate: true });
+    setPositions(nextPositions);
+    setValue('positions', nextPositions, { shouldValidate: true });
     group.personnel.forEach((person, index) => {
       const renamed = renamedPositions.get(person.role);
       if (renamed && renamed !== person.role) {
@@ -353,9 +358,35 @@ export function PerformanceGroupForm({ groupId }: Props) {
         ? group.personnel[editingPersonIndex]
         : null;
 
-  const onSubmit = handleSubmit((values) => {
-    save.mutate(values);
-  });
+  useEffect(() => {
+    const categoryFieldNames = [
+      'contestCategorySingerIds',
+      'contestCategoryLeadPerformerIds',
+      'contestCategoryBookletUrls',
+      'contestCategoryBookletNames',
+      'contestCategoryDetails',
+      'contestCategoryResultIds',
+    ] as const;
+
+    group.yearlyData.forEach((record, yearIndex) => {
+      categoryFieldNames.forEach((fieldName) => {
+        if (!record[fieldName]) {
+          setValue(`yearlyData.${yearIndex}.${fieldName}`, {});
+        }
+      });
+    });
+  }, [group.yearlyData, setValue]);
+
+  const onSubmit = handleSubmit(
+    (values) => {
+      setError('');
+      save.mutate(values);
+    },
+    () => {
+      setError('ไม่สามารถบันทึกได้ กรุณาตรวจสอบช่องที่แสดงกรอบสีแดงให้ครบถ้วน');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  );
 
   return (
     <DashboardContent maxWidth="lg">
@@ -612,7 +643,7 @@ export function PerformanceGroupForm({ groupId }: Props) {
                       color="inherit"
                       onClick={() =>
                         setPositionDrafts(
-                          group.positions.map((name) => ({
+                          positions.map((name) => ({
                             id: crypto.randomUUID(),
                             original: name,
                             name,
@@ -620,7 +651,7 @@ export function PerformanceGroupForm({ groupId }: Props) {
                         )
                       }
                     >
-                      จัดการตำแหน่ง
+                      จัดการตำแหน่งกลาง
                     </Button>
                     <Button variant="outlined" onClick={() => setEditingPersonIndex('new')}>
                       + เพิ่มบุคลากร
@@ -776,6 +807,12 @@ export function PerformanceGroupForm({ groupId }: Props) {
                           contestResultIds: {},
                           contestSingerIds: {},
                           contestLeadPerformerIds: {},
+                          contestCategorySingerIds: {},
+                          contestCategoryLeadPerformerIds: {},
+                          contestCategoryBookletUrls: {},
+                          contestCategoryBookletNames: {},
+                          contestCategoryDetails: {},
+                          contestCategoryResultIds: {},
                           details: '',
                           about: '',
                           storyTypes: [],
@@ -827,6 +864,24 @@ export function PerformanceGroupForm({ groupId }: Props) {
                       }
                       onSetBookletName={(name) =>
                         setValue(`yearlyData.${yearIndex}.bookletName`, name)
+                      }
+                      onUploadCategoryBooklet={(eventId, categoryId, file) =>
+                        uploadImage(
+                          `booklet-${yearIndex}-${eventId}-${categoryId}`,
+                          'booklets',
+                          file,
+                          (bookletUrl) =>
+                            setValue(
+                              `yearlyData.${yearIndex}.contestCategoryBookletUrls.${eventId}.${categoryId}`,
+                              bookletUrl
+                            )
+                        )
+                      }
+                      onSetCategoryBookletName={(eventId, categoryId, name) =>
+                        setValue(
+                          `yearlyData.${yearIndex}.contestCategoryBookletNames.${eventId}.${categoryId}`,
+                          name
+                        )
                       }
                       onRemove={() => yearlyFieldArray.remove(yearIndex)}
                     />
@@ -924,7 +979,7 @@ export function PerformanceGroupForm({ groupId }: Props) {
         open={Boolean(editingPerson)}
         person={editingPerson}
         isNew={editingPersonIndex === 'new'}
-        positions={group.positions}
+        positions={positions}
         uploadingImageKey={uploadingImageKey}
         onUploadImage={(personId, file, onUploaded) =>
           uploadImage(`person-${personId}`, 'personnel', file, onUploaded)
@@ -939,9 +994,12 @@ export function PerformanceGroupForm({ groupId }: Props) {
         fullWidth
         maxWidth="sm"
       >
-        <DialogTitle>จัดการตำแหน่ง</DialogTitle>
+        <DialogTitle>จัดการคลังตำแหน่งกลาง</DialogTitle>
         <DialogContent dividers>
           <Stack spacing={2} sx={{ pt: 0.5 }}>
+            <Alert severity="info">
+              ตำแหน่งในคลังนี้ใช้ร่วมกันทุกวง เพิ่มหรือแก้ไขครั้งเดียวแล้ววงอื่นสามารถเลือกใช้ได้
+            </Alert>
             {positionDrafts?.length === 0 ? <Alert severity="info">ยังไม่มีตำแหน่ง</Alert> : null}
             {positionDrafts?.map((position, index) => (
               <Stack key={position.id} direction="row" spacing={1.5} alignItems="center">
@@ -1234,7 +1292,9 @@ type PersonnelAutocompleteProps = {
     | `yearlyData.${number}.singerIds`
     | `yearlyData.${number}.leadPerformerIds`
     | `yearlyData.${number}.contestSingerIds.${string}`
-    | `yearlyData.${number}.contestLeadPerformerIds.${string}`;
+    | `yearlyData.${number}.contestLeadPerformerIds.${string}`
+    | `yearlyData.${number}.contestCategorySingerIds.${string}.${string}`
+    | `yearlyData.${number}.contestCategoryLeadPerformerIds.${string}.${string}`;
   label: string;
   personnel: Personnel[];
 };
@@ -1244,6 +1304,7 @@ function PersonnelAutocomplete({ control, name, label, personnel }: PersonnelAut
     <Controller
       name={name}
       control={control}
+      defaultValue={[]}
       render={({ field }) => (
         <Autocomplete
           multiple
@@ -1280,6 +1341,8 @@ type YearRecordFieldsProps = {
   onUploadPerformanceImages: (files: File[]) => void;
   onUploadBooklet: (file: File | undefined) => void;
   onSetBookletName: (name: string) => void;
+  onUploadCategoryBooklet: (eventId: string, categoryId: string, file: File | undefined) => void;
+  onSetCategoryBookletName: (eventId: string, categoryId: string, name: string) => void;
   onRemove: () => void;
 };
 
@@ -1298,6 +1361,8 @@ function YearRecordFields({
   onUploadPerformanceImages,
   onUploadBooklet,
   onSetBookletName,
+  onUploadCategoryBooklet,
+  onSetCategoryBookletName,
   onRemove,
 }: YearRecordFieldsProps) {
   const { setValue } = useFormContext<GroupEntry>();
@@ -1492,7 +1557,7 @@ function YearRecordFields({
                     setValue(
                       `yearlyData.${yearIndex}.contestCategoryIds`,
                       Object.fromEntries(
-                        selectedIds.map((eventId) => [eventId, currentCategories[eventId] ?? ''])
+                        selectedIds.map((eventId) => [eventId, currentCategories[eventId] ?? []])
                       )
                     );
                     const currentResults = record.contestResultIds ?? {};
@@ -1519,6 +1584,27 @@ function YearRecordFields({
                         ])
                       )
                     );
+                    const currentCategorySingers = record.contestCategorySingerIds ?? {};
+                    setValue(
+                      `yearlyData.${yearIndex}.contestCategorySingerIds`,
+                      Object.fromEntries(
+                        selectedIds.map((eventId) => [
+                          eventId,
+                          currentCategorySingers[eventId] ?? {},
+                        ])
+                      )
+                    );
+                    const currentCategoryLeadPerformers =
+                      record.contestCategoryLeadPerformerIds ?? {};
+                    setValue(
+                      `yearlyData.${yearIndex}.contestCategoryLeadPerformerIds`,
+                      Object.fromEntries(
+                        selectedIds.map((eventId) => [
+                          eventId,
+                          currentCategoryLeadPerformers[eventId] ?? {},
+                        ])
+                      )
+                    );
                   }}
                   renderInput={(params) => (
                     <TextField {...params} label="เลือกการประกวด" placeholder="ค้นหาชื่อกิจกรรม" />
@@ -1542,70 +1628,162 @@ function YearRecordFields({
                     <Typography sx={{ mb: 1.5, fontWeight: 900 }}>{selectedEvent.title}</Typography>
                     <Stack spacing={1.5}>
                       {categories.length > 0 && (
-                        <Field.Select
-                          fullWidth
-                          name={`yearlyData.${yearIndex}.contestCategoryIds.${eventId}`}
-                          label="ประเภทที่เข้าร่วม"
-                        >
-                          <MenuItem value="">
-                            <em>เลือกประเภทที่เข้าร่วม</em>
-                          </MenuItem>
-                          {categories.map((category) => (
-                            <MenuItem key={category.id} value={category.id}>
-                              {category.name}
-                              {category.maxParticipants
-                                ? ` (รับสูงสุด ${category.maxParticipants.toLocaleString('th-TH')} วง)`
-                                : ''}
-                            </MenuItem>
-                          ))}
-                        </Field.Select>
-                      )}
-                      {resultOptions.length > 0 && (
                         <Controller
-                          name={`yearlyData.${yearIndex}.contestResultIds.${eventId}`}
+                          name={`yearlyData.${yearIndex}.contestCategoryIds.${eventId}`}
                           control={control}
                           render={({ field }) => (
                             <Autocomplete
                               multiple
-                              options={resultOptions}
-                              value={resultOptions.filter((option) =>
-                                (field.value ?? []).includes(option.id)
+                              options={categories}
+                              value={categories.filter((category) =>
+                                (field.value ?? []).includes(category.id)
                               )}
-                              getOptionLabel={(option) => option.name}
+                              getOptionLabel={(category) => category.name}
                               isOptionEqualToValue={(option, value) => option.id === value.id}
                               onChange={(_, selected) =>
-                                field.onChange(selected.map((option) => option.id))
+                                field.onChange(selected.map((category) => category.id))
                               }
                               renderInput={(params) => (
-                                <TextField {...params} label="ผลการแข่งขัน / รางวัล" />
+                                <TextField
+                                  {...params}
+                                  label="ประเภทที่เข้าร่วม"
+                                  placeholder="เลือกได้มากกว่า 1 ประเภท"
+                                />
                               )}
                             />
                           )}
                         />
                       )}
-                      <Box
-                        sx={{
-                          pt: 1.5,
-                          display: 'grid',
-                          gap: 1.5,
-                          gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' },
-                          borderTop: '1px solid',
-                          borderColor: 'divider',
-                        }}
-                      >
-                        <PersonnelAutocomplete
-                          control={control}
-                          name={`yearlyData.${yearIndex}.contestSingerIds.${eventId}`}
-                          label="นักร้องนำของรายการนี้"
-                          personnel={personnel}
-                        />
-                        <PersonnelAutocomplete
-                          control={control}
-                          name={`yearlyData.${yearIndex}.contestLeadPerformerIds.${eventId}`}
-                          label="นักแสดงนำของรายการนี้"
-                          personnel={personnel}
-                        />
-                      </Box>
+                      {(record.contestCategoryIds?.[eventId] ?? []).map((categoryId) => {
+                        const category = categories.find((item) => item.id === categoryId);
+                        return (
+                          <Box
+                            key={categoryId}
+                            sx={{
+                              p: 1.5,
+                              display: 'grid',
+                              gap: 1.5,
+                              borderRadius: 1.5,
+                              bgcolor: 'background.paper',
+                              border: '1px solid',
+                              borderColor: 'divider',
+                            }}
+                          >
+                            <Typography sx={{ fontWeight: 900 }}>
+                              บุคลากรประเภท: {category?.name ?? categoryId}
+                            </Typography>
+                            <Controller
+                              name={`yearlyData.${yearIndex}.contestCategoryDetails.${eventId}.${categoryId}`}
+                              control={control}
+                              defaultValue=""
+                              render={({ field }) => (
+                                <TextField
+                                  {...field}
+                                  fullWidth
+                                  multiline
+                                  minRows={3}
+                                  label="รายละเอียดการแสดงประเภทนี้"
+                                  placeholder="แนวคิด รูปแบบการแสดง เพลง หรือเรื่องราวที่นำเสนอ"
+                                />
+                              )}
+                            />
+                            {resultOptions.length > 0 && (
+                              <Controller
+                                name={`yearlyData.${yearIndex}.contestCategoryResultIds.${eventId}.${categoryId}`}
+                                control={control}
+                                defaultValue={[]}
+                                render={({ field }) => (
+                                  <Autocomplete
+                                    multiple
+                                    options={resultOptions}
+                                    value={resultOptions.filter((option) =>
+                                      (field.value ?? []).includes(option.id)
+                                    )}
+                                    getOptionLabel={(option) => option.name}
+                                    isOptionEqualToValue={(option, value) => option.id === value.id}
+                                    onChange={(_, selected) =>
+                                      field.onChange(selected.map((option) => option.id))
+                                    }
+                                    renderInput={(params) => (
+                                      <TextField
+                                        {...params}
+                                        label="ผลการแข่งขัน / รางวัลประเภทนี้"
+                                      />
+                                    )}
+                                  />
+                                )}
+                              />
+                            )}
+                            <Box
+                              sx={{
+                                display: 'grid',
+                                gap: 1.5,
+                                gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' },
+                              }}
+                            >
+                              <PersonnelAutocomplete
+                                control={control}
+                                name={`yearlyData.${yearIndex}.contestCategorySingerIds.${eventId}.${categoryId}`}
+                                label="นักร้องนำประเภทนี้"
+                                personnel={personnel}
+                              />
+                              <PersonnelAutocomplete
+                                control={control}
+                                name={`yearlyData.${yearIndex}.contestCategoryLeadPerformerIds.${eventId}.${categoryId}`}
+                                label="นักแสดงนำประเภทนี้"
+                                personnel={personnel}
+                              />
+                            </Box>
+                            <Stack
+                              direction={{ xs: 'column', sm: 'row' }}
+                              spacing={1}
+                              alignItems={{ sm: 'center' }}
+                            >
+                              <Button
+                                component="label"
+                                size="small"
+                                variant="outlined"
+                                startIcon={<Iconify icon={'solar:document-add-bold' as never} />}
+                                disabled={
+                                  uploadingImageKey ===
+                                  `booklet-${yearIndex}-${eventId}-${categoryId}`
+                                }
+                              >
+                                {uploadingImageKey ===
+                                `booklet-${yearIndex}-${eventId}-${categoryId}`
+                                  ? 'กำลังอัปโหลด...'
+                                  : 'อัปโหลดสูจิบัตรประเภทนี้'}
+                                <input
+                                  hidden
+                                  type="file"
+                                  accept="application/pdf"
+                                  onChange={(event) => {
+                                    const file = event.target.files?.[0];
+                                    onSetCategoryBookletName(
+                                      eventId,
+                                      categoryId,
+                                      file?.name ?? 'สูจิบัตร'
+                                    );
+                                    onUploadCategoryBooklet(eventId, categoryId, file);
+                                  }}
+                                />
+                              </Button>
+                              {record.contestCategoryBookletUrls?.[eventId]?.[categoryId] && (
+                                <Button
+                                  component="a"
+                                  size="small"
+                                  href={record.contestCategoryBookletUrls[eventId][categoryId]}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                >
+                                  {record.contestCategoryBookletNames?.[eventId]?.[categoryId] ||
+                                    'เปิดสูจิบัตร'}
+                                </Button>
+                              )}
+                            </Stack>
+                          </Box>
+                        );
+                      })}
                     </Stack>
                   </Box>
                 );

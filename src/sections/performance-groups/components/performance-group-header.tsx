@@ -46,7 +46,7 @@ export function PerformanceGroupHeader({ group, counts, onShare }: Props) {
         />
       )}
 
-      <Box sx={{ px: { xs: 2.5, md: 5 }, pt: { xs: 2.5, md: 4 }, pb: { xs: 1, md: 1.5 } }}>
+      <Box sx={{ px: { xs: 2.5, md: 3 }, pt: { xs: 2.5, md: 4 }, pb: { xs: 1, md: 1.5 } }}>
         <Stack
           direction={{ xs: 'column', sm: 'row' }}
           spacing={2}

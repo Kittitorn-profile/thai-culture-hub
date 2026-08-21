@@ -110,10 +110,16 @@ export type PerformanceGroupEntry = {
     logoUrl?: string;
     organizerId?: string;
     contestEventIds?: string[];
-    contestCategoryIds?: Record<string, string>;
+    contestCategoryIds?: Record<string, string[]>;
     contestResultIds?: Record<string, string[]>;
     contestSingerIds?: Record<string, string[]>;
     contestLeadPerformerIds?: Record<string, string[]>;
+    contestCategorySingerIds?: Record<string, Record<string, string[]>>;
+    contestCategoryLeadPerformerIds?: Record<string, Record<string, string[]>>;
+    contestCategoryBookletUrls?: Record<string, Record<string, string>>;
+    contestCategoryBookletNames?: Record<string, Record<string, string>>;
+    contestCategoryDetails?: Record<string, Record<string, string>>;
+    contestCategoryResultIds?: Record<string, Record<string, string[]>>;
     organizerName?: string;
     organizerColor?: string;
     organizerLogoUrl?: string;
@@ -134,6 +140,7 @@ export type PerformanceGroupEntry = {
 export type PerformanceGroupsContent = {
   title: string;
   description: string;
+  positions?: string[];
   groups: PerformanceGroupEntry[];
 };
 

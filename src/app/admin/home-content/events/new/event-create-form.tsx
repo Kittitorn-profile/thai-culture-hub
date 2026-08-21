@@ -238,22 +238,26 @@ export function EventCreateForm({ eventId }: { eventId?: string }) {
             yearlyData: group.yearlyData.map((record) => {
               if (!record.contestEventIds.includes(eventId)) return record;
 
-              const categoryId = record.contestCategoryIds[eventId] ?? '';
-              const matchedCategory = formValues.contestCategories.find(
-                (category) =>
-                  category.id === categoryId ||
-                  category.name.trim().toLocaleLowerCase('th') ===
-                    categoryId.trim().toLocaleLowerCase('th')
-              );
+              const categoryIds = record.contestCategoryIds[eventId] ?? [];
+              const matchedCategoryIds = categoryIds.flatMap((categoryId) => {
+                const matchedCategory = formValues.contestCategories.find(
+                  (category) =>
+                    category.id === categoryId ||
+                    category.name.trim().toLocaleLowerCase('th') ===
+                      categoryId.trim().toLocaleLowerCase('th')
+                );
+                return matchedCategory ? [matchedCategory.id] : [];
+              });
               return {
                 ...record,
                 contestCategoryIds: {
                   ...record.contestCategoryIds,
                   [eventId]:
-                    matchedCategory?.id ??
-                    (formValues.contestCategories.length === 1
-                      ? formValues.contestCategories[0].id
-                      : ''),
+                    matchedCategoryIds.length > 0
+                      ? matchedCategoryIds
+                      : formValues.contestCategories.length === 1
+                        ? [formValues.contestCategories[0].id]
+                        : [],
                 },
                 contestResultIds: {
                   ...record.contestResultIds,
@@ -291,7 +295,7 @@ export function EventCreateForm({ eventId }: { eventId?: string }) {
   function updateParticipantRecord(
     groupId: string,
     yearIndex: number,
-    updates: { categoryId?: string; resultIds?: string[] }
+    updates: { categoryIds?: string[]; resultIds?: string[] }
   ) {
     if (!eventId) return;
 
@@ -311,8 +315,8 @@ export function EventCreateForm({ eventId }: { eventId?: string }) {
                     ...record,
                     contestCategoryIds: {
                       ...record.contestCategoryIds,
-                      ...(updates.categoryId !== undefined
-                        ? { [eventId]: updates.categoryId }
+                      ...(updates.categoryIds !== undefined
+                        ? { [eventId]: updates.categoryIds }
                         : {}),
                     },
                     contestResultIds: {
@@ -961,26 +965,32 @@ export function EventCreateForm({ eventId }: { eventId?: string }) {
                                   </Box>
                                 </Stack>
 
-                                <TextField
-                                  select
+                                <Autocomplete
+                                  multiple
                                   fullWidth
-                                  label="ประเภทที่เข้าร่วม"
-                                  value={record.contestCategoryIds[eventId ?? ''] ?? ''}
-                                  onChange={(changeEvent) =>
+                                  options={values.contestCategories}
+                                  value={values.contestCategories.filter((category) =>
+                                    (record.contestCategoryIds[eventId ?? ''] ?? []).includes(
+                                      category.id
+                                    )
+                                  )}
+                                  getOptionLabel={(category) => category.name}
+                                  isOptionEqualToValue={(option, selected) =>
+                                    option.id === selected.id
+                                  }
+                                  onChange={(_, selected) =>
                                     updateParticipantRecord(group.id, yearIndex, {
-                                      categoryId: changeEvent.target.value,
+                                      categoryIds: selected.map((category) => category.id),
                                     })
                                   }
-                                >
-                                  <MenuItem value="">
-                                    <em>ยังไม่ระบุประเภท</em>
-                                  </MenuItem>
-                                  {values.contestCategories.map((category) => (
-                                    <MenuItem key={category.id} value={category.id}>
-                                      {category.name}
-                                    </MenuItem>
-                                  ))}
-                                </TextField>
+                                  renderInput={(params) => (
+                                    <TextField
+                                      {...params}
+                                      label="ประเภทที่เข้าร่วม"
+                                      placeholder="เลือกได้หลายประเภท"
+                                    />
+                                  )}
+                                />
 
                                 <Autocomplete
                                   multiple

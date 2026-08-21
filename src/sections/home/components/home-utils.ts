@@ -109,21 +109,38 @@ function normalizeStringList(value: unknown): string[] {
   return [];
 }
 
-function normalizeStringRecord(value: unknown): Record<string, string> {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
-
-  return Object.fromEntries(
-    Object.entries(value)
-      .map(([key, item]) => [key, getFilledText(item)] as const)
-      .filter(([, item]) => item)
-  );
-}
-
 function normalizeStringListRecord(value: unknown): Record<string, string[]> {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
 
   return Object.fromEntries(
     Object.entries(value).map(([key, item]) => [key, normalizeStringList(item)])
+  );
+}
+
+function normalizeNestedStringListRecord(value: unknown): Record<string, Record<string, string[]>> {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
+
+  return Object.fromEntries(
+    Object.entries(value).map(([key, item]) => [key, normalizeStringListRecord(item)])
+  );
+}
+
+function normalizeNestedStringRecord(value: unknown): Record<string, Record<string, string>> {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
+
+  return Object.fromEntries(
+    Object.entries(value).map(([key, item]) => {
+      if (!item || typeof item !== 'object' || Array.isArray(item)) return [key, {}];
+      return [
+        key,
+        Object.fromEntries(
+          Object.entries(item).map(([nestedKey, nestedValue]) => [
+            nestedKey,
+            getFilledText(nestedValue),
+          ])
+        ),
+      ];
+    })
   );
 }
 
@@ -151,10 +168,16 @@ export function normalizePerformanceGroupsContent(content?: PerformanceGroupsCon
       organizerColor?: string;
       organizerLogoUrl?: string;
       contestEventIds?: string[];
-      contestCategoryIds?: Record<string, string>;
+      contestCategoryIds?: Record<string, string[]>;
       contestResultIds?: Record<string, string[]>;
       contestSingerIds?: Record<string, string[]>;
       contestLeadPerformerIds?: Record<string, string[]>;
+      contestCategorySingerIds?: Record<string, Record<string, string[]>>;
+      contestCategoryLeadPerformerIds?: Record<string, Record<string, string[]>>;
+      contestCategoryBookletUrls?: Record<string, Record<string, string>>;
+      contestCategoryBookletNames?: Record<string, Record<string, string>>;
+      contestCategoryDetails?: Record<string, Record<string, string>>;
+      contestCategoryResultIds?: Record<string, Record<string, string[]>>;
       details?: string;
       about?: string;
       storyTypes?: string[];
@@ -211,10 +234,26 @@ export function normalizePerformanceGroupsContent(content?: PerformanceGroupsCon
         organizerColor: organizerColor || undefined,
         organizerLogoUrl: organizerLogoUrl || undefined,
         contestEventIds: normalizeStringList(yearRecord?.contestEventIds),
-        contestCategoryIds: normalizeStringRecord(yearRecord?.contestCategoryIds),
+        contestCategoryIds: normalizeStringListRecord(yearRecord?.contestCategoryIds),
         contestResultIds: normalizeStringListRecord(yearRecord?.contestResultIds),
         contestSingerIds: normalizeStringListRecord(yearRecord?.contestSingerIds),
         contestLeadPerformerIds: normalizeStringListRecord(yearRecord?.contestLeadPerformerIds),
+        contestCategorySingerIds: normalizeNestedStringListRecord(
+          yearRecord?.contestCategorySingerIds
+        ),
+        contestCategoryLeadPerformerIds: normalizeNestedStringListRecord(
+          yearRecord?.contestCategoryLeadPerformerIds
+        ),
+        contestCategoryBookletUrls: normalizeNestedStringRecord(
+          yearRecord?.contestCategoryBookletUrls
+        ),
+        contestCategoryBookletNames: normalizeNestedStringRecord(
+          yearRecord?.contestCategoryBookletNames
+        ),
+        contestCategoryDetails: normalizeNestedStringRecord(yearRecord?.contestCategoryDetails),
+        contestCategoryResultIds: normalizeNestedStringListRecord(
+          yearRecord?.contestCategoryResultIds
+        ),
         details: details || undefined,
         about: about || undefined,
         storyTypes: normalizeStringList(yearRecord?.storyTypes),

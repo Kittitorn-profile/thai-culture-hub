@@ -227,7 +227,7 @@ export function PerformanceGroupDetailView({ groupId, initialGroup }: Props) {
         >
           <PerformanceGroupHeader group={group} counts={counts} onShare={handleShare} />
 
-          <Box sx={{ px: { xs: 2.5, md: 5 }, pt: 0, pb: { xs: 2.5, md: 5 } }}>
+          <Box sx={{ px: { xs: 2.5, md: 3 }, pt: 0, pb: { xs: 2.5, md: 5 } }}>
             <PerformanceGroupMembersSummary group={group} />
             <PerformanceGroupPersonnelList group={group} />
             <PerformanceGroupYearlyArchive
