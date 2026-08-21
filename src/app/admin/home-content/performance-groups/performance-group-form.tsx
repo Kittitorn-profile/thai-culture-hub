@@ -781,7 +781,10 @@ export function PerformanceGroupForm({ groupId }: Props) {
                     </Typography>
                   </Box>
                   <Stack direction="row" spacing={1}>
-                    <Button variant="outlined" onClick={() => setYearDrafts([...years])}>
+                    <Button
+                      variant="outlined"
+                      onClick={() => setYearDrafts(Array.from(new Set(years)))}
+                    >
                       จัดการปี
                     </Button>
                     <Button
@@ -1063,7 +1066,8 @@ export function PerformanceGroupForm({ groupId }: Props) {
         <DialogContent dividers>
           <Stack spacing={2} sx={{ pt: 0.5 }}>
             <Alert severity="info">
-              ปีในคลังนี้ใช้ร่วมกันทุกวง ข้อมูลปีเดิมของทุกวงถูกนำมารวมให้อัตโนมัติ
+              ปีในคลังนี้ใช้ร่วมกันทุกวง รองรับปี พ.ศ. ย้อนหลัง และข้อมูลปีเดิมของทุกวงจะถูกนำมา
+              รวมให้อัตโนมัติ
             </Alert>
             {yearDrafts?.map((year, index) => {
               const isUsed =
@@ -1116,13 +1120,17 @@ export function PerformanceGroupForm({ groupId }: Props) {
               variant="outlined"
               sx={{ alignSelf: 'flex-start' }}
               onClick={() =>
-                setYearDrafts((current) => [
-                  ...(current ?? []),
-                  `${new Date().getFullYear() + 543}`,
-                ])
+                setYearDrafts((current) => {
+                  const existingYears = Array.from(new Set(current ?? []));
+                  let candidateYear = new Date().getFullYear() + 543;
+
+                  while (existingYears.includes(`${candidateYear}`)) candidateYear -= 1;
+
+                  return [...existingYears, `${candidateYear}`];
+                })
               }
             >
-              + เพิ่มปี
+              + เพิ่มปีย้อนหลัง
             </Button>
           </Stack>
         </DialogContent>
