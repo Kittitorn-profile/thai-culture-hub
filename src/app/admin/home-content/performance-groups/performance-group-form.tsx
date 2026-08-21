@@ -403,6 +403,44 @@ export function PerformanceGroupForm({ groupId }: Props) {
                   label="รายละเอียดวง"
                   placeholder="ประวัติ จุดเด่น รูปแบบการแสดง และข้อมูลสำคัญของวง"
                 />
+                <Box
+                  sx={{
+                    p: 2,
+                    gap: 2,
+                    display: 'grid',
+                    borderRadius: 2,
+                    bgcolor: 'background.neutral',
+                    gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' },
+                  }}
+                >
+                  <Typography variant="subtitle2" sx={{ gridColumn: '1 / -1', fontWeight: 800 }}>
+                    ที่มาและการอัปเดตข้อมูล
+                  </Typography>
+                  <Field.Text
+                    name="sourceLabel"
+                    label="ชื่อแหล่งข้อมูล"
+                    placeholder="เช่น กรมการพัฒนาชุมชน"
+                  />
+                  <Field.Text
+                    type="date"
+                    name="updatedAt"
+                    label="อัปเดตล่าสุด"
+                    slotProps={{ inputLabel: { shrink: true } }}
+                  />
+                  <Field.Text
+                    name="sourceUrl"
+                    label="ลิงก์แหล่งข้อมูล"
+                    placeholder="https://example.com/source"
+                    sx={{ gridColumn: '1 / -1' }}
+                  />
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ gridColumn: '1 / -1' }}
+                  >
+                    หน้าเว็บไซต์จะแสดงชื่อแหล่งข้อมูลแทน URL และผู้ชมสามารถคลิกเพื่อเปิดต้นทางได้
+                  </Typography>
+                </Box>
               </Stack>
               <Stack
                 spacing={2.5}

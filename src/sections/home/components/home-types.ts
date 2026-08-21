@@ -102,6 +102,9 @@ export type PerformanceGroupEntry = {
   }>;
   totalMembers: number;
   description?: string;
+  sourceLabel?: string;
+  sourceUrl?: string;
+  updatedAt?: string;
   yearlyData: Array<{
     year: string;
     logoUrl?: string;

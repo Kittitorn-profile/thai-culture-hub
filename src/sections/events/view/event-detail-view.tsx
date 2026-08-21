@@ -318,9 +318,9 @@ export function EventDetailView({ eventId }: { eventId: string }) {
                   />
                 )}
                 <Typography
-                  component="h1"
+                  component="h3"
                   sx={{
-                    fontSize: { xs: 26, sm: 32, md: 40 },
+                    fontSize: { xs: 26, sm: 32 },
                     lineHeight: 1.25,
                     fontWeight: 950,
                     overflowWrap: 'anywhere',
@@ -716,12 +716,12 @@ export function EventDetailView({ eventId }: { eventId: string }) {
                                 >
                                   <Box sx={{ position: 'relative', flexShrink: 0 }}>
                                     <Avatar
-                                      variant="rounded"
+                                      variant="circular"
                                       src={group.logoUrl || undefined}
                                       alt={group.name}
                                       sx={{
-                                        width: { xs: 58, md: 64 },
-                                        height: { xs: 58, md: 64 },
+                                        width: { xs: 58, md: 80 },
+                                        height: { xs: 58, md: 80 },
                                         fontSize: 23,
                                         fontWeight: 900,
                                         color: HOME_TEXT,

@@ -264,6 +264,9 @@ export function normalizePerformanceGroupsContent(content?: PerformanceGroupsCon
       })),
       totalMembers: Number(group?.totalMembers) || 0,
       description: getFilledText(group?.description) || undefined,
+      sourceLabel: getFilledText(group?.sourceLabel) || undefined,
+      sourceUrl: getFilledText(group?.sourceUrl) || undefined,
+      updatedAt: getFilledText(group?.updatedAt) || undefined,
       yearlyData,
     });
   }

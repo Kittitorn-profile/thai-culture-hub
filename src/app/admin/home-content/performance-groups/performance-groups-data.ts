@@ -100,6 +100,9 @@ export const GroupEntrySchema = zod.object({
   positions: zod.array(zod.string()),
   totalMembers: nonNegativeNumber(),
   description: zod.string(),
+  sourceLabel: zod.string(),
+  sourceUrl: zod.string(),
+  updatedAt: zod.string(),
   yearlyData: zod.array(YearRecordSchema),
 });
 
@@ -150,6 +153,9 @@ export function createGroup(): GroupEntry {
     positions: [...DEFAULT_POSITIONS],
     totalMembers: 0,
     description: '',
+    sourceLabel: '',
+    sourceUrl: '',
+    updatedAt: new Date().toISOString().slice(0, 10),
     yearlyData: [],
   };
 }
@@ -251,6 +257,9 @@ export function normalizeContent(value: unknown): GroupsContent {
           positions,
           totalMembers: Math.max(0, Number(group?.totalMembers) || 0),
           description: typeof group?.description === 'string' ? group.description : '',
+          sourceLabel: typeof group?.sourceLabel === 'string' ? group.sourceLabel : '',
+          sourceUrl: typeof group?.sourceUrl === 'string' ? group.sourceUrl : '',
+          updatedAt: typeof group?.updatedAt === 'string' ? group.updatedAt : '',
           yearlyData: Array.isArray(group?.yearlyData)
             ? group.yearlyData.map((record) => {
                 const organizerName =

@@ -1,18 +1,17 @@
 'use client';
 
-import type { FormEvent, ChangeEvent } from 'react';
-
+import * as z from 'zod';
 import { useState } from 'react';
+import { useForm } from 'react-hook-form';
 import { usePathname } from 'next/navigation';
+import { zodResolver } from '@hookform/resolvers/zod';
 
 import Fab from '@mui/material/Fab';
-import Box from '@mui/material/Box';
 import Alert from '@mui/material/Alert';
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import Tooltip from '@mui/material/Tooltip';
-import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -21,17 +20,24 @@ import DialogActions from '@mui/material/DialogActions';
 
 import { toast } from 'src/components/snackbar';
 import { Iconify } from 'src/components/iconify';
+import { Form, RHFTextField } from 'src/components/hook-form';
 import { getAnalyticsBrowserIds } from 'src/components/analytics/track-event';
 
 // ----------------------------------------------------------------------
 
-type FeedbackForm = {
-  name: string;
-  contact: string;
-  message: string;
-};
+const FeedbackSchema = z.object({
+  name: z.string().max(120, { error: 'ชื่อยาวเกินไป' }),
+  contact: z.string().max(180, { error: 'ช่องทางติดต่อยาวเกินไป' }),
+  message: z
+    .string()
+    .trim()
+    .min(3, { error: 'กรุณาเขียนความคิดเห็นอย่างน้อย 3 ตัวอักษร' })
+    .max(2000, { error: 'ความคิดเห็นยาวเกินไป' }),
+});
 
-const initialForm: FeedbackForm = {
+type FeedbackFormValues = z.infer<typeof FeedbackSchema>;
+
+const initialForm: FeedbackFormValues = {
   name: '',
   contact: '',
   message: '',
@@ -44,9 +50,21 @@ function getCurrentPath() {
 export function FeedbackWidget() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState(initialForm);
   const [error, setError] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const methods = useForm<FeedbackFormValues>({
+    resolver: zodResolver(FeedbackSchema),
+    defaultValues: initialForm,
+  });
+
+  const {
+    reset,
+    watch,
+    handleSubmit,
+    formState: { isSubmitting },
+  } = methods;
+
+  const messageLength = watch('message').length;
 
   const handleClose = () => {
     if (!isSubmitting) {
@@ -55,22 +73,7 @@ export function FeedbackWidget() {
     }
   };
 
-  const handleChange =
-    (name: keyof FeedbackForm) => (event: ChangeEvent<HTMLInputElement>) => {
-      setForm((current) => ({ ...current, [name]: event.target.value }));
-    };
-
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
-    const message = form.message.trim();
-
-    if (message.length < 3) {
-      setError('กรุณาเขียนความคิดเห็นอย่างน้อย 3 ตัวอักษร');
-      return;
-    }
-
-    setIsSubmitting(true);
+  const onSubmit = handleSubmit(async (data) => {
     setError('');
 
     try {
@@ -79,8 +82,7 @@ export function FeedbackWidget() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          ...form,
-          message,
+          ...data,
           visitorId,
           sessionId,
           path: getCurrentPath(),
@@ -93,14 +95,12 @@ export function FeedbackWidget() {
       }
 
       toast.success('ส่งความคิดเห็นถึงผู้ดูแลแล้ว ขอบคุณมากครับ');
-      setForm(initialForm);
+      reset(initialForm);
       setOpen(false);
     } catch (caughtError) {
       setError(caughtError instanceof Error ? caughtError.message : 'ส่งความคิดเห็นไม่สำเร็จ');
-    } finally {
-      setIsSubmitting(false);
     }
-  };
+  });
 
   if (['/admin', '/auth', '/api'].some((privatePath) => pathname?.startsWith(privatePath))) {
     return null;
@@ -126,7 +126,7 @@ export function FeedbackWidget() {
       </Tooltip>
 
       <Dialog fullWidth maxWidth="sm" open={open} onClose={handleClose}>
-        <Box component="form" onSubmit={handleSubmit}>
+        <Form methods={methods} onSubmit={onSubmit}>
           <DialogTitle sx={{ pr: 7 }}>
             แสดงความคิดเห็น
             <IconButton
@@ -146,33 +146,30 @@ export function FeedbackWidget() {
 
               {error && <Alert severity="error">{error}</Alert>}
 
-              <TextField
+              <RHFTextField
                 fullWidth
+                name="name"
                 label="ชื่อ"
-                value={form.name}
-                onChange={handleChange('name')}
-                inputProps={{ maxLength: 120 }}
+                slotProps={{ htmlInput: { maxLength: 120 } }}
               />
 
-              <TextField
+              <RHFTextField
                 fullWidth
+                name="contact"
                 label="ช่องทางติดต่อ"
                 placeholder="อีเมล เบอร์โทร หรือ LINE"
-                value={form.contact}
-                onChange={handleChange('contact')}
-                inputProps={{ maxLength: 180 }}
+                slotProps={{ htmlInput: { maxLength: 180 } }}
               />
 
-              <TextField
+              <RHFTextField
                 required
                 fullWidth
                 multiline
                 minRows={4}
+                name="message"
                 label="ความคิดเห็น"
-                value={form.message}
-                onChange={handleChange('message')}
-                inputProps={{ maxLength: 2000 }}
-                helperText={`${form.message.length}/2000`}
+                slotProps={{ htmlInput: { maxLength: 2000 } }}
+                helperText={`${messageLength}/2000`}
               />
             </Stack>
           </DialogContent>
@@ -185,7 +182,7 @@ export function FeedbackWidget() {
               ส่งความคิดเห็น
             </Button>
           </DialogActions>
-        </Box>
+        </Form>
       </Dialog>
     </>
   );

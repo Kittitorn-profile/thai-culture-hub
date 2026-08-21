@@ -46,6 +46,18 @@ function findGroup(content: PerformanceGroupsContent | undefined, groupId: strin
   return content?.groups.find((group) => (group.id || group.name) === groupId);
 }
 
+function formatUpdatedDate(value?: string) {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+
+  return new Intl.DateTimeFormat('th-TH', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  }).format(date);
+}
+
 export function PerformanceGroupDetailView({ groupId, initialGroup }: Props) {
   const [group, setGroup] = useState<PerformanceGroupEntry | undefined>(initialGroup);
   const [isLoading, setIsLoading] = useState(true);
@@ -270,7 +282,7 @@ export function PerformanceGroupDetailView({ groupId, initialGroup }: Props) {
                     variant="rounded"
                     src={group.logoUrl}
                     alt={`โลโก้ ${group.name}`}
-                    sx={{ width: { xs: 64, md: 84 }, height: { xs: 64, md: 84 } }}
+                    sx={{ width: { xs: 64, md: 100 }, height: { xs: 64, md: 100 } }}
                   />
                 )}
                 <Box sx={{ minWidth: 0 }}>
@@ -324,17 +336,48 @@ export function PerformanceGroupDetailView({ groupId, initialGroup }: Props) {
                 </Button>
               )}
               {group.lineUrl && (
-                <Button component="a" href={group.lineUrl} target="_blank">
+                <Button
+                  component="a"
+                  href={group.lineUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  variant="outlined"
+                  startIcon={<Iconify icon={'simple-icons:line' as never} />}
+                  endIcon={<Iconify icon="eva:external-link-fill" width={17} />}
+                  sx={{ color: '#06a947', borderColor: '#06c755' }}
+                >
                   LINE
                 </Button>
               )}
               {group.facebookUrl && (
-                <Button component="a" href={group.facebookUrl} target="_blank">
-                  Facebook
+                <Button
+                  component="a"
+                  href={group.facebookUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  variant="contained"
+                  startIcon={<Iconify icon="socials:facebook" />}
+                  endIcon={<Iconify icon="eva:external-link-fill" width={17} />}
+                  sx={{
+                    color: '#fff',
+                    bgcolor: '#1877f2',
+                    '&:hover': { bgcolor: '#1265d5' },
+                  }}
+                >
+                  ไปยังเพจ Facebook
                 </Button>
               )}
               {group.youtubeUrl && (
-                <Button component="a" href={group.youtubeUrl} target="_blank">
+                <Button
+                  component="a"
+                  href={group.youtubeUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  variant="outlined"
+                  startIcon={<Iconify icon={'logos:youtube-icon' as never} />}
+                  endIcon={<Iconify icon="eva:external-link-fill" width={17} />}
+                  sx={{ color: '#d92323', borderColor: 'rgba(217,35,35,0.5)' }}
+                >
                   YouTube
                 </Button>
               )}
@@ -675,10 +718,10 @@ export function PerformanceGroupDetailView({ groupId, initialGroup }: Props) {
                           <Stack direction="row" spacing={1.5} alignItems="center">
                             {record.logoUrl ? (
                               <Avatar
-                                variant="rounded"
+                                variant="circular"
                                 src={record.logoUrl}
                                 alt={`โลโก้ปี ${record.year}`}
-                                sx={{ width: 56, height: 56, bgcolor: 'rgba(255,255,255,0.16)' }}
+                                sx={{ width: 60, height: 60, bgcolor: 'rgba(255,255,255,0.16)' }}
                               />
                             ) : (
                               <Box
@@ -807,8 +850,8 @@ export function PerformanceGroupDetailView({ groupId, initialGroup }: Props) {
                                         position: 'relative',
                                         width: 1,
                                         minHeight: { xs: 148, md: 100 },
-                                        px: 3,
-                                        py: 1.5,
+                                        px: 2,
+                                        py: 2,
                                         gap: 1,
                                         flexDirection: { xs: 'column', md: 'row' },
                                         justifyContent: { xs: 'center', md: 'flex-start' },
@@ -844,6 +887,7 @@ export function PerformanceGroupDetailView({ groupId, initialGroup }: Props) {
                                           color: 'text.primary',
                                           fontWeight: 900,
                                           lineHeight: 1.45,
+                                          mr: { xs: 0, md: 2 },
                                           display: '-webkit-box',
                                           overflow: 'hidden',
                                           WebkitBoxOrient: 'vertical',
@@ -1249,6 +1293,59 @@ export function PerformanceGroupDetailView({ groupId, initialGroup }: Props) {
                       </Box>
                     ))}
                 </Stack>
+              </Box>
+            )}
+          </Box>
+
+          <Box sx={{ p: 3, borderTop: '1px solid', borderColor: 'divider' }}>
+            {(group.sourceLabel || group.sourceUrl || group.updatedAt) && (
+              <Box>
+                {(group.sourceLabel || group.sourceUrl) && (
+                  <Stack spacing={1} alignItems="flex-start">
+                    <Typography
+                      variant="overline"
+                      sx={{ color: 'text.secondary', fontWeight: 900 }}
+                    >
+                      ที่มาของข้อมูล
+                    </Typography>
+                    {group.sourceUrl ? (
+                      <Button
+                        component="a"
+                        href={group.sourceUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        variant="contained"
+                        endIcon={<Iconify icon="eva:external-link-fill" />}
+                        sx={{
+                          color: '#fff',
+                          bgcolor: '#1d2933',
+                          fontWeight: 900,
+                          '&:hover': { bgcolor: '#111c25' },
+                        }}
+                      >
+                        {group.sourceLabel || 'ดูข้อมูลจากแหล่งต้นทาง'}
+                      </Button>
+                    ) : (
+                      <Typography sx={{ fontWeight: 800 }}>{group.sourceLabel}</Typography>
+                    )}
+                  </Stack>
+                )}
+                {group.updatedAt && (
+                  <Stack
+                    direction="row"
+                    spacing={0.75}
+                    alignItems="center"
+                    sx={{
+                      mt: group.sourceLabel || group.sourceUrl ? 2 : 0,
+                      color: 'text.secondary',
+                    }}
+                  >
+                    <Iconify icon="solar:calendar-date-bold" width={18} />
+                    <Typography variant="body2">
+                      อัปเดตล่าสุด {formatUpdatedDate(group.updatedAt)}
+                    </Typography>
+                  </Stack>
+                )}
               </Box>
             )}
           </Box>
