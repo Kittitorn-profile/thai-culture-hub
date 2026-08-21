@@ -90,6 +90,8 @@ const ReactPlayer = dynamic(() => import('react-player'), {
   loading: () => null,
 });
 
+const PERFORMANCE_GROUP_BATCH_SIZE = 6;
+
 export function HomeView() {
   const router = useRouter();
   const creatorLoadMoreRef = useRef<HTMLDivElement | null>(null);
@@ -118,7 +120,9 @@ export function HomeView() {
   const [isLoadingCreatorArticles, setIsLoadingCreatorArticles] = useState(false);
   const [selectedPerformanceGroupCategory, setSelectedPerformanceGroupCategory] =
     useState('ทั้งหมด');
-  const [visiblePerformanceGroupCount, setVisiblePerformanceGroupCount] = useState(6);
+  const [visiblePerformanceGroupCount, setVisiblePerformanceGroupCount] = useState(
+    PERFORMANCE_GROUP_BATCH_SIZE
+  );
   const [performanceGroupCounts, setPerformanceGroupCounts] = useState<
     Record<string, { views: number; shares: number }>
   >({});
@@ -325,7 +329,7 @@ export function HomeView() {
   }, [loadCreatorArticles]);
 
   useEffect(() => {
-    setVisiblePerformanceGroupCount(6);
+    setVisiblePerformanceGroupCount(PERFORMANCE_GROUP_BATCH_SIZE);
   }, [performanceGroupsContent, selectedPerformanceGroupCategory]);
 
   useEffect(() => {
@@ -349,16 +353,19 @@ export function HomeView() {
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry?.isIntersecting) {
-          setVisiblePerformanceGroupCount((currentCount) => currentCount + 6);
+          observer.unobserve(entry.target);
+          setVisiblePerformanceGroupCount((currentCount) =>
+            Math.min(currentCount + PERFORMANCE_GROUP_BATCH_SIZE, filteredPerformanceGroups.length)
+          );
         }
       },
-      { rootMargin: '240px 0px' }
+      { rootMargin: '160px 0px' }
     );
 
     observer.observe(target);
 
     return () => observer.disconnect();
-  }, [hasMorePerformanceGroups, visiblePerformanceGroupCount]);
+  }, [filteredPerformanceGroups.length, hasMorePerformanceGroups, visiblePerformanceGroupCount]);
 
   useEffect(() => {
     const groupIds = (performanceGroupsContent?.groups ?? [])

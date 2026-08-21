@@ -121,6 +121,14 @@ export function PerformanceGroupForm({ groupId }: Props) {
   const contestEvents = (contestEventsQuery.data?.data ?? []).filter(
     (eventItem) => eventItem.isContest && eventItem.isActive
   );
+  const categoryOptions = Array.from(
+    new Set([
+      ...GROUP_CATEGORIES,
+      ...normalizeContent(query.data?.data?.content)
+        .groups.map((item) => item.category?.trim())
+        .filter((category): category is string => Boolean(category)),
+    ])
+  );
 
   useEffect(() => {
     if (!query.data) return;
@@ -397,16 +405,16 @@ export function PerformanceGroupForm({ groupId }: Props) {
                     gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' },
                   }}
                 >
-                  <Field.Select name="category" label="ประเภทวง">
-                    {!GROUP_CATEGORIES.includes(group.category) ? (
-                      <MenuItem value={group.category}>{group.category}</MenuItem>
-                    ) : null}
-                    {GROUP_CATEGORIES.map((category) => (
-                      <MenuItem key={category} value={category}>
-                        {category}
-                      </MenuItem>
-                    ))}
-                  </Field.Select>
+                  <Field.Autocomplete
+                    freeSolo
+                    autoSelect
+                    selectOnFocus
+                    clearOnBlur={false}
+                    name="category"
+                    label="ประเภทวง"
+                    options={categoryOptions}
+                    helperText="เลือกจากรายการ หรือพิมพ์หมวดใหม่แล้วกด Enter"
+                  />
                   <Field.Select required name="provinceCode" label="จังหวัด">
                     <MenuItem value="">เลือกจังหวัด</MenuItem>
                     {provinces.map((province) => (
