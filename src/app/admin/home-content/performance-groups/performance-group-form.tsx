@@ -21,6 +21,7 @@ import MenuItem from '@mui/material/MenuItem';
 import Snackbar from '@mui/material/Snackbar';
 import TextField from '@mui/material/TextField';
 import Accordion from '@mui/material/Accordion';
+import Pagination from '@mui/material/Pagination';
 import Typography from '@mui/material/Typography';
 import LoadingButton from '@mui/lab/LoadingButton';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -74,6 +75,7 @@ type ContestEvent = {
   contestCategories?: Array<{ id: string; name: string; maxParticipants?: number }>;
   contestResultOptions?: Array<{ id: string; name: string }>;
 };
+const PERSONNEL_PER_PAGE = 5;
 type UploadFolder =
   | 'personnel'
   | 'group-logos'
@@ -90,7 +92,10 @@ export function PerformanceGroupForm({ groupId }: Props) {
   const [error, setError] = useState('');
   const [uploadError, setUploadError] = useState('');
   const [editingPersonIndex, setEditingPersonIndex] = useState<number | 'new' | null>(null);
+  const [personnelPage, setPersonnelPage] = useState(1);
   const [positionDrafts, setPositionDrafts] = useState<PositionDraft[] | null>(null);
+  const [years, setYears] = useState<string[]>([]);
+  const [yearDrafts, setYearDrafts] = useState<string[] | null>(null);
   const [organizers, setOrganizers] = useState<Organizer[]>([]);
   const [organizerDrafts, setOrganizerDrafts] = useState<OrganizerDraft[] | null>(null);
   const [uploadingImageKey, setUploadingImageKey] = useState('');
@@ -104,6 +109,15 @@ export function PerformanceGroupForm({ groupId }: Props) {
   const group = watch();
   const personnelFieldArray = useFieldArray({ control, name: 'personnel' });
   const yearlyFieldArray = useFieldArray({ control, name: 'yearlyData' });
+  const personnelPageCount = Math.max(
+    1,
+    Math.ceil(personnelFieldArray.fields.length / PERSONNEL_PER_PAGE)
+  );
+  const personnelPageStart = (personnelPage - 1) * PERSONNEL_PER_PAGE;
+  const visiblePersonnelFields = personnelFieldArray.fields.slice(
+    personnelPageStart,
+    personnelPageStart + PERSONNEL_PER_PAGE
+  );
 
   const query = useQuery({
     queryKey: ['admin-home-content', SECTION_KEY, accessToken],
@@ -129,11 +143,15 @@ export function PerformanceGroupForm({ groupId }: Props) {
         .filter((category): category is string => Boolean(category)),
     ])
   );
+  const availableYears = years.filter(
+    (year) => !group.yearlyData.some((record) => record.year === year)
+  );
 
   useEffect(() => {
     if (!query.data) return;
 
-    const storedOrganizers = normalizeContent(query.data.data?.content).organizers;
+    const normalizedContent = normalizeContent(query.data.data?.content);
+    const storedOrganizers = normalizedContent.organizers;
     const organizerNames = new Set(storedOrganizers.map((item) => item.name.trim().toLowerCase()));
     const eventOrganizers = (contestEventsQuery.data?.data ?? []).flatMap((eventItem) => {
       const name = eventItem.organizer?.trim();
@@ -152,6 +170,7 @@ export function PerformanceGroupForm({ groupId }: Props) {
     });
 
     setOrganizers([...storedOrganizers, ...eventOrganizers]);
+    setYears(normalizedContent.years);
   }, [contestEventsQuery.data?.data, query.data]);
 
   useEffect(() => {
@@ -163,12 +182,20 @@ export function PerformanceGroupForm({ groupId }: Props) {
     else setError('ไม่พบข้อมูลวงที่ต้องการแก้ไข');
   }, [groupId, isEditing, query.data, reset]);
 
+  useEffect(() => {
+    setPersonnelPage((currentPage) => Math.min(currentPage, personnelPageCount));
+  }, [personnelPageCount]);
+
   const save = useMutation({
     mutationFn: (values: GroupEntry) => {
       const selectedProvince = provinces.find((province) => province.code === values.provinceCode);
       const nextGroup: GroupEntry = {
         ...values,
         provinceName: selectedProvince?.name ?? '',
+        yearlyData: values.yearlyData.map((record) => ({
+          ...record,
+          awards: record.awards.map((award) => ({ ...award, year: record.year })),
+        })),
       };
       const content = normalizeContent(query.data?.data?.content);
       const groups = isEditing
@@ -194,7 +221,7 @@ export function PerformanceGroupForm({ groupId }: Props) {
         accessToken,
         body: {
           sectionKey: SECTION_KEY,
-          content: { ...content, organizers, groups: syncedGroups },
+          content: { ...content, years, organizers, groups: syncedGroups },
         },
       });
     },
@@ -269,6 +296,9 @@ export function PerformanceGroupForm({ groupId }: Props) {
 
   const savePersonnel = (values: Personnel) => {
     if (editingPersonIndex === 'new') {
+      setPersonnelPage(
+        Math.max(1, Math.ceil((personnelFieldArray.fields.length + 1) / PERSONNEL_PER_PAGE))
+      );
       personnelFieldArray.append(values);
     } else if (typeof editingPersonIndex === 'number') {
       personnelFieldArray.update(editingPersonIndex, values);
@@ -300,6 +330,20 @@ export function PerformanceGroupForm({ groupId }: Props) {
     if (!organizerDrafts) return;
     setOrganizers(organizerDrafts.filter((organizer) => organizer.name.trim()));
     setOrganizerDrafts(null);
+  };
+
+  const saveYears = () => {
+    if (!yearDrafts) return;
+    if (yearDrafts.some((year) => !/^\d{4}$/.test(year.trim()))) {
+      setUploadError('กรุณากรอกปี พ.ศ. เป็นตัวเลข 4 หลัก');
+      return;
+    }
+    const normalizedYears = Array.from(
+      new Set(yearDrafts.map((year) => year.trim()).filter(Boolean))
+    ).sort((first, second) => Number(second) - Number(first));
+
+    setYears(normalizedYears);
+    setYearDrafts(null);
   };
 
   const editingPerson =
@@ -547,7 +591,7 @@ export function PerformanceGroupForm({ groupId }: Props) {
               subtitle="เพิ่มประวัติและกำหนดบทบาทของสมาชิกในวง"
             />
             <Box sx={{ p: { xs: 2, md: 3 } }}>
-              <Stack spacing={2.5}>
+              <Stack spacing={2}>
                 <Stack
                   direction={{ xs: 'column', sm: 'row' }}
                   justifyContent="space-between"
@@ -586,33 +630,56 @@ export function PerformanceGroupForm({ groupId }: Props) {
                 {personnelFieldArray.fields.length === 0 ? (
                   <Alert severity="info">ยังไม่มีข้อมูลบุคลากร</Alert>
                 ) : null}
-                {personnelFieldArray.fields.map((field, personIndex) => {
+                {visiblePersonnelFields.map((field, pageIndex) => {
+                  const personIndex = personnelPageStart + pageIndex;
                   const person = group.personnel[personIndex] ?? field;
                   return (
                     <Card
                       key={field.id}
                       variant="outlined"
-                      sx={{ p: 2, borderColor: 'divider', boxShadow: 'none' }}
+                      sx={{
+                        p: 1.25,
+                        borderRadius: 1.5,
+                        borderColor: 'divider',
+                        boxShadow: 'none',
+                        transition: 'border-color 160ms ease, background-color 160ms ease',
+                        '&:hover': {
+                          borderColor: 'text.disabled',
+                          bgcolor: 'background.neutral',
+                        },
+                      }}
                     >
-                      <Stack
-                        direction={{ xs: 'column', sm: 'row' }}
-                        spacing={2}
-                        alignItems={{ sm: 'center' }}
+                      <Box
+                        sx={{
+                          gap: 1.5,
+                          display: 'grid',
+                          alignItems: 'center',
+                          gridTemplateColumns: {
+                            xs: '56px minmax(0, 1fr)',
+                            sm: '56px minmax(0, 1fr) auto',
+                          },
+                        }}
                       >
                         <Avatar
+                          variant="rounded"
                           src={person.imageUrl}
                           alt={person.fullName}
-                          sx={{ width: 72, height: 72 }}
+                          sx={{ width: 56, height: 56 }}
                         />
-                        <Box sx={{ flex: 1, minWidth: 0 }}>
-                          <Typography sx={{ fontWeight: 800 }}>
+                        <Box sx={{ minWidth: 0 }}>
+                          <Typography noWrap sx={{ fontWeight: 850 }}>
                             {personIndex + 1}. {person.fullName || 'ไม่ระบุชื่อ'}
                             {person.nickname ? ` (${person.nickname})` : ''}
                           </Typography>
                           <Typography variant="body2" color="text.secondary">
                             {person.role || 'ไม่ระบุตำแหน่ง'}
                           </Typography>
-                          <Typography variant="caption" color="text.secondary">
+                          <Typography
+                            noWrap
+                            variant="caption"
+                            color="text.secondary"
+                            sx={{ display: 'block' }}
+                          >
                             {[
                               person.age ? `อายุ ${person.age} ปี` : '',
                               person.yearsWithGroup ? `อยู่กับวง ${person.yearsWithGroup} ปี` : '',
@@ -621,24 +688,42 @@ export function PerformanceGroupForm({ groupId }: Props) {
                               .join(' · ')}
                           </Typography>
                         </Box>
-                        <Stack direction="row" spacing={1}>
+                        <Stack
+                          direction="row"
+                          spacing={0.75}
+                          justifyContent="flex-end"
+                          sx={{ gridColumn: { xs: '1 / -1', sm: 'auto' } }}
+                        >
                           <Button
+                            size="small"
                             variant="outlined"
                             onClick={() => setEditingPersonIndex(personIndex)}
                           >
                             แก้ไข
                           </Button>
                           <Button
+                            size="small"
                             color="error"
                             onClick={() => personnelFieldArray.remove(personIndex)}
                           >
                             ลบ
                           </Button>
                         </Stack>
-                      </Stack>
+                      </Box>
                     </Card>
                   );
                 })}
+                {personnelPageCount > 1 && (
+                  <Stack direction="row" justifyContent="center" sx={{ pt: 0.5 }}>
+                    <Pagination
+                      page={personnelPage}
+                      count={personnelPageCount}
+                      color="primary"
+                      shape="rounded"
+                      onChange={(_, nextPage) => setPersonnelPage(nextPage)}
+                    />
+                  </Stack>
+                )}
               </Stack>
             </Box>
           </Card>
@@ -665,6 +750,9 @@ export function PerformanceGroupForm({ groupId }: Props) {
                     </Typography>
                   </Box>
                   <Stack direction="row" spacing={1}>
+                    <Button variant="outlined" onClick={() => setYearDrafts([...years])}>
+                      จัดการปี
+                    </Button>
                     <Button
                       variant="outlined"
                       onClick={() => setOrganizerDrafts(organizers.map((item) => ({ ...item })))}
@@ -673,9 +761,10 @@ export function PerformanceGroupForm({ groupId }: Props) {
                     </Button>
                     <Button
                       variant="contained"
+                      disabled={availableYears.length === 0}
                       onClick={() =>
                         yearlyFieldArray.append({
-                          year: '',
+                          year: availableYears[0] ?? '',
                           note: '',
                           logoUrl: '',
                           organizerId: '',
@@ -716,6 +805,8 @@ export function PerformanceGroupForm({ groupId }: Props) {
                       primaryColor={group.primaryColor}
                       personnel={group.personnel}
                       organizers={organizers}
+                      years={years}
+                      selectedYears={group.yearlyData.map((record) => record.year)}
                       contestEvents={contestEvents}
                       onManageOrganizers={() =>
                         setOrganizerDrafts(organizers.map((item) => ({ ...item })))
@@ -900,6 +991,89 @@ export function PerformanceGroupForm({ groupId }: Props) {
           </Button>
           <Button variant="contained" onClick={savePositions}>
             บันทึกตำแหน่ง
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={Boolean(yearDrafts)}
+        onClose={() => setYearDrafts(null)}
+        fullWidth
+        maxWidth="sm"
+      >
+        <DialogTitle>คลังปีส่วนกลาง</DialogTitle>
+        <DialogContent dividers>
+          <Stack spacing={2} sx={{ pt: 0.5 }}>
+            <Alert severity="info">
+              ปีในคลังนี้ใช้ร่วมกันทุกวง ข้อมูลปีเดิมของทุกวงถูกนำมารวมให้อัตโนมัติ
+            </Alert>
+            {yearDrafts?.map((year, index) => {
+              const isUsed =
+                group.yearlyData.some((record) => record.year === year) ||
+                normalizeContent(query.data?.data?.content).groups.some((item) =>
+                  item.yearlyData.some((record) => record.year === year)
+                );
+
+              return (
+                <Stack
+                  key={`year-draft-${index}`}
+                  direction="row"
+                  spacing={1.5}
+                  alignItems="center"
+                >
+                  <TextField
+                    fullWidth
+                    required
+                    disabled={isUsed}
+                    label={`ปี พ.ศ. ลำดับที่ ${index + 1}`}
+                    value={year}
+                    slotProps={{ htmlInput: { inputMode: 'numeric', maxLength: 4 } }}
+                    onChange={(event) => {
+                      const nextYear = event.target.value.replace(/\D/g, '').slice(0, 4);
+                      setYearDrafts(
+                        (current) =>
+                          current?.map((item, itemIndex) =>
+                            itemIndex === index ? nextYear : item
+                          ) ?? null
+                      );
+                    }}
+                    helperText={isUsed ? 'มีวงเลือกใช้ปีนี้แล้ว' : undefined}
+                    error={Boolean(year) && !/^\d{4}$/.test(year)}
+                  />
+                  <Button
+                    color="error"
+                    disabled={isUsed}
+                    onClick={() =>
+                      setYearDrafts(
+                        (current) => current?.filter((_, itemIndex) => itemIndex !== index) ?? null
+                      )
+                    }
+                  >
+                    ลบ
+                  </Button>
+                </Stack>
+              );
+            })}
+            <Button
+              variant="outlined"
+              sx={{ alignSelf: 'flex-start' }}
+              onClick={() =>
+                setYearDrafts((current) => [
+                  ...(current ?? []),
+                  `${new Date().getFullYear() + 543}`,
+                ])
+              }
+            >
+              + เพิ่มปี
+            </Button>
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button color="inherit" onClick={() => setYearDrafts(null)}>
+            ยกเลิก
+          </Button>
+          <Button variant="contained" onClick={saveYears}>
+            บันทึกคลังปี
           </Button>
         </DialogActions>
       </Dialog>
@@ -1097,6 +1271,8 @@ type YearRecordFieldsProps = {
   primaryColor: string;
   personnel: Personnel[];
   organizers: Organizer[];
+  years: string[];
+  selectedYears: string[];
   contestEvents: ContestEvent[];
   onManageOrganizers: () => void;
   uploadingImageKey: string;
@@ -1113,6 +1289,8 @@ function YearRecordFields({
   primaryColor,
   personnel,
   organizers,
+  years,
+  selectedYears,
   contestEvents,
   onManageOrganizers,
   uploadingImageKey,
@@ -1171,11 +1349,25 @@ function YearRecordFields({
       >
         <Stack spacing={2.5}>
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-            <Field.Text
+            <Field.Select
+              required
               name={`yearlyData.${yearIndex}.year`}
               label="ปี"
               sx={{ width: { sm: 180 } }}
-            />
+            >
+              <MenuItem value="">
+                <em>เลือกปี</em>
+              </MenuItem>
+              {years.map((year) => (
+                <MenuItem
+                  key={year}
+                  value={year}
+                  disabled={year !== record.year && selectedYears.includes(year)}
+                >
+                  พ.ศ. {year}
+                </MenuItem>
+              ))}
+            </Field.Select>
             <Field.Text fullWidth name={`yearlyData.${yearIndex}.note`} label="หมายเหตุประจำปี" />
             <Button color="error" onClick={onRemove}>
               ลบปี
@@ -1300,34 +1492,31 @@ function YearRecordFields({
                     setValue(
                       `yearlyData.${yearIndex}.contestCategoryIds`,
                       Object.fromEntries(
-                        Object.entries(currentCategories).filter(([eventId]) =>
-                          selectedIds.includes(eventId)
-                        )
+                        selectedIds.map((eventId) => [eventId, currentCategories[eventId] ?? ''])
                       )
                     );
                     const currentResults = record.contestResultIds ?? {};
                     setValue(
                       `yearlyData.${yearIndex}.contestResultIds`,
                       Object.fromEntries(
-                        Object.entries(currentResults).filter(([eventId]) =>
-                          selectedIds.includes(eventId)
-                        )
+                        selectedIds.map((eventId) => [eventId, currentResults[eventId] ?? []])
                       )
                     );
+                    const currentSingers = record.contestSingerIds ?? {};
                     setValue(
                       `yearlyData.${yearIndex}.contestSingerIds`,
                       Object.fromEntries(
-                        Object.entries(record.contestSingerIds ?? {}).filter(([eventId]) =>
-                          selectedIds.includes(eventId)
-                        )
+                        selectedIds.map((eventId) => [eventId, currentSingers[eventId] ?? []])
                       )
                     );
+                    const currentLeadPerformers = record.contestLeadPerformerIds ?? {};
                     setValue(
                       `yearlyData.${yearIndex}.contestLeadPerformerIds`,
                       Object.fromEntries(
-                        Object.entries(record.contestLeadPerformerIds ?? {}).filter(([eventId]) =>
-                          selectedIds.includes(eventId)
-                        )
+                        selectedIds.map((eventId) => [
+                          eventId,
+                          currentLeadPerformers[eventId] ?? [],
+                        ])
                       )
                     );
                   }}

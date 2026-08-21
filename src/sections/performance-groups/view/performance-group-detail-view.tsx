@@ -554,8 +554,8 @@ export function PerformanceGroupDetailView({ groupId, initialGroup }: Props) {
                       gridAutoFlow: 'column',
                       gridAutoColumns: {
                         xs: 'minmax(260px, 84vw)',
-                        sm: 'minmax(280px, 42vw)',
-                        lg: 'minmax(300px, 31%)',
+                        sm: 'minmax(200px, 42vw)',
+                        lg: 'minmax(200px, 31%)',
                       },
                       scrollbarWidth: 'thin',
                       scrollbarColor: 'rgba(42,55,54,0.35) transparent',
@@ -598,20 +598,23 @@ export function PerformanceGroupDetailView({ groupId, initialGroup }: Props) {
                               {person.role}
                             </Typography>
                             <Typography variant="caption" color="text.secondary">
-                              {person.nickname ? `ชื่อเล่น ${person.nickname} · ` : ''}
-                              อายุ {person.age} ปี
+                              ชื่อเล่น {person.nickname || '-'} · อายุ{' '}
+                              {person.age > 0 ? `${person.age} ปี` : '-'}
                             </Typography>
                           </Box>
                         </Stack>
                         <Typography variant="body2" sx={{ mt: 1.5 }}>
-                          อยู่กับวง {person.yearsWithGroup} ปี
+                          อยู่กับวง{' '}
+                          {person.yearsWithGroup > 0 ? `${person.yearsWithGroup} ปี` : '-'}
                         </Typography>
                         <Typography variant="body2" sx={{ mt: 0.5 }}>
-                          การศึกษา: {person.education}
+                          การศึกษา: {person.education || '-'}
                         </Typography>
-                        <Typography variant="body2" sx={{ mt: 1, color: 'text.secondary' }}>
-                          {person.otherDetails}
-                        </Typography>
+                        {person.otherDetails && (
+                          <Typography variant="body2" sx={{ mt: 1, color: 'text.secondary' }}>
+                            {person.otherDetails}
+                          </Typography>
+                        )}
                       </Box>
                     ))}
                   </Box>
@@ -790,7 +793,7 @@ export function PerformanceGroupDetailView({ groupId, initialGroup }: Props) {
                             />
                           </Stack>
                         </Stack>
-                        {record.organizerName && (
+                        {/* {record.organizerName && (
                           <Stack
                             direction="row"
                             spacing={1.5}
@@ -831,7 +834,7 @@ export function PerformanceGroupDetailView({ groupId, initialGroup }: Props) {
                               </Typography>
                             </Box>
                           </Stack>
-                        )}
+                        )} */}
                         {record.contestEventIds?.length ? (
                           <Box sx={{ mb: 2.5 }}>
                             <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 900 }}>
@@ -908,23 +911,29 @@ export function PerformanceGroupDetailView({ groupId, initialGroup }: Props) {
                                           <Iconify icon="solar:cup-star-bold" width={30} />
                                         </Avatar>
                                       )}
-                                      <Typography
-                                        component="span"
-                                        variant="subtitle2"
-                                        sx={{
-                                          maxWidth: 1,
-                                          color: 'text.primary',
-                                          fontWeight: 900,
-                                          lineHeight: 1.45,
-                                          mr: { xs: 0, md: 2 },
-                                          display: '-webkit-box',
-                                          overflow: 'hidden',
-                                          WebkitBoxOrient: 'vertical',
-                                          WebkitLineClamp: 2,
-                                        }}
-                                      >
-                                        {eventItem?.title || 'ดูรายละเอียดการประกวด'}
-                                      </Typography>
+                                      <Box>
+                                        <Typography sx={{ fontWeight: 950 }}>
+                                          {record.organizerName}
+                                        </Typography>
+
+                                        <Typography
+                                          component="span"
+                                          variant="subtitle2"
+                                          sx={{
+                                            maxWidth: 1,
+                                            color: 'text.primary',
+                                            fontWeight: 400,
+                                            lineHeight: 1.45,
+                                            mr: { xs: 0, md: 2 },
+                                            display: '-webkit-box',
+                                            overflow: 'hidden',
+                                            WebkitBoxOrient: 'vertical',
+                                            WebkitLineClamp: 2,
+                                          }}
+                                        >
+                                          {eventItem?.title || 'ดูรายละเอียดการประกวด'}
+                                        </Typography>
+                                      </Box>
                                       <Iconify
                                         icon="eva:arrow-ios-forward-fill"
                                         width={22}
@@ -966,20 +975,21 @@ export function PerformanceGroupDetailView({ groupId, initialGroup }: Props) {
                                     {eventCast.some((castGroup) => castGroup.ids.length > 0) && (
                                       <Box
                                         sx={{
-                                          mt: 1.25,
-                                          pt: 1.25,
-                                          borderTop: '1px solid',
+                                          mt: 1.5,
+                                          p: { xs: 1.5, md: 2 },
+                                          borderRadius: 1.5,
+                                          bgcolor: 'background.paper',
+                                          border: '1px solid',
                                           borderColor: 'divider',
                                         }}
                                       >
                                         <Typography
-                                          variant="caption"
-                                          color="text.secondary"
-                                          sx={{ fontWeight: 800 }}
+                                          variant="subtitle2"
+                                          sx={{ color: 'text.primary', fontWeight: 950 }}
                                         >
                                           บุคลากรหลักของรายการนี้
                                         </Typography>
-                                        <Stack spacing={1} sx={{ mt: 0.75 }}>
+                                        <Stack spacing={1.5} sx={{ mt: 1.5 }}>
                                           {eventCast.map((castGroup) => {
                                             const people = group.personnel.filter((person) =>
                                               castGroup.ids.includes(person.id)
@@ -987,37 +997,86 @@ export function PerformanceGroupDetailView({ groupId, initialGroup }: Props) {
                                             if (!people.length) return null;
 
                                             return (
-                                              <Stack
+                                              <Box
                                                 key={castGroup.label}
-                                                direction="row"
-                                                spacing={0.75}
-                                                useFlexGap
-                                                flexWrap="wrap"
-                                                alignItems="center"
+                                                sx={{
+                                                  gap: 1,
+                                                  display: 'grid',
+                                                  alignItems: 'start',
+                                                  gridTemplateColumns: {
+                                                    xs: '1fr',
+                                                    sm: '100px minmax(0, 1fr)',
+                                                  },
+                                                }}
                                               >
                                                 <Typography
-                                                  variant="caption"
-                                                  sx={{ color: castGroup.color, fontWeight: 900 }}
+                                                  variant="body2"
+                                                  sx={{
+                                                    pt: { sm: 1.25 },
+                                                    color: castGroup.color,
+                                                    fontWeight: 950,
+                                                  }}
                                                 >
                                                   {castGroup.label}
                                                 </Typography>
-                                                {people.map((person) => (
-                                                  <Chip
-                                                    key={person.id}
-                                                    size="small"
-                                                    avatar={
+                                                <Box
+                                                  sx={{
+                                                    gap: 1,
+                                                    display: 'grid',
+                                                    gridTemplateColumns: {
+                                                      xs: 'minmax(0, 1fr)',
+                                                      md: 'repeat(2, minmax(0, 1fr))',
+                                                      lg: 'repeat(3, minmax(0, 1fr))',
+                                                    },
+                                                  }}
+                                                >
+                                                  {people.map((person) => (
+                                                    <Stack
+                                                      key={person.id}
+                                                      direction="row"
+                                                      spacing={1.25}
+                                                      alignItems="center"
+                                                      sx={{
+                                                        p: 1,
+                                                        minWidth: 0,
+                                                        borderRadius: 1.5,
+                                                        bgcolor: 'background.neutral',
+                                                        border: '1px solid',
+                                                        borderColor: 'divider',
+                                                      }}
+                                                    >
                                                       <Avatar
                                                         src={person.imageUrl || undefined}
                                                         alt={person.fullName}
+                                                        sx={{
+                                                          width: 48,
+                                                          height: 48,
+                                                          flexShrink: 0,
+                                                        }}
                                                       >
                                                         {person.fullName.slice(0, 1)}
                                                       </Avatar>
-                                                    }
-                                                    label={person.fullName}
-                                                    sx={{ fontWeight: 800 }}
-                                                  />
-                                                ))}
-                                              </Stack>
+                                                      <Box sx={{ minWidth: 0 }}>
+                                                        <Typography
+                                                          noWrap
+                                                          sx={{ fontSize: 15, fontWeight: 900 }}
+                                                        >
+                                                          {person.fullName}
+                                                        </Typography>
+                                                        <Typography
+                                                          noWrap
+                                                          variant="caption"
+                                                          color="text.secondary"
+                                                        >
+                                                          {person.nickname
+                                                            ? `ชื่อเล่น ${person.nickname}`
+                                                            : person.role}
+                                                        </Typography>
+                                                      </Box>
+                                                    </Stack>
+                                                  ))}
+                                                </Box>
+                                              </Box>
                                             );
                                           })}
                                         </Stack>

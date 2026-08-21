@@ -50,7 +50,7 @@ export const PersonnelSchema = zod.object({
 });
 
 export const YearRecordSchema = zod.object({
-  year: zod.string(),
+  year: zod.string({ error: 'กรุณาเลือกปี' }).trim().min(1, { message: 'กรุณาเลือกปี' }),
   note: zod.string(),
   logoUrl: zod.string(),
   organizerId: zod.string(),
@@ -58,10 +58,22 @@ export const YearRecordSchema = zod.object({
   organizerColor: zod.string(),
   organizerLogoUrl: zod.string(),
   contestEventIds: zod.array(zod.string()),
-  contestCategoryIds: zod.record(zod.string(), zod.string()),
-  contestResultIds: zod.record(zod.string(), zod.array(zod.string())),
-  contestSingerIds: zod.record(zod.string(), zod.array(zod.string())),
-  contestLeadPerformerIds: zod.record(zod.string(), zod.array(zod.string())),
+  contestCategoryIds: zod.record(
+    zod.string(),
+    zod.string({ error: 'กรุณาเลือกประเภทที่เข้าร่วม' })
+  ),
+  contestResultIds: zod.record(
+    zod.string(),
+    zod.array(zod.string(), { error: 'ข้อมูลผลการประกวดไม่ถูกต้อง' })
+  ),
+  contestSingerIds: zod.record(
+    zod.string(),
+    zod.array(zod.string(), { error: 'ข้อมูลนักร้องนำไม่ถูกต้อง' })
+  ),
+  contestLeadPerformerIds: zod.record(
+    zod.string(),
+    zod.array(zod.string(), { error: 'ข้อมูลนักแสดงนำไม่ถูกต้อง' })
+  ),
   details: zod.string(),
   about: zod.string(),
   storyTypes: zod.array(zod.string()),
@@ -90,7 +102,10 @@ export const GroupEntrySchema = zod.object({
   lineUrl: zod.string(),
   facebookUrl: zod.string(),
   youtubeUrl: zod.string(),
-  category: zod.string(),
+  category: zod
+    .string({ error: 'กรุณาระบุประเภทวง' })
+    .trim()
+    .min(1, { message: 'กรุณาระบุประเภทวง' }),
   managers: zod.array(zod.string()),
   coManagers: zod.array(zod.string()),
   principalMembers: zod.array(zod.string()),
@@ -114,6 +129,7 @@ export type GroupEntry = zod.infer<typeof GroupEntrySchema>;
 export type GroupsContent = {
   title: string;
   description: string;
+  years: string[];
   organizers: Organizer[];
   groups: GroupEntry[];
 };
@@ -122,6 +138,7 @@ export type HomeContentResponse = { data?: { content?: unknown } | null; message
 export const EMPTY_CONTENT: GroupsContent = {
   title: 'วงศิลปินและวงดนตรี',
   description: 'ข้อมูลวงโปงลาง วงหมอลำ และวงดนตรี',
+  years: [`${new Date().getFullYear() + 543}`],
   organizers: [],
   groups: [],
 };
@@ -343,10 +360,18 @@ export function normalizeContent(value: unknown): GroupsContent {
         };
       })
     : [];
+  const normalizedYears = Array.from(
+    new Set([
+      ...stringList(content.years),
+      ...groups.flatMap((group) => group.yearlyData.map((record) => record.year)).filter(Boolean),
+    ])
+  ).sort((first, second) => Number(second) - Number(first));
+
   return {
     title: typeof content.title === 'string' ? content.title : EMPTY_CONTENT.title,
     description:
       typeof content.description === 'string' ? content.description : EMPTY_CONTENT.description,
+    years: normalizedYears.length ? normalizedYears : [...EMPTY_CONTENT.years],
     organizers: Array.from(legacyOrganizerMap.values()),
     groups,
   };
