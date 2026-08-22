@@ -85,8 +85,7 @@ export function Footer({
                 [theme.breakpoints.up(layoutQuery)]: { mx: 'unset' },
               })}
             >
-              The starting point for your next project with Minimal UI Kit, built on the newest
-              version of Material-UI ©, ready to be customized to your style.
+              Thailand Cultural Hub | Discover Thai Culture & Heritage
             </Typography>
 
             <Box
