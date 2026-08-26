@@ -13,6 +13,8 @@ const TABLE_NAME = process.env.EVENTS_TABLE ?? 'events';
 
 type EventRow = {
   id: string;
+  slug?: string | null;
+  tat_slug?: string | null;
   title: string;
   description?: string | null;
   starts_at?: string | null;
@@ -60,6 +62,8 @@ function normalizeMediaUrl(value?: string | null) {
 function toEventItem(row: EventRow) {
   return {
     id: row.id,
+    slug: row.slug ?? '',
+    tatSlug: row.tat_slug ?? '',
     title: row.title,
     description: toPlainText(row.description),
     descriptionHtml: row.description ?? '',

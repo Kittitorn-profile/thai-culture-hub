@@ -108,14 +108,14 @@ export function HomeUpcomingEventsSection({ events, onPlayVideo }: Props) {
                 aria-label={`ดูรายละเอียดกิจกรรม ${eventItem.title}`}
                 onClick={(event) => {
                   if ((event.target as HTMLElement).closest('a, button')) return;
-                  router.push(paths.event.details(eventItem.id));
+                  router.push(paths.event.details(eventItem));
                 }}
                 onKeyDown={(event) => {
                   if (event.key !== 'Enter' && event.key !== ' ') {
                     return;
                   }
                   event.preventDefault();
-                  router.push(paths.event.details(eventItem.id));
+                  router.push(paths.event.details(eventItem));
                 }}
                 sx={{
                   minWidth: 0,
@@ -288,7 +288,7 @@ export function HomeUpcomingEventsSection({ events, onPlayVideo }: Props) {
                   </Stack>
                   <Button
                     component="a"
-                    onClick={() => router.push(paths.event.details(eventItem.id))}
+                    onClick={() => router.push(paths.event.details(eventItem))}
                     size="small"
                     variant="outlined"
                     endIcon={<Iconify icon="eva:external-link-fill" width={16} />}

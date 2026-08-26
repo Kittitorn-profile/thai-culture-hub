@@ -1,5 +1,7 @@
 import { kebabCase } from 'es-toolkit';
 
+import { getEventSlug } from 'src/utils/event-slug';
+
 import { _id, _postTitles } from 'src/_mock/assets';
 
 // ----------------------------------------------------------------------
@@ -36,7 +38,8 @@ export const paths = {
     details: (groupId: string) => `/performance-groups/${encodeURIComponent(groupId)}`,
   },
   event: {
-    details: (eventId: string) => `/events/${encodeURIComponent(eventId)}`,
+    details: (event: string | { id: string; title: string; slug?: string | null; tatSlug?: string | null }) =>
+      `/events/${encodeURIComponent(typeof event === 'string' ? event : getEventSlug(event))}`,
   },
   faqs: '/faqs',
   page403: '/error/403',

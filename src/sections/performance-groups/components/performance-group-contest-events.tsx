@@ -89,7 +89,7 @@ export function PerformanceGroupContestEvents({ group, record, contestEvents }: 
             >
               <Button
                 component={RouterLink}
-                href={paths.event.details(eventId)}
+                href={paths.event.details(eventItem ?? eventId)}
                 variant="outlined"
                 aria-label={`ดูรายละเอียด ${eventItem?.title || 'การประกวด'}`}
                 sx={{

@@ -50,6 +50,7 @@ import { useAuthContext } from 'src/auth/hooks';
 
 type HomeEventItem = {
   id: string;
+  slug: string;
   title: string;
   description: string;
   startsAt: string;
@@ -118,6 +119,11 @@ function formatAdminEventDate(value?: string) {
 const EventFormSchema = zod
   .object({
     id: zod.string(),
+    slug: zod
+      .string()
+      .trim()
+      .min(1, 'กรุณากำหนด slug')
+      .regex(/^[\p{L}\p{N}]+(?:-[\p{L}\p{N}]+)*$/u, 'ใช้ตัวอักษร ตัวเลข และขีดกลางเท่านั้น'),
     title: zod.string().trim().min(1, { message: 'กรุณากรอกชื่อกิจกรรม' }),
     description: zod.string(),
     startsAt: zod.string(),
@@ -171,6 +177,7 @@ type EventFormValues = zod.infer<typeof EventFormSchema>;
 
 const EMPTY_EVENT_FORM_VALUES: EventFormValues = {
   id: '',
+  slug: '',
   title: '',
   description: '',
   startsAt: '',
@@ -201,6 +208,7 @@ function toEventFormValues(eventItem?: EditingEventItem | null): EventFormValues
 
   return {
     id: eventItem.id,
+    slug: eventItem.slug ?? '',
     title: eventItem.title,
     description: eventItem.description,
     startsAt: normalizeCalendarDate(eventItem.startsAt),
@@ -505,6 +513,7 @@ export default function HomeEventsAdminPage() {
 
     const nextItem: HomeEventItem = {
       id: values.id,
+      slug: values.slug.trim(),
       title: values.title.trim(),
       description: values.description.trim(),
       startsAt: values.startsAt,
@@ -883,6 +892,13 @@ export default function HomeEventsAdminPage() {
                 {error && <Alert severity="error">{error}</Alert>}
 
                 <RHFTextField name="title" label="ชื่อกิจกรรม" required />
+                <RHFTextField
+                  name="slug"
+                  label="Slug สำหรับ URL"
+                  placeholder="thai-cultural-festival-2026"
+                  helperText="ใช้ตัวอักษร ตัวเลข และขีดกลาง โดยห้ามซ้ำ"
+                  required
+                />
 
                 <RHFEditor
                   name="description"

@@ -22,6 +22,7 @@ import { useAuthContext } from 'src/auth/hooks';
 
 type HomeEventItem = {
   id: string;
+  slug: string;
   title: string;
   description: string;
   startsAt: string;
@@ -248,6 +249,7 @@ export default function HomeEventDetailAdminPage() {
                   <DetailRow label="จังหวัด" value={eventItem.provinceName} />
                   <DetailRow label="สถานที่" value={eventItem.location} />
                   <DetailRow label="ผู้จัด" value={eventItem.organizer} />
+                  <DetailRow label="slug" value={eventItem.slug} />
                   <DetailRow label="ชื่อแหล่งที่มา" value={eventItem.sourceLabel} />
                   <DetailRow label="ลิงก์ติดตาม" value={eventItem.sourceUrl} />
                   <DetailRow label="แหล่งข้อมูล" value={eventItem.source === 'tat' ? 'TAT' : 'Manual'} />

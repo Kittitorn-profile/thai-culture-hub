@@ -1,8 +1,10 @@
 import type { Metadata } from 'next';
 
-import { notFound } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 
-import { getPublishedEvent } from 'src/server/events';
+import { getEventSlug } from 'src/utils/event-slug';
+
+import { getPublishedEventByPath } from 'src/server/events';
 import { toEventStorageUrl } from 'src/server/event-media-url';
 
 import { EventDetailView } from 'src/sections/events/view';
@@ -28,7 +30,7 @@ function absoluteUrl(value?: string) {
   return new URL(storageUrl, SITE_URL).toString();
 }
 
-function getEventImage(eventItem: Awaited<ReturnType<typeof getPublishedEvent>>) {
+function getEventImage(eventItem: Awaited<ReturnType<typeof getPublishedEventByPath>>) {
   if (!eventItem) return FALLBACK_IMAGE;
   return absoluteUrl(
     eventItem.coverUrl ||
@@ -41,7 +43,7 @@ function getEventImage(eventItem: Awaited<ReturnType<typeof getPublishedEvent>>)
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { eventId: encodedEventId } = await params;
   const eventId = safeDecode(encodedEventId);
-  const eventItem = await getPublishedEvent(eventId);
+  const eventItem = await getPublishedEventByPath(eventId);
 
   if (!eventItem) {
     return {
@@ -55,7 +57,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     eventItem.description ||
     `รายละเอียดกิจกรรม${eventItem.title}${eventItem.provinceName ? ` จังหวัด${eventItem.provinceName}` : ''}`
   ).slice(0, 220);
-  const url = `${SITE_URL}/events/${encodeURIComponent(eventId)}/`;
+  const url = `${SITE_URL}/events/${encodeURIComponent(getEventSlug(eventItem))}/`;
   const image = getEventImage(eventItem);
 
   return {
@@ -92,11 +94,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function Page({ params }: Props) {
   const { eventId: encodedEventId } = await params;
   const eventId = safeDecode(encodedEventId);
-  const eventItem = await getPublishedEvent(eventId);
+  const eventItem = await getPublishedEventByPath(eventId);
 
   if (!eventItem) notFound();
 
-  const url = `${SITE_URL}/events/${encodeURIComponent(eventId)}/`;
+  const canonicalSlug = getEventSlug(eventItem);
+  if (eventId !== canonicalSlug) {
+    permanentRedirect(`/events/${encodeURIComponent(canonicalSlug)}`);
+  }
+
+  const url = `${SITE_URL}/events/${encodeURIComponent(canonicalSlug)}/`;
   const structuredData = {
     '@context': 'https://schema.org',
     '@type': 'Event',
@@ -126,7 +133,7 @@ export default async function Page({ params }: Props) {
           __html: JSON.stringify(structuredData).replace(/</g, '\\u003c'),
         }}
       />
-      <EventDetailView eventId={eventId} initialEvent={eventItem} />
+      <EventDetailView eventId={eventItem.id} initialEvent={eventItem} />
     </>
   );
 }

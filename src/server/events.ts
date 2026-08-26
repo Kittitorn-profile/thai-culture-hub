@@ -2,6 +2,8 @@ import type { HomeEventItem } from 'src/sections/home/components/home-types';
 
 import { cache } from 'react';
 
+import { getEventSlug } from 'src/utils/event-slug';
+
 import { getSupabaseAdmin } from 'src/server/supabase-admin';
 import { toEventMediaProxyUrl } from 'src/server/event-media-url';
 
@@ -11,6 +13,8 @@ const TABLE_NAME = process.env.EVENTS_TABLE ?? 'events';
 
 type EventRow = {
   id: string;
+  slug?: string | null;
+  tat_slug?: string | null;
   title: string;
   description?: string | null;
   starts_at?: string | null;
@@ -50,6 +54,8 @@ function toPlainText(value?: string | null) {
 function toEventItem(row: EventRow): HomeEventItem {
   return {
     id: row.id,
+    slug: row.slug ?? '',
+    tatSlug: row.tat_slug ?? '',
     title: row.title,
     description: toPlainText(row.description),
     descriptionHtml: row.description ?? '',
@@ -95,4 +101,43 @@ export const getPublishedEvent = cache(async (eventId: string) => {
 
   if (error || !data) return null;
   return toEventItem(data as EventRow);
+});
+
+export const getPublishedEventByPath = cache(async (eventPath: string) => {
+  const eventById = await getPublishedEvent(eventPath);
+  if (eventById) return eventById;
+
+  const supabase = getSupabaseAdmin();
+  if (!supabase.ok) return null;
+
+  const { data: importedEvent } = await supabase.client
+    .from(TABLE_NAME)
+    .select('*')
+    .eq('slug', eventPath)
+    .eq('is_active', true)
+    .maybeSingle();
+
+  if (importedEvent) return toEventItem(importedEvent as EventRow);
+
+  const { data: tatEvent } = await supabase.client
+    .from(TABLE_NAME)
+    .select('*')
+    .eq('tat_slug', eventPath)
+    .eq('is_active', true)
+    .maybeSingle();
+
+  if (tatEvent) return toEventItem(tatEvent as EventRow);
+
+  const { data, error } = await supabase.client
+    .from(TABLE_NAME)
+    .select('*')
+    .eq('is_active', true);
+
+  if (error || !data) return null;
+
+  const eventItem = (data as EventRow[])
+    .map(toEventItem)
+    .find((item) => getEventSlug(item) === eventPath);
+
+  return eventItem ?? null;
 });

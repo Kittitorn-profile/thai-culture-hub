@@ -2,6 +2,7 @@ import type { NextRequest } from 'next/server';
 
 import { NextResponse } from 'next/server';
 
+import { slugifyEventTitle } from 'src/utils/event-slug';
 import { normalizeCalendarDate } from 'src/utils/calendar-date';
 
 import provinces from 'src/data/thailand-culture/provinces';
@@ -17,6 +18,7 @@ const TABLE_NAME = process.env.EVENTS_TABLE ?? 'events';
 
 type EventPayload = {
   id?: string;
+  slug?: string;
   title?: string;
   description?: string;
   startsAt?: string;
@@ -49,6 +51,7 @@ type EventPayload = {
 
 type EventRow = {
   id: string;
+  slug?: string | null;
   title: string;
   description?: string | null;
   starts_at?: string | null;
@@ -128,6 +131,7 @@ function optionalTimestamp(value: unknown) {
 function toEventItem(row: EventRow) {
   return {
     id: row.id,
+    slug: row.slug ?? '',
     title: row.title,
     description: row.description ?? '',
     startsAt: row.starts_at ?? '',
@@ -186,6 +190,7 @@ function toEventItem(row: EventRow) {
 }
 
 function toRow(body: EventPayload) {
+  const slug = slugifyEventTitle(body.slug ?? '');
   const title = optionalText(body.title);
   const startsAt = optionalCalendarDate(body.startsAt);
   const provinceCode = optionalText(body.provinceCode);
@@ -212,6 +217,7 @@ function toRow(body: EventPayload) {
   return {
     ok: true as const,
     row: {
+      slug: slug || null,
       title,
       description: optionalText(body.description),
       starts_at: startsAt,
@@ -345,6 +351,23 @@ export async function POST(request: NextRequest) {
 
   if (!supabase.ok) {
     return NextResponse.json({ message: supabase.error }, { status: 500 });
+  }
+
+  if (parsed.row.slug) {
+    let duplicateQuery = supabase.client
+      .from(TABLE_NAME)
+      .select('id')
+      .eq('slug', parsed.row.slug);
+
+    if (body.id) duplicateQuery = duplicateQuery.neq('id', body.id);
+
+    const { data: duplicateSlug, error: duplicateError } = await duplicateQuery.limit(1);
+    if (duplicateError) {
+      return NextResponse.json({ message: duplicateError.message }, { status: 500 });
+    }
+    if (duplicateSlug?.length) {
+      return NextResponse.json({ message: 'slug นี้ถูกใช้งานแล้ว กรุณาตั้ง slug ใหม่' }, { status: 409 });
+    }
   }
 
   const query = body.id

@@ -2,6 +2,7 @@ create extension if not exists pgcrypto;
 
 create table if not exists public.events (
   id uuid primary key default gen_random_uuid(),
+  slug text,
   title text not null,
   description text,
   starts_at timestamptz,
@@ -52,6 +53,9 @@ create table if not exists public.events (
   updated_at timestamptz not null default now(),
   constraint events_media_type_check check (media_type in ('image', 'video'))
 );
+
+alter table public.events
+  add column if not exists slug text;
 
 alter table public.events
   add column if not exists title text;
@@ -217,6 +221,10 @@ create index if not exists events_active_schedule_idx
 
 create index if not exists events_active_featured_schedule_idx
   on public.events (is_active, is_featured desc, starts_at, sort_order, created_at desc);
+
+create unique index if not exists events_slug_unique_idx
+  on public.events (lower(slug))
+  where slug is not null;
 
 create index if not exists events_province_code_idx
   on public.events (province_code);

@@ -25,6 +25,8 @@ import Autocomplete from '@mui/material/Autocomplete';
 import { useRouter } from 'src/routes/hooks';
 import { RouterLink } from 'src/routes/components';
 
+import { slugifyEventTitle } from 'src/utils/event-slug';
+
 import { adminApiRequest } from 'src/lib/admin-api';
 import { DashboardContent } from 'src/layouts/dashboard';
 import provinces from 'src/data/thailand-culture/provinces';
@@ -47,6 +49,11 @@ import {
 const EventSchema = zod
   .object({
     title: zod.string().trim().min(1, 'กรุณากรอกชื่อกิจกรรม'),
+    slug: zod
+      .string()
+      .trim()
+      .min(1, 'กรุณากำหนด slug')
+      .regex(/^[\p{L}\p{N}]+(?:-[\p{L}\p{N}]+)*$/u, 'ใช้ตัวอักษร ตัวเลข และขีดกลางเท่านั้น'),
     description: zod.string(),
     startsAt: zod.string(),
     endsAt: zod.string(),
@@ -97,6 +104,7 @@ type EventValues = zod.infer<typeof EventSchema>;
 
 const DEFAULT_VALUES: EventValues = {
   title: '',
+  slug: '',
   description: '',
   startsAt: '',
   endsAt: '',
@@ -143,6 +151,7 @@ type EventApiItem = EventValues & {
   source?: string;
   sourceEventId?: string;
   syncedAt?: string;
+  tatSlug?: string;
 };
 
 export function EventCreateForm({ eventId }: { eventId?: string }) {
@@ -180,6 +189,10 @@ export function EventCreateForm({ eventId }: { eventId?: string }) {
         reset({
           ...DEFAULT_VALUES,
           ...response.data,
+          slug:
+            response.data.slug ||
+            response.data.tatSlug ||
+            `${slugifyEventTitle(response.data.title)}-${response.data.id.replace(/-/g, '').slice(0, 8)}`,
           time: toTimePickerValue(response.data.time),
           backgroundColor: response.data.backgroundColor || '#6f8790',
         });
@@ -461,6 +474,13 @@ export function EventCreateForm({ eventId }: { eventId?: string }) {
             <Box sx={{ p: { xs: 2.5, md: 4 } }}>
               <Stack spacing={3}>
                 <Field.Text name="title" label="ชื่อกิจกรรม" required />
+                <Field.Text
+                  name="slug"
+                  label="Slug สำหรับ URL"
+                  placeholder="เช่น thai-cultural-festival-2026"
+                  helperText="URL จะเป็น /events/slug · ใช้ตัวอักษร ตัวเลข และขีดกลาง โดยห้ามซ้ำ"
+                  required
+                />
                 <Box>
                   <Typography variant="subtitle2" sx={{ mb: 1 }}>
                     รายละเอียดกิจกรรม

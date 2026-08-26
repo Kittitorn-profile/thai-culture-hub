@@ -17,6 +17,8 @@ export type HomeVideoItem = {
 
 export type HomeEventItem = {
   id: string;
+  slug?: string;
+  tatSlug?: string;
   title: string;
   description: string;
   descriptionHtml?: string;
