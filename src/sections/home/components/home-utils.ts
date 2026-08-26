@@ -8,6 +8,7 @@ import type {
 
 import {
   getTodayCalendarDate,
+  normalizeCalendarDate,
   formatThaiCalendarDate,
   isSameOrAfterCalendarDate,
 } from 'src/utils/calendar-date';
@@ -46,6 +47,17 @@ export function formatHomeEventDate(value: string) {
     month: 'short',
     year: 'numeric',
   });
+}
+
+export function formatHomeEventDateRange(startsAt: string, endsAt?: string) {
+  const startLabel = formatHomeEventDate(startsAt);
+  if (!startLabel) return '';
+
+  const normalizedStart = normalizeCalendarDate(startsAt);
+  const normalizedEnd = normalizeCalendarDate(endsAt);
+  if (!normalizedEnd || normalizedEnd === normalizedStart) return startLabel;
+
+  return `${startLabel} – ${formatHomeEventDate(endsAt ?? '')}`;
 }
 
 export function isUpcomingHomeEvent(value: string) {

@@ -31,7 +31,7 @@ import { trackAnalyticsEvent } from 'src/components/analytics';
 import { Lightbox, useLightbox } from 'src/components/lightbox';
 
 import {
-  formatHomeEventDate,
+  formatHomeEventDateRange,
   normalizePerformanceGroupsContent,
 } from 'src/sections/home/components/home-utils';
 import {
@@ -204,7 +204,10 @@ export function EventDetailView({
   const mediaSource = eventItem.coverUrl || eventItem.mediaUrl;
   const eventBackground = getEventBackground(eventItem.backgroundColor);
   const details = [
-    { icon: 'solar:calendar-date-bold', label: formatHomeEventDate(eventItem.startsAt) },
+    {
+      icon: 'solar:calendar-date-bold',
+      label: formatHomeEventDateRange(eventItem.startsAt, eventItem.endsAt),
+    },
     { icon: 'solar:clock-circle-bold', label: eventItem.time },
     {
       icon: 'solar:map-point-bold',

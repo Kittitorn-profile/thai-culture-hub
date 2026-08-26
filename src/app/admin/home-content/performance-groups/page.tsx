@@ -14,8 +14,10 @@ import Button from '@mui/material/Button';
 import TableRow from '@mui/material/TableRow';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
+import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import TableContainer from '@mui/material/TableContainer';
+import InputAdornment from '@mui/material/InputAdornment';
 import CircularProgress from '@mui/material/CircularProgress';
 
 import { RouterLink } from 'src/routes/components';
@@ -23,6 +25,7 @@ import { RouterLink } from 'src/routes/components';
 import { adminApiRequest } from 'src/lib/admin-api';
 import { DashboardContent } from 'src/layouts/dashboard';
 
+import { Iconify } from 'src/components/iconify';
 import { TableNoData, TableHeadCustom, TablePaginationCustom } from 'src/components/table';
 
 import { useAuthContext } from 'src/auth/hooks';
@@ -42,6 +45,7 @@ export default function PerformanceGroupsPage() {
   const queryClient = useQueryClient();
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [searchQuery, setSearchQuery] = useState('');
   const { user } = useAuthContext();
   const accessToken = user?.accessToken ?? user?.access_token ?? '';
   const query = useQuery({
@@ -53,16 +57,37 @@ export default function PerformanceGroupsPage() {
       }),
   });
   const content = useMemo(() => normalizeContent(query.data?.data?.content), [query.data]);
+  const filteredGroups = useMemo(() => {
+    const normalizedQuery = searchQuery.trim().toLocaleLowerCase('th');
+    if (!normalizedQuery) return content.groups;
+
+    return content.groups.filter((group) => {
+      const searchableText = [
+        group.name,
+        group.description,
+        group.category,
+        group.provinceName,
+        group.contactEmail,
+        group.contactPhone,
+        ...group.yearlyData.flatMap((record) => [record.organizerName, record.year, record.details]),
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .toLocaleLowerCase('th');
+
+      return searchableText.includes(normalizedQuery);
+    });
+  }, [content.groups, searchQuery]);
   const paginatedGroups = useMemo(
-    () => content.groups.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
-    [content.groups, page, rowsPerPage]
+    () => filteredGroups.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
+    [filteredGroups, page, rowsPerPage]
   );
 
   useEffect(() => {
-    const maxPage = Math.max(Math.ceil(content.groups.length / rowsPerPage) - 1, 0);
+    const maxPage = Math.max(Math.ceil(filteredGroups.length / rowsPerPage) - 1, 0);
 
     if (page > maxPage) setPage(maxPage);
-  }, [content.groups.length, page, rowsPerPage]);
+  }, [filteredGroups.length, page, rowsPerPage]);
   const remove = useMutation({
     mutationFn: (id: string) =>
       adminApiRequest('/api/admin/home-content', {
@@ -108,15 +133,42 @@ export default function PerformanceGroupsPage() {
         ) : null}
         {content.groups.length > 0 && (
           <Card>
-            <Box sx={{ px: 2.5, py: 2, borderBottom: '1px solid', borderColor: 'divider' }}>
-              <Stack direction="row" justifyContent="space-between" alignItems="center">
-                <Typography variant="h6" sx={{ fontWeight: 900 }}>
-                  รายการทั้งหมด
-                </Typography>
+            <Box sx={{ p: 2.5, borderBottom: '1px solid', borderColor: 'divider' }}>
+              <Stack
+                direction={{ xs: 'column', md: 'row' }}
+                justifyContent="space-between"
+                alignItems={{ md: 'center' }}
+                spacing={2}
+              >
+                <TextField
+                  fullWidth
+                  size="small"
+                  value={searchQuery}
+                  onChange={(event) => {
+                    setSearchQuery(event.target.value);
+                    setPage(0);
+                  }}
+                  placeholder="ค้นหาชื่อวง จังหวัด ประเภท หรือผู้จัด"
+                  aria-label="ค้นหาวงศิลปินและวงดนตรี"
+                  slotProps={{
+                    input: {
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Iconify icon="eva:search-fill" width={20} />
+                        </InputAdornment>
+                      ),
+                    },
+                  }}
+                  sx={{ maxWidth: 520 }}
+                />
                 <Chip
                   size="small"
                   variant="soft"
-                  label={`${content.groups.length.toLocaleString('th-TH')} วง`}
+                  label={
+                    searchQuery.trim()
+                      ? `พบ ${filteredGroups.length.toLocaleString('th-TH')} จาก ${content.groups.length.toLocaleString('th-TH')} วง`
+                      : `${content.groups.length.toLocaleString('th-TH')} วง`
+                  }
                 />
               </Stack>
             </Box>
@@ -225,7 +277,7 @@ export default function PerformanceGroupsPage() {
             </TableContainer>
             <TablePaginationCustom
               page={page}
-              count={content.groups.length}
+              count={filteredGroups.length}
               rowsPerPage={rowsPerPage}
               labelRowsPerPage="จำนวนต่อหน้า:"
               rowsPerPageOptions={[5, 10, 25, 50]}

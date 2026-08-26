@@ -17,7 +17,7 @@ import { Image } from 'src/components/image';
 import { Iconify } from 'src/components/iconify';
 
 import { HomePlayButton } from './home-play-button';
-import { formatHomeEventDate, isUpcomingHomeEvent } from './home-utils';
+import { isUpcomingHomeEvent, formatHomeEventDateRange } from './home-utils';
 import { HOME_DEEP, HOME_TEXT, HOME_SECTION_PX, HOME_SECTION_MAX_WIDTH } from './home-constants';
 
 const ReactPlayer = dynamic(() => import('react-player'), {
@@ -240,7 +240,8 @@ export function HomeUpcomingEventsSection({ events, onPlayVideo }: Props) {
                       letterSpacing: 0.4,
                     }}
                   >
-                    {formatHomeEventDate(eventItem.startsAt) || 'ติดตามวันเวลาเร็ว ๆ นี้'}
+                    {formatHomeEventDateRange(eventItem.startsAt, eventItem.endsAt) ||
+                      'ติดตามวันเวลาเร็ว ๆ นี้'}
                   </Typography>
 
                   <Typography
