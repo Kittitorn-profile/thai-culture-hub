@@ -210,7 +210,6 @@ export function EventDetailView({
       icon: 'solar:map-point-bold',
       label: [eventItem.provinceName, eventItem.location].filter(Boolean).join(' - '),
     },
-    { icon: 'solar:users-group-rounded-bold', label: eventItem.organizer },
   ].filter((item) => item.label);
   const displayGroups = participatingGroups;
   const displayCategories = eventItem.contestCategories ?? [];
@@ -254,6 +253,62 @@ export function EventDetailView({
         },
       ].filter((category) => category.id !== 'uncategorized' || category.groups.length > 0)
     : [{ id: 'all', name: '', groups: displayGroups }];
+  const getGroupResultIds = (group: PerformanceGroupEntry, categoryId: string) =>
+    Array.from(
+      new Set(
+        group.yearlyData.flatMap(
+          (record) =>
+            record.contestCategoryResultIds?.[eventId]?.[categoryId] ??
+            record.contestResultIds?.[eventId] ??
+            []
+        )
+      )
+    );
+  const isQualifiedStatus = (resultId: string) => {
+    const resultLabel =
+      eventItem.contestResultOptions?.find((option) => option.id === resultId)?.name ?? resultId;
+    const normalizedLabel = resultLabel.replace(/\s+/g, '').toLocaleLowerCase('th');
+
+    return (
+      resultId === 'qualified' ||
+      (normalizedLabel.includes('ผ่านเข้ารอบ') &&
+        !normalizedLabel.includes('ไม่ผ่าน') &&
+        !normalizedLabel.includes('รอประกาศ'))
+    );
+  };
+  const isAwaitingQualificationStatus = (resultId: string) => {
+    const resultLabel =
+      eventItem.contestResultOptions?.find((option) => option.id === resultId)?.name ?? resultId;
+
+    return resultLabel
+      .replace(/\s+/g, '')
+      .toLocaleLowerCase('th')
+      .includes('รอประกาศผลรอบคัดเลือก');
+  };
+  const qualifiedSections = participationSections
+    .map((section) => ({
+      ...section,
+      groups: section.groups.filter((group) =>
+        getGroupResultIds(group, section.id).some(isQualifiedStatus)
+      ),
+    }))
+    .filter((section) => section.groups.length > 0);
+  const qualifiedGroupCount = new Set(
+    qualifiedSections.flatMap((section) => section.groups.map((group) => group.id || group.name))
+  ).size;
+  const awaitingQualificationSections = participationSections
+    .map((section) => ({
+      ...section,
+      groups: section.groups.filter((group) =>
+        getGroupResultIds(group, section.id).some(isAwaitingQualificationStatus)
+      ),
+    }))
+    .filter((section) => section.groups.length > 0);
+  const awaitingQualificationGroupCount = new Set(
+    awaitingQualificationSections.flatMap((section) =>
+      section.groups.map((group) => group.id || group.name)
+    )
+  ).size;
 
   return (
     <Box sx={{ minHeight: '100vh', color: HOME_TEXT, background: eventBackground }}>
@@ -308,7 +363,7 @@ export function EventDetailView({
               ) : null}
             </Box>
 
-            <Stack spacing={{ xs: 2.5, md: 3 }} sx={{ p: { xs: 2, sm: 3, md: 5 } }}>
+            <Stack spacing={{ xs: 2.5, md: 3 }} sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
               <Typography
                 variant="overline"
                 sx={{ color: 'rgba(234,215,161,0.95)', fontWeight: 900 }}
@@ -317,31 +372,33 @@ export function EventDetailView({
               </Typography>
               <Stack
                 direction={{ xs: 'column', sm: 'row' }}
-                spacing={2.5}
+                spacing={{ xs: 1.75, sm: 2.5 }}
                 alignItems={{ sm: 'center' }}
               >
                 {eventItem.logoUrl && (
-                  <Box
-                    component="img"
+                  <Avatar
+                    variant="rounded"
                     src={eventItem.logoUrl}
                     alt={`โลโก้ ${eventItem.title}`}
                     sx={{
-                      width: { xs: 88, md: 112 },
-                      aspectRatio: '1 / 1',
-                      objectFit: 'cover',
-                      borderRadius: 2.5,
+                      width: { xs: 72, md: 96 },
+                      height: { xs: 72, md: 96 },
+                      flexShrink: 0,
                       bgcolor: 'common.white',
-                      border: '3px solid rgba(255,255,255,0.72)',
-                      boxShadow: '0 12px 28px rgba(0,0,0,0.2)',
+                      border: '1px solid rgba(248,246,238,0.32)',
+                      '& img': { objectFit: 'contain' },
                     }}
                   />
                 )}
                 <Typography
-                  component="h3"
+                  component="h1"
                   sx={{
-                    fontSize: { xs: 26, sm: 32 },
-                    lineHeight: 1.25,
+                    m: 0,
+                    maxWidth: 1500,
+                    fontSize: { xs: 28, lg: 32 },
+                    lineHeight: 1.2,
                     fontWeight: 950,
+                    textWrap: 'balance',
                     overflowWrap: 'anywhere',
                   }}
                 >
@@ -349,11 +406,12 @@ export function EventDetailView({
                 </Typography>
               </Stack>
 
-              <Box
+              <Stack
+                direction="row"
+                useFlexGap
+                flexWrap="wrap"
                 sx={{
-                  display: 'grid',
                   gap: 1.5,
-                  gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' },
                 }}
               >
                 {details.map((detail) => (
@@ -362,13 +420,95 @@ export function EventDetailView({
                     direction="row"
                     spacing={1.25}
                     alignItems="center"
-                    sx={{ p: 1.5, borderRadius: 1.5, bgcolor: 'rgba(248,246,238,0.07)' }}
+                    sx={{
+                      px: 1.75,
+                      py: 1.25,
+                      minWidth: { xs: 1, sm: 240 },
+                      width: { xs: 1, sm: 'auto' },
+                      borderRadius: 1.5,
+                      bgcolor: 'rgba(248,246,238,0.07)',
+                      border: '1px solid rgba(248,246,238,0.08)',
+                    }}
                   >
                     <Iconify icon={detail.icon as never} width={22} />
                     <Typography>{detail.label}</Typography>
                   </Stack>
                 ))}
-              </Box>
+              </Stack>
+
+              <Stack direction="row" spacing={1.5} useFlexGap flexWrap="wrap" alignItems="stretch">
+                {(eventItem.organizer || eventItem.organizerLogoUrl) && (
+                  <Stack
+                    direction="row"
+                    spacing={1.5}
+                    alignItems="center"
+                    sx={{
+                      px: 1.75,
+                      py: 1.5,
+                      minWidth: { xs: 1, sm: 320 },
+                      width: { xs: 1, sm: 'auto' },
+                      borderRadius: 2,
+                      bgcolor: 'rgba(248,246,238,0.09)',
+                      border: '1px solid rgba(248,246,238,0.12)',
+                    }}
+                  >
+                    {eventItem.organizerLogoUrl ? (
+                      <Avatar
+                        variant="rounded"
+                        src={eventItem.organizerLogoUrl}
+                        alt={`โลโก้ ${eventItem.organizer || 'ผู้จัดกิจกรรม'}`}
+                        sx={{ width: 52, height: 52, bgcolor: 'common.white' }}
+                      />
+                    ) : (
+                      <Avatar variant="rounded" sx={{ width: 52, height: 52 }}>
+                        <Iconify icon="solar:users-group-rounded-bold" width={25} />
+                      </Avatar>
+                    )}
+                    <Box>
+                      <Typography variant="caption" sx={{ opacity: 0.68, fontWeight: 800 }}>
+                        ผู้จัดกิจกรรม
+                      </Typography>
+                      <Typography sx={{ fontWeight: 900 }}>
+                        {eventItem.organizer || 'ยังไม่ระบุชื่อผู้จัด'}
+                      </Typography>
+                    </Box>
+                  </Stack>
+                )}
+
+                {Boolean(eventItem.relatedAgencyLogoUrls?.length) && (
+                  <Box
+                    sx={{
+                      px: 1.75,
+                      py: 1.5,
+                      minWidth: { xs: 1, sm: 280 },
+                      borderRadius: 2,
+                      bgcolor: 'rgba(248,246,238,0.06)',
+                      border: '1px solid rgba(248,246,238,0.1)',
+                    }}
+                  >
+                    <Typography variant="overline" sx={{ opacity: 0.68, fontWeight: 900 }}>
+                      หน่วยงานที่เกี่ยวข้อง
+                    </Typography>
+                    <Stack direction="row" spacing={1.25} useFlexGap flexWrap="wrap" sx={{ mt: 1 }}>
+                      {eventItem.relatedAgencyLogoUrls?.map((logoUrl, index) => (
+                        <Avatar
+                          key={`${logoUrl}-${index}`}
+                          variant="rounded"
+                          src={logoUrl}
+                          alt={`โลโก้หน่วยงานที่เกี่ยวข้อง ${index + 1}`}
+                          sx={{
+                            width: { xs: 52, md: 64 },
+                            height: { xs: 52, md: 64 },
+                            bgcolor: 'common.white',
+                            border: '1px solid rgba(248,246,238,0.24)',
+                            '& img': { objectFit: 'contain' },
+                          }}
+                        />
+                      ))}
+                    </Stack>
+                  </Box>
+                )}
+              </Stack>
 
               {(eventItem.descriptionHtml || eventItem.description) && (
                 <Markdown
@@ -571,25 +711,155 @@ export function EventDetailView({
 
               {displayGroups.length > 0 && (
                 <Box>
-                  <Stack
-                    direction={{ xs: 'column', sm: 'row' }}
-                    justifyContent="space-between"
-                    spacing={0.5}
-                    sx={{ mb: 2 }}
-                  >
-                    <Typography variant="h5" sx={{ fontWeight: 900 }}>
-                      วงที่เข้าร่วม{eventItem.isContest ? 'การประกวด' : 'กิจกรรม'}
-                    </Typography>
-                    <Stack direction="row" spacing={1} alignItems="center">
-                      <Typography sx={{ opacity: 0.7 }}>
-                        {displayGroups.length.toLocaleString('th-TH')} วง
-                      </Typography>
-                    </Stack>
-                  </Stack>
+                  {qualifiedSections.length > 0 && (
+                    <Box
+                      sx={{
+                        mb: 4,
+                        p: { xs: 2, md: 2.5 },
+                        borderRadius: 2.5,
+                        bgcolor: 'rgba(158,226,189,0.08)',
+                        border: '1px solid rgba(158,226,189,0.3)',
+                      }}
+                    >
+                      <Stack
+                        direction={{ xs: 'column', sm: 'row' }}
+                        justifyContent="space-between"
+                        spacing={0.5}
+                        sx={{ mb: 2 }}
+                      >
+                        <Box>
+                          <Typography variant="h5" sx={{ fontWeight: 900 }}>
+                            วงที่ผ่านรอบคัดเลือก · รอแข่งขันจริง
+                          </Typography>
+                          <Typography variant="body2" sx={{ mt: 0.5, opacity: 0.68 }}>
+                            วงที่มีสถานะ “ผ่านเข้ารอบคัดเลือก”
+                          </Typography>
+                        </Box>
+                        <Typography sx={{ opacity: 0.7 }}>
+                          {qualifiedGroupCount.toLocaleString('th-TH')} วง
+                        </Typography>
+                      </Stack>
 
-                  {displayGroups.length > 0 || participatingGroupsByCategory.length > 0 ? (
+                      <Stack spacing={2.5}>
+                        {qualifiedSections.map((section) => (
+                          <Box key={`qualified-${section.id}`}>
+                            {section.name && (
+                              <Typography variant="h6" sx={{ mb: 1.25, fontWeight: 900 }}>
+                                {section.name}
+                              </Typography>
+                            )}
+                            <Box
+                              sx={{
+                                display: 'grid',
+                                gap: 1.25,
+                                gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' },
+                              }}
+                            >
+                              {section.groups.map((group) => {
+                                const resultIds = getGroupResultIds(group, section.id);
+
+                                return (
+                                  <Box
+                                    key={`qualified-${section.id}-${group.id || group.name}`}
+                                    component={RouterLink}
+                                    href={paths.performanceGroup.details(group.id || group.name)}
+                                    sx={{
+                                      p: 1.5,
+                                      gap: 1.25,
+                                      display: 'flex',
+                                      color: 'inherit',
+                                      alignItems: 'center',
+                                      borderRadius: 2,
+                                      textDecoration: 'none',
+                                      bgcolor: 'rgba(248,246,238,0.09)',
+                                      border: '1px solid rgba(158,226,189,0.3)',
+                                      transition:
+                                        'transform 180ms ease, background-color 180ms ease',
+                                      '&:hover': {
+                                        transform: 'translateY(-3px)',
+                                        bgcolor: 'rgba(158,226,189,0.13)',
+                                      },
+                                    }}
+                                  >
+                                    <Avatar
+                                      src={group.logoUrl || undefined}
+                                      alt={group.name}
+                                      sx={{
+                                        width: 54,
+                                        height: 54,
+                                        flexShrink: 0,
+                                        fontWeight: 900,
+                                        bgcolor: group.primaryColor || HOME_DEEP,
+                                      }}
+                                    >
+                                      {group.name.slice(0, 1)}
+                                    </Avatar>
+                                    <Box sx={{ minWidth: 0, flex: 1 }}>
+                                      <Typography sx={{ fontWeight: 900 }}>{group.name}</Typography>
+                                      <Stack
+                                        direction="row"
+                                        spacing={0.75}
+                                        useFlexGap
+                                        flexWrap="wrap"
+                                        sx={{ mt: 0.75 }}
+                                      >
+                                        {resultIds.map((resultId) => {
+                                          const resultStyle = RESULT_STYLES[resultId];
+                                          const resultLabel =
+                                            eventItem.contestResultOptions?.find(
+                                              (option) => option.id === resultId
+                                            )?.name ?? resultId;
+
+                                          return (
+                                            <Chip
+                                              key={resultId}
+                                              size="small"
+                                              label={resultLabel}
+                                              sx={{
+                                                height: 25,
+                                                fontWeight: 850,
+                                                color: resultStyle?.color ?? HOME_TEXT,
+                                                bgcolor:
+                                                  resultStyle?.background ??
+                                                  'rgba(234,215,161,0.2)',
+                                              }}
+                                            />
+                                          );
+                                        })}
+                                      </Stack>
+                                    </Box>
+                                    <Iconify icon="eva:arrow-ios-forward-fill" width={20} />
+                                  </Box>
+                                );
+                              })}
+                            </Box>
+                          </Box>
+                        ))}
+                      </Stack>
+                    </Box>
+                  )}
+
+                  {awaitingQualificationSections.length > 0 && (
+                    <Stack
+                      direction={{ xs: 'column', sm: 'row' }}
+                      justifyContent="space-between"
+                      spacing={0.5}
+                      sx={{ mb: 2 }}
+                    >
+                      <Typography variant="h5" sx={{ fontWeight: 900 }}>
+                        วงที่รอประกาศผลรอบคัดเลือก
+                      </Typography>
+                      <Stack direction="row" spacing={1} alignItems="center">
+                        <Typography sx={{ opacity: 0.7 }}>
+                          {awaitingQualificationGroupCount.toLocaleString('th-TH')} วง
+                        </Typography>
+                      </Stack>
+                    </Stack>
+                  )}
+
+                  {awaitingQualificationSections.length > 0 && (
                     <Stack spacing={2.5}>
-                      {participationSections.map((section) => (
+                      {awaitingQualificationSections.map((section) => (
                         <Box key={section.id}>
                           {section.name && (
                             <Stack
@@ -641,16 +911,7 @@ export function EventDetailView({
                             }}
                           >
                             {section.groups.map((group) => {
-                              const resultIds = Array.from(
-                                new Set(
-                                  group.yearlyData.flatMap(
-                                    (record) =>
-                                      record.contestCategoryResultIds?.[eventId]?.[section.id] ??
-                                      record.contestResultIds?.[eventId] ??
-                                      []
-                                  )
-                                )
-                              );
+                              const resultIds = getGroupResultIds(group, section.id);
                               const highlightedResultId = [
                                 'winner',
                                 'first-runner-up',
@@ -901,25 +1162,6 @@ export function EventDetailView({
                           </Box>
                         </Box>
                       ))}
-                    </Stack>
-                  ) : (
-                    <Stack alignItems="center" spacing={1} sx={{ py: { xs: 2, md: 3 } }}>
-                      <Box
-                        sx={{
-                          width: 48,
-                          height: 48,
-                          display: 'grid',
-                          placeItems: 'center',
-                          borderRadius: '50%',
-                          bgcolor: 'rgba(248,246,238,0.09)',
-                        }}
-                      >
-                        <Iconify icon="solar:users-group-rounded-bold" width={25} />
-                      </Box>
-                      <Typography sx={{ fontWeight: 800 }}>ยังไม่มีวงที่เข้าร่วม</Typography>
-                      <Typography variant="body2" sx={{ opacity: 0.62 }}>
-                        รายชื่อวงจะแสดงเมื่อมีการเลือกกิจกรรมนี้ในข้อมูลรายปีของวง
-                      </Typography>
                     </Stack>
                   )}
                 </Box>

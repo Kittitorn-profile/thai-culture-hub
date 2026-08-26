@@ -12,6 +12,8 @@ create table if not exists public.events (
   province_name text,
   location text,
   organizer text,
+  organizer_logo_url text,
+  related_agency_logo_urls text[] not null default array[]::text[],
   media_url text,
   cover_url text,
   logo_url text,
@@ -95,6 +97,12 @@ alter table public.events
 
 alter table public.events
   add column if not exists organizer text;
+
+alter table public.events
+  add column if not exists organizer_logo_url text;
+
+alter table public.events
+  add column if not exists related_agency_logo_urls text[] not null default array[]::text[];
 
 alter table public.events
   alter column organizer drop not null;

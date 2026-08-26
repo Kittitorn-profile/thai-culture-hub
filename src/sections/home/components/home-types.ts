@@ -29,6 +29,8 @@ export type HomeEventItem = {
   provinceName?: string;
   location: string;
   organizer: string;
+  organizerLogoUrl?: string;
+  relatedAgencyLogoUrls?: string[];
   mediaUrl: string;
   coverUrl: string;
   logoUrl?: string;

@@ -8,6 +8,12 @@ import { verifyAdminRequest } from 'src/server/admin-api-auth';
 import { ADMIN_PERMISSION } from 'src/auth/admin-permissions';
 
 const MAX_EVENT_IMAGE_SIZE = 2 * 1024 * 1024;
+const ALLOWED_EVENT_IMAGE_TYPES = new Set([
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'image/gif',
+]);
 const EVENTS_ASSETS_BUCKET =
   process.env.EVENTS_ASSETS_BUCKET ?? process.env.CREATOR_ASSETS_BUCKET ?? 'creator-assets';
 
@@ -35,8 +41,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ message: 'กรุณาเลือกรูปภาพ' }, { status: 400 });
   }
 
-  if (!file.type.startsWith('image/')) {
-    return NextResponse.json({ message: 'รองรับเฉพาะไฟล์รูปภาพเท่านั้น' }, { status: 400 });
+  if (!ALLOWED_EVENT_IMAGE_TYPES.has(file.type)) {
+    return NextResponse.json(
+      { message: 'รองรับเฉพาะไฟล์ JPG, PNG, WebP และ GIF เท่านั้น' },
+      { status: 400 }
+    );
   }
 
   if (file.size > MAX_EVENT_IMAGE_SIZE) {
@@ -59,9 +68,21 @@ export async function POST(request: NextRequest) {
     });
 
   if (uploadError) {
+    console.error('[admin/events/upload] Supabase Storage upload failed', {
+      bucket: EVENTS_ASSETS_BUCKET,
+      fileType: file.type,
+      fileSize: file.size,
+      message: uploadError.message,
+      name: uploadError.name,
+    });
+
+    const bucketMessage = uploadError.message.toLowerCase().includes('bucket')
+      ? `ไม่พบ Supabase Storage bucket "${EVENTS_ASSETS_BUCKET}" กรุณารัน docs/supabase-creator-assets-storage.sql`
+      : uploadError.message;
+
     return NextResponse.json(
       {
-        message: `อัปโหลดรูปไม่สำเร็จ: ${uploadError.message}. ตรวจสอบว่า Supabase Storage bucket "${EVENTS_ASSETS_BUCKET}" ถูกสร้างแล้ว`,
+        message: `อัปโหลดรูปไม่สำเร็จ: ${bucketMessage}`,
       },
       { status: 500 }
     );

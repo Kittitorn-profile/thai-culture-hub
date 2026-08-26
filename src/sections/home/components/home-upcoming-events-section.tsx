@@ -16,8 +16,8 @@ import { useRouter } from 'src/routes/hooks';
 import { Image } from 'src/components/image';
 import { Iconify } from 'src/components/iconify';
 
-import { formatHomeEventDate } from './home-utils';
 import { HomePlayButton } from './home-play-button';
+import { formatHomeEventDate, isUpcomingHomeEvent } from './home-utils';
 import { HOME_DEEP, HOME_TEXT, HOME_SECTION_PX, HOME_SECTION_MAX_WIDTH } from './home-constants';
 
 const ReactPlayer = dynamic(() => import('react-player'), {
@@ -99,6 +99,8 @@ export function HomeUpcomingEventsSection({ events, onPlayVideo }: Props) {
           {events.map((eventItem, index) => {
             const isFeatured = index === 0;
             const mediaSource = eventItem.coverUrl || eventItem.mediaUrl;
+            const eventEndDate = eventItem.endsAt || eventItem.startsAt;
+            const isPast = Boolean(eventEndDate) && !isUpcomingHomeEvent(eventEndDate);
 
             return (
               <Box
@@ -212,13 +214,20 @@ export function HomeUpcomingEventsSection({ events, onPlayVideo }: Props) {
                       py: 0.7,
                       borderRadius: 1,
                       position: 'absolute',
-                      color: HOME_DEEP,
-                      bgcolor: 'rgba(234,215,161,0.92)',
+                      color: isPast ? 'rgba(248,246,238,0.92)' : HOME_DEEP,
+                      bgcolor: isPast ? 'rgba(42,55,54,0.88)' : 'rgba(234,215,161,0.92)',
+                      border: isPast ? '1px solid rgba(248,246,238,0.3)' : 'none',
                       fontSize: 12,
                       fontWeight: 900,
                     }}
                   >
-                    {eventItem.isFeatured ? 'สำคัญ' : isFeatured ? 'เร็ว ๆ นี้' : 'รายการถัดไป'}
+                    {isPast
+                      ? 'ผ่านมาแล้ว'
+                      : eventItem.isFeatured
+                        ? 'สำคัญ'
+                        : isFeatured
+                          ? 'เร็ว ๆ นี้'
+                          : 'รายการถัดไป'}
                   </Box>
                 </Box>
 

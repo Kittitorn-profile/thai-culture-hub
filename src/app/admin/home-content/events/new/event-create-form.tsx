@@ -15,12 +15,16 @@ import Alert from '@mui/material/Alert';
 import Stack from '@mui/material/Stack';
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
 import Divider from '@mui/material/Divider';
 import MenuItem from '@mui/material/MenuItem';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import LoadingButton from '@mui/lab/LoadingButton';
+import DialogTitle from '@mui/material/DialogTitle';
 import Autocomplete from '@mui/material/Autocomplete';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
 
 import { useRouter } from 'src/routes/hooks';
 import { RouterLink } from 'src/routes/components';
@@ -61,6 +65,8 @@ const EventSchema = zod
     provinceCode: zod.string(),
     location: zod.string(),
     organizer: zod.string(),
+    organizerLogoUrl: zod.string(),
+    relatedAgencyLogoUrls: zod.array(zod.string()).max(12, 'เพิ่มโลโก้ได้สูงสุด 12 หน่วยงาน'),
     mediaUrl: zod.string(),
     coverUrl: zod.string(),
     logoUrl: zod.string(),
@@ -112,6 +118,8 @@ const DEFAULT_VALUES: EventValues = {
   provinceCode: '',
   location: '',
   organizer: '',
+  organizerLogoUrl: '',
+  relatedAgencyLogoUrls: [],
   mediaUrl: '',
   coverUrl: '',
   logoUrl: '',
@@ -154,6 +162,12 @@ type EventApiItem = EventValues & {
   tatSlug?: string;
 };
 
+type ResultOptionDraft = {
+  id: string;
+  index: number | null;
+  name: string;
+};
+
 export function EventCreateForm({ eventId }: { eventId?: string }) {
   const router = useRouter();
   const { user } = useAuthContext();
@@ -169,7 +183,10 @@ export function EventCreateForm({ eventId }: { eventId?: string }) {
     null
   );
   const [error, setError] = useState('');
-  const [uploadingTarget, setUploadingTarget] = useState<'cover' | 'gallery' | 'logo' | ''>('');
+  const [resultOptionDraft, setResultOptionDraft] = useState<ResultOptionDraft | null>(null);
+  const [uploadingTarget, setUploadingTarget] = useState<
+    'cover' | 'gallery' | 'logo' | 'organizerLogo' | 'relatedAgencies' | ''
+  >('');
   const isEditing = Boolean(eventId);
 
   useEffect(() => {
@@ -345,7 +362,25 @@ export function EventCreateForm({ eventId }: { eventId?: string }) {
     });
   }
 
-  async function uploadImage(file?: File, target: 'cover' | 'logo' = 'cover') {
+  function saveResultOption() {
+    if (!resultOptionDraft?.name.trim()) return;
+
+    const nextOption = { id: resultOptionDraft.id, name: resultOptionDraft.name.trim() };
+    const nextOptions =
+      resultOptionDraft.index === null
+        ? [...values.contestResultOptions, nextOption]
+        : values.contestResultOptions.map((option, index) =>
+            index === resultOptionDraft.index ? nextOption : option
+          );
+
+    setValue('contestResultOptions', nextOptions, { shouldDirty: true, shouldValidate: true });
+    setResultOptionDraft(null);
+  }
+
+  async function uploadImage(
+    file?: File,
+    target: 'cover' | 'logo' | 'organizerLogo' = 'cover'
+  ) {
     if (!file) return;
     setUploadingTarget(target);
     setError('');
@@ -363,6 +398,7 @@ export function EventCreateForm({ eventId }: { eventId?: string }) {
       const url = response.data?.url;
       if (url) {
         if (target === 'logo') setValue('logoUrl', url);
+        else if (target === 'organizerLogo') setValue('organizerLogoUrl', url);
         else {
           setValue('coverUrl', url);
           if (values.mediaType === 'image') setValue('mediaUrl', url);
@@ -398,6 +434,37 @@ export function EventCreateForm({ eventId }: { eventId?: string }) {
       });
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : 'อัปโหลดรูปกิจกรรมไม่สำเร็จ');
+    } finally {
+      setUploadingTarget('');
+    }
+  }
+
+  async function uploadRelatedAgencyLogos(files: File[]) {
+    const selectedFiles = files.slice(0, 12 - values.relatedAgencyLogoUrls.length);
+    if (!selectedFiles.length) return;
+
+    setUploadingTarget('relatedAgencies');
+    setError('');
+    try {
+      const urls = await Promise.all(
+        selectedFiles.map(async (file) => {
+          const body = new FormData();
+          body.append('file', file);
+          const response = await adminApiRequest<{ data?: { url?: string } }>(
+            '/api/admin/events/upload',
+            { method: 'POST', accessToken, body }
+          );
+          return response.data?.url ?? '';
+        })
+      );
+
+      setValue(
+        'relatedAgencyLogoUrls',
+        [...values.relatedAgencyLogoUrls, ...urls.filter(Boolean)].slice(0, 12),
+        { shouldDirty: true, shouldValidate: true }
+      );
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'อัปโหลดโลโก้หน่วยงานไม่สำเร็จ');
     } finally {
       setUploadingTarget('');
     }
@@ -527,7 +594,135 @@ export function EventCreateForm({ eventId }: { eventId?: string }) {
                     ))}
                   </Field.Select>
                   <Field.Text name="location" label="สถานที่" />
-                  <Field.Text name="organizer" label="ผู้จัด" />
+                </Box>
+                <Box
+                  sx={{
+                    p: 2.5,
+                    borderRadius: 2,
+                    bgcolor: 'background.neutral',
+                    border: '1px solid',
+                    borderColor: 'divider',
+                  }}
+                >
+                  <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 900 }}>
+                    ข้อมูลผู้จัด
+                  </Typography>
+                  <Box
+                    sx={{
+                      display: 'grid',
+                      gap: 2.5,
+                      alignItems: 'center',
+                      gridTemplateColumns: { xs: '1fr', sm: '160px minmax(0, 1fr)' },
+                    }}
+                  >
+                    <ImageDropUpload
+                      imageUrl={values.organizerLogoUrl}
+                      alt="โลโก้ผู้จัด"
+                      size={160}
+                      aspectRatio="1 / 1"
+                      uploading={uploadingTarget === 'organizerLogo'}
+                      onFile={(file) => uploadImage(file, 'organizerLogo')}
+                    />
+                    <Stack spacing={1.5}>
+                      <Field.Text name="organizer" label="ชื่อผู้จัด" />
+                      <Typography variant="body2" color="text.secondary">
+                        อัปโหลดโลโก้ผู้จัดแบบสี่เหลี่ยมจัตุรัส เพื่อแสดงคู่กับชื่อผู้จัด
+                      </Typography>
+                      {values.organizerLogoUrl && (
+                        <Button
+                          color="error"
+                          variant="outlined"
+                          onClick={() =>
+                            setValue('organizerLogoUrl', '', { shouldDirty: true })
+                          }
+                          sx={{ width: 'fit-content' }}
+                        >
+                          ลบโลโก้ผู้จัด
+                        </Button>
+                      )}
+                    </Stack>
+                  </Box>
+                  <Divider sx={{ my: 2.5 }} />
+                  <Stack spacing={1.5}>
+                    <Box>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 900 }}>
+                        โลโก้หน่วยงานที่เกี่ยวข้อง
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        เพิ่มได้สูงสุด 12 หน่วยงาน · เพิ่มแล้ว {values.relatedAgencyLogoUrls.length}{' '}
+                        หน่วยงาน
+                      </Typography>
+                    </Box>
+                    <Button
+                      component="label"
+                      variant="outlined"
+                      startIcon={<Iconify icon="solar:gallery-add-bold" />}
+                      disabled={
+                        uploadingTarget === 'relatedAgencies' ||
+                        values.relatedAgencyLogoUrls.length >= 12
+                      }
+                      sx={{ width: 'fit-content' }}
+                    >
+                      {uploadingTarget === 'relatedAgencies'
+                        ? 'กำลังอัปโหลด...'
+                        : 'เพิ่มโลโก้หน่วยงาน'}
+                      <input
+                        hidden
+                        multiple
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp,image/gif"
+                        onChange={(event) =>
+                          uploadRelatedAgencyLogos(Array.from(event.target.files ?? []))
+                        }
+                      />
+                    </Button>
+                    {values.relatedAgencyLogoUrls.length > 0 && (
+                      <Box
+                        sx={{
+                          display: 'grid',
+                          gap: 1.5,
+                          gridTemplateColumns: {
+                            xs: 'repeat(3, 1fr)',
+                            sm: 'repeat(6, minmax(80px, 1fr))',
+                          },
+                        }}
+                      >
+                        {values.relatedAgencyLogoUrls.map((logoUrl, index) => (
+                          <Stack key={`${logoUrl}-${index}`} spacing={0.75} alignItems="center">
+                            <Box
+                              component="img"
+                              src={logoUrl}
+                              alt={`โลโก้หน่วยงานที่เกี่ยวข้อง ${index + 1}`}
+                              sx={{
+                                width: 1,
+                                aspectRatio: '1 / 1',
+                                objectFit: 'contain',
+                                borderRadius: 1.5,
+                                bgcolor: 'common.white',
+                                border: '1px solid',
+                                borderColor: 'divider',
+                              }}
+                            />
+                            <Button
+                              color="error"
+                              size="small"
+                              onClick={() =>
+                                setValue(
+                                  'relatedAgencyLogoUrls',
+                                  values.relatedAgencyLogoUrls.filter(
+                                    (_, itemIndex) => itemIndex !== index
+                                  ),
+                                  { shouldDirty: true, shouldValidate: true }
+                                )
+                              }
+                            >
+                              ลบ
+                            </Button>
+                          </Stack>
+                        ))}
+                      </Box>
+                    )}
+                  </Stack>
                 </Box>
               </Stack>
             </Box>
@@ -564,8 +759,13 @@ export function EventCreateForm({ eventId }: { eventId?: string }) {
                         ลากภาพมาวาง หรือคลิกเพื่อเลือกไฟล์
                       </Typography>
                       {values.logoUrl && (
-                        <Button color="error" onClick={() => setValue('logoUrl', '')}>
-                          ลบโลโก้
+                        <Button
+                          color="error"
+                          variant="outlined"
+                          onClick={() => setValue('logoUrl', '', { shouldDirty: true })}
+                          sx={{ width: 'fit-content' }}
+                        >
+                          ลบโลโก้กิจกรรม
                         </Button>
                       )}
                     </Stack>
@@ -888,10 +1088,7 @@ export function EventCreateForm({ eventId }: { eventId?: string }) {
                           variant="outlined"
                           startIcon={<Iconify icon="mingcute:add-line" />}
                           onClick={() =>
-                            setValue('contestResultOptions', [
-                              ...values.contestResultOptions,
-                              { id: crypto.randomUUID(), name: '' },
-                            ])
+                            setResultOptionDraft({ id: crypto.randomUUID(), index: null, name: '' })
                           }
                         >
                           เพิ่มรายการ
@@ -899,27 +1096,52 @@ export function EventCreateForm({ eventId }: { eventId?: string }) {
                       </Stack>
                       <Stack spacing={1.5}>
                         {values.contestResultOptions.map((option, index) => (
-                          <Stack key={option.id} direction="row" spacing={1.5} alignItems="center">
-                            <Field.Text
-                              fullWidth
-                              name={`contestResultOptions.${index}.name`}
-                              label={`ผลหรือรางวัล ${index + 1}`}
-                            />
-                            <Button
-                              color="error"
-                              onClick={() =>
-                                setValue(
-                                  'contestResultOptions',
-                                  values.contestResultOptions.filter(
-                                    (_, itemIndex) => itemIndex !== index
+                          <Stack
+                            key={option.id}
+                            direction={{ xs: 'column', sm: 'row' }}
+                            spacing={1.5}
+                            alignItems={{ sm: 'center' }}
+                            sx={{
+                              p: 1.5,
+                              borderRadius: 1.5,
+                              bgcolor: 'background.paper',
+                              border: '1px solid',
+                              borderColor: 'divider',
+                            }}
+                          >
+                            <Stack direction="row" spacing={1.25} alignItems="center" sx={{ flex: 1 }}>
+                              <Chip size="small" label={index + 1} sx={{ minWidth: 32 }} />
+                              <Typography sx={{ fontWeight: 800 }}>{option.name}</Typography>
+                            </Stack>
+                            <Stack direction="row" spacing={1}>
+                              <Button
+                                variant="outlined"
+                                onClick={() =>
+                                  setResultOptionDraft({ id: option.id, index, name: option.name })
+                                }
+                              >
+                                แก้ไข
+                              </Button>
+                              <Button
+                                color="error"
+                                onClick={() =>
+                                  setValue(
+                                    'contestResultOptions',
+                                    values.contestResultOptions.filter(
+                                      (_, itemIndex) => itemIndex !== index
+                                    ),
+                                    { shouldDirty: true, shouldValidate: true }
                                   )
-                                )
-                              }
-                            >
-                              ลบ
-                            </Button>
+                                }
+                              >
+                                ลบ
+                              </Button>
+                            </Stack>
                           </Stack>
                         ))}
+                        {!values.contestResultOptions.length && (
+                          <Alert severity="info">ยังไม่มีผลการแข่งขันหรือรางวัล</Alert>
+                        )}
                       </Stack>
                     </Box>
                     {isEditing && (
@@ -1087,6 +1309,51 @@ export function EventCreateForm({ eventId }: { eventId?: string }) {
           </Stack>
         </Stack>
       </Form>
+      <Dialog
+        open={Boolean(resultOptionDraft)}
+        onClose={() => setResultOptionDraft(null)}
+        fullWidth
+        maxWidth="sm"
+      >
+        <DialogTitle>
+          {resultOptionDraft?.index === null ? 'เพิ่มผลการแข่งขันหรือรางวัล' : 'แก้ไขรายการ'}
+        </DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            fullWidth
+            label="ชื่อผลการแข่งขันหรือรางวัล"
+            placeholder="เช่น ผ่านเข้ารอบคัดเลือก"
+            value={resultOptionDraft?.name ?? ''}
+            onChange={(event) =>
+              setResultOptionDraft((current) =>
+                current ? { ...current, name: event.target.value } : current
+              )
+            }
+            onKeyDown={(event) => {
+              if (event.key === 'Enter') {
+                event.preventDefault();
+                saveResultOption();
+              }
+            }}
+            error={Boolean(resultOptionDraft && !resultOptionDraft.name.trim())}
+            helperText="รายการนี้จะแสดงให้ผู้ดูแลวงเลือกเป็นผลหรือรางวัล"
+            sx={{ mt: 1 }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button color="inherit" onClick={() => setResultOptionDraft(null)}>
+            ยกเลิก
+          </Button>
+          <Button
+            variant="contained"
+            disabled={!resultOptionDraft?.name.trim()}
+            onClick={saveResultOption}
+          >
+            {resultOptionDraft?.index === null ? 'เพิ่มรายการ' : 'บันทึกการแก้ไข'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </DashboardContent>
   );
 }

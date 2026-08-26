@@ -24,6 +24,8 @@ type EventRow = {
   province_name?: string | null;
   location?: string | null;
   organizer?: string | null;
+  organizer_logo_url?: string | null;
+  related_agency_logo_urls?: string[] | null;
   media_url?: string | null;
   cover_url?: string | null;
   logo_url?: string | null;
@@ -74,6 +76,8 @@ function toEventItem(row: EventRow) {
     provinceName: row.province_name ?? '',
     location: row.location ?? '',
     organizer: row.organizer ?? '',
+    organizerLogoUrl: normalizeMediaUrl(row.organizer_logo_url),
+    relatedAgencyLogoUrls: (row.related_agency_logo_urls ?? []).map(normalizeMediaUrl),
     mediaUrl: normalizeMediaUrl(row.media_url),
     coverUrl: normalizeMediaUrl(row.cover_url),
     logoUrl: normalizeMediaUrl(row.logo_url),
@@ -131,7 +135,7 @@ export async function GET(request: NextRequest) {
     .from(TABLE_NAME)
     .select('*')
     .eq('is_active', true)
-    .or(`is_featured.eq.true,starts_at.gte.${today}`)
+    .or(`is_featured.eq.true,starts_at.gte.${today},ends_at.gte.${today}`)
     .order('is_featured', { ascending: false })
     .order('starts_at', { ascending: true })
     .order('sort_order', { ascending: true })

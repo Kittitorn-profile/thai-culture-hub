@@ -225,9 +225,16 @@ export function HomeView() {
                 (item.startsAt &&
                   item.location &&
                   item.organizer &&
-                  isUpcomingHomeEvent(item.startsAt)))
+                  isUpcomingHomeEvent(item.endsAt || item.startsAt)))
           )
           .sort((first, second) => {
+            const firstIsPast = !isUpcomingHomeEvent(first.endsAt || first.startsAt);
+            const secondIsPast = !isUpcomingHomeEvent(second.endsAt || second.startsAt);
+
+            if (firstIsPast !== secondIsPast) {
+              return firstIsPast ? 1 : -1;
+            }
+
             if (Boolean(first.isFeatured) !== Boolean(second.isFeatured)) {
               return first.isFeatured ? -1 : 1;
             }

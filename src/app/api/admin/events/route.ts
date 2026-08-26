@@ -27,6 +27,8 @@ type EventPayload = {
   provinceCode?: string;
   location?: string;
   organizer?: string;
+  organizerLogoUrl?: string;
+  relatedAgencyLogoUrls?: string[];
   mediaUrl?: string;
   coverUrl?: string;
   logoUrl?: string;
@@ -61,6 +63,8 @@ type EventRow = {
   province_name?: string | null;
   location?: string | null;
   organizer?: string | null;
+  organizer_logo_url?: string | null;
+  related_agency_logo_urls?: string[] | null;
   media_url?: string | null;
   cover_url?: string | null;
   logo_url?: string | null;
@@ -141,6 +145,8 @@ function toEventItem(row: EventRow) {
     provinceName: row.province_name ?? '',
     location: row.location ?? '',
     organizer: row.organizer ?? '',
+    organizerLogoUrl: toEventMediaProxyUrl(row.organizer_logo_url),
+    relatedAgencyLogoUrls: (row.related_agency_logo_urls ?? []).map(toEventMediaProxyUrl),
     mediaUrl: toEventMediaProxyUrl(row.media_url),
     coverUrl: toEventMediaProxyUrl(row.cover_url),
     logoUrl: toEventMediaProxyUrl(row.logo_url),
@@ -227,6 +233,11 @@ function toRow(body: EventPayload) {
       province_name: province?.name ?? null,
       location,
       organizer,
+      organizer_logo_url: optionalMediaUrl(body.organizerLogoUrl),
+      related_agency_logo_urls: (body.relatedAgencyLogoUrls ?? [])
+        .slice(0, 12)
+        .map(toEventStorageUrl)
+        .filter(Boolean),
       media_url: optionalMediaUrl(body.mediaUrl),
       cover_url: optionalMediaUrl(body.coverUrl),
       logo_url: optionalMediaUrl(body.logoUrl),
