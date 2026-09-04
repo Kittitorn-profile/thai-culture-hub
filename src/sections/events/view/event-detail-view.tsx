@@ -279,6 +279,13 @@ export function EventDetailView({
         !normalizedLabel.includes('รอประกาศ'))
     );
   };
+  const isNotQualifiedStatus = (resultId: string) => {
+    const resultLabel =
+      eventItem.contestResultOptions?.find((option) => option.id === resultId)?.name ?? resultId;
+    const normalizedLabel = resultLabel.replace(/\s+/g, '').toLocaleLowerCase('th');
+
+    return resultId === 'not-qualified' || normalizedLabel.includes('ไม่ผ่านเข้ารอบ');
+  };
   const isAwaitingQualificationStatus = (resultId: string) => {
     const resultLabel =
       eventItem.contestResultOptions?.find((option) => option.id === resultId)?.name ?? resultId;
@@ -291,9 +298,11 @@ export function EventDetailView({
   const qualifiedSections = participationSections
     .map((section) => ({
       ...section,
-      groups: section.groups.filter((group) =>
-        getGroupResultIds(group, section.id).some(isQualifiedStatus)
-      ),
+      groups: section.groups.filter((group) => {
+        const resultIds = getGroupResultIds(group, section.id);
+
+        return !resultIds.some(isNotQualifiedStatus) && resultIds.some(isQualifiedStatus);
+      }),
     }))
     .filter((section) => section.groups.length > 0);
   const qualifiedGroupCount = new Set(
@@ -302,9 +311,14 @@ export function EventDetailView({
   const awaitingQualificationSections = participationSections
     .map((section) => ({
       ...section,
-      groups: section.groups.filter((group) =>
-        getGroupResultIds(group, section.id).some(isAwaitingQualificationStatus)
-      ),
+      groups: section.groups.filter((group) => {
+        const resultIds = getGroupResultIds(group, section.id);
+
+        return (
+          !resultIds.some(isNotQualifiedStatus) &&
+          resultIds.some(isAwaitingQualificationStatus)
+        );
+      }),
     }))
     .filter((section) => section.groups.length > 0);
   const awaitingQualificationGroupCount = new Set(
