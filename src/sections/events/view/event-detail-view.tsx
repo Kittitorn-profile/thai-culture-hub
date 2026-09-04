@@ -308,6 +308,19 @@ export function EventDetailView({
   const qualifiedGroupCount = new Set(
     qualifiedSections.flatMap((section) => section.groups.map((group) => group.id || group.name))
   ).size;
+  const notQualifiedSections = participationSections
+    .map((section) => ({
+      ...section,
+      groups: section.groups.filter((group) =>
+        getGroupResultIds(group, section.id).some(isNotQualifiedStatus)
+      ),
+    }))
+    .filter((section) => section.groups.length > 0);
+  const notQualifiedGroupCount = new Set(
+    notQualifiedSections.flatMap((section) =>
+      section.groups.map((group) => group.id || group.name)
+    )
+  ).size;
   const awaitingQualificationSections = participationSections
     .map((section) => ({
       ...section,
@@ -839,6 +852,132 @@ export function EventDetailView({
                                                 bgcolor:
                                                   resultStyle?.background ??
                                                   'rgba(234,215,161,0.2)',
+                                              }}
+                                            />
+                                          );
+                                        })}
+                                      </Stack>
+                                    </Box>
+                                    <Iconify icon="eva:arrow-ios-forward-fill" width={20} />
+                                  </Box>
+                                );
+                              })}
+                            </Box>
+                          </Box>
+                        ))}
+                      </Stack>
+                    </Box>
+                  )}
+
+                  {notQualifiedSections.length > 0 && (
+                    <Box
+                      sx={{
+                        mb: 4,
+                        p: { xs: 2, md: 2.5 },
+                        borderRadius: 2.5,
+                        bgcolor: 'rgba(241,176,183,0.08)',
+                        border: '1px solid rgba(241,176,183,0.3)',
+                      }}
+                    >
+                      <Stack
+                        direction={{ xs: 'column', sm: 'row' }}
+                        justifyContent="space-between"
+                        spacing={0.5}
+                        sx={{ mb: 2 }}
+                      >
+                        <Box>
+                          <Typography variant="h5" sx={{ fontWeight: 900 }}>
+                            วงที่ไม่ผ่านรอบคัดเลือก
+                          </Typography>
+                          <Typography variant="body2" sx={{ mt: 0.5, opacity: 0.68 }}>
+                            วงที่มีสถานะ “ไม่ผ่านเข้ารอบ”
+                          </Typography>
+                        </Box>
+                        <Typography sx={{ opacity: 0.7 }}>
+                          {notQualifiedGroupCount.toLocaleString('th-TH')} วง
+                        </Typography>
+                      </Stack>
+
+                      <Stack spacing={2.5}>
+                        {notQualifiedSections.map((section) => (
+                          <Box key={`not-qualified-${section.id}`}>
+                            {section.name && (
+                              <Typography variant="h6" sx={{ mb: 1.25, fontWeight: 900 }}>
+                                {section.name}
+                              </Typography>
+                            )}
+                            <Box
+                              sx={{
+                                display: 'grid',
+                                gap: 1.25,
+                                gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' },
+                              }}
+                            >
+                              {section.groups.map((group) => {
+                                const resultIds = getGroupResultIds(group, section.id);
+
+                                return (
+                                  <Box
+                                    key={`not-qualified-${section.id}-${group.id || group.name}`}
+                                    component={RouterLink}
+                                    href={paths.performanceGroup.details(group.id || group.name)}
+                                    sx={{
+                                      p: 1.5,
+                                      gap: 1.25,
+                                      display: 'flex',
+                                      color: 'inherit',
+                                      alignItems: 'center',
+                                      borderRadius: 2,
+                                      textDecoration: 'none',
+                                      bgcolor: 'rgba(248,246,238,0.07)',
+                                      border: '1px solid rgba(241,176,183,0.28)',
+                                      transition:
+                                        'transform 180ms ease, background-color 180ms ease',
+                                      '&:hover': {
+                                        transform: 'translateY(-3px)',
+                                        bgcolor: 'rgba(241,176,183,0.12)',
+                                      },
+                                    }}
+                                  >
+                                    <Avatar
+                                      src={group.logoUrl || undefined}
+                                      alt={group.name}
+                                      sx={{
+                                        width: 54,
+                                        height: 54,
+                                        flexShrink: 0,
+                                        fontWeight: 900,
+                                        bgcolor: group.primaryColor || HOME_DEEP,
+                                      }}
+                                    >
+                                      {group.name.slice(0, 1)}
+                                    </Avatar>
+                                    <Box sx={{ minWidth: 0, flex: 1 }}>
+                                      <Typography sx={{ fontWeight: 900 }}>{group.name}</Typography>
+                                      <Stack
+                                        direction="row"
+                                        spacing={0.75}
+                                        useFlexGap
+                                        flexWrap="wrap"
+                                        sx={{ mt: 0.75 }}
+                                      >
+                                        {resultIds.filter(isNotQualifiedStatus).map((resultId) => {
+                                          const resultStyle = RESULT_STYLES[resultId];
+                                          const resultLabel =
+                                            eventItem.contestResultOptions?.find(
+                                              (option) => option.id === resultId
+                                            )?.name ?? resultId;
+
+                                          return (
+                                            <Chip
+                                              key={resultId}
+                                              size="small"
+                                              label={resultLabel}
+                                              sx={{
+                                                height: 25,
+                                                fontWeight: 850,
+                                                color: resultStyle?.color ?? '#842029',
+                                                bgcolor: resultStyle?.background ?? '#f1b0b7',
                                               }}
                                             />
                                           );
