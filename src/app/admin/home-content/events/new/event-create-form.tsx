@@ -295,6 +295,19 @@ export function EventCreateForm({ eventId }: { eventId?: string }) {
                     validResultIds.has(resultId)
                   ),
                 },
+                contestCategoryResultIds: {
+                  ...record.contestCategoryResultIds,
+                  [eventId]: Object.fromEntries(
+                    matchedCategoryIds.map((categoryId) => [
+                      categoryId,
+                      (
+                        record.contestCategoryResultIds[eventId]?.[categoryId]?.length
+                          ? record.contestCategoryResultIds[eventId][categoryId]
+                          : (record.contestResultIds[eventId] ?? [])
+                      ).filter((resultId) => validResultIds.has(resultId)),
+                    ])
+                  ),
+                },
               };
             }),
           })),
@@ -325,7 +338,11 @@ export function EventCreateForm({ eventId }: { eventId?: string }) {
   function updateParticipantRecord(
     groupId: string,
     yearIndex: number,
-    updates: { categoryIds?: string[]; resultIds?: string[] }
+    updates: {
+      categoryIds?: string[];
+      resultIds?: string[];
+      categoryResult?: { categoryId: string; resultIds: string[] };
+    }
   ) {
     if (!eventId) return;
 
@@ -352,6 +369,17 @@ export function EventCreateForm({ eventId }: { eventId?: string }) {
                     contestResultIds: {
                       ...record.contestResultIds,
                       ...(updates.resultIds !== undefined ? { [eventId]: updates.resultIds } : {}),
+                    },
+                    contestCategoryResultIds: {
+                      ...record.contestCategoryResultIds,
+                      ...(updates.categoryResult
+                        ? {
+                            [eventId]: {
+                              ...(record.contestCategoryResultIds[eventId] ?? {}),
+                              [updates.categoryResult.categoryId]: updates.categoryResult.resultIds,
+                            },
+                          }
+                        : {}),
                     },
                   }
                 : record
@@ -1177,6 +1205,8 @@ export function EventCreateForm({ eventId }: { eventId?: string }) {
                         <Stack spacing={2} divider={<Divider flexItem />}>
                           {participantRecords.map(({ group, record, yearIndex }) => {
                             const selectedResultIds = record.contestResultIds[eventId ?? ''] ?? [];
+                            const selectedCategoryIds =
+                              record.contestCategoryIds[eventId ?? ''] ?? [];
                             return (
                               <Stack
                                 key={`${group.id}-${yearIndex}`}
@@ -1234,26 +1264,74 @@ export function EventCreateForm({ eventId }: { eventId?: string }) {
                                   )}
                                 />
 
-                                <Autocomplete
-                                  multiple
-                                  fullWidth
-                                  options={values.contestResultOptions}
-                                  value={values.contestResultOptions.filter((option) =>
-                                    selectedResultIds.includes(option.id)
+                                <Stack spacing={1.25} sx={{ width: 1 }}>
+                                  {selectedCategoryIds.map((categoryId) => {
+                                    const category = values.contestCategories.find(
+                                      (item) => item.id === categoryId
+                                    );
+                                    const categoryResultIds =
+                                      record.contestCategoryResultIds[eventId ?? '']?.[categoryId]
+                                        ?.length
+                                        ? record.contestCategoryResultIds[eventId ?? ''][categoryId]
+                                        : selectedResultIds;
+
+                                    return (
+                                      <Autocomplete
+                                        key={categoryId}
+                                        multiple
+                                        fullWidth
+                                        options={values.contestResultOptions}
+                                        value={values.contestResultOptions.filter((option) =>
+                                          categoryResultIds.includes(option.id)
+                                        )}
+                                        getOptionLabel={(option) => option.name}
+                                        isOptionEqualToValue={(option, selected) =>
+                                          option.id === selected.id
+                                        }
+                                        onChange={(_, selected) =>
+                                          updateParticipantRecord(group.id, yearIndex, {
+                                            categoryResult: {
+                                              categoryId,
+                                              resultIds: selected.map((option) => option.id),
+                                            },
+                                          })
+                                        }
+                                        renderInput={(params) => (
+                                          <TextField
+                                            {...params}
+                                            label={`ผลการแข่งขัน / ${category?.name ?? categoryId}`}
+                                          />
+                                        )}
+                                      />
+                                    );
+                                  })}
+
+                                  {selectedCategoryIds.length === 0 && (
+                                    <Autocomplete
+                                      multiple
+                                      fullWidth
+                                      options={values.contestResultOptions}
+                                      value={values.contestResultOptions.filter((option) =>
+                                        selectedResultIds.includes(option.id)
+                                      )}
+                                      getOptionLabel={(option) => option.name}
+                                      isOptionEqualToValue={(option, selected) =>
+                                        option.id === selected.id
+                                      }
+                                      onChange={(_, selected) =>
+                                        updateParticipantRecord(group.id, yearIndex, {
+                                          resultIds: selected.map((option) => option.id),
+                                        })
+                                      }
+                                      renderInput={(params) => (
+                                        <TextField
+                                          {...params}
+                                          label="ผลการแข่งขัน / รางวัล"
+                                        />
+                                      )}
+                                    />
                                   )}
-                                  getOptionLabel={(option) => option.name}
-                                  isOptionEqualToValue={(option, selected) =>
-                                    option.id === selected.id
-                                  }
-                                  onChange={(_, selected) =>
-                                    updateParticipantRecord(group.id, yearIndex, {
-                                      resultIds: selected.map((option) => option.id),
-                                    })
-                                  }
-                                  renderInput={(params) => (
-                                    <TextField {...params} label="ผลการแข่งขัน / รางวัล" />
-                                  )}
-                                />
+                                </Stack>
 
                                 <Button
                                   component={RouterLink}
