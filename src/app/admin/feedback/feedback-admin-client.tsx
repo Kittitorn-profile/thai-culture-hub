@@ -7,7 +7,6 @@ import { useMemo, useState, useEffect, useCallback } from 'react';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Chip from '@mui/material/Chip';
-import Alert from '@mui/material/Alert';
 import Table from '@mui/material/Table';
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
@@ -181,8 +180,8 @@ export function FeedbackAdminClient({ contactOnly = false }: { contactOnly?: boo
           </Stack>
         </Stack>
 
-        {error && <Alert severity="error">{error}</Alert>}
-        {isLoading && <Alert severity="info">กำลังโหลดความคิดเห็น...</Alert>}
+        {/* {error && <Alert severity="error">{error}</Alert>}
+        {isLoading && <Alert severity="info">กำลังโหลดความคิดเห็น...</Alert>} */}
 
         <Card sx={{ p: 2.5 }}>
           <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>

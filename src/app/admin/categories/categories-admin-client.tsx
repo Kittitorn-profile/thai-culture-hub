@@ -6,7 +6,6 @@ import { useMemo, useState, useEffect, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
-import Alert from '@mui/material/Alert';
 import Table from '@mui/material/Table';
 import Stack from '@mui/material/Stack';
 import Drawer from '@mui/material/Drawer';
@@ -214,9 +213,9 @@ export function CategoriesAdminClient() {
           </Box>
         </Stack>
 
-        {error && <Alert severity="error">{error}</Alert>}
+        {/* {error && <Alert severity="error">{error}</Alert>}
         {message && <Alert severity="success">{message}</Alert>}
-        {isLoading && <Alert severity="info">กำลังโหลด category...</Alert>}
+        {isLoading && <Alert severity="info">กำลังโหลด category...</Alert>} */}
 
         <Card sx={{ p: 2.5 }}>
           <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>

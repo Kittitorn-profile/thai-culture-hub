@@ -291,16 +291,16 @@ export function AdminUsersClient() {
           </Button>
         </Stack>
 
-        {(error || usersQuery.error) && (
+        {/* {(error || usersQuery.error) && (
           <Alert severity="error">
             {error ||
               (usersQuery.error instanceof Error
                 ? usersQuery.error.message
                 : 'โหลดผู้ใช้ไม่สำเร็จ')}
           </Alert>
-        )}
-        {message && <Alert severity="success">{message}</Alert>}
-        {usersQuery.isLoading && <Alert severity="info">กำลังโหลดผู้ใช้...</Alert>}
+        )} */}
+        {/* {message && <Alert severity="success">{message}</Alert>}
+        {usersQuery.isLoading && <Alert severity="info">กำลังโหลดผู้ใช้...</Alert>} */}
 
         <Card>
           <Stack

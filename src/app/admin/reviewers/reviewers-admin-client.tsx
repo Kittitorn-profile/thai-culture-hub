@@ -5,7 +5,6 @@ import { useMemo, useState, useEffect, useCallback } from 'react';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Chip from '@mui/material/Chip';
-import Alert from '@mui/material/Alert';
 import Table from '@mui/material/Table';
 import Stack from '@mui/material/Stack';
 import Switch from '@mui/material/Switch';
@@ -530,9 +529,9 @@ export function AdminReviewersClient() {
           </Stack>
         </Stack>
 
-        {error && <Alert severity="error">{error}</Alert>}
+        {/* {error && <Alert severity="error">{error}</Alert>}
         {message && <Alert severity="success">{message}</Alert>}
-        {isLoading && <Alert severity="info">กำลังโหลดผู้ตรวจสอบ...</Alert>}
+        {isLoading && <Alert severity="info">กำลังโหลดผู้ตรวจสอบ...</Alert>} */}
 
         <Card sx={{ p: 2.5 }}>
           <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>

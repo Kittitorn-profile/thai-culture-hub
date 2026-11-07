@@ -10,8 +10,8 @@ import { useRouter, usePathname } from 'src/routes/hooks';
 import { CONFIG } from 'src/global-config';
 import { DashboardLayout } from 'src/layouts/dashboard';
 
-import { SvgColor } from 'src/components/svg-color';
 import { Iconify } from 'src/components/iconify';
+import { SvgColor } from 'src/components/svg-color';
 
 import { AuthGuard } from 'src/auth/guard';
 import { useAuthContext } from 'src/auth/hooks';
@@ -67,6 +67,12 @@ const navData: AdminNavGroup[] = [
         ],
       },
 
+      {
+        title: 'มรดกภูมิปัญญาทางวัฒนธรรม',
+        path: '/admin/cultural-heritage',
+        icon: <Iconify icon="solar:notebook-bold-duotone" />,
+        permission: ADMIN_PERMISSION.culturalHeritage,
+      },
       {
         title: 'ข้อความติดต่อ',
         path: '/admin/contact-messages',

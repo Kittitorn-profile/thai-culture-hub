@@ -501,9 +501,9 @@ export function CreatorSettingsClient() {
           </Stack>
         </Stack>
 
-        {error && <Alert severity="error">{error}</Alert>}
+        {/* {error && <Alert severity="error">{error}</Alert>}
         {message && <Alert severity={needsMigration ? 'warning' : 'success'}>{message}</Alert>}
-        {isLoading && <Alert severity="info">กำลังโหลดการตั้งค่า…</Alert>}
+        {isLoading && <Alert severity="info">กำลังโหลดการตั้งค่า…</Alert>} */}
         <Tabs
           value={section}
           onChange={(_event, value) => setSection(value)}

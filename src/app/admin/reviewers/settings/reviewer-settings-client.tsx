@@ -7,7 +7,6 @@ import Tab from '@mui/material/Tab';
 import Card from '@mui/material/Card';
 import Tabs from '@mui/material/Tabs';
 import Chip from '@mui/material/Chip';
-import Alert from '@mui/material/Alert';
 import Stack from '@mui/material/Stack';
 import Switch from '@mui/material/Switch';
 import Button from '@mui/material/Button';
@@ -295,9 +294,9 @@ export function ReviewerSettingsClient() {
           </Stack>
         </Stack>
 
-        {error && <Alert severity="error">{error}</Alert>}
+        {/* {error && <Alert severity="error">{error}</Alert>}
         {message && <Alert severity={needsMigration ? 'warning' : 'success'}>{message}</Alert>}
-        {isLoading && <Alert severity="info">กำลังโหลดการตั้งค่า…</Alert>}
+        {isLoading && <Alert severity="info">กำลังโหลดการตั้งค่า…</Alert>} */}
         <Tabs
           value={section}
           onChange={(_event, value) => setSection(value)}

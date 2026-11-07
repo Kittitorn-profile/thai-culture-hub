@@ -6,7 +6,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Chip from '@mui/material/Chip';
-import Alert from '@mui/material/Alert';
 import Table from '@mui/material/Table';
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
@@ -79,7 +78,9 @@ function getRoleColor(role: string) {
 }
 
 function getPermissionLabel(permission: AdminPermission) {
-  return ADMIN_PERMISSION_OPTIONS.find((option) => option.value === permission)?.label ?? permission;
+  return (
+    ADMIN_PERMISSION_OPTIONS.find((option) => option.value === permission)?.label ?? permission
+  );
 }
 
 function getUsersFromResponse(result: AdminUsersResponse | AdminUser[]) {
@@ -162,7 +163,9 @@ export function AdminUserPermissionsClient() {
 
   const updateLocalUser = (targetUser: AdminUser, changes: Partial<AdminUser>) => {
     queryClient.setQueryData<AdminUsersResponse | AdminUser[]>(usersQueryKey, (current) => {
-      const currentResponse = Array.isArray(current) ? { data: current } : (current ?? { data: [] });
+      const currentResponse = Array.isArray(current)
+        ? { data: current }
+        : (current ?? { data: [] });
       const currentItems = getUsersFromResponse(currentResponse);
 
       return {
@@ -172,7 +175,9 @@ export function AdminUserPermissionsClient() {
             ? {
                 ...item,
                 ...changes,
-                ...(changes.role === ADMIN_ROLE.admin ? { permissions: ALL_ADMIN_PERMISSIONS } : {}),
+                ...(changes.role === ADMIN_ROLE.admin
+                  ? { permissions: ALL_ADMIN_PERMISSIONS }
+                  : {}),
               }
             : item
         ),
@@ -192,11 +197,11 @@ export function AdminUserPermissionsClient() {
           </Typography>
         </Box>
 
-        <Alert severity="info">
+        {/* <Alert severity="info">
           Role admin จะได้ทุกเมนูอัตโนมัติ ส่วน role manage สามารถเลือกเมนูที่อนุญาตได้ทีละรายการ
-        </Alert>
+        </Alert> */}
 
-        {(error || usersQuery.error) && (
+        {/* {(error || usersQuery.error) && (
           <Alert severity="error">
             {error ||
               (usersQuery.error instanceof Error
@@ -205,7 +210,7 @@ export function AdminUserPermissionsClient() {
           </Alert>
         )}
         {message && <Alert severity="success">{message}</Alert>}
-        {usersQuery.isLoading && <Alert severity="info">กำลังโหลดผู้ใช้...</Alert>}
+        {usersQuery.isLoading && <Alert severity="info">กำลังโหลดผู้ใช้...</Alert>} */}
 
         <Card>
           <Stack

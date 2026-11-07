@@ -8,7 +8,6 @@ import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Chip from '@mui/material/Chip';
 import Grid from '@mui/material/Grid';
-import Alert from '@mui/material/Alert';
 import Table from '@mui/material/Table';
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
@@ -275,8 +274,8 @@ export function AnalyticsAdminClient() {
           </Stack>
         </Stack>
 
-        {error && <Alert severity="error">{error}</Alert>}
-        {isLoading && <Alert severity="info">กำลังโหลดสถิติ...</Alert>}
+        {/* {error && <Alert severity="error">{error}</Alert>}
+        {isLoading && <Alert severity="info">กำลังโหลดสถิติ...</Alert>} */}
 
         <Grid container spacing={2.5}>
           <Grid size={{ xs: 12, md: 3 }}>
