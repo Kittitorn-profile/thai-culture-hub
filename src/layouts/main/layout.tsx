@@ -1,5 +1,7 @@
 'use client';
 
+import { cultureUi } from 'src/theme/culture-ui';
+
 import type { Breakpoint } from '@mui/material/styles';
 import type { FooterProps } from './footer';
 import type { NavMainProps } from './nav/types';
@@ -107,6 +109,7 @@ export function MainLayout({
             maxWidth: false,
             ...slotProps?.header?.slotProps?.container,
             sx: {
+              height: { xs: 72, md: 88 },
               px: '0 !important',
               maxWidth: 'none !important',
               ...slotProps?.header?.slotProps?.container?.sx,
@@ -121,13 +124,14 @@ export function MainLayout({
           },
         }}
         sx={[
-          (theme) => ({
+          () => ({
             top: 0,
-            bgcolor: 'transparent',
+            bgcolor: cultureUi.background,
+            color: cultureUi.text,
             backgroundImage: 'none',
-            borderBottom: 0,
+            borderBottom: '1px solid #e6e6e2',
             boxShadow: 'none',
-            '--color': theme.palette.common.white,
+            '--color': cultureUi.text,
           }),
           ...(Array.isArray(slotProps?.header?.sx) ? slotProps.header.sx : [slotProps?.header?.sx]),
         ]}
@@ -142,7 +146,17 @@ export function MainLayout({
       <Footer sx={slotProps?.footer?.sx} layoutQuery={layoutQuery} />
     );
 
-  const renderMain = () => <MainSection {...slotProps?.main}>{children}</MainSection>;
+  const renderMain = () => (
+    <MainSection
+      {...slotProps?.main}
+      sx={[
+        { mt: 0 },
+        ...(Array.isArray(slotProps?.main?.sx) ? slotProps.main.sx : [slotProps?.main?.sx]),
+      ]}
+    >
+      {children}
+    </MainSection>
+  );
 
   return (
     <LayoutSection

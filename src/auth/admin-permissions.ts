@@ -61,7 +61,8 @@ export function getAdminRole(user: Record<string, any> | null | undefined): Admi
     return metadataRole;
   }
 
-  return user?.role === 'manage' || user?.role === 'manager' ? 'manage' : 'admin';
+  const role = typeof user?.role === 'string' ? user.role : '';
+  return role === 'manager' ? 'manage' : role;
 }
 
 export function isSuperAdminRole(role: AdminRole | null | undefined) {
@@ -127,7 +128,7 @@ export function getAdminPermissionFromPath(pathname: string): AdminPermission | 
     return ADMIN_PERMISSION.analytics;
   }
 
-  if (pathname.startsWith('/admin/feedback')) {
+  if (pathname.startsWith('/admin/feedback') || pathname.startsWith('/admin/contact-messages')) {
     return ADMIN_PERMISSION.feedback;
   }
 

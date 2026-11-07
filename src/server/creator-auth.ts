@@ -6,7 +6,12 @@ import { getSupabaseAdmin } from './supabase-admin';
 import { getAdminSecret } from './admin-api-auth';
 
 export type CreatorStatus = 'pending' | 'approved' | 'rejected';
-export type CreatorArticleStatus = 'draft' | 'pending_review' | 'approved' | 'rejected' | 'published';
+export type CreatorArticleStatus =
+  | 'draft'
+  | 'pending_review'
+  | 'approved'
+  | 'rejected'
+  | 'published';
 
 const CREATOR_PROFILE_SELECT =
   'id, user_id, email, display_name, bio, phone, province_code, website_url, facebook_url, avatar_url, status, warning_note, warned_at, reviewed_at, reject_reason, created_at, updated_at';
@@ -69,7 +74,9 @@ export function cleanText(value: unknown) {
   return typeof value === 'string' ? value.trim() : '';
 }
 
-function isMissingCreatorWarningColumn(error: { message?: string; details?: string; hint?: string } | null) {
+function isMissingCreatorWarningColumn(
+  error: { message?: string; details?: string; hint?: string } | null
+) {
   const text = [error?.message, error?.details, error?.hint].filter(Boolean).join(' ');
 
   return text.includes('warning_note') || text.includes('warned_at');
@@ -101,7 +108,7 @@ function verifyCreatorTableToken(accessToken: string) {
   const secret = getAdminSecret();
   const [body, signature] = accessToken.split('.');
 
-  if (!secret || !body || !signature) {
+  if (!secret || !body || !signature || accessToken.split('.').length !== 2) {
     return null;
   }
 
@@ -118,7 +125,12 @@ function verifyCreatorTableToken(accessToken: string) {
       exp?: number;
     };
 
-    if (!payload.sub || payload.role !== 'creator' || !payload.exp || payload.exp < Date.now() / 1000) {
+    if (
+      !payload.sub ||
+      payload.role !== 'creator' ||
+      !payload.exp ||
+      payload.exp < Date.now() / 1000
+    ) {
       return null;
     }
 
@@ -196,28 +208,48 @@ export async function verifyCreatorAccessToken(accessToken: string) {
     return { ok: false as const, status: 500, message: supabase.error };
   }
 
-  const { data, error } = await supabase.client.auth.getUser(accessToken);
-
-  if (!error && data.user) {
-    return { ok: true as const, supabase: supabase.client, user: data.user as User };
-  }
-
   const creatorTokenPayload = verifyCreatorTableToken(accessToken);
-
-  if (!creatorTokenPayload) {
-    return { ok: false as const, status: 401, message: 'Unauthorized' };
-  }
-
-  return {
-    ok: true as const,
-    supabase: supabase.client,
-    user: {
+  let user: User;
+  if (creatorTokenPayload) {
+    const { data: account, error: accountError } = await supabase.client
+      .from(process.env.ADMIN_USERS_TABLE ?? 'user')
+      .select('id, role, is_active')
+      .eq('id', creatorTokenPayload.sub)
+      .maybeSingle();
+    if (accountError)
+      return { ok: false as const, status: 500, message: 'Unable to verify account' };
+    if (!account || account.role !== 'creator' || account.is_active !== true) {
+      return {
+        ok: false as const,
+        status: 403,
+        message: 'บัญชี Creator ยังไม่ได้รับอนุมัติหรือถูกระงับ',
+      };
+    }
+    user = {
       id: creatorTokenPayload.sub,
       email: '',
       app_metadata: { role: 'creator' },
       user_metadata: {},
-    } as unknown as User,
-  };
+    } as unknown as User;
+  } else {
+    if (accessToken.split('.').length !== 3)
+      return { ok: false as const, status: 401, message: 'Unauthorized' };
+    const { data, error } = await supabase.client.auth.getUser(accessToken);
+    if (error || !data.user) return { ok: false as const, status: 401, message: 'Unauthorized' };
+    if (data.user.app_metadata?.role !== 'creator')
+      return { ok: false as const, status: 403, message: 'Forbidden' };
+    user = data.user;
+  }
+  const profileResult = await getCreatorProfileByUserId(user.id);
+  if (!profileResult.ok) return profileResult;
+  if (profileResult.profile.status !== 'approved' || profileResult.profile.is_active === false) {
+    return {
+      ok: false as const,
+      status: 403,
+      message: 'บัญชี Creator ยังไม่ได้รับอนุมัติหรือถูกระงับ',
+    };
+  }
+  return { ok: true as const, supabase: supabase.client, user };
 }
 
 export async function getCreatorProfileByUserId(userId: string) {
@@ -254,11 +286,14 @@ export async function getCreatorProfileByUserId(userId: string) {
     return { ok: false as const, status: 404, message: 'Creator profile not found' };
   }
 
-  const { data: userRow } = await supabase.client
-    .from('user')
+  const { data: userRow, error: userError } = await supabase.client
+    .from(process.env.ADMIN_USERS_TABLE ?? 'user')
     .select('is_active')
     .eq('id', userId)
     .maybeSingle();
+
+  if (userError)
+    return { ok: false as const, status: 500, message: 'Unable to verify account status' };
 
   return {
     ok: true as const,

@@ -59,7 +59,7 @@ export function AuthSplitContent({
         }}
       >
         <Stack spacing={1}>
-          <Box sx={{ textAlign: 'center', color: '#fff' }}>
+          <Box sx={{ textAlign: 'center', color: '#202124' }}>
             <Image
               alt="Single logo"
               sx={{
@@ -79,9 +79,9 @@ export function AuthSplitContent({
                   width: 'fit-content',
                   borderRadius: 999,
                   color: '#2a3736',
-                  bgcolor: '#ead7a1',
+                  bgcolor: '#ecefeb',
                   fontSize: 11,
-                  fontWeight: 950,
+                  fontWeight: 600,
                   letterSpacing: 1.2,
                 }}
               >
@@ -93,7 +93,7 @@ export function AuthSplitContent({
               sx={{
                 mt: isAdmin ? 1.5 : 2.5,
                 fontSize: isAdmin ? { xs: 23, md: 27 } : { xs: 25, md: 30 },
-                fontWeight: 950,
+                fontWeight: 600,
               }}
             >
               {isAdmin ? 'ระบบจัดการ Thai Culture Hub' : 'Thai Culture Hub'}

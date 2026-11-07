@@ -579,15 +579,6 @@ export function AdminCreatorArticlesClient() {
           </Stack>
         </Stack>
 
-        {error && <Alert severity="error">{error}</Alert>}
-        {message && <Alert severity="success">{message}</Alert>}
-        {articleReviewSettingsNeedsMigration && (
-          <Alert severity="warning">
-            ยังไม่มีตารางเกณฑ์คะแนนบทความ กรุณารัน docs/supabase-creators.sql ก่อนบันทึก
-          </Alert>
-        )}
-        {isLoading && <Alert severity="info">กำลังโหลดบทความ...</Alert>}
-
         <Card sx={{ p: 2.5 }}>
           <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
             <TextField

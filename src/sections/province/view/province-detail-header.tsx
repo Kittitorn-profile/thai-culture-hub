@@ -55,24 +55,23 @@ export function ProvinceCultureMetrics({ cultureMetrics }: ProvinceCultureMetric
             flex: { xs: '1 1 calc(50% - 8px)', sm: '0 1 170px' },
             borderRadius: 2,
             textAlign: 'left',
-            color: theme.palette.common.white,
-            bgcolor: alpha(theme.palette.common.white, 0.16),
-            border: `1px solid ${alpha(theme.palette.common.white, 0.18)}`,
-            boxShadow: `0 18px 40px ${alpha(theme.palette.grey[900], 0.12)}`,
-            backdropFilter: 'blur(12px)',
+            color: '#202124',
+            bgcolor: '#626a6e',
+            border: '1px solid #dfe3df',
+            boxShadow: 'none',
           }}
         >
           <Typography
             sx={{
               mb: 0.5,
               fontSize: 12,
-              fontWeight: 900,
-              color: alpha(theme.palette.common.white, 0.68),
+              fontWeight: 600,
+              color: '#626a6e',
             }}
           >
             {String(index + 1).padStart(2, '0')} / {item.label}
           </Typography>
-          <Typography sx={{ fontWeight: 950, fontSize: { xs: 18, sm: 20 } }}>
+          <Typography sx={{ fontWeight: 600, fontSize: { xs: 18, sm: 20 } }}>
             {item.value}
           </Typography>
         </Box>
@@ -108,14 +107,10 @@ export function ProvinceDetailHeader({
         position: 'relative',
         textAlign: 'center',
         borderRadius: 3,
-        color: theme.palette.common.white,
-        border: `1px solid ${alpha(theme.palette.common.white, 0.28)}`,
-        background: `
-          linear-gradient(135deg, ${alpha('#f8f6ee', 0.2)} 0%, ${alpha('#f8f6ee', 0.08)} 42%, ${alpha('#12383f', 0.24)} 100%),
-          ${alpha('#203f42', 0.28)}
-        `,
-        boxShadow: `0 28px 80px ${alpha(theme.palette.grey[900], 0.18)}`,
-        backdropFilter: 'blur(14px)',
+        color: '#202124',
+        border: '1px solid #dfe3df',
+        background: '#fff',
+        boxShadow: 'none',
       }}
     >
       <Stack spacing={2.25} alignItems="center" sx={{ position: 'relative' }}>
@@ -125,12 +120,12 @@ export function ProvinceDetailHeader({
           sx={{
             height: 34,
             px: 0.75,
-            fontWeight: 900,
+            fontWeight: 600,
             borderRadius: 99,
-            color: '#f8f6ee',
-            bgcolor: alpha('#1f3437', 0.34),
-            border: `1px solid ${alpha(theme.palette.common.white, 0.28)}`,
-            '& .MuiChip-icon': { color: '#f2d28b' },
+            color: '#303c37',
+            bgcolor: '#ecefeb',
+            border: '1px solid #dfe3df',
+            '& .MuiChip-icon': { color: '#4e6658' },
           }}
         />
         <Box>
@@ -139,11 +134,11 @@ export function ProvinceDetailHeader({
             variant="h2"
             sx={{
               mx: 'auto',
-              fontWeight: 950,
-              lineHeight: 0.98,
+              fontWeight: 600,
+              lineHeight: 1.3,
               maxWidth: 760,
-              textShadow: `0 14px 34px ${alpha('#12383f', 0.26)}`,
-              fontSize: { xs: 44, sm: 62, md: 74 },
+              textShadow: 'none',
+              fontSize: { xs: 36, sm: 44, md: 52 },
             }}
           >
             {provinceDisplayName}
@@ -157,7 +152,7 @@ export function ProvinceDetailHeader({
               fontSize: { xs: 15, sm: 17 },
               fontWeight: 800,
               lineHeight: 1.7,
-              color: alpha(theme.palette.common.white, 0.88),
+              color: '#626a6e',
             }}
           >
             สำรวจมรดก วัด ธรรมชาติ หัตถกรรม และเรื่องเล่าท้องถิ่นของจังหวัด
@@ -185,7 +180,7 @@ export function ProvinceDetailHeader({
               color: '#11343a',
               bgcolor: alpha('#f8f6ee', 0.94),
               border: `1px solid ${alpha('#f2d28b', 0.7)}`,
-              boxShadow: `0 14px 30px ${alpha(theme.palette.grey[900], 0.14)}`,
+              boxShadow: 'none',
             }}
           >
             <Iconify icon="eva:search-fill" width={22} sx={{ flexShrink: 0, color: '#1f7b8e' }} />
@@ -234,10 +229,10 @@ export function ProvinceDetailHeader({
               height: 48,
               width: { xs: 1, sm: 180 },
               borderRadius: 99,
-              fontWeight: 900,
+              fontWeight: 600,
               color: '#11343a',
               bgcolor: alpha('#f8f6ee', 0.94),
-              boxShadow: `0 10px 24px ${alpha(theme.palette.grey[900], 0.14)}`,
+              boxShadow: 'none',
               '&:hover': { bgcolor: '#fff' },
             }}
           >
@@ -251,9 +246,9 @@ export function ProvinceDetailHeader({
               fontWeight: 'bold',
               borderRadius: 99,
               color: '#11343a',
-              bgcolor: '#f8f6ee',
+              bgcolor: '#303c37',
               border: `1px solid ${alpha('#f2d28b', 0.84)}`,
-              boxShadow: `0 10px 24px ${alpha(theme.palette.grey[900], 0.14)}`,
+              boxShadow: 'none',
             }}
           /> */}
 
@@ -267,11 +262,11 @@ export function ProvinceDetailHeader({
               px: 1.8,
               width: 250,
               borderRadius: 99,
-              fontWeight: 900,
+              fontWeight: 600,
               color: '#fff',
               bgcolor: '#1f7b8e',
-              border: `1px solid ${alpha(theme.palette.common.white, 0.16)}`,
-              boxShadow: `0 10px 24px ${alpha('#12383f', 0.22)}`,
+              border: '1px solid #dfe3df',
+              boxShadow: 'none',
               '&:hover': { bgcolor: '#176b7d' },
             }}
           >

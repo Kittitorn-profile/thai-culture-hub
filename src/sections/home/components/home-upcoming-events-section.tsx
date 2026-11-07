@@ -39,7 +39,8 @@ export function HomeUpcomingEventsSection({ events, onPlayVideo }: Props) {
     <Box
       sx={{
         px: HOME_SECTION_PX,
-        py: { xs: 7, md: 10 },
+        pt: { xs: 3, md: 4 },
+        pb: { xs: 5, md: 7 },
         position: 'relative',
         overflow: 'hidden',
         scrollMarginTop: 96,
@@ -62,7 +63,7 @@ export function HomeUpcomingEventsSection({ events, onPlayVideo }: Props) {
                 width: 'fit-content',
                 color: HOME_TEXT,
                 borderRadius: 999,
-                bgcolor: 'rgba(42,55,54,0.28)',
+                bgcolor: '#efefec',
                 border: '1px solid rgba(255,255,255,0.28)',
                 fontSize: 12,
                 fontWeight: 800,
@@ -76,13 +77,13 @@ export function HomeUpcomingEventsSection({ events, onPlayVideo }: Props) {
                 mt: 2,
                 color: HOME_TEXT,
                 fontSize: { xs: 28, md: 44 },
-                fontWeight: 950,
+                fontWeight: 600,
                 lineHeight: 1.15,
               }}
             >
               กิจกรรมวัฒนธรรมที่ใกล้จะถึง
             </Typography>
-            <Typography sx={{ mt: 1.3, color: 'rgba(248,246,238,0.76)', lineHeight: 1.75 }}>
+            <Typography sx={{ mt: 1.3, color: 'rgba(32,33,36,0.76)', lineHeight: 1.75 }}>
               รวมวัน เวลา สถานที่ และผู้จัดงาน เพื่อให้ติดตามกิจกรรมวัฒนธรรมล่าสุดได้จากหน้าแรก
             </Typography>
           </Box>
@@ -92,7 +93,7 @@ export function HomeUpcomingEventsSection({ events, onPlayVideo }: Props) {
           sx={{
             display: 'grid',
             gap: { xs: 2, md: 2.5 },
-            gridTemplateColumns: { xs: '1fr', lg: '1.35fr 0.65fr' },
+            gridTemplateColumns: { xs: '1fr', md: '1.6fr 0.8fr' },
             alignItems: 'stretch',
           }}
         >
@@ -113,6 +114,7 @@ export function HomeUpcomingEventsSection({ events, onPlayVideo }: Props) {
                   router.push(paths.event.details(eventItem));
                 }}
                 onKeyDown={(event) => {
+                  if (event.target !== event.currentTarget) return;
                   if (event.key !== 'Enter' && event.key !== ' ') {
                     return;
                   }
@@ -122,31 +124,29 @@ export function HomeUpcomingEventsSection({ events, onPlayVideo }: Props) {
                 sx={{
                   minWidth: 0,
                   overflow: 'hidden',
-                  borderRadius: 1.5,
+                  borderRadius: 2.5,
                   color: HOME_TEXT,
-                  bgcolor: isFeatured ? 'rgba(42,55,54,0.36)' : 'rgba(42,55,54,0.26)',
-                  border: isFeatured
-                    ? '1px solid rgba(234,215,161,0.46)'
-                    : '1px solid rgba(248,246,238,0.2)',
-                  boxShadow: isFeatured
-                    ? '0 30px 36px rgba(31,40,38,0.28)'
-                    : '0 20px 28px rgba(31,40,38,0.18)',
-                  backdropFilter: 'blur(7px)',
+                  bgcolor: '#fff',
+                  border: '1px solid #e3e5e2',
+                  boxShadow: 'none',
                   cursor: 'pointer',
-                  transition: 'transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease',
+                  transition: 'border-color 180ms ease, box-shadow 180ms ease',
                   '&:hover': {
-                    transform: 'translateY(-4px)',
-                    borderColor: 'rgba(234,215,161,0.78)',
-                    boxShadow: '0 34px 52px rgba(31,40,38,0.34)',
+                    borderColor: '#aeb5b5',
+                    boxShadow: '0 8px 24px rgba(25,35,40,0.06)',
                   },
                   '&:focus-visible': {
-                    outline: '3px solid rgba(234,215,161,0.88)',
+                    outline: '2px solid #505b63',
                     outlineOffset: 4,
                   },
                   display: 'grid',
                   gridTemplateColumns: {
                     xs: '1fr',
-                    md: isFeatured ? '1.05fr 0.95fr' : '1fr',
+                    lg: isFeatured && !isPast ? '0.9fr 1.1fr' : '1fr',
+                  },
+                  gridTemplateRows: {
+                    xs: 'auto 1fr',
+                    lg: isFeatured && !isPast ? '1fr' : 'auto 1fr',
                   },
                 }}
               >
@@ -155,8 +155,12 @@ export function HomeUpcomingEventsSection({ events, onPlayVideo }: Props) {
                     if (eventItem.mediaType === 'video') event.stopPropagation();
                   }}
                   sx={{
-                    minHeight: isFeatured ? { xs: 240, md: 380 } : { xs: 210, md: 240 },
-                    bgcolor: HOME_DEEP,
+                    height: isPast ? { xs: 180, md: 180 } : { xs: 320, sm: 380, lg: '100%' },
+                    minHeight: isFeatured && !isPast ? { lg: 510 } : undefined,
+                    display: 'flex',
+                    alignItems: 'center',
+                    flexShrink: 0,
+                    bgcolor: '#f0f1ee',
                     position: 'relative',
                     overflow: 'hidden',
                   }}
@@ -181,7 +185,7 @@ export function HomeUpcomingEventsSection({ events, onPlayVideo }: Props) {
                     <Image
                       src={mediaSource}
                       alt={eventItem.title}
-                      ratio={isFeatured ? '4/3' : '16/9'}
+                      ratio="1/1"
                       visibleByDefault
                       disablePlaceholder
                       sx={{
@@ -214,11 +218,11 @@ export function HomeUpcomingEventsSection({ events, onPlayVideo }: Props) {
                       py: 0.7,
                       borderRadius: 1,
                       position: 'absolute',
-                      color: isPast ? 'rgba(248,246,238,0.92)' : HOME_DEEP,
-                      bgcolor: isPast ? 'rgba(42,55,54,0.88)' : 'rgba(234,215,161,0.92)',
+                      color: isPast ? '#fff' : '#252b2e',
+                      bgcolor: isPast ? '#30383be6' : '#fffffff2',
                       border: isPast ? '1px solid rgba(248,246,238,0.3)' : 'none',
                       fontSize: 12,
-                      fontWeight: 900,
+                      fontWeight: 600,
                     }}
                   >
                     {isPast
@@ -231,12 +235,15 @@ export function HomeUpcomingEventsSection({ events, onPlayVideo }: Props) {
                   </Box>
                 </Box>
 
-                <Stack spacing={isFeatured ? 2 : 1.4} sx={{ p: { xs: 2.2, md: 3 } }}>
+                <Stack
+                  spacing={isPast ? 1.25 : 1.75}
+                  sx={{ p: isPast ? 2 : { xs: 2.5, md: 3 }, flex: 1, minWidth: 0 }}
+                >
                   <Typography
                     sx={{
-                      color: 'rgba(234,215,161,0.95)',
-                      fontSize: 13,
-                      fontWeight: 900,
+                      color: '#757d80',
+                      fontSize: 12,
+                      fontWeight: 600,
                       letterSpacing: 0.4,
                     }}
                   >
@@ -247,9 +254,13 @@ export function HomeUpcomingEventsSection({ events, onPlayVideo }: Props) {
                   <Typography
                     sx={{
                       color: HOME_TEXT,
-                      fontSize: isFeatured ? { xs: 25, md: 34 } : { xs: 21, md: 24 },
-                      fontWeight: 950,
-                      lineHeight: 1.18,
+                      fontSize: isPast ? { xs: 19, md: 20 } : { xs: 23, md: 25 },
+                      display: '-webkit-box',
+                      WebkitLineClamp: isFeatured && !isPast ? 5 : 3,
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden',
+                      fontWeight: 600,
+                      lineHeight: 1.45,
                     }}
                   >
                     {eventItem.title}
@@ -258,12 +269,12 @@ export function HomeUpcomingEventsSection({ events, onPlayVideo }: Props) {
                   {eventItem.description && (
                     <Typography
                       sx={{
-                        color: 'rgba(248,246,238,0.74)',
-                        fontSize: isFeatured ? 14 : 13,
+                        color: 'rgba(32,33,36,0.74)',
+                        fontSize: isPast ? 13 : 14,
                         lineHeight: 1.7,
                         display: '-webkit-box',
                         overflow: 'hidden',
-                        WebkitLineClamp: isFeatured ? 3 : 2,
+                        WebkitLineClamp: 2,
                         WebkitBoxOrient: 'vertical',
                       }}
                     >
@@ -271,7 +282,7 @@ export function HomeUpcomingEventsSection({ events, onPlayVideo }: Props) {
                     </Typography>
                   )}
 
-                  <Stack spacing={1.1} sx={{ pt: 0.5 }}>
+                  <Stack spacing={isPast ? 0.75 : 1.1} sx={{ pt: 0.5 }}>
                     {[
                       {
                         icon: 'solar:clock-circle-bold',
@@ -280,64 +291,111 @@ export function HomeUpcomingEventsSection({ events, onPlayVideo }: Props) {
                       {
                         icon: 'solar:map-point-bold',
                         label:
-                          [eventItem.provinceName, eventItem.location].filter(Boolean).join(' - ') ||
-                          'ยังไม่ระบุจังหวัด',
+                          [eventItem.provinceName, eventItem.location]
+                            .filter(Boolean)
+                            .join(' - ') || 'ยังไม่ระบุจังหวัด',
                       },
                       {
                         icon: 'solar:users-group-rounded-bold',
                         label: eventItem.organizer || 'ยังไม่ระบุผู้จัด',
                       },
                     ].map((detail) => (
-                      <Stack key={detail.icon} direction="row" spacing={1} alignItems="center">
-                        <Iconify icon={detail.icon as IconifyName} width={18} />
-                        <Typography sx={{ color: 'rgba(248,246,238,0.78)', fontSize: 13 }}>
+                      <Stack key={detail.icon} direction="row" spacing={1} alignItems="flex-start">
+                        <Iconify
+                          icon={detail.icon as IconifyName}
+                          width={18}
+                          sx={{ flexShrink: 0, mt: 0.25 }}
+                        />
+                        <Typography
+                          sx={{
+                            color: '#626a6e',
+                            fontSize: 13,
+                            lineHeight: 1.6,
+                            display: '-webkit-box',
+                            WebkitLineClamp: isPast ? 1 : 2,
+                            WebkitBoxOrient: 'vertical',
+                            overflow: 'hidden',
+                          }}
+                        >
                           {detail.label}
                         </Typography>
                       </Stack>
                     ))}
                   </Stack>
-                  <Button
-                    component="a"
-                    onClick={() => router.push(paths.event.details(eventItem))}
-                    size="small"
-                    variant="outlined"
-                    endIcon={<Iconify icon="eva:external-link-fill" width={16} />}
+                  <Stack
+                    direction="row"
+                    useFlexGap
+                    spacing={1}
                     sx={{
-                      mt: 0.4,
-                      width: 'fit-content',
-                      color: HOME_TEXT,
-                      borderColor: 'rgba(248,246,238,0.42)',
-                      '&:hover': {
-                        borderColor: 'rgba(234,215,161,0.78)',
-                        bgcolor: 'rgba(234,215,161,0.08)',
+                      flexWrap: 'wrap',
+                      mt: 'auto !important',
+                      pt: isPast ? 1.5 : 2,
+                      borderTop: '1px solid #eceeeb',
+                      '& .MuiButton-root': {
+                        borderRadius: 1.25,
+                        px: 1.5,
+                        py: 0.8,
+                        fontWeight: 500,
                       },
                     }}
                   >
-                    ดูรายละเอียด
-                  </Button>
-                  {eventItem.sourceUrl && (
                     <Button
                       component="a"
-                      href={eventItem.sourceUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                      href={paths.event.details(eventItem)}
                       size="small"
-                      variant="outlined"
+                      variant="contained"
                       endIcon={<Iconify icon="eva:external-link-fill" width={16} />}
                       sx={{
                         mt: 0.4,
                         width: 'fit-content',
-                        color: HOME_TEXT,
-                        borderColor: 'rgba(248,246,238,0.42)',
+                        color: '#fff',
+                        bgcolor: '#252d31',
+                        boxShadow: 'none',
+                        borderColor: '#252d31',
                         '&:hover': {
-                          borderColor: 'rgba(234,215,161,0.78)',
-                          bgcolor: 'rgba(234,215,161,0.08)',
+                          borderColor: '#8f999d',
+                          bgcolor: '#3c474d',
+                          boxShadow: 'none',
                         },
                       }}
                     >
-                      {eventItem.sourceLabel || 'ติดตามรายละเอียด'}
+                      ดูรายละเอียด
                     </Button>
-                  )}
+                    {eventItem.sourceUrl && (
+                      <Button
+                        component="a"
+                        href={eventItem.sourceUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        size="small"
+                        variant="text"
+                        endIcon={<Iconify icon="eva:external-link-fill" width={16} />}
+                        sx={{
+                          mt: 0.4,
+                          width: 'fit-content',
+                          color: HOME_TEXT,
+                          borderColor: '#dce0dd',
+                          '&:hover': {
+                            borderColor: '#8f999d',
+                            bgcolor: '#f2f4f1',
+                          },
+                        }}
+                      >
+                        <Box
+                          component="span"
+                          title={eventItem.sourceLabel || 'ติดตามรายละเอียด'}
+                          sx={{
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                            maxWidth: isPast ? 140 : 200,
+                          }}
+                        >
+                          {eventItem.sourceLabel || 'ติดตามรายละเอียด'}
+                        </Box>
+                      </Button>
+                    )}
+                  </Stack>
                 </Stack>
               </Box>
             );

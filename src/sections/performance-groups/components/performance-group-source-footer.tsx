@@ -19,11 +19,11 @@ export function PerformanceGroupSourceFooter({ group }: Props) {
   if (!group.sourceLabel && !group.sourceUrl && !group.updatedAt) return null;
 
   return (
-    <Box sx={{ p: 3, borderTop: '1px solid', borderColor: 'divider' }}>
+    <Box sx={{ py: 3, borderTop: '1px solid', borderColor: 'divider' }}>
       <Box>
         {(group.sourceLabel || group.sourceUrl) && (
           <Stack spacing={1} alignItems="flex-start">
-            <Typography variant="overline" sx={{ color: 'text.secondary', fontWeight: 900 }}>
+            <Typography variant="overline" sx={{ color: 'text.secondary', fontWeight: 600 }}>
               ที่มาของข้อมูล
             </Typography>
             {group.sourceUrl ? (
@@ -37,7 +37,7 @@ export function PerformanceGroupSourceFooter({ group }: Props) {
                 sx={{
                   color: '#fff',
                   bgcolor: '#1d2933',
-                  fontWeight: 900,
+                  fontWeight: 600,
                   '&:hover': { bgcolor: '#111c25' },
                 }}
               >
@@ -59,7 +59,9 @@ export function PerformanceGroupSourceFooter({ group }: Props) {
             }}
           >
             <Iconify icon="solar:calendar-date-bold" width={18} />
-            <Typography variant="body2">อัปเดตล่าสุด {formatUpdatedDate(group.updatedAt)}</Typography>
+            <Typography variant="body2">
+              อัปเดตล่าสุด {formatUpdatedDate(group.updatedAt)}
+            </Typography>
           </Stack>
         )}
       </Box>

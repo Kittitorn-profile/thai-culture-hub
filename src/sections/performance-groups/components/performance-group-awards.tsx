@@ -19,7 +19,7 @@ export function PerformanceGroupAwards({ awards }: Props) {
     <Box sx={{ mt: 2.5 }}>
       <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1.5 }}>
         <Iconify icon="solar:cup-star-bold" width={24} sx={{ color: '#b56a00' }} />
-        <Typography sx={{ fontWeight: 900, color: '#5b431d' }}>รางวัลที่ได้รับ</Typography>
+        <Typography sx={{ fontWeight: 600, color: '#5b431d' }}>รางวัลที่ได้รับ</Typography>
       </Stack>
       <Stack spacing={1.5}>
         {awards.map((award) => (
@@ -32,7 +32,7 @@ export function PerformanceGroupAwards({ awards }: Props) {
               borderRadius: 2,
               border: '1px solid rgba(196,126,24,0.24)',
               background: 'linear-gradient(135deg, rgba(255,246,224,0.98), rgba(250,229,181,0.58))',
-              boxShadow: '0 10px 28px rgba(132,86,20,0.08)',
+              boxShadow: 'none',
               '&::before': {
                 content: '""',
                 position: 'absolute',
@@ -56,7 +56,7 @@ export function PerformanceGroupAwards({ awards }: Props) {
                   color: '#fff8e8',
                   bgcolor: '#b56a00',
                   fontSize: 13,
-                  fontWeight: 900,
+                  fontWeight: 600,
                 }}
               >
                 {award.year}
@@ -65,7 +65,7 @@ export function PerformanceGroupAwards({ awards }: Props) {
                 sx={{
                   color: '#754700',
                   fontSize: { xs: 17, md: 19 },
-                  fontWeight: 900,
+                  fontWeight: 600,
                   lineHeight: 1.4,
                 }}
               >

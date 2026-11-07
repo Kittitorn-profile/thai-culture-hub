@@ -1,6 +1,5 @@
 import type { EditorToolbarItemProps } from '../types';
 
-import SvgIcon from '@mui/material/SvgIcon';
 import Tooltip from '@mui/material/Tooltip';
 import { styled } from '@mui/material/styles';
 import ButtonBase from '@mui/material/ButtonBase';
@@ -26,7 +25,7 @@ export function ToolbarItem({
       sx={sx}
       {...other}
     >
-      {icon && <SvgIcon sx={{ fontSize: 18 }}>{icon}</SvgIcon>}
+      {icon}
       {label && label}
     </ItemRoot>
   );

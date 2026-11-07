@@ -32,15 +32,8 @@ const SECTIONS = [
   },
 ];
 
-const LEGAL_BACKGROUND = `
-  radial-gradient(circle at 50% 18%, rgba(239,236,224,0.3) 0%, rgba(239,236,224,0.1) 28%, rgba(111,135,144,0) 58%),
-  linear-gradient(180deg, #6f8790 0%, #7b8476 54%, #8f7c5c 100%)
-`;
-const LEGAL_PATTERN = `
-  repeating-radial-gradient(circle at 78% 12%, transparent 0 44px, rgba(230,236,232,0.22) 46px 48px),
-  repeating-radial-gradient(circle at 10% 82%, transparent 0 52px, rgba(230,236,232,0.12) 54px 56px),
-  linear-gradient(120deg, transparent 0 58%, rgba(229,221,198,0.13) 58% 59%, transparent 59% 100%)
-`;
+const LEGAL_BACKGROUND = 'none';
+const LEGAL_PATTERN = 'none';
 
 export default function Page() {
   return (
@@ -49,10 +42,10 @@ export default function Page() {
         minHeight: 1,
         overflow: 'hidden',
         position: 'relative',
-        bgcolor: '#7b8476',
+        bgcolor: '#f7f7f5',
         backgroundImage: LEGAL_BACKGROUND,
-        pt: { xs: 12, md: 16 },
-        pb: { xs: 8, md: 18 },
+        pt: { xs: 4, md: 6 },
+        pb: { xs: 5, md: 8 },
         '&::before': {
           content: '""',
           position: 'absolute',
@@ -70,12 +63,11 @@ export default function Page() {
           position: 'relative',
           p: { xs: 3, md: 5 },
           borderRadius: 2,
-          bgcolor: 'rgba(248,246,238,0.9)',
-          boxShadow: '0 24px 70px rgba(32,42,43,0.22)',
-          backdropFilter: 'blur(3px)',
+          bgcolor: '#fff',
+          boxShadow: 'none',
         }}
       >
-        <Typography sx={{ color: '#8f3d20', fontSize: 13, fontWeight: 900 }}>
+        <Typography sx={{ color: '#8f3d20', fontSize: 13, fontWeight: 600 }}>
           Thailand Cultural Hub
         </Typography>
         <Typography
@@ -84,7 +76,7 @@ export default function Page() {
             mt: 1,
             color: '#2a211b',
             fontSize: { xs: 34, md: 48 },
-            fontWeight: 950,
+            fontWeight: 600,
             lineHeight: 1.05,
           }}
         >
@@ -97,7 +89,7 @@ export default function Page() {
         <Stack spacing={3.4} sx={{ mt: 6 }}>
           {SECTIONS.map((section) => (
             <Box key={section.title}>
-              <Typography sx={{ color: '#2a211b', fontSize: 22, fontWeight: 900 }}>
+              <Typography sx={{ color: '#2a211b', fontSize: 22, fontWeight: 600 }}>
                 {section.title}
               </Typography>
               <Typography sx={{ mt: 1.2, color: 'text.secondary', fontSize: 15, lineHeight: 1.85 }}>

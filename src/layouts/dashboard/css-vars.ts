@@ -9,6 +9,8 @@ import { bulletColor } from 'src/components/nav-section';
 
 export function dashboardLayoutVars(theme: Theme) {
   return {
+    // Keep the permanent navigation below temporary drawers and their backdrops.
+    '--layout-nav-zIndex': theme.zIndex.drawer - 1,
     '--layout-transition-easing': 'linear',
     '--layout-transition-duration': '120ms',
     '--layout-nav-mini-width': '88px',
@@ -35,8 +37,8 @@ export function dashboardNavColorVars(
     case 'integrate':
       return {
         layout: {
-          '--layout-nav-bg': palette.background.default,
-          '--layout-nav-horizontal-bg': varAlpha(palette.background.defaultChannel, 0.8),
+          '--layout-nav-bg': palette.background.paper,
+          '--layout-nav-horizontal-bg': varAlpha(palette.background.paperChannel, 0.96),
           '--layout-nav-border-color': varAlpha(palette.grey['500Channel'], 0.12),
           '--layout-nav-text-primary-color': palette.text.primary,
           '--layout-nav-text-secondary-color': palette.text.secondary,
@@ -46,7 +48,18 @@ export function dashboardNavColorVars(
             '--layout-nav-horizontal-bg': varAlpha(palette.background.defaultChannel, 0.96),
           }),
         },
-        section: undefined,
+        section: {
+          '--nav-item-root-active-bg': '#e9f0e8',
+          '--nav-item-root-active-color': '#2d4938',
+          '--nav-item-sub-active-bg': '#f0f4ed',
+          '--nav-item-sub-active-color': '#2d4938',
+          ...theme.applyStyles('dark', {
+            '--nav-item-root-active-bg': varAlpha(palette.primary.mainChannel, 0.16),
+            '--nav-item-root-active-color': palette.primary.light,
+            '--nav-item-sub-active-bg': palette.action.selected,
+            '--nav-item-sub-active-color': palette.text.primary,
+          }),
+        },
       };
     case 'apparent':
       return {

@@ -31,21 +31,22 @@ export function PerformanceGroupYearlyArchive({
   return (
     <Box
       component="section"
+      id="group-archive"
       sx={{
-        mt: 5,
-        mx: { xs: -1, md: -2 },
-        p: { xs: 1, md: 3 },
-        borderRadius: 3,
-        bgcolor: { xs: 'none', md: 'rgba(111,135,144,0.07)' },
+        mt: 4,
+        scrollMarginTop: 112,
+        pt: 4,
+        borderTop: '1px solid',
+        borderColor: 'divider',
       }}
     >
-      <Typography variant="overline" sx={{ color: 'secondary.main', fontWeight: 900 }}>
-        YEARLY ARCHIVE
+      <Typography variant="overline" sx={{ color: '#79613b', fontWeight: 600 }}>
+        บันทึกการแสดง
       </Typography>
-      <Typography variant="h4" sx={{ mt: 0.5, fontWeight: 950 }}>
+      <Typography component="h2" sx={{ mt: 0.5, fontSize: { xs: 24, md: 30 }, fontWeight: 600 }}>
         ผลงานและข้อมูลรายปี
       </Typography>
-      <Typography sx={{ mt: 1, mb: 3, maxWidth: 720, color: 'text.secondary' }}>
+      <Typography sx={{ mt: 1, mb: 2, maxWidth: 720, color: 'text.secondary' }}>
         ย้อนดูเรื่องราว ศิลปินนำ ภาพการแสดง วิดีโอ และรางวัลที่วงได้รับในแต่ละปี
       </Typography>
       <Box
@@ -70,11 +71,14 @@ export function PerformanceGroupYearlyArchive({
               aria-pressed={isSelected}
               sx={{
                 minWidth: 92,
+                minHeight: 44,
+                borderRadius: 1.5,
                 flexShrink: 0,
-                fontWeight: 900,
+                fontWeight: 600,
                 ...(isSelected && {
-                  bgcolor: group.primaryColor || '#637e69',
-                  '&:hover': { bgcolor: group.primaryColor || '#637e69' },
+                  color: '#fff',
+                  bgcolor: '#293c34',
+                  '&:hover': { bgcolor: '#3c5147' },
                 }),
               }}
             >
@@ -83,22 +87,7 @@ export function PerformanceGroupYearlyArchive({
           );
         })}
       </Box>
-      <Stack
-        spacing={{ xs: 3, md: 4 }}
-        sx={{
-          position: 'relative',
-          '&::before': {
-            content: '""',
-            top: 20,
-            bottom: 20,
-            left: { md: -25 },
-            width: 2,
-            display: { xs: 'none', md: 'block' },
-            position: 'absolute',
-            bgcolor: 'rgba(99,126,105,0.24)',
-          },
-        }}
-      >
+      <Stack spacing={{ xs: 3, md: 4 }}>
         {group.yearlyData
           .filter((record) => record.year === selectedYear)
           .map((record, index) => (

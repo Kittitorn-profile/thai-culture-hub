@@ -3,7 +3,9 @@
 import { useState, useEffect, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
+import Tab from '@mui/material/Tab';
 import Card from '@mui/material/Card';
+import Tabs from '@mui/material/Tabs';
 import Chip from '@mui/material/Chip';
 import Alert from '@mui/material/Alert';
 import Stack from '@mui/material/Stack';
@@ -94,10 +96,10 @@ const levelOptions: Array<{ value: ReviewerLevel; label: string }> = [
 
 const panelSx = {
   p: 2,
-  borderRadius: 1,
+  borderRadius: 2,
   border: '1px solid',
   borderColor: 'divider',
-  bgcolor: 'background.neutral',
+  bgcolor: '#fafbf8',
 };
 
 function numberValue(value: string, fallback = 0) {
@@ -152,6 +154,7 @@ function LevelPreview({
 export function ReviewerSettingsClient() {
   const { user, checkUserSession } = useAuthContext();
   const accessToken = user?.accessToken ?? user?.access_token ?? '';
+  const [section, setSection] = useState(0);
   const [settings, setSettings] = useState<ReviewerSettings>(DEFAULT_SETTINGS);
   const [updatedAt, setUpdatedAt] = useState('');
   const [needsMigration, setNeedsMigration] = useState(false);
@@ -260,11 +263,11 @@ export function ReviewerSettingsClient() {
       <Stack spacing={3}>
         <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" spacing={2}>
           <Box>
-            <Typography variant="h3" sx={{ fontWeight: 900 }}>
+            <Typography variant="h3" sx={{ fontWeight: 600 }}>
               ตั้งค่าผู้ตรวจสอบ
             </Typography>
             <Typography sx={{ mt: 0.5, color: 'text.secondary' }}>
-              ตั้งค่าเกณฑ์คะแนนสำหรับกำหนดระดับ และนโยบายที่เกี่ยวข้องกับผู้ตรวจสอบ
+              กำหนดเกณฑ์ระดับ น้ำหนักคะแนน และแนวทางการทำงานของผู้ตรวจสอบ
             </Typography>
           </Box>
 
@@ -294,9 +297,38 @@ export function ReviewerSettingsClient() {
 
         {error && <Alert severity="error">{error}</Alert>}
         {message && <Alert severity={needsMigration ? 'warning' : 'success'}>{message}</Alert>}
-        {isLoading && <Alert severity="info">กำลังโหลดการตั้งค่าผู้ตรวจสอบ...</Alert>}
-
-        <Card sx={{ p: { xs: 2.5, md: 3 } }}>
+        {isLoading && <Alert severity="info">กำลังโหลดการตั้งค่า…</Alert>}
+        <Tabs
+          value={section}
+          onChange={(_event, value) => setSection(value)}
+          variant="scrollable"
+          scrollButtons="auto"
+          aria-label="หมวดการตั้งค่าผู้ตรวจสอบ"
+          sx={{ borderBottom: '1px solid', borderColor: 'divider' }}
+        >
+          <Tab
+            id="reviewer-settings-tab-0"
+            aria-controls="reviewer-settings-panel-0"
+            label="ระดับผู้ตรวจสอบ"
+          />
+          <Tab
+            id="reviewer-settings-tab-1"
+            aria-controls="reviewer-settings-panel-1"
+            label="คะแนนและนโยบาย"
+          />
+        </Tabs>
+        <Card
+          role="tabpanel"
+          id="reviewer-settings-panel-0"
+          aria-labelledby="reviewer-settings-tab-0"
+          sx={{
+            display: section === 0 ? 'block' : 'none',
+            p: { xs: 2.5, md: 3 },
+            border: '1px solid #e2e5de',
+            borderRadius: 2,
+            boxShadow: 'none',
+          }}
+        >
           <Stack spacing={3}>
             <Stack
               direction={{ xs: 'column', md: 'row' }}
@@ -304,11 +336,11 @@ export function ReviewerSettingsClient() {
               spacing={2}
             >
               <Box>
-                <Typography variant="h5" sx={{ fontWeight: 900 }}>
+                <Typography variant="h5" sx={{ fontWeight: 600 }}>
                   เกณฑ์กำหนดระดับ
                 </Typography>
                 <Typography sx={{ mt: 0.5, color: 'text.secondary', fontSize: 13 }}>
-                  ผู้ตรวจสอบจะผ่านระดับชำนาญหรือผู้เชี่ยวชาญเมื่อตัวเลขถึงทุกเกณฑ์ขั้นต่ำ
+                  กำหนดค่าขั้นต่ำสำหรับระดับชำนาญและผู้เชี่ยวชาญ โดยแต่ละระดับต้องครบทุกเกณฑ์
                 </Typography>
               </Box>
               <Chip
@@ -328,14 +360,14 @@ export function ReviewerSettingsClient() {
               }}
             >
               <Box sx={panelSx}>
-                <Typography sx={{ mb: 2, fontWeight: 900 }}>ระดับเริ่มต้น</Typography>
+                <Typography sx={{ mb: 2, fontWeight: 600 }}>ระดับเริ่มต้น</Typography>
                 <Typography sx={{ color: 'text.secondary', fontSize: 13 }}>
                   ค่าเริ่มต้นสำหรับผู้ตรวจสอบใหม่ หรือผู้ตรวจสอบที่ยังไม่ผ่านเกณฑ์ระดับชำนาญ
                 </Typography>
               </Box>
 
               <Box sx={panelSx}>
-                <Typography sx={{ mb: 2, fontWeight: 900 }}>เกณฑ์ระดับชำนาญ</Typography>
+                <Typography sx={{ mb: 2, fontWeight: 600 }}>เกณฑ์ระดับชำนาญ</Typography>
                 <Stack spacing={2}>
                   <TextField
                     fullWidth
@@ -368,7 +400,7 @@ export function ReviewerSettingsClient() {
               </Box>
 
               <Box sx={panelSx}>
-                <Typography sx={{ mb: 2, fontWeight: 900 }}>เกณฑ์ระดับผู้เชี่ยวชาญ</Typography>
+                <Typography sx={{ mb: 2, fontWeight: 600 }}>เกณฑ์ระดับผู้เชี่ยวชาญ</Typography>
                 <Stack spacing={2}>
                   <TextField
                     fullWidth
@@ -420,10 +452,21 @@ export function ReviewerSettingsClient() {
           </Stack>
         </Card>
 
-        <Card sx={{ p: { xs: 2.5, md: 3 } }}>
+        <Card
+          role="tabpanel"
+          id="reviewer-settings-panel-1"
+          aria-labelledby="reviewer-settings-tab-1"
+          sx={{
+            display: section === 1 ? 'block' : 'none',
+            p: { xs: 2.5, md: 3 },
+            border: '1px solid #e2e5de',
+            borderRadius: 2,
+            boxShadow: 'none',
+          }}
+        >
           <Stack spacing={3}>
             <Box>
-              <Typography variant="h5" sx={{ fontWeight: 900 }}>
+              <Typography variant="h5" sx={{ fontWeight: 600 }}>
                 สูตรคะแนนและนโยบาย
               </Typography>
               <Typography sx={{ mt: 0.5, color: 'text.secondary', fontSize: 13 }}>
@@ -442,7 +485,7 @@ export function ReviewerSettingsClient() {
             >
               <Box sx={panelSx}>
                 <Stack direction="row" justifyContent="space-between" spacing={2}>
-                  <Typography sx={{ fontWeight: 900 }}>น้ำหนักคะแนน</Typography>
+                  <Typography sx={{ fontWeight: 600 }}>น้ำหนักคะแนน</Typography>
                   <Chip
                     size="small"
                     label={`รวม ${totalWeight}`}
@@ -483,7 +526,7 @@ export function ReviewerSettingsClient() {
               </Box>
 
               <Box sx={panelSx}>
-                <Typography sx={{ fontWeight: 900 }}>นโยบายผู้ตรวจสอบ</Typography>
+                <Typography sx={{ fontWeight: 600 }}>นโยบายผู้ตรวจสอบ</Typography>
                 <Stack spacing={2} sx={{ mt: 2 }}>
                   <FormControlLabel
                     control={
@@ -548,17 +591,52 @@ export function ReviewerSettingsClient() {
                 </Stack>
               </Box>
             </Box>
-
-            <Stack direction="row" justifyContent="flex-end" spacing={1.5}>
-              <Button color="inherit" onClick={() => setSettings(DEFAULT_SETTINGS)}>
-                คืนค่าเริ่มต้น
-              </Button>
-              <LoadingButton variant="contained" loading={isSaving} onClick={saveSettings}>
-                บันทึกการตั้งค่า
-              </LoadingButton>
-            </Stack>
           </Stack>
         </Card>
+        <Box
+          sx={{
+            position: 'sticky',
+            bottom: 16,
+            zIndex: 2,
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: 2,
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            p: 2,
+            border: '1px solid #e2e5de',
+            borderRadius: 2,
+            bgcolor: '#fff',
+            boxShadow: '0 4px 20px rgba(32,42,35,0.06)',
+          }}
+        >
+          <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>
+            บันทึกครั้งเดียว ใช้กับทั้ง 2 หมวด
+          </Typography>
+          <Stack direction="row" justifyContent="flex-end" spacing={1.5}>
+            <Button
+              color="inherit"
+              disabled={isLoading || isSaving}
+              onClick={() => setSettings(DEFAULT_SETTINGS)}
+            >
+              คืนค่าเริ่มต้น
+            </Button>
+            <LoadingButton
+              variant="contained"
+              loading={isSaving}
+              disabled={isLoading || needsMigration}
+              onClick={saveSettings}
+              sx={{
+                minHeight: 44,
+                bgcolor: '#293c34',
+                color: '#fff',
+                '&:hover': { bgcolor: '#3c5147' },
+              }}
+            >
+              บันทึกการตั้งค่า
+            </LoadingButton>
+          </Stack>
+        </Box>
       </Stack>
     </DashboardContent>
   );

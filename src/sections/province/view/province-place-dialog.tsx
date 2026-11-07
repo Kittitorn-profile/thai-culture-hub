@@ -197,7 +197,7 @@ export function ProvincePlaceDialog({
                 label={getCategoryLabel(categoryConfig, place.category)}
                 sx={{
                   color: categoryColor,
-                  fontWeight: 900,
+                  fontWeight: 600,
                   bgcolor: alpha(categoryColor, 0.12),
                   boxShadow: `inset 0 0 0 1px ${alpha(categoryColor, 0.16)}`,
                 }}
@@ -208,7 +208,7 @@ export function ProvincePlaceDialog({
                   label={displayHighlight}
                   sx={{
                     color: theme.palette.grey[800],
-                    fontWeight: 900,
+                    fontWeight: 600,
                     bgcolor: alpha(theme.palette.grey[500], 0.1),
                     boxShadow: `inset 0 0 0 1px ${alpha(theme.palette.grey[500], 0.14)}`,
                   }}
@@ -220,7 +220,7 @@ export function ProvincePlaceDialog({
               component="span"
               sx={{
                 display: 'block',
-                fontWeight: 900,
+                fontWeight: 600,
                 lineHeight: 1.25,
                 overflowWrap: 'anywhere',
                 fontSize: { xs: 20, sm: 24, md: 28 },
@@ -311,7 +311,7 @@ export function ProvincePlaceDialog({
                       py: 0.75,
                       color: categoryColor,
                       fontSize: 12,
-                      fontWeight: 900,
+                      fontWeight: 600,
                       maxWidth: 'calc(100% - 104px)',
                       overflow: 'hidden',
                       whiteSpace: 'nowrap',
@@ -345,7 +345,7 @@ export function ProvincePlaceDialog({
                         color: liked ? '#ffffff' : categoryColor,
                         fontSize: 12,
                         cursor: 'pointer',
-                        fontWeight: 900,
+                        fontWeight: 600,
                         borderRadius: 999,
                         position: 'absolute',
                         bgcolor: liked ? '#e9365f' : alpha('#ffffff', 0.94),
@@ -386,7 +386,7 @@ export function ProvincePlaceDialog({
                       label={districtText}
                       sx={{
                         color: 'white',
-                        fontWeight: 900,
+                        fontWeight: 600,
                         maxWidth: '100%',
                         bgcolor: alpha(theme.palette.grey[900], 0.72),
                         '& .MuiChip-icon': { color: 'white' },
@@ -398,7 +398,7 @@ export function ProvincePlaceDialog({
                         label={coordinates}
                         sx={{
                           color: 'white',
-                          fontWeight: 900,
+                          fontWeight: 600,
                           maxWidth: '100%',
                           bgcolor: alpha(theme.palette.grey[900], 0.72),
                         }}
@@ -466,7 +466,7 @@ export function ProvincePlaceDialog({
                         px: 1.8,
                         py: 1,
                         color: 'white',
-                        fontWeight: 900,
+                        fontWeight: 600,
                         borderRadius: 1.2,
                         bgcolor: categoryColor,
                         whiteSpace: 'nowrap',
@@ -488,7 +488,7 @@ export function ProvincePlaceDialog({
                     sx={{
                       px: 1.8,
                       py: 1,
-                      fontWeight: 900,
+                      fontWeight: 600,
                       borderRadius: 1.2,
                       color: categoryColor,
                       borderColor: alpha(categoryColor, 0.42),
@@ -549,7 +549,7 @@ export function ProvincePlaceDialog({
                         mb: 1,
                         color: categoryColor,
                         fontSize: 12,
-                        fontWeight: 900,
+                        fontWeight: 600,
                       }}
                     >
                       รายละเอียด
@@ -582,7 +582,7 @@ export function ProvincePlaceDialog({
                         mb: 1,
                         color: 'text.secondary',
                         fontSize: 12,
-                        fontWeight: 900,
+                        fontWeight: 600,
                       }}
                     >
                       ช่องทางออนไลน์
@@ -601,7 +601,7 @@ export function ProvincePlaceDialog({
                             px: 1.4,
                             py: 0.8,
                             color: categoryColor,
-                            fontWeight: 900,
+                            fontWeight: 600,
                             borderRadius: 1,
                             textDecoration: 'none',
                             bgcolor: alpha(categoryColor, 0.1),
@@ -629,7 +629,7 @@ export function ProvincePlaceDialog({
                       sx={{
                         color: categoryColor,
                         fontSize: 12,
-                        fontWeight: 900,
+                        fontWeight: 600,
                       }}
                     >
                       ข้อมูลสถานที่
@@ -668,7 +668,7 @@ export function ProvincePlaceDialog({
                                   flexShrink: 0,
                                   color: alpha(categoryColor, 0.86),
                                   fontSize: 12,
-                                  fontWeight: 900,
+                                  fontWeight: 600,
                                   lineHeight: 1.45,
                                 }}
                               >
@@ -706,7 +706,7 @@ export function ProvincePlaceDialog({
                       mt: 2,
                       px: 0,
                       color: categoryColor,
-                      fontWeight: 900,
+                      fontWeight: 600,
                       textDecoration: 'none',
                       '&:hover': {
                         bgcolor: 'transparent',

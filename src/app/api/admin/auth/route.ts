@@ -1,7 +1,10 @@
 import type { NextRequest } from 'next/server';
 
-import crypto from 'node:crypto';
 import { NextResponse } from 'next/server';
+
+import { readAuthBody } from 'src/server/auth-request';
+
+import { verifyPassword } from 'src/server/password';
 
 import { getSupabaseAdmin } from 'src/server/supabase-admin';
 import { createAdminToken } from 'src/server/admin-api-auth';
@@ -16,37 +19,6 @@ type AdminUserRow = {
 };
 
 const ADMIN_USERS_TABLE = process.env.ADMIN_USERS_TABLE ?? 'user';
-
-function sha256(value: string) {
-  return crypto.createHash('sha256').update(value).digest('hex');
-}
-
-function safeCompare(value: string, expectedValue: string) {
-  const valueBuffer = Buffer.from(value);
-  const expectedValueBuffer = Buffer.from(expectedValue);
-
-  return (
-    valueBuffer.length === expectedValueBuffer.length &&
-    crypto.timingSafeEqual(valueBuffer, expectedValueBuffer)
-  );
-}
-
-function verifyPassword(password: string, user: AdminUserRow) {
-  const passwordHash = user.password_hash?.trim();
-
-  if (passwordHash) {
-    if (passwordHash.startsWith('sha256:')) {
-      return safeCompare(sha256(password), passwordHash.replace(/^sha256:/, ''));
-    }
-
-    if (passwordHash.startsWith('sha256$')) {
-      return safeCompare(sha256(password), passwordHash.replace(/^sha256\$/, ''));
-    }
-
-    return safeCompare(password, passwordHash);
-  }
-  return false;
-}
 
 async function findUser(identity: string) {
   const supabase = getSupabaseAdmin();
@@ -73,7 +45,7 @@ async function findUser(identity: string) {
   const emailResult = await supabase.client
     .from(ADMIN_USERS_TABLE)
     .select(columns)
-    .eq('email', identity)
+    .eq('email', identity.toLowerCase())
     .maybeSingle();
 
   if (emailResult.error) {
@@ -86,13 +58,10 @@ async function findUser(identity: string) {
 export const runtime = 'nodejs';
 
 export async function POST(request: NextRequest) {
-  const body = (await request.json().catch(() => ({}))) as {
-    username?: string;
-    email?: string;
-    password?: string;
-  };
-  const identity = (body.username ?? body.email ?? '').trim();
-  const password = body.password ?? '';
+  const body = await readAuthBody(request);
+  const rawIdentity = body.username ?? body.email;
+  const identity = typeof rawIdentity === 'string' ? rawIdentity.trim() : '';
+  const password = typeof body.password === 'string' ? body.password : '';
 
   if (!identity || !password) {
     return NextResponse.json(
@@ -110,9 +79,26 @@ export async function POST(request: NextRequest) {
   if (
     !userResult.user ||
     userResult.user.is_active === false ||
-    !verifyPassword(password, userResult.user)
+    (userResult.user.role === 'creator' && userResult.user.is_active !== true) ||
+    !(await verifyPassword(password, userResult.user.password_hash?.trim()))
   ) {
     return NextResponse.json({ message: 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง' }, { status: 401 });
+  }
+
+  if (userResult.user.role === 'creator') {
+    if (body.acceptTerms !== true)
+      return NextResponse.json({ message: 'กรุณายอมรับเงื่อนไขการใช้บริการ' }, { status: 400 });
+    const supabase = getSupabaseAdmin();
+    if (!supabase.ok)
+      return NextResponse.json({ message: 'ไม่สามารถตรวจสอบบัญชีได้' }, { status: 500 });
+    const { data: profile, error } = await supabase.client
+      .from('creator_profiles')
+      .select('status')
+      .eq('user_id', userResult.user.id)
+      .maybeSingle();
+    if (error) return NextResponse.json({ message: 'ไม่สามารถตรวจสอบบัญชีได้' }, { status: 500 });
+    if (!profile || profile.status !== 'approved')
+      return NextResponse.json({ message: 'บัญชี Creator ยังไม่ได้รับอนุมัติ' }, { status: 403 });
   }
 
   const result = createAdminToken(`${userResult.user.id ?? identity}`, userResult.user.role);

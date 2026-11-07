@@ -5,8 +5,10 @@ import type { ChangeEvent } from 'react';
 import { useRef, useState, useEffect, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
+import Tab from '@mui/material/Tab';
 import Card from '@mui/material/Card';
 import Chip from '@mui/material/Chip';
+import Tabs from '@mui/material/Tabs';
 import Alert from '@mui/material/Alert';
 import Stack from '@mui/material/Stack';
 import Switch from '@mui/material/Switch';
@@ -220,10 +222,10 @@ const levelOptions: Array<{ value: CreatorLevel; label: string }> = [
 
 const panelSx = {
   p: 2,
-  borderRadius: 1,
+  borderRadius: 2,
   border: '1px solid',
   borderColor: 'divider',
-  bgcolor: 'background.neutral',
+  bgcolor: '#fafbf8',
 };
 
 function numberValue(value: string, fallback = 0) {
@@ -242,6 +244,7 @@ function getTotalWeight(settings: CreatorSettings) {
 export function CreatorSettingsClient() {
   const { user, checkUserSession } = useAuthContext();
   const accessToken = user?.accessToken ?? user?.access_token ?? '';
+  const [section, setSection] = useState(0);
   const [settings, setSettings] = useState<CreatorSettings>(DEFAULT_SETTINGS);
   const [updatedAt, setUpdatedAt] = useState('');
   const [needsMigration, setNeedsMigration] = useState(false);
@@ -448,14 +451,14 @@ export function CreatorSettingsClient() {
       const nextUrl = result.data?.url ?? '';
 
       if (!nextUrl) {
-        throw new Error('ไม่พบ URL รูป badge หลังอัปโหลด');
+        throw new Error('ไม่พบ URL รูปรางวัล หลังอัปโหลด');
       }
 
       updateBadgeImage(field, nextUrl);
       clearBadgePreview(field);
-      setMessage('อัปโหลดรูป badge แล้ว กดบันทึกการตั้งค่าเพื่อใช้งาน');
+      setMessage('อัปโหลดรูปรางวัล แล้ว กดบันทึกการตั้งค่าเพื่อใช้งาน');
     } catch (caughtError) {
-      setError(caughtError instanceof Error ? caughtError.message : 'อัปโหลดรูป badge ไม่สำเร็จ');
+      setError(caughtError instanceof Error ? caughtError.message : 'อัปโหลดรูปรางวัล ไม่สำเร็จ');
     } finally {
       setUploadingBadgeKey('');
     }
@@ -466,11 +469,11 @@ export function CreatorSettingsClient() {
       <Stack spacing={3}>
         <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" spacing={2}>
           <Box>
-            <Typography variant="h3" sx={{ fontWeight: 900 }}>
-              ตั้งค่า Badge Creator
+            <Typography variant="h3" sx={{ fontWeight: 600 }}>
+              ระดับและรางวัล Creator
             </Typography>
             <Typography sx={{ mt: 0.5, color: 'text.secondary' }}>
-              ตั้งค่าเกณฑ์สำหรับ Contributor และ Specialist ตาม badge ที่แสดงฝั่งผู้ใช้
+              กำหนดเกณฑ์รับรางวัล รูปสัญลักษณ์ และวิธีคำนวณคะแนนของผู้เขียน
             </Typography>
           </Box>
 
@@ -500,9 +503,43 @@ export function CreatorSettingsClient() {
 
         {error && <Alert severity="error">{error}</Alert>}
         {message && <Alert severity={needsMigration ? 'warning' : 'success'}>{message}</Alert>}
-        {isLoading && <Alert severity="info">กำลังโหลดการตั้งค่า badge Creator...</Alert>}
-
-        <Card sx={{ p: { xs: 2.5, md: 3 } }}>
+        {isLoading && <Alert severity="info">กำลังโหลดการตั้งค่า…</Alert>}
+        <Tabs
+          value={section}
+          onChange={(_event, value) => setSection(value)}
+          variant="scrollable"
+          scrollButtons="auto"
+          aria-label="หมวดการตั้งค่า Creator"
+          sx={{ borderBottom: '1px solid', borderColor: 'divider' }}
+        >
+          <Tab
+            id="creator-settings-tab-0"
+            aria-controls="creator-settings-panel-0"
+            label="ระดับผู้เขียน"
+          />
+          <Tab
+            id="creator-settings-tab-1"
+            aria-controls="creator-settings-panel-1"
+            label="รางวัลความเชี่ยวชาญ"
+          />
+          <Tab
+            id="creator-settings-tab-2"
+            aria-controls="creator-settings-panel-2"
+            label="คะแนนและเงื่อนไข"
+          />
+        </Tabs>
+        <Card
+          role="tabpanel"
+          id="creator-settings-panel-0"
+          aria-labelledby="creator-settings-tab-0"
+          sx={{
+            display: section === 0 ? 'block' : 'none',
+            p: { xs: 2.5, md: 3 },
+            borderRadius: 2,
+            border: '1px solid #e2e5de',
+            boxShadow: 'none',
+          }}
+        >
           <Stack spacing={3}>
             <Stack
               direction={{ xs: 'column', md: 'row' }}
@@ -510,8 +547,8 @@ export function CreatorSettingsClient() {
               spacing={2}
             >
               <Box>
-                <Typography variant="h5" sx={{ fontWeight: 900 }}>
-                  Contributor Badge
+                <Typography variant="h5" sx={{ fontWeight: 600 }}>
+                  ระดับผู้เขียน · Contributor
                 </Typography>
                 <Typography sx={{ mt: 0.5, color: 'text.secondary', fontSize: 13 }}>
                   ใช้จัดระดับผลงานโดยรวมของ Creator จากจำนวนบทความ คุณภาพ และยอดเข้าชม
@@ -567,18 +604,18 @@ export function CreatorSettingsClient() {
                       />
                     ) : (
                       <Typography sx={{ color: 'text.secondary', fontSize: 13 }}>
-                        ยังไม่มีรูป badge
+                        ยังไม่มีรูปรางวัล
                       </Typography>
                     )}
                   </Box>
                   {pendingBadgeImages[badge.imageField] && (
                     <Alert severity="info" sx={{ mb: 2 }}>
-                      กำลังแสดง Preview ยังไม่ได้อัปโหลดจริง
+                      รูปตัวอย่าง — กดอัปโหลดก่อนบันทึกการตั้งค่า
                     </Alert>
                   )}
                   <Stack spacing={2}>
                     <LoadingButton component="label" variant="outlined" color="inherit">
-                      เลือกไฟล์เพื่อ Preview
+                      เลือกรูปรางวัล
                       <Box
                         component="input"
                         type="file"
@@ -643,11 +680,22 @@ export function CreatorSettingsClient() {
           </Stack>
         </Card>
 
-        <Card sx={{ p: { xs: 2.5, md: 3 } }}>
+        <Card
+          role="tabpanel"
+          id="creator-settings-panel-1"
+          aria-labelledby="creator-settings-tab-1"
+          sx={{
+            display: section === 1 ? 'block' : 'none',
+            p: { xs: 2.5, md: 3 },
+            borderRadius: 2,
+            border: '1px solid #e2e5de',
+            boxShadow: 'none',
+          }}
+        >
           <Stack spacing={3}>
             <Box>
-              <Typography variant="h5" sx={{ fontWeight: 900 }}>
-                Specialist Badge
+              <Typography variant="h5" sx={{ fontWeight: 600 }}>
+                รางวัลความเชี่ยวชาญ · Specialist
               </Typography>
               <Typography sx={{ mt: 0.5, color: 'text.secondary', fontSize: 13 }}>
                 ใช้ให้ badge ความเชี่ยวชาญตามหมวดบทความ เช่น ผ้าไทย ประเพณี ชาติพันธุ์ อาหารพื้นถิ่น
@@ -696,18 +744,18 @@ export function CreatorSettingsClient() {
                       />
                     ) : (
                       <Typography sx={{ color: 'text.secondary', fontSize: 13 }}>
-                        ยังไม่มีรูป badge
+                        ยังไม่มีรูปรางวัล
                       </Typography>
                     )}
                   </Box>
-                  {pendingBadgeImages[badge.imageField] && (
+                  {/* {pendingBadgeImages[badge.imageField] && (
                     <Alert severity="info" sx={{ mt: 2 }}>
-                      กำลังแสดง Preview ยังไม่ได้อัปโหลดจริง
+                      รูปตัวอย่าง — กดอัปโหลดก่อนบันทึกการตั้งค่า
                     </Alert>
-                  )}
+                  )} */}
                   <Stack spacing={2} sx={{ mt: 2 }}>
                     <LoadingButton component="label" variant="outlined" color="inherit">
-                      เลือกไฟล์เพื่อ Preview
+                      เลือกรูปรางวัล
                       <Box
                         component="input"
                         type="file"
@@ -763,10 +811,21 @@ export function CreatorSettingsClient() {
           </Stack>
         </Card>
 
-        <Card sx={{ p: { xs: 2.5, md: 3 } }}>
+        <Card
+          role="tabpanel"
+          id="creator-settings-panel-2"
+          aria-labelledby="creator-settings-tab-2"
+          sx={{
+            display: section === 2 ? 'block' : 'none',
+            p: { xs: 2.5, md: 3 },
+            borderRadius: 2,
+            border: '1px solid #e2e5de',
+            boxShadow: 'none',
+          }}
+        >
           <Stack spacing={3}>
             <Box>
-              <Typography variant="h5" sx={{ fontWeight: 900 }}>
+              <Typography variant="h5" sx={{ fontWeight: 600 }}>
                 สูตรคะแนนและนโยบาย
               </Typography>
               <Typography sx={{ mt: 0.5, color: 'text.secondary', fontSize: 13 }}>
@@ -785,7 +844,7 @@ export function CreatorSettingsClient() {
             >
               <Box sx={panelSx}>
                 <Stack direction="row" justifyContent="space-between" spacing={2}>
-                  <Typography sx={{ fontWeight: 900 }}>น้ำหนักคะแนน</Typography>
+                  <Typography sx={{ fontWeight: 600 }}>น้ำหนักคะแนน</Typography>
                   <Chip
                     size="small"
                     label={`รวม ${totalWeight}`}
@@ -826,7 +885,7 @@ export function CreatorSettingsClient() {
               </Box>
 
               <Box sx={panelSx}>
-                <Typography sx={{ fontWeight: 900 }}>นโยบาย badge</Typography>
+                <Typography sx={{ fontWeight: 600 }}>นโยบาย badge</Typography>
                 <Stack spacing={2} sx={{ mt: 2 }}>
                   <FormControlLabel
                     control={
@@ -895,17 +954,52 @@ export function CreatorSettingsClient() {
                 </Stack>
               </Box>
             </Box>
-
-            <Stack direction="row" justifyContent="flex-end" spacing={1.5}>
-              <Button color="inherit" onClick={() => setSettings(DEFAULT_SETTINGS)}>
-                คืนค่าเริ่มต้น
-              </Button>
-              <LoadingButton variant="contained" loading={isSaving} onClick={saveSettings}>
-                บันทึกการตั้งค่า
-              </LoadingButton>
-            </Stack>
           </Stack>
         </Card>
+        <Box
+          sx={{
+            position: 'sticky',
+            bottom: 16,
+            zIndex: 2,
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: 2,
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            p: 2,
+            bgcolor: '#fff',
+            border: '1px solid #e2e5de',
+            borderRadius: 2,
+            boxShadow: '0 4px 20px rgba(32,42,35,0.06)',
+          }}
+        >
+          <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>
+            บันทึกครั้งเดียว ใช้กับการตั้งค่าทั้ง 3 หมวด
+          </Typography>
+          <Stack direction="row" justifyContent="flex-end" spacing={1.5}>
+            <Button
+              color="inherit"
+              disabled={isLoading || isSaving}
+              onClick={() => setSettings(DEFAULT_SETTINGS)}
+            >
+              คืนค่าเริ่มต้น
+            </Button>
+            <LoadingButton
+              variant="contained"
+              loading={isSaving}
+              disabled={isLoading || needsMigration || Boolean(uploadingBadgeKey)}
+              onClick={saveSettings}
+              sx={{
+                minHeight: 44,
+                bgcolor: '#293c34',
+                color: '#fff',
+                '&:hover': { bgcolor: '#3c5147' },
+              }}
+            >
+              บันทึกการตั้งค่า
+            </LoadingButton>
+          </Stack>
+        </Box>
       </Stack>
     </DashboardContent>
   );

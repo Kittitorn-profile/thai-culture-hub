@@ -5,7 +5,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
-import Alert from '@mui/material/Alert';
 import Table from '@mui/material/Table';
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
@@ -548,22 +547,25 @@ export default function CulturalPlacesSyncPage() {
       logMessage: string;
       results: SyncEndpointResult[];
     }) =>
-      adminApiRequest<{ data?: SyncLogRow; message?: string }>('/api/admin/cultural-place-sync-logs', {
-        method: 'POST',
-        accessToken,
-        body: {
-          syncDataset: payload.syncDatasetValue,
-          sourceLabel: payload.datasetLabel,
-          provinceCode: provinceCode || null,
-          provinceName: selectedProvince.name,
-          totalRecords: payload.totalRecords,
-          success: payload.success,
-          message: payload.logMessage,
-          responsePayload: {
-            results: payload.results,
+      adminApiRequest<{ data?: SyncLogRow; message?: string }>(
+        '/api/admin/cultural-place-sync-logs',
+        {
+          method: 'POST',
+          accessToken,
+          body: {
+            syncDataset: payload.syncDatasetValue,
+            sourceLabel: payload.datasetLabel,
+            provinceCode: provinceCode || null,
+            provinceName: selectedProvince.name,
+            totalRecords: payload.totalRecords,
+            success: payload.success,
+            message: payload.logMessage,
+            responsePayload: {
+              results: payload.results,
+            },
           },
-        },
-      }),
+        }
+      ),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['admin-cultural-place-sync-logs'] });
     },
@@ -790,12 +792,12 @@ export default function CulturalPlacesSyncPage() {
           </Button>
         </Stack>
 
-        {error && <Alert severity="error">{error}</Alert>}
+        {/* {error && <Alert severity="error">{error}</Alert>}
         {message && <Alert severity="success">{message}</Alert>}
         <Alert severity="info">
           Sync จาก ททท. ต้องมี <strong>TAT_DATA_API_KEY</strong> และกรมศิลป์ต้องมี{' '}
           <strong>FINE_ARTS_API_KEY</strong> ใน env ของ server
-        </Alert>
+        </Alert> */}
 
         <Card sx={{ p: 2.5 }}>
           <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} alignItems={{ md: 'center' }}>

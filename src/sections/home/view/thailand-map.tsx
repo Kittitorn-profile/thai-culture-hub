@@ -23,7 +23,11 @@ import { Iconify } from 'src/components/iconify';
 import { trackAnalyticsEvent } from 'src/components/analytics';
 
 import { getProvinceCulturalPlaces } from 'src/sections/province/province-data';
-import { getCategoryColor, useCategoryConfig } from 'src/sections/province/category-config';
+import {
+  getCategoryLabel,
+  getCategoryColor,
+  useCategoryConfig,
+} from 'src/sections/province/category-config';
 import { rewindGeoJson, useThailandProvincesGeoJson } from 'src/sections/province/thailand-geojson';
 
 // ----------------------------------------------------------------------
@@ -174,9 +178,9 @@ function getCategorySummary(
 function isCategoryCounts(value: unknown): value is ProvinceCategoryCounts {
   return Boolean(
     value &&
-      typeof value === 'object' &&
-      !Array.isArray(value) &&
-      Object.values(value).every((count) => typeof count === 'number')
+    typeof value === 'object' &&
+    !Array.isArray(value) &&
+    Object.values(value).every((count) => typeof count === 'number')
   );
 }
 
@@ -305,10 +309,7 @@ async function fetchProvinceCategorySummaries(
   signal: AbortSignal,
   categoryConfig: CategoryConfigMap
 ) {
-  const summaryResponse = await fetchProvincePlacesApi(
-    '/api/culture/province-places',
-    signal
-  );
+  const summaryResponse = await fetchProvincePlacesApi('/api/culture/province-places', signal);
   const summaryJson = summaryResponse?.ok ? await summaryResponse.json() : {};
   const apiSummaries =
     summaryJson?.summaries && typeof summaryJson.summaries === 'object'
@@ -374,10 +375,7 @@ export default function ThailandMap() {
     ],
     [categoryConfigKey, provinceIds]
   );
-  const {
-    data: provinceCategorySummaries = {},
-    isLoading: isProvinceSummaryLoading,
-  } = useQuery({
+  const { data: provinceCategorySummaries = {}, isLoading: isProvinceSummaryLoading } = useQuery({
     enabled: provinceIds.length > 0,
     queryKey: provinceSummaryQueryKey,
     queryFn: ({ signal }) => fetchProvinceCategorySummaries(provinceIds, signal, categoryConfig),
@@ -606,7 +604,7 @@ export default function ThailandMap() {
       >
         <Typography
           sx={{
-            color: theme.palette.common.white,
+            color: '#252b2e',
             fontSize: { xs: 24, sm: 36 },
             fontWeight: 900,
             lineHeight: 1,
@@ -617,7 +615,7 @@ export default function ThailandMap() {
         <Typography
           sx={{
             mt: 0.8,
-            color: alpha(theme.palette.common.white, 0.74),
+            color: '#626a6e',
             fontSize: { xs: 12, sm: 15 },
             fontWeight: 700,
             lineHeight: 1.45,
@@ -820,22 +818,6 @@ export default function ThailandMap() {
               role="img"
               aria-label="Interactive Thailand province map"
             >
-              <defs>
-                <filter id="paper-noise">
-                  <feTurbulence baseFrequency="0.9" numOctaves="2" seed="8" type="fractalNoise" />
-                  <feColorMatrix type="saturate" values="0" />
-                  <feComponentTransfer>
-                    <feFuncA slope="0.08" type="linear" />
-                  </feComponentTransfer>
-                </filter>
-              </defs>
-              <rect
-                width="960"
-                height="760"
-                fill="#ffffff"
-                filter="url(#paper-noise)"
-                opacity="0.22"
-              />
               <path
                 d="M 622 22 C 592 92 642 128 603 202 C 565 276 624 332 582 416 C 548 485 583 548 548 626"
                 fill="none"
@@ -856,7 +838,7 @@ export default function ThailandMap() {
               <path
                 d="M 818 92 C 754 142 804 216 738 268 C 670 322 726 414 642 474"
                 fill="none"
-                stroke="#ffffff"
+                stroke="#7c878b"
                 strokeWidth={3}
                 strokeDasharray="8 12"
                 strokeLinecap="round"
@@ -865,7 +847,7 @@ export default function ThailandMap() {
               <text
                 x="735"
                 y="176"
-                fill="#ffffff"
+                fill="#68757a"
                 fontSize={22}
                 fontWeight={800}
                 letterSpacing={18}
@@ -877,7 +859,7 @@ export default function ThailandMap() {
               <text
                 x="684"
                 y="698"
-                fill="#ffffff"
+                fill="#68757a"
                 fontSize={22}
                 fontWeight={800}
                 letterSpacing={18}
@@ -923,6 +905,90 @@ export default function ThailandMap() {
               </Box>
             </Box>
           )}
+        </Box>
+      </Box>
+
+      <Box
+        component="section"
+        aria-label="คำอธิบายสีแผนที่"
+        sx={{ borderTop: '1px solid #dde1dd', pt: 3, pb: 2 }}
+      >
+        <Typography component="h3" sx={{ fontSize: 15, fontWeight: 600, color: '#252b2e' }}>
+          สีบนแผนที่หมายถึงอะไร?
+        </Typography>
+        <Typography sx={{ mt: 0.75, mb: 2, fontSize: 13, color: '#626a6e', lineHeight: 1.7 }}>
+          สีของแต่ละจังหวัดแสดงหมวดวัฒนธรรมที่มีจำนวนรายการมากที่สุดในข้อมูลของจังหวัดนั้น
+        </Typography>
+        <Box
+          component="ul"
+          sx={{
+            m: 0,
+            p: 0,
+            listStyle: 'none',
+            display: 'flex',
+            flexWrap: 'wrap',
+            columnGap: 3,
+            rowGap: 1.5,
+          }}
+        >
+          {Array.from(
+            new Set([
+              ...Object.values(provinceCategorySummaries).map(
+                (summary) => summary.dominantCategory
+              ),
+              ...Object.keys(categoryConfig).filter((key) =>
+                mapItems.some((item) => item.provinceFill === getCategoryColor(categoryConfig, key))
+              ),
+            ])
+          )
+            .sort((a, b) =>
+              getCategoryLabel(categoryConfig, a).localeCompare(
+                getCategoryLabel(categoryConfig, b),
+                'th'
+              )
+            )
+            .map((key) => (
+              <Box
+                component="li"
+                key={key}
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1,
+                  fontSize: 13,
+                  color: '#50595d',
+                }}
+              >
+                <Box
+                  aria-hidden="true"
+                  sx={{
+                    width: 12,
+                    height: 12,
+                    borderRadius: 0.5,
+                    flexShrink: 0,
+                    bgcolor: getCategoryColor(categoryConfig, key),
+                    border: '1px solid #00000012',
+                  }}
+                />
+                {getCategoryLabel(categoryConfig, key)}
+              </Box>
+            ))}
+          <Box
+            component="li"
+            sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: 13, color: '#50595d' }}
+          >
+            <Box
+              aria-hidden="true"
+              sx={{
+                width: 12,
+                height: 12,
+                borderRadius: 0.5,
+                bgcolor: DEFAULT_PROVINCE_FILL,
+                border: '1px solid #cbd1cd',
+              }}
+            />
+            ยังไม่มีข้อมูลหมวดวัฒนธรรม
+          </Box>
         </Box>
       </Box>
 

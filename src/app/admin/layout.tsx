@@ -11,6 +11,7 @@ import { CONFIG } from 'src/global-config';
 import { DashboardLayout } from 'src/layouts/dashboard';
 
 import { SvgColor } from 'src/components/svg-color';
+import { Iconify } from 'src/components/iconify';
 
 import { AuthGuard } from 'src/auth/guard';
 import { useAuthContext } from 'src/auth/hooks';
@@ -66,6 +67,12 @@ const navData: AdminNavGroup[] = [
         ],
       },
 
+      {
+        title: 'ข้อความติดต่อ',
+        path: '/admin/contact-messages',
+        icon: <Iconify icon="solar:letter-bold" />,
+        permission: ADMIN_PERMISSION.feedback,
+      },
       {
         title: 'ข้อเสนอแนะ',
         path: '/admin/feedback',

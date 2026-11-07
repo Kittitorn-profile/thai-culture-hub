@@ -179,7 +179,7 @@ export function ProvincePlacesDrawer({
     >
       <Stack direction="row" alignItems="center" justifyContent="space-between">
         <Box>
-          <Typography sx={{ fontSize: 20, fontWeight: 900 }}>
+          <Typography sx={{ fontSize: 20, fontWeight: 600 }}>
             {selectedDistrictDetail ?? 'สถานที่และวัฒนธรรม'}
           </Typography>
           <Typography sx={{ color: 'text.secondary', fontSize: 13 }}>
@@ -209,7 +209,7 @@ export function ProvincePlacesDrawer({
             minHeight: 40,
             px: 1.5,
             fontSize: 13,
-            fontWeight: 900,
+            fontWeight: 600,
           },
         }}
       >
@@ -249,7 +249,7 @@ export function ProvincePlacesDrawer({
               border: `1px dashed ${alpha(theme.palette.primary.main, 0.4)}`,
             }}
           >
-            <Typography sx={{ fontWeight: 900 }}>ยังไม่มีข้อมูลสถานที่ของจังหวัดนี้</Typography>
+            <Typography sx={{ fontWeight: 600 }}>ยังไม่มีข้อมูลสถานที่ของจังหวัดนี้</Typography>
             <Typography sx={{ mt: 0.8, color: 'text.secondary', fontSize: 14 }}>
               ลองเปลี่ยนตัวกรอง หรือเลือกอำเภออื่นบนแผนที่
             </Typography>

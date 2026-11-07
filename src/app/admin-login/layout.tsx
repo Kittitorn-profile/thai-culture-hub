@@ -1,117 +1,77 @@
-import { AuthSplitLayout } from 'src/layouts/auth-split';
+'use client';
+
+import { RiArrowLeftLine } from '@remixicon/react';
+
+import Box from '@mui/material/Box';
+import Link from '@mui/material/Link';
+import Typography from '@mui/material/Typography';
+
+import { RouterLink } from 'src/routes/components';
+
+import { cultureUi } from 'src/theme/culture-ui';
+
+import { Logo } from 'src/components/logo';
 
 import { GuestGuard } from 'src/auth/guard';
 
-type Props = {
-  children: React.ReactNode;
-};
+type Props = { children: React.ReactNode };
 
 export default function Layout({ children }: Props) {
   return (
     <GuestGuard>
-      <AuthSplitLayout
-        slotProps={{
-          main: {
-            sx: {
-              minHeight: '100dvh',
-              color: '#f8f6ee',
-              overflow: 'hidden',
-              position: 'relative',
-              bgcolor: '#7b8476',
-              backgroundImage: `
-                radial-gradient(circle at 50% 18%, rgba(239,236,224,0.3) 0%, rgba(239,236,224,0.1) 28%, rgba(111,135,144,0) 58%),
-                linear-gradient(180deg, #6f8790 0%, #7b8476 54%, #8f7c5c 100%)
-              `,
-              '&::before': {
-                content: '""',
-                position: 'absolute',
-                inset: { xs: -80, md: -120 },
-                zIndex: 0,
-                opacity: 0.22,
-                pointerEvents: 'none',
-                backgroundImage: `
-                  repeating-radial-gradient(circle at 78% 12%, transparent 0 44px, rgba(230,236,232,0.22) 46px 48px),
-                  repeating-radial-gradient(circle at 10% 82%, transparent 0 52px, rgba(230,236,232,0.12) 54px 56px)
-                `,
-                transform: 'rotate(-4deg)',
-              },
-            },
-          },
-          header: { sx: { display: 'none' } },
-          section: { sx: { display: 'none' } },
-          content: {
-            variant: 'admin',
-            sx: {
-              zIndex: 1,
-              minHeight: '100dvh',
-              overflowY: 'auto',
-              justifyContent: 'flex-start',
-              p: { xs: 2, sm: 4 },
-              '& > div': {
-                my: 'auto',
-                py: { xs: 1, sm: 2 },
-                maxWidth: 480,
-              },
-              '& > div > .MuiStack-root': {
-                gap: 3,
-                height: 'auto',
-                p: { xs: 3, sm: 4.5 },
-                color: '#f8f6ee',
-                overflow: 'hidden',
-                position: 'relative',
-                borderRadius: 3,
-                backdropFilter: 'blur(14px)',
-                bgcolor: 'rgba(42,55,54,0.72)',
-                border: '1px solid rgba(255,255,255,0.3)',
-                boxShadow: '0 32px 90px rgba(32,42,43,0.3)',
-                '&::before': {
-                  content: '""',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  height: 4,
-                  position: 'absolute',
-                  bgcolor: '#ead7a1',
-                },
-                '&::after': {
-                  content: '""',
-                  top: -100,
-                  right: -100,
-                  width: 220,
-                  height: 220,
-                  zIndex: -1,
-                  position: 'absolute',
-                  borderRadius: '50%',
-                  background: 'radial-gradient(circle, rgba(234,215,161,0.18), transparent 70%)',
-                },
-              },
-              '& .MuiInputLabel-root': {
-                color: 'rgba(248,246,238,0.68)',
-              },
-              '& .MuiInputLabel-root.Mui-focused': {
-                color: '#ead7a1',
-              },
-              '& .MuiOutlinedInput-root': {
-                color: '#f8f6ee',
-                bgcolor: 'rgba(255,255,255,0.06)',
-                '& fieldset': { borderColor: 'rgba(248,246,238,0.28)' },
-                '&:hover fieldset': { borderColor: 'rgba(248,246,238,0.5)' },
-                '&.Mui-focused fieldset': { borderColor: '#ead7a1' },
-              },
-              '& button[type="submit"]': {
-                minHeight: 52,
-                color: '#2a3736',
-                fontWeight: 900,
-                bgcolor: '#ead7a1',
-                boxShadow: '0 12px 28px rgba(20,28,27,0.22)',
-                '&:hover': { bgcolor: '#f2e3b8' },
-              },
-            },
-          },
+      <Box
+        component="main"
+        sx={{
+          minHeight: '100dvh',
+          bgcolor: cultureUi.background,
+          color: cultureUi.text,
+          p: { xs: 2.5, sm: 4 },
+          display: 'flex',
+          flexDirection: 'column',
         }}
       >
-        {children}
-      </AuthSplitLayout>
+        <Link
+          component={RouterLink}
+          href="/"
+          underline="hover"
+          sx={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 1,
+            alignSelf: 'flex-start',
+            color: cultureUi.muted,
+            fontSize: 13,
+          }}
+        >
+          <RiArrowLeftLine size={16} />
+          กลับหน้าเว็บไซต์
+        </Link>
+        <Box sx={{ width: 1, maxWidth: 420, mx: 'auto', my: 'auto', py: 4 }}>
+          <Box sx={{ mb: 3, display: 'flex', justifyContent: 'center' }}>
+            <Logo isSingle sx={{ width: 100, height: 'auto' }} />
+          </Box>
+          <Box
+            sx={{
+              p: { xs: 3, sm: 4 },
+              bgcolor: cultureUi.paper,
+              border: `1px solid ${cultureUi.border}`,
+              borderRadius: 2.5,
+              '& .MuiFormLabel-asterisk': { color: 'error.main' },
+            }}
+          >
+            {children}
+          </Box>
+          <Typography sx={{ mt: 2.5, textAlign: 'center', fontSize: 12, color: cultureUi.muted }}>
+            สำหรับ Creator{' '}
+            <Link component={RouterLink} href="/creator/sign-in" color="inherit" underline="hover">
+              เข้าสู่ระบบที่นี่
+            </Link>
+          </Typography>
+        </Box>
+        <Typography sx={{ textAlign: 'center', color: cultureUi.muted, fontSize: 11 }}>
+          Thailand Cultural Hub
+        </Typography>
+      </Box>
     </GuestGuard>
   );
 }

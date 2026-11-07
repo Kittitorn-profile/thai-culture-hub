@@ -17,6 +17,7 @@ import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
 import MenuItem from '@mui/material/MenuItem';
+import TextField from '@mui/material/TextField';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import InputAdornment from '@mui/material/InputAdornment';
@@ -28,6 +29,7 @@ import { fDateTime } from 'src/utils/format-time';
 
 import { Upload } from 'src/components/upload';
 import { Iconify } from 'src/components/iconify';
+import { uploadClasses } from 'src/components/upload/classes';
 import { Form, RHFEditor, RHFSelect, RHFTextField } from 'src/components/hook-form';
 
 import { useAuthContext } from 'src/auth/hooks';
@@ -133,6 +135,24 @@ export function CreatorWorkspaceView({ view }: Props) {
     }),
     [articles]
   );
+  const [articleFilter, setArticleFilter] = useState('all');
+  const [articleSearch, setArticleSearch] = useState('');
+  const visibleArticles = articles.filter((article) => {
+    const matchesStatus =
+      articleFilter === 'all' ||
+      (articleFilter === 'published'
+        ? isPublishedArticleStatus(article.status)
+        : article.status === articleFilter);
+    const term = articleSearch.trim().toLocaleLowerCase('th');
+    return (
+      matchesStatus &&
+      (!term ||
+        [article.title, article.excerpt, article.categoryLabel].some((value) =>
+          value?.toLocaleLowerCase('th').includes(term)
+        ))
+    );
+  });
+
   const writeChecklist = [
     { label: 'ตั้งชื่อบทความ', done: Boolean(articleForm.title.trim()) },
     { label: 'เลือกหมวดหมู่', done: Boolean(articleForm.categoryKey) },
@@ -200,23 +220,11 @@ export function CreatorWorkspaceView({ view }: Props) {
     [articles, editId]
   );
   const isEditingPublishedArticle = isPublishedArticleStatus(editingArticle?.status ?? '');
-  const writeStatus = editingArticle?.status ?? profile?.status ?? '';
   const writeStatusLabel = editingArticle
     ? getStatusLabel(editingArticle.status)
     : isApproved
       ? 'บัญชี Creator อนุมัติแล้ว'
       : 'รออนุมัติ Creator';
-  const writeStatusColor = editingArticle
-    ? getStatusColor(editingArticle.status)
-    : isApproved
-      ? 'success'
-      : 'warning';
-  const writeStatusIcon = isPublishedArticleStatus(writeStatus)
-    ? 'solar:check-circle-bold'
-    : writeStatus === 'rejected'
-      ? 'solar:info-circle-bold'
-      : 'solar:clock-circle-bold';
-
   useEffect(() => {
     if (editingArticle && view === 'write') {
       articleMethods.reset({
@@ -439,12 +447,12 @@ export function CreatorWorkspaceView({ view }: Props) {
     <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" spacing={2}>
       <Box>
         <Stack sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 2 }}>
-          <Typography variant="h3" sx={{ fontWeight: 900 }}>
-            พื้นที่ผู้ร่วมสร้างข้อมูล
+          <Typography component="h1" sx={{ fontSize: { xs: 26, md: 32 }, fontWeight: 600 }}>
+            โปรไฟล์ของฉัน
           </Typography>
         </Stack>
-        <Typography sx={{ mt: 0.5 }}>
-          เขียน บันทึก และส่งบทความวัฒนธรรมให้ทีมงานตรวจสอบก่อนเผยแพร่
+        <Typography sx={{ mt: 0.5, color: 'text.secondary', fontSize: 13 }}>
+          จัดการข้อมูลส่วนตัว รูปโปรไฟล์ และความปลอดภัยของบัญชี
         </Typography>
       </Box>
     </Stack>
@@ -454,7 +462,7 @@ export function CreatorWorkspaceView({ view }: Props) {
     <Box
       sx={{
         px: { xs: 2, md: 4 },
-        py: { xs: 10, md: 12 },
+        py: { xs: 4, md: 5 },
         minHeight: '100vh',
         color: creatorTone.text,
         overflow: 'hidden',
@@ -473,20 +481,28 @@ export function CreatorWorkspaceView({ view }: Props) {
         },
       }}
     >
-      <Stack spacing={3} sx={{ mx: 'auto', maxWidth: 1180, position: 'relative', zIndex: 1 }}>
-        {renderHeader(profile)}
+      <Stack
+        spacing={3}
+        sx={{
+          mx: 'auto',
+          maxWidth: 1280,
+          position: 'relative',
+          zIndex: 1,
+        }}
+      >
+        {view === 'profile' && renderHeader(profile)}
         {error && <Alert severity="error">{error}</Alert>}
         {message && <Alert severity="success">{message}</Alert>}
 
         {view === 'articles' && (
           <Stack spacing={3}>
-            <Card
+            <Box
               sx={{
-                p: { xs: 2.5, md: 3 },
-                borderRadius: 2,
+                p: 0,
+                borderRadius: 0,
                 color: creatorTone.deep,
-                bgcolor: 'rgba(248,246,238,0.92)',
-                boxShadow: '0 24px 80px rgba(32,42,43,0.16)',
+                bgcolor: 'transparent',
+                boxShadow: 'none',
               }}
             >
               <Stack
@@ -503,17 +519,20 @@ export function CreatorWorkspaceView({ view }: Props) {
                       borderRadius: 1.5,
                       display: 'grid',
                       placeItems: 'center',
-                      color: '#6f8790',
-                      bgcolor: 'rgba(111,135,144,0.14)',
+                      color: '#79613b',
+                      bgcolor: '#eee8da',
                     }}
                   >
                     <Iconify icon="solar:notebook-bold-duotone" width={30} />
                   </Box>
                   <Box>
-                    <Typography variant="h4" sx={{ fontWeight: 950 }}>
-                      งานเขียนของฉัน
+                    <Typography
+                      component="h1"
+                      sx={{ fontSize: { xs: 26, md: 32 }, fontWeight: 600 }}
+                    >
+                      บทความของฉัน
                     </Typography>
-                    <Typography sx={{ mt: 0.5, color: 'text.secondary' }}>
+                    <Typography sx={{ mt: 0.5, color: 'text.secondary', fontSize: 13 }}>
                       ติดตามฉบับร่าง บทความที่ส่งตรวจ และงานที่เผยแพร่แล้วในที่เดียว
                     </Typography>
                   </Box>
@@ -523,12 +542,18 @@ export function CreatorWorkspaceView({ view }: Props) {
                   component={RouterLink}
                   href="/creator/write"
                   variant="contained"
+                  sx={{
+                    bgcolor: '#293c34',
+                    color: '#fff',
+                    minHeight: 44,
+                    '&:hover': { bgcolor: '#3c5147' },
+                  }}
                   startIcon={<Iconify icon="solar:pen-bold" />}
                 >
                   เขียนบทความใหม่
                 </Button>
               </Stack>
-            </Card>
+            </Box>
 
             <Box
               sx={{
@@ -541,19 +566,32 @@ export function CreatorWorkspaceView({ view }: Props) {
               }}
             >
               {[
-                { label: 'ทั้งหมด', value: articleStats.total, icon: 'solar:file-text-bold' },
                 {
+                  status: 'all',
+                  label: 'ทั้งหมด',
+                  value: articleStats.total,
+                  icon: 'solar:file-text-bold',
+                },
+                {
+                  status: 'draft',
                   label: 'ฉบับร่าง',
                   value: articleStats.draft,
                   icon: 'solar:archive-down-minimlistic-bold',
                 },
-                { label: 'รอตรวจ', value: articleStats.review, icon: 'solar:clock-circle-bold' },
                 {
+                  status: 'pending_review',
+                  label: 'รอตรวจ',
+                  value: articleStats.review,
+                  icon: 'solar:clock-circle-bold',
+                },
+                {
+                  status: 'published',
                   label: 'เผยแพร่แล้ว',
                   value: articleStats.published,
                   icon: 'solar:check-circle-bold',
                 },
                 {
+                  status: 'rejected',
                   label: 'ต้องแก้ไข',
                   value: articleStats.rejected,
                   icon: 'solar:info-circle-bold',
@@ -561,12 +599,22 @@ export function CreatorWorkspaceView({ view }: Props) {
               ].map((item) => (
                 <Card
                   key={item.label}
+                  component="button"
+                  type="button"
+                  aria-pressed={articleFilter === item.status}
+                  onClick={() => setArticleFilter(item.status)}
                   sx={{
-                    p: 2,
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                    font: 'inherit',
+                    border: '1px solid',
+                    borderColor: articleFilter === item.status ? '#8da18c' : '#e2e5de',
+                    '&:focus-visible': { outline: '2px solid #496653', outlineOffset: 3 },
+                    p: 1.75,
                     borderRadius: 2,
-                    bgcolor: 'rgba(248,246,238,0.9)',
+                    bgcolor: '#fff',
                     color: creatorTone.deep,
-                    boxShadow: '0 16px 44px rgba(32,42,43,0.12)',
+                    boxShadow: 'none',
                   }}
                 >
                   <Stack direction="row" spacing={1.25} alignItems="center">
@@ -578,8 +626,8 @@ export function CreatorWorkspaceView({ view }: Props) {
                         borderRadius: 1.25,
                         display: 'grid',
                         placeItems: 'center',
-                        color: '#6f8790',
-                        bgcolor: 'rgba(111,135,144,0.14)',
+                        color: '#79613b',
+                        bgcolor: '#eee8da',
                       }}
                     >
                       <Iconify icon={item.icon as any} width={21} />
@@ -588,7 +636,7 @@ export function CreatorWorkspaceView({ view }: Props) {
                       <Typography sx={{ color: 'text.secondary', fontSize: 12 }}>
                         {item.label}
                       </Typography>
-                      <Typography variant="h4" sx={{ fontWeight: 950, lineHeight: 1 }}>
+                      <Typography sx={{ fontSize: 26, fontWeight: 600, lineHeight: 1.3 }}>
                         {item.value}
                       </Typography>
                     </Box>
@@ -597,6 +645,49 @@ export function CreatorWorkspaceView({ view }: Props) {
               ))}
             </Box>
 
+            <Stack
+              direction={{ xs: 'column', sm: 'row' }}
+              spacing={2}
+              alignItems={{ sm: 'center' }}
+              justifyContent="space-between"
+            >
+              <Typography sx={{ color: 'text.secondary', fontSize: 13 }}>
+                {isLoading
+                  ? 'กำลังโหลดบทความ…'
+                  : `แสดง ${visibleArticles.length} จาก ${articles.length} บทความ`}
+              </Typography>
+              <TextField
+                size="small"
+                label="ค้นหาบทความ"
+                value={articleSearch}
+                onChange={(event) => setArticleSearch(event.target.value)}
+                sx={{ width: { xs: 1, sm: 320 } }}
+                slotProps={{
+                  input: {
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Iconify icon="eva:search-fill" width={18} />
+                      </InputAdornment>
+                    ),
+                  },
+                }}
+              />
+            </Stack>
+            {!visibleArticles.length && articles.length > 0 && !isLoading && (
+              <Paper variant="outlined" sx={{ p: 5, textAlign: 'center', borderRadius: 2 }}>
+                <Typography>ไม่พบบทความที่ตรงกับการค้นหา</Typography>
+                <Button
+                  sx={{ mt: 1 }}
+                  onClick={() => {
+                    setArticleSearch('');
+                    setArticleFilter('all');
+                  }}
+                >
+                  แสดงบทความทั้งหมด
+                </Button>
+              </Paper>
+            )}
+
             {!articles.length && !isLoading ? (
               <Card
                 sx={{
@@ -604,8 +695,8 @@ export function CreatorWorkspaceView({ view }: Props) {
                   borderRadius: 2,
                   textAlign: 'center',
                   color: creatorTone.deep,
-                  bgcolor: 'rgba(248,246,238,0.94)',
-                  boxShadow: '0 24px 80px rgba(32,42,43,0.16)',
+                  bgcolor: '#fff',
+                  boxShadow: 'none',
                 }}
               >
                 <Box
@@ -617,13 +708,13 @@ export function CreatorWorkspaceView({ view }: Props) {
                     borderRadius: 2,
                     display: 'grid',
                     placeItems: 'center',
-                    color: '#6f8790',
-                    bgcolor: 'rgba(111,135,144,0.14)',
+                    color: '#79613b',
+                    bgcolor: '#eee8da',
                   }}
                 >
                   <Iconify icon="solar:file-text-bold" width={38} />
                 </Box>
-                <Typography variant="h5" sx={{ fontWeight: 950 }}>
+                <Typography variant="h5" sx={{ fontWeight: 600 }}>
                   ยังไม่มีบทความ
                 </Typography>
                 <Typography sx={{ mt: 1, mx: 'auto', maxWidth: 520, color: 'text.secondary' }}>
@@ -648,19 +739,33 @@ export function CreatorWorkspaceView({ view }: Props) {
                   gridTemplateColumns: { xs: '1fr', md: 'repeat(2, minmax(0, 1fr))' },
                 }}
               >
-                {articles.map((article) => (
+                {visibleArticles.map((article) => (
                   <Card
                     key={article.id}
                     sx={{
                       p: { xs: 2, md: 2.5 },
                       borderRadius: 2,
                       color: creatorTone.deep,
-                      bgcolor: 'rgba(248,246,238,0.94)',
-                      boxShadow: '0 20px 60px rgba(32,42,43,0.14)',
-                      border: '1px solid rgba(248,246,238,0.45)',
+                      bgcolor: '#fff',
+                      boxShadow: 'none',
+                      border: '1px solid #dfe3df',
                     }}
                   >
                     <Stack spacing={2}>
+                      {article.coverImageUrl && (
+                        <Box
+                          component="img"
+                          src={article.coverImageUrl}
+                          alt={article.title || 'ภาพปกบทความ'}
+                          loading="lazy"
+                          sx={{
+                            width: 1,
+                            aspectRatio: '16 / 7',
+                            objectFit: 'cover',
+                            borderRadius: 1.5,
+                          }}
+                        />
+                      )}
                       <Stack
                         direction="row"
                         spacing={1.5}
@@ -680,14 +785,14 @@ export function CreatorWorkspaceView({ view }: Props) {
                               sx={{
                                 bgcolor: 'rgba(96,141,140,0.14)',
                                 color: '#2a3736',
-                                fontWeight: 800,
+                                fontWeight: 500,
                               }}
                             />
                             <Typography sx={{ color: 'text.secondary', fontSize: 12 }}>
                               อัปเดต {fDateTime(article.updatedAt)}
                             </Typography>
                           </Stack>
-                          <Typography sx={{ fontSize: 20, fontWeight: 950, lineHeight: 1.3 }}>
+                          <Typography sx={{ fontSize: 20, fontWeight: 600, lineHeight: 1.3 }}>
                             {article.title || 'ยังไม่มีชื่อบทความ'}
                           </Typography>
                         </Box>
@@ -697,7 +802,7 @@ export function CreatorWorkspaceView({ view }: Props) {
                           color={
                             (article.isActive ? getStatusColor(article.status) : 'default') as any
                           }
-                          sx={{ flexShrink: 0, fontWeight: 800 }}
+                          sx={{ flexShrink: 0, fontWeight: 500 }}
                         />
                       </Stack>
 
@@ -732,7 +837,13 @@ export function CreatorWorkspaceView({ view }: Props) {
                               label={`รออนุมัติ ${article.approvalReviews.length}/
                               ${article.approvalRequiredCount} คน`}
                               color="info"
-                              sx={{ flexShrink: 0, fontWeight: 800, py: 2 }}
+                              sx={{
+                                maxWidth: 1,
+                                height: 'auto',
+                                minHeight: 28,
+                                fontWeight: 500,
+                                '& .MuiChip-label': { whiteSpace: 'normal', py: 0.5 },
+                              }}
                             />
                           )}
 
@@ -742,7 +853,13 @@ export function CreatorWorkspaceView({ view }: Props) {
                             label={` บทความนี้ถูกปิดใช้งาน ไม่แสดงบนหน้าบ้าน
                             ${article.inactiveReason ? `: ${article.inactiveReason}` : ''}`}
                             color="warning"
-                            sx={{ flexShrink: 0, fontWeight: 800, py: 2 }}
+                            sx={{
+                              maxWidth: 1,
+                              height: 'auto',
+                              minHeight: 28,
+                              fontWeight: 500,
+                              '& .MuiChip-label': { whiteSpace: 'normal', py: 0.5 },
+                            }}
                           />
                         )}
 
@@ -779,14 +896,26 @@ export function CreatorWorkspaceView({ view }: Props) {
 
         {view === 'write' && (
           <Form methods={articleMethods}>
-            <Box sx={{ display: 'grid', gap: 3 }}>
-              <Card
+            <Box
+              sx={{ display: 'grid', gap: 3, '& .MuiFormLabel-asterisk': { color: 'error.main' } }}
+            >
+              <Button
+                component={RouterLink}
+                href="/creator/articles/"
+                sx={{ justifySelf: 'start', px: 0.5, fontSize: 13 }}
+                variant="text"
+                color="inherit"
+                startIcon={<Iconify icon="eva:arrow-ios-back-fill" />}
+              >
+                บทความของฉัน
+              </Button>
+              <Box
                 sx={{
-                  p: { xs: 2.5, md: 3 },
-                  borderRadius: 2,
+                  p: 0,
+                  borderRadius: 0,
                   color: creatorTone.deep,
-                  bgcolor: 'rgba(248,246,238,0.92)',
-                  boxShadow: '0 24px 80px rgba(32,42,43,0.16)',
+                  bgcolor: 'transparent',
+                  boxShadow: 'none',
                 }}
               >
                 <Stack
@@ -798,51 +927,45 @@ export function CreatorWorkspaceView({ view }: Props) {
                   <Stack direction="row" spacing={2} alignItems="center">
                     <Box
                       sx={{
-                        width: 54,
-                        height: 54,
+                        width: 48,
+                        height: 48,
                         borderRadius: 1.5,
                         display: 'grid',
                         placeItems: 'center',
-                        color: '#6f8790',
-                        bgcolor: 'rgba(111,135,144,0.14)',
+                        color: '#79613b',
+                        bgcolor: '#eee8da',
                       }}
                     >
                       <Iconify icon="solar:pen-bold" width={28} />
                     </Box>
                     <Box>
-                      <Typography variant="h4" sx={{ fontWeight: 950 }}>
+                      <Typography
+                        component="h1"
+                        sx={{ fontSize: { xs: 26, md: 32 }, fontWeight: 600 }}
+                      >
                         {articleForm.id ? 'แก้ไขบทความ' : 'เขียนบทความใหม่'}
                       </Typography>
-                      <Typography sx={{ mt: 0.5, color: 'text.secondary' }}>
-                        เล่าเรื่องให้ครบ ใส่หมวดหมู่ แล้วบันทึกฉบับร่างหรือส่งให้ทีมงานตรวจ
+                      <Typography sx={{ mt: 0.5, color: 'text.secondary', fontSize: 13 }}>
+                        แบ่งปันเรื่องราววัฒนธรรมของคุณ บันทึกไว้เขียนต่อหรือส่งให้ทีมงานตรวจ
                       </Typography>
                     </Box>
                   </Stack>
 
                   <Stack direction="row" gap={2}>
-                    {/* <Chip
-                      icon={<Iconify icon={writeStatusIcon} />}
-                      label={writeStatusLabel}
-                      color={writeStatusColor as any}
-                      sx={{ fontWeight: 800 }}
-                    /> */}
-                    <Button
-                      component={RouterLink}
-                      href="/creator/articles/"
-                      variant="contained"
-                      startIcon={<Iconify icon="solar:pen-bold" />}
-                    >
-                      รายการทั้งหมด
-                    </Button>
+                    <Chip
+                      label={articleForm.id ? writeStatusLabel : 'บทความใหม่'}
+                      size="small"
+                      sx={{ alignSelf: 'center', bgcolor: '#e9eee6', color: '#365641' }}
+                    />
                   </Stack>
                 </Stack>
-              </Card>
+              </Box>
 
               <Box
                 sx={{
                   display: 'grid',
-                  gap: 3,
-                  gridTemplateColumns: { xs: '1fr', lg: 'minmax(0, 1fr) 340px' },
+                  gap: { xs: 2.5, md: 3 },
+                  gridTemplateColumns: { xs: '1fr', md: 'minmax(0, 1fr) 320px' },
                   alignItems: 'start',
                 }}
               >
@@ -850,21 +973,30 @@ export function CreatorWorkspaceView({ view }: Props) {
                   sx={{
                     p: { xs: 2, md: 3 },
                     borderRadius: 2,
-                    bgcolor: 'rgba(248,246,238,0.94)',
-                    boxShadow: '0 24px 80px rgba(32,42,43,0.18)',
+                    bgcolor: '#fff',
+                    border: '1px solid #e2e5de',
+                    boxShadow: 'none',
                   }}
                 >
                   <Stack spacing={2.5}>
-                    {!isApproved && (
-                      <Alert severity="warning">
-                        ต้องรอ admin approve บัญชี creator ก่อนจึงจะบันทึกบทความได้
-                      </Alert>
-                    )}
-
                     <Stack direction="row" spacing={1.2} alignItems="center">
-                      <Iconify icon="solar:file-text-bold" width={24} />
+                      <Box
+                        sx={{
+                          width: 30,
+                          height: 30,
+                          display: 'grid',
+                          placeItems: 'center',
+                          borderRadius: 1,
+                          bgcolor: '#f0ede5',
+                          color: '#79613b',
+                          fontSize: 12,
+                          fontWeight: 600,
+                        }}
+                      >
+                        01
+                      </Box>
                       <Box>
-                        <Typography variant="h5" sx={{ fontWeight: 900 }}>
+                        <Typography component="h2" variant="h6" sx={{ fontWeight: 600 }}>
                           เนื้อหาหลัก
                         </Typography>
                         <Typography sx={{ color: 'text.secondary', fontSize: 13 }}>
@@ -875,13 +1007,14 @@ export function CreatorWorkspaceView({ view }: Props) {
 
                     <RHFTextField
                       name="title"
+                      required
                       label="ชื่อบทความ"
                       placeholder="เช่น วิถีชุมชนและรสชาติอาหารพื้นบ้าน..."
                     />
                     <RHFTextField
                       name="excerpt"
                       multiline
-                      minRows={3}
+                      minRows={2}
                       label="คำโปรย"
                       placeholder="สรุปสั้น ๆ ให้ผู้อ่านรู้ว่าบทความนี้เล่าเรื่องอะไร"
                     />
@@ -892,7 +1025,7 @@ export function CreatorWorkspaceView({ view }: Props) {
                         alignItems="center"
                         sx={{ mb: 1 }}
                       >
-                        <Typography sx={{ fontWeight: 800 }}>เนื้อหา</Typography>
+                        <Typography sx={{ fontWeight: 600, fontSize: 14 }}>เนื้อหา</Typography>
                         <Typography sx={{ color: 'text.secondary', fontSize: 12 }}>
                           ประมาณ {articleWordCount.toLocaleString('th-TH')} คำ
                         </Typography>
@@ -900,38 +1033,58 @@ export function CreatorWorkspaceView({ view }: Props) {
                       <RHFEditor
                         name="contentHtml"
                         fullItem
-                        sx={{ minHeight: 540, bgcolor: 'background.paper' }}
+                        sx={{
+                          minHeight: { xs: 360, md: 520 },
+                          bgcolor: 'background.paper',
+                          borderRadius: 1.5,
+                        }}
                         placeholder="เขียนเรื่องราว วัฒนธรรม ประเพณี หรือภูมิปัญญาท้องถิ่น..."
                       />
                     </Box>
                   </Stack>
                 </Card>
 
-                <Stack spacing={2}>
+                <Stack spacing={2} sx={{ position: { md: 'sticky' }, top: { md: 96 } }}>
                   <Paper
                     variant="outlined"
                     sx={{
                       p: 2.5,
                       borderRadius: 2,
-                      bgcolor: 'rgba(248,246,238,0.92)',
-                      borderColor: 'rgba(248,246,238,0.38)',
+                      bgcolor: '#fff',
+                      borderColor: '#dfe3df',
                     }}
                   >
                     <Stack spacing={2.25}>
                       <Stack direction="row" spacing={1.2} alignItems="center">
-                        <Iconify icon="solar:settings-bold" width={22} />
+                        <Box
+                          sx={{
+                            width: 30,
+                            height: 30,
+                            display: 'grid',
+                            placeItems: 'center',
+                            borderRadius: 1,
+                            bgcolor: '#f0ede5',
+                            color: '#79613b',
+                            fontSize: 12,
+                            fontWeight: 600,
+                          }}
+                        >
+                          02
+                        </Box>
                         <Box>
-                          <Typography variant="h6" sx={{ fontWeight: 900 }}>
-                            ส่งบทความ
+                          <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                            เตรียมเผยแพร่
                           </Typography>
                           <Typography sx={{ color: 'text.secondary', fontSize: 13 }}>
-                            ตั้งค่าก่อนบันทึกหรือส่งตรวจ
+                            เลือกหมวดหมู่และภาพปกให้เรื่องราวของคุณ
                           </Typography>
                         </Box>
                       </Stack>
 
                       <RHFSelect
                         name="categoryKey"
+                        required
+                        size="small"
                         select
                         label="หมวดหมู่"
                         onChange={(event) => updateArticleCategory(event.target.value)}
@@ -1013,7 +1166,7 @@ export function CreatorWorkspaceView({ view }: Props) {
                       </RHFSelect>
 
                       <Stack spacing={1.25}>
-                        <Typography sx={{ fontWeight: 900 }}>ภาพปกบทความ</Typography>
+                        <Typography sx={{ fontWeight: 600 }}>ภาพปกบทความ</Typography>
                         <Upload
                           value={articleCoverFile ?? articleForm.coverImageUrl ?? null}
                           accept={{ 'image/*': [] }}
@@ -1023,16 +1176,24 @@ export function CreatorWorkspaceView({ view }: Props) {
                           helperText={
                             isApproved
                               ? 'วาง/เลือกไฟล์รูปภาพ ขนาดไม่เกิน 2 MB'
-                              : 'ต้องรอผุ้ดูแลระบบ ตรวจสอบก่อนจึงจะอัปโหลดภาพปกได้'
+                              : 'อัปโหลดภาพได้หลังบัญชีได้รับการอนุมัติ'
                           }
                           onDrop={previewArticleCover}
                           onDelete={clearArticleCover}
                           slotProps={{
                             wrapper: {
                               sx: {
-                                '& .upload__default': {
-                                  minHeight: 180,
+                                [`& .${uploadClasses.default}`]: {
+                                  minHeight: 160,
+                                  p: 2,
+                                  bgcolor: '#f6f7f3',
                                 },
+                                [`& .${uploadClasses.placeholder.root} > svg`]: { display: 'none' },
+                                [`& .${uploadClasses.placeholder.title}`]: {
+                                  fontSize: 14,
+                                  fontWeight: 600,
+                                },
+                                [`& .${uploadClasses.placeholder.description}`]: { fontSize: 12 },
                               },
                             },
                           }}
@@ -1045,11 +1206,15 @@ export function CreatorWorkspaceView({ view }: Props) {
                         placeholder="https://..."
                         helperText="ใช้ช่องนี้ได้หากต้องการวาง URL รูปจากแหล่งอื่น"
                       /> */}
-
-                      <Divider />
-
+                    </Stack>
+                  </Paper>
+                  <Paper
+                    variant="outlined"
+                    sx={{ p: 2.5, borderRadius: 2, bgcolor: '#fff', borderColor: '#dfe3df' }}
+                  >
+                    <Stack spacing={2}>
                       <Box>
-                        <Typography sx={{ mb: 1.25, fontWeight: 900 }}>เช็กก่อนส่ง</Typography>
+                        <Typography sx={{ mb: 1.25, fontWeight: 600 }}>เช็กก่อนส่ง</Typography>
                         <Stack spacing={1}>
                           {writeChecklist.map((item) => (
                             <Stack key={item.label} direction="row" spacing={1} alignItems="center">
@@ -1075,18 +1240,26 @@ export function CreatorWorkspaceView({ view }: Props) {
 
                       <Alert
                         severity={isEditingPublishedArticle ? 'success' : 'info'}
-                        sx={{ alignItems: 'flex-start' }}
+                        sx={{
+                          alignItems: 'flex-start',
+                          bgcolor: '#f1f4ee',
+                          color: '#526153',
+                          '& .MuiAlert-icon': { color: '#526153' },
+                          fontSize: 12,
+                        }}
                       >
                         {isEditingPublishedArticle
                           ? 'บทความนี้เผยแพร่แล้ว การบันทึกจะคงสถานะเผยแพร่ไว้'
                           : 'บทความที่ส่งตรวจจะยังไม่เผยแพร่ทันที ทีมงานจะอ่านและเปลี่ยนสถานะเมื่อพร้อมเผยแพร่'}
                       </Alert>
 
-                      <Stack direction={{ xs: 'column', sm: 'row', lg: 'column' }} spacing={1.5}>
+                      <Stack direction="column" spacing={1.5}>
                         <Button
                           fullWidth
                           variant="outlined"
-                          disabled={!isApproved || isSubmitting}
+                          sx={{ minHeight: 44, color: '#293c34', borderColor: '#ced7cb' }}
+                          startIcon={<Iconify icon="solar:file-text-bold" width={18} />}
+                          disabled={!isApproved || isSubmitting || isUploadingArticleCover}
                           loading={isSubmitting}
                           onClick={() => saveArticle('draft')}
                         >
@@ -1096,7 +1269,14 @@ export function CreatorWorkspaceView({ view }: Props) {
                           <Button
                             fullWidth
                             variant="contained"
-                            disabled={!isApproved || isSubmitting}
+                            sx={{
+                              minHeight: 44,
+                              bgcolor: '#293c34',
+                              color: '#fff',
+                              '&:hover': { bgcolor: '#3c5147' },
+                            }}
+                            endIcon={<Iconify icon="eva:diagonal-arrow-right-up-fill" width={18} />}
+                            disabled={!isApproved || isSubmitting || isUploadingArticleCover}
                             loading={isSubmitting}
                             onClick={() => saveArticle('submit')}
                           >
@@ -1118,7 +1298,7 @@ export function CreatorWorkspaceView({ view }: Props) {
               sx={{
                 display: 'grid',
                 gap: 3,
-                gridTemplateColumns: { xs: '1fr', md: '320px minmax(0, 1fr)' },
+                gridTemplateColumns: { xs: '1fr', md: '280px minmax(0, 1fr)' },
                 alignItems: 'start',
               }}
             >
@@ -1128,8 +1308,9 @@ export function CreatorWorkspaceView({ view }: Props) {
                   borderRadius: 2,
                   color: creatorTone.deep,
                   textAlign: 'center',
-                  bgcolor: 'rgba(248,246,238,0.94)',
-                  boxShadow: '0 24px 80px rgba(32,42,43,0.16)',
+                  bgcolor: '#fff',
+                  border: '1px solid #e2e5de',
+                  boxShadow: 'none',
                 }}
               >
                 <Stack spacing={2.25} alignItems="center">
@@ -1145,18 +1326,20 @@ export function CreatorWorkspaceView({ view }: Props) {
                       }
                     />
                     <Avatar
-                      src={pendingAvatarPreview || profileForm.avatarUrl || undefined}
+                      src={
+                        pendingAvatarPreview || profileForm.avatarUrl || user?.photoURL || undefined
+                      }
                       alt={profileForm.displayName || 'Creator'}
                       sx={{
-                        width: 132,
-                        height: 132,
+                        width: 108,
+                        height: 108,
                         mx: 'auto',
                         fontSize: 42,
-                        fontWeight: 900,
-                        color: '#f8f6ee',
-                        bgcolor: '#6f8790',
+                        fontWeight: 600,
+                        color: '#365641',
+                        bgcolor: '#e9eee5',
                         border: '4px solid rgba(248,246,238,0.9)',
-                        boxShadow: '0 18px 48px rgba(32,42,43,0.2)',
+                        boxShadow: 'none',
                       }}
                     >
                       {getInitials(profileForm.displayName)}
@@ -1181,15 +1364,14 @@ export function CreatorWorkspaceView({ view }: Props) {
                   </Box>
 
                   <Box>
-                    <Typography variant="h5" sx={{ fontWeight: 950 }}>
-                      รูปส่วนตัว
+                    <Typography component="h2" variant="h6" sx={{ fontWeight: 600 }}>
+                      รูปโปรไฟล์
                     </Typography>
                     <Typography sx={{ mt: 0.5, color: 'text.secondary', fontSize: 13 }}>
                       อัปโหลดรูปเพื่อใช้แสดงบนโปรไฟล์และบทความของคุณ
                     </Typography>
                     <Typography sx={{ mt: 0.75, color: 'text.secondary', fontSize: 12 }}>
-                      รองรับไฟล์ต้นฉบับไม่เกิน 1 MB และระบบจะย่อ/บีบอัดให้เหลือไม่เกิน 0.5 MB
-                      ก่อนบันทึกลง storage
+                      รองรับไฟล์ภาพขนาดไม่เกิน 1 MB
                     </Typography>
                   </Box>
 
@@ -1206,8 +1388,7 @@ export function CreatorWorkspaceView({ view }: Props) {
                   {pendingAvatarFile && (
                     <Stack spacing={1} sx={{ width: 1 }}>
                       <Alert severity="info" sx={{ alignItems: 'flex-start' }}>
-                        ตรวจรูป preview ก่อนกดยืนยัน รูปจะยังไม่ถูกบันทึกลง storage
-                        จนกว่าจะกดยืนยันอัปโหลด
+                        ตรวจรูปตัวอย่าง แล้วกดยืนยันอัปโหลดเพื่อใช้รูปนี้
                       </Alert>
                       <Stack direction="row" spacing={1} sx={{ width: 1 }}>
                         <Button
@@ -1231,13 +1412,27 @@ export function CreatorWorkspaceView({ view }: Props) {
                     </Stack>
                   )}
 
-                  <RHFTextField
-                    name="avatarUrl"
-                    fullWidth
-                    label="Avatar URL"
-                    placeholder="https://..."
-                    autoComplete="off"
-                  />
+                  <Box
+                    sx={{
+                      width: 1,
+                      pt: 2,
+                      borderTop: '1px solid',
+                      borderColor: 'divider',
+                      overflowWrap: 'anywhere',
+                    }}
+                  >
+                    <Typography sx={{ fontSize: 14, fontWeight: 600 }}>
+                      {profileForm.displayName || 'Creator'}
+                    </Typography>
+                    <Typography sx={{ mt: 0.5, fontSize: 12, color: 'text.secondary' }}>
+                      {user?.email}
+                    </Typography>
+                    <Chip
+                      size="small"
+                      label={isApproved ? 'บัญชียืนยันแล้ว' : 'รออนุมัติบัญชี'}
+                      sx={{ mt: 1.5, bgcolor: '#edf1e8', color: '#365641' }}
+                    />
+                  </Box>
 
                   <Stack direction="row" spacing={1} sx={{ width: 1 }}>
                     <Button
@@ -1270,31 +1465,63 @@ export function CreatorWorkspaceView({ view }: Props) {
                     p: { xs: 2.5, md: 3 },
                     borderRadius: 2,
                     color: creatorTone.deep,
-                    bgcolor: 'rgba(248,246,238,0.94)',
-                    boxShadow: '0 24px 80px rgba(32,42,43,0.16)',
+                    bgcolor: '#fff',
+                    boxShadow: 'none',
                   }}
                 >
                   <Stack spacing={2.5}>
                     <Box>
-                      <Typography variant="h5" sx={{ fontWeight: 950 }}>
+                      <Typography component="h2" variant="h6" sx={{ fontWeight: 600 }}>
                         ข้อมูลโปรไฟล์
                       </Typography>
-                      <Typography sx={{ mt: 0.5, color: 'text.secondary' }}>
+                      <Typography sx={{ mt: 0.5, color: 'text.secondary', fontSize: 13 }}>
                         ข้อมูลนี้ช่วยให้ทีมงานและผู้อ่านรู้จักตัวตนของคุณมากขึ้น
                       </Typography>
                     </Box>
 
-                    <RHFTextField name="displayName" label="ชื่อที่แสดง" />
+                    <RHFTextField name="displayName" label="ชื่อที่แสดง" required />
                     <RHFTextField name="bio" multiline minRows={3} label="แนะนำตัว" />
                     <Divider />
-                    <RHFTextField name="phone" label="เบอร์โทร" autoComplete="off" />
-                    <RHFTextField name="websiteUrl" label="Website URL" autoComplete="off" />
-                    <RHFTextField name="facebookUrl" label="Facebook URL" autoComplete="off" />
+                    <Typography component="h3" sx={{ fontSize: 15, fontWeight: 600 }}>
+                      ช่องทางติดต่อ
+                    </Typography>
+                    <Box
+                      sx={{
+                        display: 'grid',
+                        gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
+                        gap: 2,
+                      }}
+                    >
+                      <RHFTextField
+                        name="phone"
+                        label="เบอร์โทร (ถ้ามี)"
+                        type="tel"
+                        autoComplete="tel"
+                      />
+                      <RHFTextField
+                        name="websiteUrl"
+                        label="เว็บไซต์ (ถ้ามี)"
+                        placeholder="https://..."
+                      />
+                      <RHFTextField
+                        name="facebookUrl"
+                        label="Facebook (ถ้ามี)"
+                        placeholder="https://facebook.com/..."
+                        sx={{ gridColumn: '1 / -1' }}
+                      />
+                    </Box>
                     <Button
                       variant="contained"
                       loading={isSubmitting}
                       onClick={saveProfile}
-                      sx={{ alignSelf: 'flex-start' }}
+                      sx={{
+                        alignSelf: { xs: 'stretch', sm: 'flex-end' },
+                        minHeight: 44,
+                        px: 3,
+                        bgcolor: '#293c34',
+                        color: '#fff',
+                        '&:hover': { bgcolor: '#3c5147' },
+                      }}
                     >
                       บันทึกโปรไฟล์
                     </Button>
@@ -1306,16 +1533,16 @@ export function CreatorWorkspaceView({ view }: Props) {
                     p: { xs: 2.5, md: 3 },
                     borderRadius: 2,
                     color: creatorTone.deep,
-                    bgcolor: 'rgba(248,246,238,0.94)',
+                    bgcolor: '#fff',
                     gridColumn: { xs: 'auto', md: '1 / -1' },
-                    boxShadow: '0 24px 80px rgba(32,42,43,0.16)',
+                    boxShadow: 'none',
                   }}
                 >
                   <Stack spacing={2.5}>
                     <Box>
                       <Stack direction="row" alignItems="center" spacing={1}>
                         <Iconify icon="solar:lock-password-outline" width={24} />
-                        <Typography variant="h5" sx={{ fontWeight: 950 }}>
+                        <Typography component="h2" variant="h6" sx={{ fontWeight: 600 }}>
                           เปลี่ยนรหัสผ่าน
                         </Typography>
                       </Stack>
@@ -1329,11 +1556,12 @@ export function CreatorWorkspaceView({ view }: Props) {
                         sx={{
                           display: 'grid',
                           gap: 2,
-                          gridTemplateColumns: { xs: '1fr', md: 'repeat(3, minmax(0, 1fr))' },
+                          gridTemplateColumns: { xs: '1fr', lg: 'repeat(3, minmax(0, 1fr))' },
                         }}
                       >
                         <RHFTextField
                           name="currentPassword"
+                          required
                           label="รหัสผ่านเดิม"
                           type={showPasswordFields.currentPassword ? 'text' : 'password'}
                           autoComplete="current-password"
@@ -1343,6 +1571,7 @@ export function CreatorWorkspaceView({ view }: Props) {
                                 <InputAdornment position="end">
                                   <IconButton
                                     edge="end"
+                                    aria-label="แสดงหรือซ่อนรหัสผ่าน"
                                     onClick={() => togglePasswordField('currentPassword')}
                                   >
                                     <Iconify
@@ -1360,6 +1589,7 @@ export function CreatorWorkspaceView({ view }: Props) {
                         />
                         <RHFTextField
                           name="newPassword"
+                          required
                           label="รหัสผ่านใหม่"
                           type={showPasswordFields.newPassword ? 'text' : 'password'}
                           autoComplete="new-password"
@@ -1369,6 +1599,7 @@ export function CreatorWorkspaceView({ view }: Props) {
                                 <InputAdornment position="end">
                                   <IconButton
                                     edge="end"
+                                    aria-label="แสดงหรือซ่อนรหัสผ่าน"
                                     onClick={() => togglePasswordField('newPassword')}
                                   >
                                     <Iconify
@@ -1386,6 +1617,7 @@ export function CreatorWorkspaceView({ view }: Props) {
                         />
                         <RHFTextField
                           name="confirmPassword"
+                          required
                           label="ยืนยันรหัสผ่านใหม่"
                           type={showPasswordFields.confirmPassword ? 'text' : 'password'}
                           autoComplete="new-password"
@@ -1395,6 +1627,7 @@ export function CreatorWorkspaceView({ view }: Props) {
                                 <InputAdornment position="end">
                                   <IconButton
                                     edge="end"
+                                    aria-label="แสดงหรือซ่อนรหัสผ่าน"
                                     onClick={() => togglePasswordField('confirmPassword')}
                                   >
                                     <Iconify
@@ -1424,7 +1657,7 @@ export function CreatorWorkspaceView({ view }: Props) {
                       </Typography>
                       <Button
                         variant="contained"
-                        color="warning"
+                        color="inherit"
                         loading={isChangingPassword}
                         disabled={
                           !passwordForm.currentPassword ||

@@ -53,17 +53,23 @@ export function GoogleIdentityButton({
   onConfigError,
 }: Props) {
   const buttonRef = useRef<HTMLDivElement | null>(null);
+  const onCredentialRef = useRef(onCredential);
+  const onConfigErrorRef = useRef(onConfigError);
+  useEffect(() => {
+    onCredentialRef.current = onCredential;
+    onConfigErrorRef.current = onConfigError;
+  }, [onCredential, onConfigError]);
 
   const renderGoogleButton = useCallback(() => {
     if (!googleClientId) {
-      onConfigError('ยังไม่ได้ตั้งค่า NEXT_PUBLIC_GOOGLE_CLIENT_ID');
+      onConfigErrorRef.current('ยังไม่ได้ตั้งค่า NEXT_PUBLIC_GOOGLE_CLIENT_ID');
       return;
     }
     if (!window.google || !buttonRef.current) return;
 
     window.google.accounts.id.initialize({
       client_id: googleClientId,
-      callback: (response) => onCredential(response.credential),
+      callback: (response) => onCredentialRef.current(response.credential),
       auto_select: false,
     });
     buttonRef.current.replaceChildren();
@@ -75,9 +81,9 @@ export function GoogleIdentityButton({
       shape: 'rectangular',
       logo_alignment: 'left',
       locale: 'th',
-      width: Math.max(240, buttonRef.current.clientWidth),
+      width: Math.min(400, buttonRef.current.clientWidth || 400),
     });
-  }, [onConfigError, onCredential]);
+  }, []);
 
   useEffect(() => {
     if (window.google) renderGoogleButton();
@@ -96,13 +102,17 @@ export function GoogleIdentityButton({
       <Script
         src="https://accounts.google.com/gsi/client?hl=th"
         strategy="afterInteractive"
-        onLoad={renderGoogleButton}
+        onReady={renderGoogleButton}
         onError={() => onConfigError('โหลดระบบเข้าสู่ระบบของ Google ไม่สำเร็จ')}
       />
       <Box
+        aria-disabled={disabled || loading}
+        inert={disabled || loading}
         sx={{
-          minHeight: 50,
+          minHeight: 44,
           width: 1,
+          maxWidth: 400,
+          mx: 'auto',
           display: 'grid',
           placeItems: 'center',
           opacity: disabled || loading ? 0.5 : 1,

@@ -44,7 +44,7 @@ export function AccountPopover({ account, data = [], sx, ...other }: AccountPopo
   const roleProfilePath = getRoleProfilePath(user);
   const displayName = account?.displayName ?? user?.displayName ?? '';
   const email = account?.email ?? user?.email ?? '';
-  const photoURL = account?.photoURL ?? user?.photoURL ?? '';
+  const photoURL = account?.photoURL || user?.photoURL || '';
 
   const renderMenuActions = () => (
     <CustomPopover

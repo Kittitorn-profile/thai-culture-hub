@@ -14,7 +14,10 @@ import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
 import Drawer from '@mui/material/Drawer';
 import Divider from '@mui/material/Divider';
+import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
+import IconButton from '@mui/material/IconButton';
+import InputAdornment from '@mui/material/InputAdornment';
 
 import { useRouter } from 'src/routes/hooks';
 import { RouterLink } from 'src/routes/components';
@@ -71,7 +74,7 @@ function getStatusMeta(status: CreatorPlaceCorrection['status']): StatusMeta {
     return {
       icon: 'solar:close-circle-bold',
       title: 'ไม่ผ่าน',
-      description: 'มีข้อเสนอแนะจาก Admin ให้ปรับข้อมูล',
+      description: 'ทีมงานแจ้งเหตุผลและข้อเสนอแนะไว้ในคำขอ',
       color: 'error' as const,
       tone: '#b42318',
       bg: 'rgba(220, 68, 55, 0.1)',
@@ -120,20 +123,35 @@ function StatCard({
   label,
   value,
   tone,
+  active,
+  onClick,
 }: {
   icon: IconifyName;
   label: string;
   value: number;
   tone: string;
+  active: boolean;
+  onClick: () => void;
 }) {
   return (
     <Card
+      component="button"
+      type="button"
+      aria-pressed={active}
+      onClick={onClick}
       sx={{
-        p: 2,
+        width: 1,
+        textAlign: 'left',
+        font: 'inherit',
+        cursor: 'pointer',
+        border: '1px solid',
+        borderColor: active ? '#8da18c' : '#e2e5de',
+        '&:focus-visible': { outline: '2px solid #496653', outlineOffset: 3 },
+        p: 1.75,
         height: '100%',
         borderRadius: 2,
-        bgcolor: 'rgba(255,255,255,0.88)',
-        boxShadow: '0 18px 50px rgba(32,42,43,0.14)',
+        bgcolor: active ? '#f1f4ed' : '#fff',
+        boxShadow: 'none',
       }}
     >
       <Stack direction="row" spacing={1.5} alignItems="center">
@@ -153,9 +171,7 @@ function StatCard({
         </Box>
         <Box sx={{ minWidth: 0 }}>
           <Typography sx={{ color: 'text.secondary', fontSize: 13 }}>{label}</Typography>
-          <Typography variant="h4" sx={{ fontWeight: 900, lineHeight: 1.05 }}>
-            {value}
-          </Typography>
+          <Typography sx={{ fontSize: 26, fontWeight: 600, lineHeight: 1.3 }}>{value}</Typography>
         </Box>
       </Stack>
     </Card>
@@ -170,7 +186,7 @@ function EmptyState() {
         borderRadius: 2,
         textAlign: 'center',
         bgcolor: 'rgba(255,255,255,0.9)',
-        boxShadow: '0 22px 70px rgba(32,42,43,0.16)',
+        boxShadow: 'none',
       }}
     >
       <Box
@@ -188,7 +204,7 @@ function EmptyState() {
       >
         <Iconify icon="solar:file-text-bold" width={38} />
       </Box>
-      <Typography variant="h5" sx={{ fontWeight: 900, color: creatorTone.deep }}>
+      <Typography variant="h5" sx={{ fontWeight: 600, color: creatorTone.deep }}>
         ยังไม่มีคำขอแก้ไขข้อมูล
       </Typography>
       <Typography sx={{ mt: 1, mx: 'auto', maxWidth: 540, color: 'text.secondary' }}>
@@ -214,19 +230,18 @@ function CorrectionCard({ item, onOpen }: { item: CreatorPlaceCorrection; onOpen
 
   return (
     <Card
-      onClick={onOpen}
+      component="article"
       sx={{
         p: { xs: 2, md: 2.5 },
         borderRadius: 2,
-        cursor: 'pointer',
-        bgcolor: 'rgba(255,255,255,0.92)',
+        bgcolor: '#fff',
         border: '1px solid rgba(32,42,43,0.08)',
-        boxShadow: '0 18px 55px rgba(32,42,43,0.14)',
+        boxShadow: 'none',
         transition: 'transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease',
         '&:hover': {
           transform: 'translateY(-2px)',
           borderColor: 'rgba(32,42,43,0.22)',
-          boxShadow: '0 24px 68px rgba(32,42,43,0.2)',
+          boxShadow: 'none',
         },
       }}
     >
@@ -251,7 +266,7 @@ function CorrectionCard({ item, onOpen }: { item: CreatorPlaceCorrection; onOpen
             <Box sx={{ minWidth: 0 }}>
               <Typography
                 sx={{
-                  fontWeight: 900,
+                  fontWeight: 600,
                   color: creatorTone.deep,
                   wordBreak: 'break-word',
                 }}
@@ -267,7 +282,7 @@ function CorrectionCard({ item, onOpen }: { item: CreatorPlaceCorrection; onOpen
             size="small"
             label={statusMeta.title}
             color={statusMeta.color}
-            sx={{ flexShrink: 0, fontWeight: 800 }}
+            sx={{ flexShrink: 0, fontWeight: 500 }}
           />
         </Stack>
 
@@ -327,6 +342,17 @@ export function CreatorPlaceCorrectionsView() {
   const [selected, setSelected] = useState<CreatorPlaceCorrection | null>(null);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [search, setSearch] = useState('');
+  const filteredItems = items.filter(
+    (item) =>
+      (statusFilter === 'all' || item.status === statusFilter) &&
+      (!search.trim() ||
+        [item.placeName, item.reason, item.reviewNote].some((value) =>
+          value?.toLocaleLowerCase('th').includes(search.trim().toLocaleLowerCase('th'))
+        ))
+  );
+
   const stats = useMemo(
     () => ({
       total: items.length,
@@ -374,9 +400,15 @@ export function CreatorPlaceCorrectionsView() {
     const originalEntries = getPayloadEntries(item.originalSnapshot);
 
     return (
-      <Stack spacing={2.5} sx={{ p: 3 }}>
+      <Stack spacing={2.5} sx={{ p: { xs: 2.5, md: 3 } }}>
+        <Stack direction="row" alignItems="center" justifyContent="space-between">
+          <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>รายละเอียดคำขอ</Typography>
+          <IconButton aria-label="ปิดรายละเอียดคำขอ" onClick={() => setSelected(null)}>
+            <Iconify icon="mingcute:close-line" />
+          </IconButton>
+        </Stack>
         <Box>
-          <Typography variant="h5" sx={{ fontWeight: 900 }}>
+          <Typography variant="h5" sx={{ fontWeight: 600 }}>
             {item.placeName || 'คำขอแก้ไขสถานที่'}
           </Typography>
           <Typography sx={{ color: 'text.secondary' }}>{item.placeId}</Typography>
@@ -393,14 +425,14 @@ export function CreatorPlaceCorrectionsView() {
         {item.reason && <Alert severity="info">{item.reason}</Alert>}
         {item.reviewNote && (
           <Alert severity={item.status === 'rejected' ? 'error' : 'success'}>
-            หมายเหตุจาก Admin: {item.reviewNote}
+            หมายเหตุจากทีมงาน: {item.reviewNote}
           </Alert>
         )}
 
         <Divider />
 
         <Box>
-          <Typography sx={{ mb: 1.25, fontWeight: 900 }}>ข้อมูลที่เสนอแก้</Typography>
+          <Typography sx={{ mb: 1.25, fontWeight: 600 }}>ข้อมูลที่เสนอแก้</Typography>
           <Stack spacing={1.25}>
             {suggestedEntries.map((entry) => (
               <DetailBlock key={entry.key} label={entry.label} value={entry.value} />
@@ -410,7 +442,7 @@ export function CreatorPlaceCorrectionsView() {
         </Box>
 
         <Box>
-          <Typography sx={{ mb: 1.25, fontWeight: 900 }}>ข้อมูลเดิมตอนส่งคำขอ</Typography>
+          <Typography sx={{ mb: 1.25, fontWeight: 600 }}>ข้อมูลเดิมตอนส่งคำขอ</Typography>
           <Stack spacing={1.25}>
             {originalEntries.map((entry) => (
               <DetailBlock key={entry.key} label={entry.label} value={entry.value} />
@@ -439,7 +471,7 @@ export function CreatorPlaceCorrectionsView() {
     <Box
       sx={{
         px: { xs: 2, md: 4 },
-        py: { xs: 10, md: 12 },
+        py: { xs: 4, md: 5 },
         minHeight: '100vh',
         color: creatorTone.text,
         overflow: 'hidden',
@@ -458,7 +490,7 @@ export function CreatorPlaceCorrectionsView() {
         },
       }}
     >
-      <Stack spacing={3} sx={{ mx: 'auto', maxWidth: 1180, position: 'relative', zIndex: 1 }}>
+      <Stack spacing={3} sx={{ mx: 'auto', maxWidth: 1280, position: 'relative', zIndex: 1 }}>
         <Stack
           direction={{ xs: 'column', md: 'row' }}
           justifyContent="space-between"
@@ -466,10 +498,10 @@ export function CreatorPlaceCorrectionsView() {
           spacing={2}
         >
           <Box>
-            <Typography variant="h3" sx={{ fontWeight: 900 }}>
+            <Typography component="h1" sx={{ fontSize: { xs: 26, md: 32 }, fontWeight: 600 }}>
               คำขอแก้ไขข้อมูล
             </Typography>
-            <Typography sx={{ mt: 0.5, maxWidth: 680 }}>
+            <Typography sx={{ mt: 0.5, maxWidth: 680, fontSize: 13, color: 'text.secondary' }}>
               ติดตามข้อมูลสถานที่ที่คุณเสนอแก้ไข ดูสถานะการตรวจสอบ และอ่านข้อความตอบกลับจากทีมงาน
             </Typography>
           </Box>
@@ -478,20 +510,25 @@ export function CreatorPlaceCorrectionsView() {
             href="/culture-category"
             variant="contained"
             startIcon={<Iconify icon="solar:add-circle-bold" />}
-            sx={{ flexShrink: 0 }}
+            sx={{
+              flexShrink: 0,
+              minHeight: 44,
+              bgcolor: '#293c34',
+              color: '#fff',
+              '&:hover': { bgcolor: '#3c5147' },
+            }}
           >
             ส่งคำขอใหม่
           </Button>
         </Stack>
-
-        {isLoading && <Alert severity="info">กำลังโหลดคำขอแก้ไข...</Alert>}
-        {error && <Alert severity="error">{error}</Alert>}
 
         <Grid container spacing={2}>
           <Grid size={{ xs: 6, md: 3 }}>
             <StatCard
               icon="solar:add-folder-bold"
               label="ทั้งหมด"
+              active={statusFilter === 'all'}
+              onClick={() => setStatusFilter('all')}
               value={stats.total}
               tone="#52615d"
             />
@@ -500,6 +537,8 @@ export function CreatorPlaceCorrectionsView() {
             <StatCard
               icon="solar:clock-circle-bold"
               label="รอตรวจ"
+              active={statusFilter === 'pending'}
+              onClick={() => setStatusFilter('pending')}
               value={stats.pending}
               tone="#9a5b12"
             />
@@ -508,6 +547,8 @@ export function CreatorPlaceCorrectionsView() {
             <StatCard
               icon="solar:check-circle-bold"
               label="ผ่านแล้ว"
+              active={statusFilter === 'approved'}
+              onClick={() => setStatusFilter('approved')}
               value={stats.approved}
               tone="#1b7f4c"
             />
@@ -516,17 +557,59 @@ export function CreatorPlaceCorrectionsView() {
             <StatCard
               icon="solar:close-circle-bold"
               label="ไม่ผ่าน"
+              active={statusFilter === 'rejected'}
+              onClick={() => setStatusFilter('rejected')}
               value={stats.rejected}
               tone="#b42318"
             />
           </Grid>
         </Grid>
 
+        <Stack
+          direction={{ xs: 'column', sm: 'row' }}
+          spacing={2}
+          justifyContent="space-between"
+          alignItems={{ sm: 'center' }}
+        >
+          <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
+            แสดง {filteredItems.length} จาก {items.length} คำขอ
+          </Typography>
+          <TextField
+            size="small"
+            label="ค้นหาสถานที่หรือคำขอ"
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            sx={{ width: { xs: 1, sm: 320 } }}
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Iconify icon="eva:search-fill" width={18} />
+                  </InputAdornment>
+                ),
+              },
+            }}
+          />
+        </Stack>
+        {items.length > 0 && !filteredItems.length && !isLoading && (
+          <Card sx={{ p: 5, textAlign: 'center' }}>
+            <Typography>ไม่พบคำขอที่ตรงกับการค้นหา</Typography>
+            <Button
+              sx={{ mt: 1 }}
+              onClick={() => {
+                setSearch('');
+                setStatusFilter('all');
+              }}
+            >
+              แสดงคำขอทั้งหมด
+            </Button>
+          </Card>
+        )}
         {!items.length && !isLoading ? (
           <EmptyState />
         ) : (
           <Grid container spacing={2}>
-            {items.map((item) => (
+            {filteredItems.map((item) => (
               <Grid key={item.id} size={{ xs: 12, md: 6 }}>
                 <CorrectionCard item={item} onOpen={() => setSelected(item)} />
               </Grid>

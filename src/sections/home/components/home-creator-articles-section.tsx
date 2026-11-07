@@ -30,7 +30,13 @@ type Props = {
   onLoadMore: (offset: number) => void;
 };
 
-export function HomeCreatorArticlesSection({ articles, hasMore, isLoading, offset, onLoadMore }: Props) {
+export function HomeCreatorArticlesSection({
+  articles,
+  hasMore,
+  isLoading,
+  offset,
+  onLoadMore,
+}: Props) {
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -90,8 +96,8 @@ export function HomeCreatorArticlesSection({ articles, hasMore, isLoading, offse
                 width: 'fit-content',
                 color: HOME_TEXT,
                 borderRadius: 999,
-                bgcolor: 'rgba(42,55,54,0.28)',
-                border: '1px solid rgba(255,255,255,0.28)',
+                bgcolor: '#efefec',
+                border: '1px solid rgba(32,33,36,0.28)',
                 fontSize: 12,
                 fontWeight: 800,
               }}
@@ -104,7 +110,7 @@ export function HomeCreatorArticlesSection({ articles, hasMore, isLoading, offse
                 mt: 2,
                 color: HOME_TEXT,
                 fontSize: { xs: 28, md: 46 },
-                fontWeight: 950,
+                fontWeight: 600,
                 lineHeight: 1.15,
               }}
             >
@@ -114,7 +120,7 @@ export function HomeCreatorArticlesSection({ articles, hasMore, isLoading, offse
               sx={{
                 mt: 1.5,
                 maxWidth: 640,
-                color: 'rgba(248,246,238,0.78)',
+                color: 'rgba(32,33,36,0.78)',
                 lineHeight: 1.75,
               }}
             >
@@ -130,10 +136,10 @@ export function HomeCreatorArticlesSection({ articles, hasMore, isLoading, offse
             sx={{
               flexShrink: 0,
               color: HOME_TEXT,
-              borderColor: 'rgba(248,246,238,0.5)',
+              borderColor: 'rgba(32,33,36,0.5)',
               '&:hover': {
                 borderColor: HOME_TEXT,
-                bgcolor: 'rgba(248,246,238,0.08)',
+                bgcolor: 'rgba(32,33,36,0.08)',
               },
             }}
           >
@@ -161,13 +167,13 @@ export function HomeCreatorArticlesSection({ articles, hasMore, isLoading, offse
                 borderRadius: 1.5,
                 color: HOME_DEEP,
                 bgcolor: 'rgba(250,244,232,0.95)',
-                border: '1px solid rgba(255,255,255,0.58)',
-                boxShadow: '0 22px 54px rgba(44,35,21,0.2)',
+                border: '1px solid rgba(32,33,36,0.58)',
+                boxShadow: 'none',
                 textDecoration: 'none',
                 transition: 'transform 180ms ease, box-shadow 180ms ease',
                 '&:hover, &:focus-visible': {
                   transform: 'translateY(-4px)',
-                  boxShadow: '0 28px 66px rgba(44,35,21,0.28)',
+                  boxShadow: 'none',
                 },
               }}
             >
@@ -178,7 +184,7 @@ export function HomeCreatorArticlesSection({ articles, hasMore, isLoading, offse
                   overflow: 'hidden',
                   display: 'block',
                   position: 'relative',
-                  bgcolor: 'rgba(42,55,54,0.16)',
+                  bgcolor: '#efefec',
                 }}
               >
                 <CreatorArticleEngagement
@@ -215,7 +221,7 @@ export function HomeCreatorArticlesSection({ articles, hasMore, isLoading, offse
                         display: 'grid',
                         placeItems: 'center',
                         backgroundImage: `
-                          radial-gradient(circle at 24% 18%, rgba(234,215,161,0.5), transparent 30%),
+                          radial-gradient(circle at 24% 18%, rgba(70,77,82,0.5), transparent 30%),
                           linear-gradient(135deg, rgba(96,141,140,0.42), rgba(143,124,92,0.36))
                         `,
                       }}
@@ -238,11 +244,11 @@ export function HomeCreatorArticlesSection({ articles, hasMore, isLoading, offse
                       height: 24,
                       maxWidth: 150,
                       color: '#4b3523',
-                      bgcolor: 'rgba(234,215,161,0.58)',
+                      bgcolor: 'rgba(70,77,82,0.58)',
                       fontWeight: 800,
                       textDecoration: 'none',
                       '&:hover': {
-                        bgcolor: 'rgba(234,215,161,0.78)',
+                        bgcolor: 'rgba(70,77,82,0.78)',
                       },
                       '& .MuiChip-label': {
                         overflow: 'hidden',
@@ -262,7 +268,7 @@ export function HomeCreatorArticlesSection({ articles, hasMore, isLoading, offse
                     color: '#3b2f24',
                     minHeight: 56,
                     fontSize: 18,
-                    fontWeight: 950,
+                    fontWeight: 600,
                     lineHeight: 1.35,
                     display: '-webkit-box',
                     overflow: 'hidden',
@@ -293,7 +299,12 @@ export function HomeCreatorArticlesSection({ articles, hasMore, isLoading, offse
                   {article.excerpt || 'เรื่องราววัฒนธรรมจาก creator ของ Thai Culture Hub'}
                 </Typography>
 
-                <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between">
+                <Stack
+                  direction="row"
+                  spacing={1}
+                  alignItems="center"
+                  justifyContent="space-between"
+                >
                   <Stack
                     component={RouterLink}
                     href={`/creator-stories/creator/${encodeURIComponent(article.creatorId)}`}
@@ -326,7 +337,7 @@ export function HomeCreatorArticlesSection({ articles, hasMore, isLoading, offse
                     size="small"
                     component={RouterLink}
                     href={`/creator-stories/${encodeURIComponent(article.slug || article.id)}`}
-                    sx={{ color: '#7b5a31', fontSize: 13, fontWeight: 900 }}
+                    sx={{ color: '#7b5a31', fontSize: 13, fontWeight: 600 }}
                   >
                     อ่านต่อ
                   </Button>

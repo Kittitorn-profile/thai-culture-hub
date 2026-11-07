@@ -42,7 +42,7 @@ type ArticleRow = {
   } | null;
 };
 
-const PAGE_TEXT = '#f8f6ee';
+const PAGE_TEXT = '#202124';
 const PAGE_DEEP = '#2a3736';
 const SECTION_PX = { xs: 2.5, sm: 4, md: 6, lg: 8 };
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://thailandculturalhub.com';
@@ -166,10 +166,7 @@ export default async function Page({ params }: Props) {
           inset: { xs: -80, md: -120 },
           opacity: 0.18,
           pointerEvents: 'none',
-          backgroundImage: `
-            repeating-radial-gradient(circle at 78% 12%, transparent 0 44px, rgba(230,236,232,0.22) 46px 48px),
-            repeating-radial-gradient(circle at 10% 82%, transparent 0 52px, rgba(230,236,232,0.12) 54px 56px)
-          `,
+          backgroundImage: 'none',
           transform: 'rotate(-4deg)',
         },
       }}
@@ -195,7 +192,12 @@ export default async function Page({ params }: Props) {
           }}
         >
           <Stack spacing={2.25} sx={{ p: { xs: 2, sm: 2.5, md: 3 } }}>
-            <Stack direction="row" spacing={1.25} alignItems="center" justifyContent="space-between">
+            <Stack
+              direction="row"
+              spacing={1.25}
+              alignItems="center"
+              justifyContent="space-between"
+            >
               <Stack
                 component="a"
                 href={creatorHref}

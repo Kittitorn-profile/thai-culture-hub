@@ -19,37 +19,54 @@ type Props = {
 
 export function PerformanceGroupMembersSummary({ group }: Props) {
   const roles = [...group.leadRoles, ...group.otherPositions];
+  if (
+    !group.totalMembers &&
+    !group.managers.length &&
+    !group.principalMembers.length &&
+    !roles.length
+  )
+    return null;
 
   return (
     <Box
+      component="section"
+      id="group-members"
       sx={{
-        mt: { xs: 3, md: 4 },
+        scrollMarginTop: 112,
+        mt: 3,
+        p: { xs: 2, md: 2.5 },
+        bgcolor: '#f5f6f3',
+        borderRadius: 2,
         gap: 2,
         display: 'grid',
         gridTemplateColumns: { xs: '1fr', md: 'repeat(2, minmax(0, 1fr))' },
       }}
     >
       <Box>
-        <Typography variant="h5" sx={{ fontWeight: 900 }}>
+        <Typography component="h2" variant="h6" sx={{ fontWeight: 600 }}>
           ข้อมูลสมาชิก
         </Typography>
-        <Typography sx={{ mt: 1.5 }}>สมาชิกทั้งหมด {group.totalMembers} คน</Typography>
+        <Typography sx={{ mt: 1, fontSize: 15 }}>สมาชิกทั้งหมด {group.totalMembers} คน</Typography>
         {group.managers.length > 0 && (
-          <Typography sx={{ mt: 1 }}>ผู้จัดการวง: {group.managers.join(', ')}</Typography>
+          <Typography sx={{ mt: 1, fontSize: 14, color: 'text.secondary' }}>
+            ผู้จัดการวง: {group.managers.join(', ')}
+          </Typography>
         )}
         {group.principalMembers.length > 0 && (
-          <Typography sx={{ mt: 1 }}>สมาชิกหลัก: {group.principalMembers.join(', ')}</Typography>
+          <Typography sx={{ mt: 1, fontSize: 14, color: 'text.secondary' }}>
+            สมาชิกหลัก: {group.principalMembers.join(', ')}
+          </Typography>
         )}
       </Box>
 
       {roles.length > 0 && (
         <Box>
-          <Typography variant="h5" sx={{ fontWeight: 900 }}>
+          <Typography component="h2" variant="h6" sx={{ fontWeight: 600 }}>
             บทบาทและเครื่องดนตรี
           </Typography>
           <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap" sx={{ mt: 1.5 }}>
             {roles.map((role) => (
-              <Chip key={role} label={role} variant="outlined" />
+              <Chip key={role} label={role} size="small" variant="outlined" />
             ))}
           </Stack>
         </Box>
@@ -81,7 +98,7 @@ export function PerformanceGroupPersonnelList({ group }: Props) {
   if (group.personnel.length === 0) return null;
 
   return (
-    <Box sx={{ mt: 5 }}>
+    <Box component="section" id="group-personnel" sx={{ mt: 4, scrollMarginTop: 112 }}>
       <Stack
         direction={{ xs: 'column', sm: 'row' }}
         spacing={2}
@@ -90,7 +107,7 @@ export function PerformanceGroupPersonnelList({ group }: Props) {
         sx={{ mb: 2 }}
       >
         <Box>
-          <Typography variant="h5" sx={{ fontWeight: 900 }}>
+          <Typography component="h2" variant="h6" sx={{ fontWeight: 600 }}>
             บุคลากรในวง
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
@@ -100,7 +117,8 @@ export function PerformanceGroupPersonnelList({ group }: Props) {
         <TextField
           value={personnelSearch}
           onChange={(event) => setPersonnelSearch(event.target.value)}
-          placeholder="ค้นหาชื่อ ตำแหน่ง หรือการศึกษา"
+          label="ค้นหาบุคลากร"
+          placeholder="ชื่อ ตำแหน่ง หรือการศึกษา"
           size="small"
           sx={{ width: { xs: 1, sm: 340 } }}
           slotProps={{
@@ -121,33 +139,22 @@ export function PerformanceGroupPersonnelList({ group }: Props) {
             gap: 2,
             pb: 2,
             display: 'grid',
-            overflowX: 'auto',
-            scrollSnapType: 'x mandatory',
-            gridAutoFlow: 'column',
-            gridAutoColumns: {
-              xs: 'minmax(260px, 84vw)',
-              sm: 'minmax(200px, 42vw)',
-              lg: 'minmax(200px, 31%)',
+            gridTemplateColumns: {
+              xs: 'minmax(0, 1fr)',
+              sm: 'repeat(2, minmax(0, 1fr))',
+              lg: 'repeat(4, minmax(0, 1fr))',
             },
-            scrollbarWidth: 'thin',
-            scrollbarColor: 'rgba(42,55,54,0.35) transparent',
-            '&::-webkit-scrollbar': { height: 8 },
-            '&::-webkit-scrollbar-thumb': {
-              borderRadius: 999,
-              bgcolor: 'rgba(42,55,54,0.35)',
-            },
+            alignItems: 'start',
           }}
         >
           {filteredPersonnel.map((person) => (
             <Box
               key={person.id}
               sx={{
-                p: 2,
+                p: 1.25,
+                minWidth: 0,
                 borderRadius: 2,
-                scrollSnapAlign: 'start',
-                bgcolor: 'rgba(111,135,144,0.08)',
-                border: '1px solid',
-                borderColor: 'divider',
+                bgcolor: '#fff',
               }}
             >
               <Box
@@ -158,22 +165,26 @@ export function PerformanceGroupPersonnelList({ group }: Props) {
                 sx={{
                   width: '100%',
                   display: 'block',
-                  aspectRatio: '1 / 1',
+                  aspectRatio: '4 / 5',
+                  objectPosition: 'center top',
                   objectFit: 'cover',
                   borderRadius: 1.5,
                 }}
               />
               <Stack direction="row" spacing={1.5} alignItems="center" sx={{ mt: 1.5 }}>
                 <Box sx={{ minWidth: 0 }}>
-                  <Typography sx={{ fontWeight: 900 }}>
-                    {person.nickname || ''} - {person.fullName}
+                  <Typography sx={{ fontWeight: 600, fontSize: 16, overflowWrap: 'anywhere' }}>
+                    {person.nickname ? `${person.nickname} · ` : ''}
+                    {person.fullName}
                   </Typography>
-                  <Typography variant="body2" color="secondary.main">
+                  <Typography variant="body2" sx={{ color: '#52665a', mt: 0.25, fontSize: 12 }}>
                     {person.role}
                   </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    อายุ {person.age > 0 ? `${person.age} ปี` : '-'}
-                  </Typography>
+                  {person.age > 0 && (
+                    <Typography variant="caption" color="text.secondary">
+                      อายุ {person.age} ปี
+                    </Typography>
+                  )}
                 </Box>
               </Stack>
               {person.yearsWithGroup > 0 && (
@@ -182,9 +193,14 @@ export function PerformanceGroupPersonnelList({ group }: Props) {
                 </Typography>
               )}
 
-              <Typography variant="body2" sx={{ mt: 0.5 }}>
-                การศึกษา: {person.education || '-'}
-              </Typography>
+              {person.education && (
+                <Typography
+                  variant="caption"
+                  sx={{ mt: 0.5, display: 'block', color: 'text.secondary' }}
+                >
+                  การศึกษา: {person.education}
+                </Typography>
+              )}
               {person.otherDetails && (
                 <Typography variant="body2" sx={{ mt: 1, color: 'text.secondary' }}>
                   {person.otherDetails}
@@ -200,7 +216,7 @@ export function PerformanceGroupPersonnelList({ group }: Props) {
             px: 2,
             textAlign: 'center',
             borderRadius: 2,
-            bgcolor: 'rgba(111,135,144,0.08)',
+            bgcolor: '#fafbf9',
             border: '1px dashed',
             borderColor: 'divider',
           }}

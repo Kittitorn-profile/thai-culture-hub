@@ -76,7 +76,6 @@ export async function verifyAdminAccessToken(accessToken: string, permission?: A
     return { ok: false as const, status: 401, message: 'Unauthorized' };
   }
 
-
   const supabase = getSupabaseAdmin();
 
   if (!supabase.ok) {
@@ -95,12 +94,14 @@ export async function verifyAdminAccessToken(accessToken: string, permission?: A
     id: data.user.id,
     email: data.user.email,
     displayName:
-      typeof userMetadata.display_name === 'string'
-        ? userMetadata.display_name
-        : data.user.email,
-    role: typeof appMetadata.role === 'string' ? appMetadata.role : 'admin',
+      typeof userMetadata.display_name === 'string' ? userMetadata.display_name : data.user.email,
+    role: typeof appMetadata.role === 'string' ? appMetadata.role : '',
     permissions: Array.isArray(appMetadata.admin_permissions) ? appMetadata.admin_permissions : [],
   };
+
+  if (!['admin', 'manage', 'manager', 'reviewer'].includes(user.role)) {
+    return { ok: false as const, status: 403, message: 'Forbidden' };
+  }
 
   if (!canAccessPermission(user, permission)) {
     return { ok: false as const, status: 403, message: 'Forbidden' };

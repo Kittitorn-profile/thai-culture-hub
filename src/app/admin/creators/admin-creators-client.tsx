@@ -10,6 +10,7 @@ import Chip from '@mui/material/Chip';
 import Alert from '@mui/material/Alert';
 import Table from '@mui/material/Table';
 import Stack from '@mui/material/Stack';
+import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import Drawer from '@mui/material/Drawer';
 import Divider from '@mui/material/Divider';
@@ -18,15 +19,16 @@ import MenuItem from '@mui/material/MenuItem';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TextField from '@mui/material/TextField';
+import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
-import LoadingButton from '@mui/lab/LoadingButton';
 import TableContainer from '@mui/material/TableContainer';
 
 import { fDateTime } from 'src/utils/format-time';
+import { getCreatorAvatarUrl } from 'src/utils/creator-avatar';
 
-import { adminApiRequest } from 'src/lib/admin-api';
 import { DashboardContent } from 'src/layouts/dashboard';
 
+import { Iconify } from 'src/components/iconify';
 import { TableNoData, TableHeadCustom, TablePaginationCustom } from 'src/components/table';
 
 import { getAdminCreators, reviewAdminCreator } from 'src/sections/creator/creator-api';
@@ -37,10 +39,8 @@ const TABLE_HEAD = [
   { id: 'createdAt', label: 'วันที่สมัคร', width: 120 },
   { id: 'creator', label: 'ผู้เขียน' },
   { id: 'contact', label: 'ติดต่อ', width: 200 },
-  { id: 'score', label: 'คะแนนรวม', width: 160 },
-  { id: 'awards', label: 'รางวัลที่ได้', width: 260 },
   { id: 'status', label: 'สถานะ', width: 90 },
-  { id: 'active', label: 'การใช้งาน', width: 100 },
+
   { id: 'warning', label: 'คำเตือน', width: 180 },
   { id: 'actions', label: '', width: 130 },
 ];
@@ -52,26 +52,14 @@ const STATUS_OPTIONS: Array<{ value: 'all' | CreatorStatus; label: string }> = [
   { value: 'rejected', label: 'ไม่อนุมัติ' },
 ];
 
+function getStatusText(status: string) {
+  return STATUS_OPTIONS.find((option) => option.value === status)?.label ?? status;
+}
+
 function statusColor(status: string) {
   if (status === 'approved') return 'success';
   if (status === 'rejected') return 'error';
   return 'warning';
-}
-
-function scoreColor(score: number) {
-  if (score >= 85) return 'success';
-  if (score >= 70) return 'primary';
-  if (score >= 50) return 'warning';
-
-  return 'default';
-}
-
-function generateCreatorPassword() {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%';
-  const values = new Uint32Array(14);
-  window.crypto.getRandomValues(values);
-
-  return Array.from(values, (value) => chars[value % chars.length]).join('');
 }
 
 export function AdminCreatorsClient() {
@@ -83,8 +71,6 @@ export function AdminCreatorsClient() {
   const [warningNote, setWarningNote] = useState('');
   const [creatorStatus, setCreatorStatus] = useState<CreatorStatus>('pending');
   const [creatorIsActive, setCreatorIsActive] = useState(true);
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmNewPassword, setConfirmNewPassword] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | CreatorStatus>('all');
   const [page, setPage] = useState(0);
@@ -93,7 +79,6 @@ export function AdminCreatorsClient() {
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isResettingPassword, setIsResettingPassword] = useState(false);
 
   const filteredItems = useMemo(() => {
     const normalizedQuery = searchQuery.trim().toLowerCase();
@@ -164,8 +149,6 @@ export function AdminCreatorsClient() {
       setWarningNote('');
       setCreatorStatus('pending');
       setCreatorIsActive(true);
-      setNewPassword('');
-      setConfirmNewPassword('');
       return;
     }
 
@@ -173,12 +156,22 @@ export function AdminCreatorsClient() {
     setWarningNote(selected.warningNote);
     setCreatorStatus(selected.status);
     setCreatorIsActive(selected.isActive);
-    setNewPassword('');
-    setConfirmNewPassword('');
   }, [selected]);
+
+  const hasChanges = Boolean(
+    selected &&
+    (creatorStatus !== selected.status ||
+      (creatorStatus === 'approved' && creatorIsActive !== selected.isActive) ||
+      (creatorStatus === 'rejected' && rejectReason.trim() !== selected.rejectReason) ||
+      warningNote.trim() !== selected.warningNote)
+  );
 
   const reviewCreator = async () => {
     if (!selected || !accessToken) return;
+    if (creatorStatus === 'rejected' && !rejectReason.trim()) {
+      setError('กรุณาระบุเหตุผลที่ไม่อนุมัติ');
+      return;
+    }
 
     setIsSubmitting(true);
     setError('');
@@ -188,7 +181,7 @@ export function AdminCreatorsClient() {
       await reviewAdminCreator(accessToken, {
         id: selected.id,
         status: creatorStatus,
-        isActive: creatorIsActive,
+        isActive: creatorStatus === 'approved' && creatorIsActive,
         rejectReason,
         warningNote,
       });
@@ -204,63 +197,16 @@ export function AdminCreatorsClient() {
     }
   };
 
-  const resetCreatorPassword = async () => {
-    if (!selected || !accessToken) return;
-
-    const trimmedPassword = newPassword.trim();
-
-    if (trimmedPassword.length < 6) {
-      setError('รหัสผ่านใหม่ต้องมีอย่างน้อย 6 ตัวอักษร');
-      setMessage('');
-      return;
-    }
-
-    if (trimmedPassword !== confirmNewPassword.trim()) {
-      setError('รหัสผ่านใหม่และยืนยันรหัสผ่านไม่ตรงกัน');
-      setMessage('');
-      return;
-    }
-
-    setIsResettingPassword(true);
-    setError('');
-    setMessage('');
-
-    try {
-      await adminApiRequest<{ message?: string }>('/api/admin/creators', {
-        method: 'PATCH',
-        accessToken,
-        body: {
-          action: 'resetPassword',
-          id: selected.id,
-          password: trimmedPassword,
-        },
-      });
-      setMessage('ตั้งรหัสผ่านใหม่ให้ผู้เขียนแล้ว');
-    } catch (caughtError) {
-      setError(caughtError instanceof Error ? caughtError.message : 'ตั้งรหัสผ่านใหม่ไม่สำเร็จ');
-    } finally {
-      setIsResettingPassword(false);
-    }
-  };
-
-  const fillGeneratedPassword = () => {
-    const password = generateCreatorPassword();
-    setNewPassword(password);
-    setConfirmNewPassword(password);
-    setError('');
-    setMessage('');
-  };
-
   return (
     <DashboardContent maxWidth="xl">
       <Stack spacing={3}>
         <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" spacing={2}>
           <Box>
-            <Typography variant="h3" sx={{ fontWeight: 900 }}>
+            <Typography variant="h3" sx={{ fontWeight: 600 }}>
               จัดการผู้เขียน
             </Typography>
             <Typography sx={{ mt: 0.5, color: 'text.secondary' }}>
-              จัดการ user ที่ลงทะเบียนเป็น creator, เปิด/ปิด active และบันทึกคำเตือน
+              ตรวจคำขอสมัคร อนุมัติให้ใช้งาน หรือระงับบัญชีผู้เขียน
             </Typography>
           </Box>
 
@@ -270,21 +216,17 @@ export function AdminCreatorsClient() {
             sx={{ alignSelf: { md: 'flex-start' } }}
           >
             <Button variant="outlined" onClick={loadItems} disabled={isLoading}>
-              Refresh
+              รีเฟรช
             </Button>
           </Stack>
         </Stack>
-
-        {error && <Alert severity="error">{error}</Alert>}
-        {message && <Alert severity="success">{message}</Alert>}
-        {isLoading && <Alert severity="info">กำลังโหลด creator...</Alert>}
 
         <Card sx={{ p: 2.5 }}>
           <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
             <TextField
               fullWidth
-              label="ค้นหา creator"
-              placeholder="ชื่อ, email, เบอร์โทร, bio"
+              label="ค้นหาผู้เขียน"
+              placeholder="ชื่อ อีเมล หรือเบอร์โทร"
               value={searchQuery}
               onChange={(event) => {
                 setSearchQuery(event.target.value);
@@ -311,13 +253,13 @@ export function AdminCreatorsClient() {
           </Stack>
           <Typography sx={{ mt: 1.5, color: 'text.secondary', fontSize: 13 }}>
             แสดง {filteredItems.length.toLocaleString('th-TH')} จาก{' '}
-            {items.length.toLocaleString('th-TH')} creator
+            {items.length.toLocaleString('th-TH')} ผู้เขียน
           </Typography>
         </Card>
 
         <Card>
           <TableContainer sx={{ overflow: 'auto' }}>
-            <Table sx={{ minWidth: 1520 }}>
+            <Table sx={{ minWidth: 960 }}>
               <TableHeadCustom headCells={TABLE_HEAD} />
               <TableBody>
                 {paginatedItems.map((item) => (
@@ -331,7 +273,7 @@ export function AdminCreatorsClient() {
                       </Typography>
                     </TableCell>
                     <TableCell>
-                      <Typography sx={{ fontWeight: 800 }}>{item.displayName}</Typography>
+                      <Typography sx={{ fontWeight: 600 }}>{item.displayName}</Typography>
                       <Typography sx={{ color: 'text.secondary', fontSize: 13 }}>
                         {item.bio || '-'}
                       </Typography>
@@ -343,59 +285,20 @@ export function AdminCreatorsClient() {
                       </Typography>
                     </TableCell>
                     <TableCell>
-                      <Stack spacing={0.5} alignItems="flex-start">
-                        <Chip
-                          size="small"
-                          label={`${item.creatorScore?.totalScore ?? 0}/100`}
-                          color={scoreColor(item.creatorScore?.totalScore ?? 0) as any}
-                          variant="soft"
-                        />
-                        <Typography sx={{ color: 'text.secondary', fontSize: 12 }}>
-                          บทความ {item.creatorScore?.publishedArticleCount ?? 0} · คุณภาพ{' '}
-                          {item.creatorScore?.averageQualityScore ?? 0}
-                        </Typography>
-                        <Typography sx={{ color: 'text.secondary', fontSize: 12 }}>
-                          วิว {(item.creatorScore?.totalViews ?? 0).toLocaleString('th-TH')} · ไลก์{' '}
-                          {(item.creatorScore?.totalLikes ?? 0).toLocaleString('th-TH')}
-                        </Typography>
-                      </Stack>
-                    </TableCell>
-                    <TableCell>
-                      {item.creatorAwards?.length ? (
-                        <Stack direction="row" spacing={0.75} flexWrap="wrap" useFlexGap>
-                          {item.creatorAwards.slice(0, 3).map((award) => (
-                            <Chip
-                              key={award.key}
-                              size="small"
-                              label={award.title}
-                              variant="soft"
-                              color={award.key === 'topContributor' ? 'warning' : 'default'}
-                            />
-                          ))}
-                          {item.creatorAwards.length > 3 && (
-                            <Chip size="small" label={`+${item.creatorAwards.length - 3}`} />
-                          )}
-                        </Stack>
-                      ) : (
-                        <Typography sx={{ color: 'text.disabled', fontSize: 13 }}>-</Typography>
-                      )}
-                    </TableCell>
-                    <TableCell>
                       <Chip
                         size="small"
                         label={
-                          STATUS_OPTIONS.find((option) => option.value === item.status)?.label ??
-                          item.status
+                          item.status === 'approved'
+                            ? item.isActive
+                              ? 'ใช้งานได้'
+                              : 'ระงับใช้งาน'
+                            : getStatusText(item.status)
                         }
-                        color={statusColor(item.status) as any}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Chip
-                        size="small"
-                        label={item.isActive ? 'เปิดใช้งาน' : 'ปิดใช้งาน'}
-                        color={item.isActive ? 'success' : 'default'}
-                        variant={item.isActive ? 'soft' : 'outlined'}
+                        color={
+                          (item.status === 'approved' && !item.isActive
+                            ? 'warning'
+                            : statusColor(item.status)) as any
+                        }
                       />
                     </TableCell>
                     <TableCell>
@@ -452,227 +355,374 @@ export function AdminCreatorsClient() {
       <Drawer
         anchor="right"
         open={!!selected}
-        onClose={() => setSelected(null)}
-        PaperProps={{ sx: { width: { xs: 1, sm: 520 } } }}
+        onClose={() => {
+          if (!isSubmitting) setSelected(null);
+        }}
+        PaperProps={{
+          sx: {
+            width: { xs: 1, sm: 520 },
+            bgcolor: '#fff',
+            backgroundImage: 'none',
+            '& .MuiFormLabel-asterisk': { color: 'error.main' },
+          },
+        }}
       >
         {selected && (
-          <Stack spacing={2.5} sx={{ p: 3 }}>
-            <Box>
-              <Typography variant="h5" sx={{ fontWeight: 900 }}>
-                {selected.displayName}
+          <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+            <Stack
+              spacing={2.5}
+              sx={{ p: 3, flex: 1, minHeight: 0, overflowY: 'auto', '& > *': { flexShrink: 0 } }}
+            >
+              <Stack direction="row" alignItems="center" justifyContent="space-between">
+                <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>
+                  จัดการบัญชี Creator
+                </Typography>
+                <IconButton
+                  aria-label="ปิด"
+                  disabled={isSubmitting}
+                  onClick={() => setSelected(null)}
+                >
+                  <Iconify icon="mingcute:close-line" />
+                </IconButton>
+              </Stack>
+              <Stack direction="row" alignItems="center" spacing={1.75} sx={{ minWidth: 0 }}>
+                <Avatar
+                  src={getCreatorAvatarUrl(selected.id, selected.avatarUrl)}
+                  alt={selected.displayName}
+                  sx={{
+                    width: 56,
+                    height: 56,
+                    bgcolor: '#e9eee5',
+                    color: '#365641',
+                    fontWeight: 600,
+                  }}
+                >
+                  {selected.displayName?.charAt(0)}
+                </Avatar>
+                <Box sx={{ minWidth: 0 }}>
+                  <Typography
+                    component="h2"
+                    sx={{ fontSize: 20, fontWeight: 600, overflowWrap: 'anywhere' }}
+                  >
+                    {selected.displayName}
+                  </Typography>
+                  <Typography
+                    sx={{
+                      mt: 0.25,
+                      fontSize: 13,
+                      color: 'text.secondary',
+                      overflowWrap: 'anywhere',
+                    }}
+                  >
+                    {selected.email}
+                  </Typography>
+                </Box>
+              </Stack>
+              <Box
+                sx={{
+                  p: 2,
+                  borderRadius: 2,
+                  bgcolor: '#f3f5ef',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  flexWrap: 'wrap',
+                  gap: 1,
+                }}
+              >
+                <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>
+                  สถานะปัจจุบัน
+                </Typography>
+                <Chip
+                  size="small"
+                  label={
+                    selected.status === 'approved'
+                      ? selected.isActive
+                        ? 'อนุมัติแล้ว · เข้าใช้งานได้'
+                        : 'ระงับการใช้งาน'
+                      : getStatusText(selected.status)
+                  }
+                  color={
+                    selected.status === 'approved' && !selected.isActive
+                      ? 'warning'
+                      : (statusColor(selected.status) as any)
+                  }
+                />
+                {selected.bio && (
+                  <Typography
+                    sx={{ mt: 1.5, fontSize: 13, color: 'text.secondary', whiteSpace: 'pre-wrap' }}
+                  >
+                    {selected.bio}
+                  </Typography>
+                )}
+              </Box>
+              {error && <Alert severity="error">{error}</Alert>}
+              {message && <Alert severity="success">{message}</Alert>}
+              <Divider />
+              <Typography component="h3" sx={{ fontWeight: 600 }}>
+                เปลี่ยนสถานะบัญชี
               </Typography>
-              <Typography sx={{ color: 'text.secondary' }}>{selected.email}</Typography>
-            </Box>
-            <Chip
-              label={STATUS_OPTIONS.find((option) => option.value === selected.status)?.label}
-              color={statusColor(selected.status) as any}
-              sx={{ alignSelf: 'flex-start' }}
-            />
-            {selected.warningNote && (
-              <Alert severity="warning">
-                {selected.warningNote}
-                {selected.warnedAt ? ` · ${fDateTime(selected.warnedAt)}` : ''}
+              <TextField
+                select
+                fullWidth
+                label="เลือกสถานะใหม่"
+                value={
+                  creatorStatus === 'approved'
+                    ? creatorIsActive
+                      ? 'active'
+                      : 'suspended'
+                    : creatorStatus
+                }
+                disabled={isSubmitting}
+                onChange={(event) => {
+                  const value = event.target.value;
+                  setCreatorStatus(
+                    value === 'active' || value === 'suspended'
+                      ? 'approved'
+                      : (value as CreatorStatus)
+                  );
+                  setCreatorIsActive(value === 'active');
+                }}
+              >
+                <MenuItem value="pending">รอตรวจ — ยังเข้าใช้งานไม่ได้</MenuItem>
+                <MenuItem value="active">อนุมัติและเปิดใช้งาน</MenuItem>
+                <MenuItem value="suspended">ระงับใช้งาน — เก็บผลอนุมัติเดิมไว้</MenuItem>
+                <MenuItem value="rejected">ไม่อนุมัติคำขอสมัคร</MenuItem>
+              </TextField>
+              <Alert
+                sx={{
+                  bgcolor: '#f0f4ee',
+                  color: '#47604d',
+                  borderRadius: 1.5,
+                  fontSize: 13,
+                  '& .MuiAlert-icon': { color: '#5c785e' },
+                }}
+                severity={creatorStatus === 'approved' && creatorIsActive ? 'success' : 'info'}
+              >
+                {creatorStatus === 'approved' && creatorIsActive
+                  ? 'หลังบันทึก ผู้เขียนจะเข้าสู่ระบบและส่งบทความได้'
+                  : 'หลังบันทึก ผู้เขียนจะยังเข้าใช้งานไม่ได้'}
               </Alert>
-            )}
-            <Typography sx={{ whiteSpace: 'pre-wrap' }}>
-              {selected.bio || 'ไม่มีข้อมูลแนะนำตัว'}
-            </Typography>
-            <Divider />
-            <Box>
-              <Typography sx={{ mb: 1.5, fontWeight: 900 }}>คะแนนและรางวัล</Typography>
-              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} sx={{ mb: 2 }}>
-                <Box
-                  sx={{
-                    p: 1.5,
-                    borderRadius: 1,
-                    border: '1px solid',
-                    borderColor: 'divider',
-                    flex: 1,
-                  }}
-                >
-                  <Typography sx={{ color: 'text.secondary', fontSize: 12 }}>คะแนนรวม</Typography>
-                  <Typography variant="h4" sx={{ fontWeight: 900 }}>
-                    {selected.creatorScore?.totalScore ?? 0}/100
-                  </Typography>
+              {creatorStatus === 'rejected' && (
+                <TextField
+                  multiline
+                  minRows={3}
+                  label="เหตุผลที่ไม่อนุมัติ"
+                  required
+                  disabled={isSubmitting}
+                  value={rejectReason}
+                  onChange={(event) => setRejectReason(event.target.value)}
+                  helperText="ผู้เขียนจะเห็นเหตุผลนี้ กรุณาระบุให้ชัดเจน"
+                />
+              )}
+              <Box
+                key={selected.id}
+                sx={{
+                  boxShadow: 'none',
+                  border: '1px solid #e2e5de',
+                  borderRadius: 1.5,
+                  '&::before': { display: 'none' },
+                }}
+              >
+                <Box sx={{ px: 2, pt: 2, pb: 1.5 }}>
+                  <Box>
+                    <Typography sx={{ fontWeight: 600, fontSize: 14 }}>
+                      ข้อความเตือนถึงผู้เขียน
+                    </Typography>
+                    <Typography sx={{ color: 'text.secondary', fontSize: 12 }}>
+                      {selected.warningNote
+                        ? 'บัญชีนี้มีคำเตือนอยู่แล้ว'
+                        : 'ไม่จำเป็นต้องกรอก และไม่เปลี่ยนสิทธิ์เข้าใช้งาน'}
+                    </Typography>
+                  </Box>
                 </Box>
-                <Box
-                  sx={{
-                    p: 1.5,
-                    borderRadius: 1,
-                    border: '1px solid',
-                    borderColor: 'divider',
-                    flex: 1,
-                  }}
-                >
-                  <Typography sx={{ color: 'text.secondary', fontSize: 12 }}>
-                    บทความเผยแพร่
-                  </Typography>
-                  <Typography variant="h4" sx={{ fontWeight: 900 }}>
-                    {selected.creatorScore?.publishedArticleCount ?? 0}
-                  </Typography>
-                </Box>
-              </Stack>
-              <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap sx={{ mb: 1.5 }}>
-                <Chip
-                  size="small"
-                  label={`คุณภาพ ${selected.creatorScore?.averageQualityScore ?? 0}`}
-                  variant="soft"
-                />
-                <Chip
-                  size="small"
-                  label={`โปรไฟล์ ${selected.creatorScore?.profileCompletenessScore ?? 0}`}
-                  variant="soft"
-                />
-                <Chip
-                  size="small"
-                  label={`วิว ${(selected.creatorScore?.totalViews ?? 0).toLocaleString('th-TH')}`}
-                  variant="soft"
-                />
-                <Chip
-                  size="small"
-                  label={`ไลก์ ${(selected.creatorScore?.totalLikes ?? 0).toLocaleString('th-TH')}`}
-                  variant="soft"
-                />
-              </Stack>
-              {selected.creatorAwards?.length ? (
-                <Stack spacing={1}>
-                  {selected.creatorAwards.map((award) => (
-                    <Stack
-                      key={award.key}
-                      direction="row"
-                      spacing={1.25}
-                      alignItems="center"
-                      sx={{
-                        p: 1,
-                        borderRadius: 1,
-                        border: '1px solid',
-                        borderColor: 'divider',
-                      }}
+                <Box sx={{ px: 2, pb: 2 }}>
+                  <TextField
+                    fullWidth
+                    multiline
+                    minRows={3}
+                    label="ข้อความเตือน"
+                    placeholder="แจ้งสิ่งที่ผู้เขียนควรปรับปรุง"
+                    disabled={isSubmitting}
+                    value={warningNote}
+                    onChange={(event) => setWarningNote(event.target.value)}
+                    helperText="ข้อความนี้จะแสดงให้ผู้เขียนเห็นหลังบันทึก หากลบข้อความแล้วบันทึกจะเป็นการล้างคำเตือน"
+                  />
+                  {selected.warningNote && (
+                    <Button
+                      color="inherit"
+                      disabled={isSubmitting || !warningNote}
+                      onClick={() => setWarningNote('')}
+                      sx={{ mt: 1 }}
                     >
+                      ล้างข้อความเตือน
+                    </Button>
+                  )}
+                </Box>
+              </Box>
+              <Divider />
+              <Box
+                sx={{
+                  boxShadow: 'none',
+                  border: '1px solid #e2e5de',
+                  '&::before': { display: 'none' },
+                }}
+              >
+                <Box sx={{ px: 2, pt: 2, pb: 1.5 }}>
+                  <Typography sx={{ fontWeight: 600 }}>คะแนนและรางวัล</Typography>
+                </Box>
+                <Box sx={{ px: 2, pb: 2 }}>
+                  {' '}
+                  <Box>
+                    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} sx={{ mb: 2 }}>
                       <Box
                         sx={{
-                          width: 54,
-                          height: 54,
+                          p: 1.5,
                           borderRadius: 1,
-                          display: 'grid',
-                          placeItems: 'center',
-                          flexShrink: 0,
-                          overflow: 'hidden',
-                          bgcolor: 'background.neutral',
+                          border: '1px solid',
+                          borderColor: 'divider',
+                          flex: 1,
                         }}
                       >
-                        {award.imageUrl ? (
-                          <Box
-                            component="img"
-                            src={award.imageUrl}
-                            alt={award.title}
-                            sx={{ width: 1, height: 1, objectFit: 'contain' }}
-                          />
-                        ) : (
-                          <Typography sx={{ fontSize: 10, fontWeight: 900 }}>BADGE</Typography>
-                        )}
+                        <Typography sx={{ color: 'text.secondary', fontSize: 12 }}>
+                          คะแนนรวม
+                        </Typography>
+                        <Typography variant="h4" sx={{ fontWeight: 600 }}>
+                          {selected.creatorScore?.totalScore ?? 0}/100
+                        </Typography>
                       </Box>
-                      <Box sx={{ minWidth: 0 }}>
-                        <Typography sx={{ fontWeight: 900 }}>{award.title}</Typography>
-                        <Typography sx={{ color: 'text.secondary', fontSize: 13 }}>
-                          {award.subtitle}
+                      <Box
+                        sx={{
+                          p: 1.5,
+                          borderRadius: 1,
+                          border: '1px solid',
+                          borderColor: 'divider',
+                          flex: 1,
+                        }}
+                      >
+                        <Typography sx={{ color: 'text.secondary', fontSize: 12 }}>
+                          บทความเผยแพร่
+                        </Typography>
+                        <Typography variant="h4" sx={{ fontWeight: 600 }}>
+                          {selected.creatorScore?.publishedArticleCount ?? 0}
                         </Typography>
                       </Box>
                     </Stack>
-                  ))}
-                </Stack>
-              ) : (
-                <Typography sx={{ color: 'text.secondary', fontSize: 13 }}>
-                  ยังไม่ได้รับรางวัลตามเกณฑ์ที่ตั้งไว้
-                </Typography>
-              )}
-            </Box>
-            <Divider />
-            <TextField
-              select
-              fullWidth
-              label="สถานะผู้เขียน"
-              value={creatorStatus}
-              onChange={(event) => setCreatorStatus(event.target.value as CreatorStatus)}
-            >
-              {STATUS_OPTIONS.filter((option) => option.value !== 'all').map((option) => (
-                <MenuItem key={option.value} value={option.value}>
-                  {option.label}
-                </MenuItem>
-              ))}
-            </TextField>
-            <TextField
-              select
-              fullWidth
-              label="Active"
-              value={creatorIsActive ? 'active' : 'inactive'}
-              onChange={(event) => setCreatorIsActive(event.target.value === 'active')}
-              helperText="Inactive จะปิดการใช้งานบัญชี creator และบล็อกการเขียน/อัปโหลด"
-            >
-              <MenuItem value="active">Active</MenuItem>
-              <MenuItem value="inactive">Inactive</MenuItem>
-            </TextField>
-            <TextField
-              multiline
-              minRows={3}
-              label="เหตุผลกรณี reject"
-              value={rejectReason}
-              onChange={(event) => setRejectReason(event.target.value)}
-              helperText="จำเป็นเมื่อเลือกสถานะไม่อนุมัติ"
-            />
-            <TextField
-              multiline
-              minRows={3}
-              label="ข้อความเตือน"
-              placeholder="เช่น ใช้คำไม่สุภาพในบทความ กรุณาปรับภาษาให้เหมาะสม"
-              value={warningNote}
-              onChange={(event) => setWarningNote(event.target.value)}
-              helperText="ปล่อยว่างเพื่อล้างคำเตือน"
-            />
-            <Stack direction="row" spacing={1}>
-              <Button variant="contained" loading={isSubmitting} onClick={reviewCreator}>
-                บันทึก
-              </Button>
-              <Button color="inherit" onClick={() => setSelected(null)}>
-                ยกเลิก
-              </Button>
+                    <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap sx={{ mb: 1.5 }}>
+                      <Chip
+                        size="small"
+                        label={`คุณภาพ ${selected.creatorScore?.averageQualityScore ?? 0}`}
+                        variant="soft"
+                      />
+                      <Chip
+                        size="small"
+                        label={`โปรไฟล์ ${selected.creatorScore?.profileCompletenessScore ?? 0}`}
+                        variant="soft"
+                      />
+                      <Chip
+                        size="small"
+                        label={`วิว ${(selected.creatorScore?.totalViews ?? 0).toLocaleString('th-TH')}`}
+                        variant="soft"
+                      />
+                      <Chip
+                        size="small"
+                        label={`ไลก์ ${(selected.creatorScore?.totalLikes ?? 0).toLocaleString('th-TH')}`}
+                        variant="soft"
+                      />
+                    </Stack>
+                    {selected.creatorAwards?.length ? (
+                      <Stack spacing={1}>
+                        {selected.creatorAwards.map((award) => (
+                          <Stack
+                            key={award.key}
+                            direction="row"
+                            spacing={1.25}
+                            alignItems="center"
+                            sx={{
+                              p: 1,
+                              borderRadius: 1,
+                              border: '1px solid',
+                              borderColor: 'divider',
+                            }}
+                          >
+                            <Box
+                              sx={{
+                                width: 54,
+                                height: 54,
+                                borderRadius: 1,
+                                display: 'grid',
+                                placeItems: 'center',
+                                flexShrink: 0,
+                                overflow: 'hidden',
+                                bgcolor: 'background.neutral',
+                              }}
+                            >
+                              {award.imageUrl ? (
+                                <Box
+                                  component="img"
+                                  src={award.imageUrl}
+                                  alt={award.title}
+                                  sx={{ width: 1, height: 1, objectFit: 'contain' }}
+                                />
+                              ) : (
+                                <Typography sx={{ fontSize: 10, fontWeight: 600 }}>
+                                  BADGE
+                                </Typography>
+                              )}
+                            </Box>
+                            <Box sx={{ minWidth: 0 }}>
+                              <Typography sx={{ fontWeight: 600 }}>{award.title}</Typography>
+                              <Typography sx={{ color: 'text.secondary', fontSize: 13 }}>
+                                {award.subtitle}
+                              </Typography>
+                            </Box>
+                          </Stack>
+                        ))}
+                      </Stack>
+                    ) : (
+                      <Typography sx={{ color: 'text.secondary', fontSize: 13 }}>
+                        ยังไม่ได้รับรางวัลตามเกณฑ์ที่ตั้งไว้
+                      </Typography>
+                    )}
+                  </Box>
+                </Box>
+              </Box>
             </Stack>
-            <Divider />
-            <Box>
-              <Typography sx={{ fontWeight: 900 }}>ตั้งรหัสผ่านใหม่</Typography>
-              <Typography sx={{ mt: 0.5, color: 'text.secondary', fontSize: 13 }}>
-                ใช้ในกรณีผู้เขียนลืมรหัสผ่าน จากนั้นแจ้งรหัสใหม่ให้ผู้เขียนผ่านช่องทางที่ปลอดภัย
+            <Box
+              sx={{
+                flexShrink: 0,
+                px: 3,
+                py: 2.5,
+                bgcolor: '#fff',
+                borderTop: '1px solid #e2e5de',
+              }}
+            >
+              <Typography sx={{ mb: 1.5, fontSize: 12, color: 'text.secondary' }}>
+                {hasChanges ? 'มีการเปลี่ยนแปลงที่ยังไม่ได้บันทึก' : 'ยังไม่มีการเปลี่ยนแปลง'}
               </Typography>
+              <Stack direction="row" spacing={1}>
+                <Button
+                  variant="contained"
+                  sx={{
+                    minHeight: 44,
+                    flex: 1,
+                    borderRadius: 1.5,
+                    bgcolor: '#293c34',
+                    color: '#fff',
+                    '&:hover': { bgcolor: '#3c5147' },
+                  }}
+                  disabled={!hasChanges || (creatorStatus === 'rejected' && !rejectReason.trim())}
+                  loading={isSubmitting}
+                  onClick={reviewCreator}
+                >
+                  บันทึกการเปลี่ยนแปลง
+                </Button>
+                <Button color="inherit" disabled={isSubmitting} onClick={() => setSelected(null)}>
+                  ยกเลิก
+                </Button>
+              </Stack>
             </Box>
-            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
-              <TextField
-                fullWidth
-                label="รหัสผ่านใหม่"
-                value={newPassword}
-                onChange={(event) => setNewPassword(event.target.value)}
-                helperText="อย่างน้อย 6 ตัวอักษร"
-              />
-              <TextField
-                fullWidth
-                label="ยืนยันรหัสผ่านใหม่"
-                value={confirmNewPassword}
-                onChange={(event) => setConfirmNewPassword(event.target.value)}
-              />
-            </Stack>
-            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
-              <Button variant="outlined" onClick={fillGeneratedPassword}>
-                สุ่มรหัสผ่าน
-              </Button>
-              <LoadingButton
-                color="warning"
-                variant="contained"
-                loading={isResettingPassword}
-                onClick={resetCreatorPassword}
-              >
-                ตั้งรหัสผ่านใหม่
-              </LoadingButton>
-            </Stack>
-          </Stack>
+          </Box>
         )}
       </Drawer>
     </DashboardContent>

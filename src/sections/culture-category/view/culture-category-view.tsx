@@ -3,19 +3,19 @@
 import type { CulturalPlace } from 'src/sections/province/province-data';
 import type { PlaceLikeState } from 'src/sections/province/view/province-place-card';
 
-import { Container } from 'node_modules/@mui/material/esm';
 import { useRef, useMemo, useState, useEffect, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
-import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
-import MenuItem from '@mui/material/MenuItem';
+import Container from '@mui/material/Container';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import LoadingButton from '@mui/lab/LoadingButton';
+import Autocomplete from '@mui/material/Autocomplete';
+import InputAdornment from '@mui/material/InputAdornment';
 
 import { useParams } from 'src/routes/hooks';
 import { RouterLink } from 'src/routes/components';
@@ -71,19 +71,10 @@ type PlaceLikeResponse = {
   };
 };
 
-const PAGE_TEXT = '#f8f6ee';
-const PAGE_BG_TOP = '#6f8790';
-const PAGE_BG_MIDDLE = '#7b8476';
-const PAGE_BG_BOTTOM = '#8f7c5c';
-const PAGE_BACKGROUND = `
-  radial-gradient(circle at 50% 18%, rgba(239,236,224,0.3) 0%, rgba(239,236,224,0.1) 28%, rgba(111,135,144,0) 58%),
-  linear-gradient(180deg, ${PAGE_BG_TOP} 0%, ${PAGE_BG_MIDDLE} 54%, ${PAGE_BG_BOTTOM} 100%)
-`;
-const PAGE_POSTER_PATTERN = `
-  repeating-radial-gradient(circle at 78% 12%, transparent 0 44px, rgba(230,236,232,0.22) 46px 48px),
-  repeating-radial-gradient(circle at 10% 82%, transparent 0 52px, rgba(230,236,232,0.12) 54px 56px),
-  linear-gradient(120deg, transparent 0 58%, rgba(229,221,198,0.13) 58% 59%, transparent 59% 100%)
-`;
+const PAGE_TEXT = '#202124';
+const PAGE_BG_MIDDLE = '#f7f7f5';
+const PAGE_BACKGROUND = 'none';
+const PAGE_POSTER_PATTERN = 'none';
 const SECTION_PX = { xs: 2.5, sm: 4, md: 6, lg: 8 };
 const SECTION_MAX_WIDTH = 1280;
 const LIKE_BATCH_SIZE = 80;
@@ -388,7 +379,8 @@ export function CultureCategoryView({ allCategories = false }: Props) {
         bgcolor: PAGE_BG_MIDDLE,
         backgroundImage: PAGE_BACKGROUND,
         px: SECTION_PX,
-        py: { xs: 8, sm: 12, md: 10 },
+        pt: { xs: 3, md: 4 },
+        pb: { xs: 5, md: 7 },
         fontFamily: "'LINE Seed Sans TH', sans-serif",
         '&::before': {
           content: '""',
@@ -403,7 +395,7 @@ export function CultureCategoryView({ allCategories = false }: Props) {
       }}
     >
       <Stack
-        spacing={4}
+        spacing={3}
         sx={{
           mx: 'auto',
           zIndex: 1,
@@ -423,37 +415,64 @@ export function CultureCategoryView({ allCategories = false }: Props) {
           </Button>
 
           <Box>
-            <Chip
-              label="หมวดหมู่"
-              sx={{
-                color: PAGE_TEXT,
-                fontWeight: 800,
-                bgcolor: 'rgba(248,246,238,0.14)',
-                border: '1px solid rgba(248,246,238,0.2)',
-              }}
-            />
-            <Stack
-              direction={{ xs: 'column', sm: 'row' }}
-              spacing={2}
-              alignItems={{ sm: 'center' }}
-              mt={2}
-            >
-              <Box sx={{ width: 40, height: 40, borderRadius: '50%', bgcolor: categoryColor }} />
-              <Typography variant="h2" sx={{ fontWeight: 950, color: PAGE_TEXT }}>
+            <Typography sx={{ fontSize: 11, fontWeight: 600, color: '#79613b', mb: 1 }}>
+              สำรวจวัฒนธรรมไทย
+            </Typography>
+            <Stack direction="row" spacing={1.5} alignItems="center">
+              {!allCategories && (
+                <Box
+                  sx={{
+                    width: 6,
+                    height: 32,
+                    borderRadius: 1,
+                    bgcolor: categoryColor,
+                    flexShrink: 0,
+                  }}
+                />
+              )}
+              <Typography
+                component="h1"
+                sx={{
+                  fontSize: { xs: 28, md: 38 },
+                  fontWeight: 600,
+                  color: PAGE_TEXT,
+                  lineHeight: 1.4,
+                }}
+              >
                 {categoryLabel}
               </Typography>
             </Stack>
-            <Typography sx={{ mt: 1.2, color: 'rgba(248,246,238,0.78)', maxWidth: 760 }}>
+            <Typography
+              sx={{ mt: 1, fontSize: 14, lineHeight: 1.8, color: 'text.secondary', maxWidth: 760 }}
+            >
               {pageDescription}
             </Typography>
           </Box>
         </Stack>
 
-        <Card sx={{ p: 2.5, borderRadius: 1, bgcolor: 'rgba(248,246,238,0.94)' }}>
+        <Card
+          sx={{
+            p: { xs: 2, md: 2.5 },
+            borderRadius: 2,
+            bgcolor: '#fff',
+            border: '1px solid #e2e5de',
+            boxShadow: 'none',
+          }}
+        >
           <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
             <TextField
               fullWidth
-              label="ค้นหาชื่อ/อำเภอ/จังหวัด"
+              label="ค้นหาชื่อสถานที่ อำเภอ หรือจังหวัด"
+              size="small"
+              slotProps={{
+                input: {
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Iconify icon="eva:search-fill" width={18} />
+                    </InputAdornment>
+                  ),
+                },
+              }}
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               onKeyDown={(event) => {
@@ -462,21 +481,38 @@ export function CultureCategoryView({ allCategories = false }: Props) {
                 }
               }}
             />
-            <TextField
-              select
+            <Autocomplete
               fullWidth
-              label="จังหวัด"
-              value={provinceCode}
-              onChange={(event) => setProvinceCode(event.target.value)}
-              sx={{ maxWidth: { md: 280 } }}
+              size="small"
+              options={provinceOptions}
+              value={
+                provinceOptions.find((province) => province.code === provinceCode) ??
+                provinceOptions[0]
+              }
+              getOptionLabel={(option) => option.name}
+              isOptionEqualToValue={(option, value) => option.code === value.code}
+              onChange={(_event, value) => setProvinceCode(value?.code ?? '')}
+              sx={{ maxWidth: { md: 280 }, flexShrink: 0 }}
+              renderInput={(inputParams) => (
+                <TextField
+                  {...inputParams}
+                  label="จังหวัด"
+                  placeholder="เลือกหรือพิมพ์ชื่อจังหวัด"
+                />
+              )}
+            />
+            <LoadingButton
+              variant="contained"
+              loading={isLoading}
+              onClick={handleSearch}
+              sx={{
+                minWidth: 88,
+                minHeight: 40,
+                bgcolor: '#293c34',
+                color: '#fff',
+                '&:hover': { bgcolor: '#3c5147' },
+              }}
             >
-              {provinceOptions.map((province) => (
-                <MenuItem key={province.code || 'all'} value={province.code}>
-                  {province.name}
-                </MenuItem>
-              ))}
-            </TextField>
-            <LoadingButton variant="contained" loading={isLoading} onClick={handleSearch}>
               ค้นหา
             </LoadingButton>
           </Stack>
@@ -485,7 +521,7 @@ export function CultureCategoryView({ allCategories = false }: Props) {
         {error && <Alert severity="error">{error}</Alert>}
 
         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems={{ sm: 'center' }}>
-          <Typography sx={{ color: 'rgba(248,246,238,0.78)' }}>
+          <Typography sx={{ color: 'text.secondary', fontSize: 13 }}>
             แสดง {places.length.toLocaleString('th-TH')} จาก {totalPlaces.toLocaleString('th-TH')}{' '}
             รายการ
           </Typography>
@@ -502,10 +538,18 @@ export function CultureCategoryView({ allCategories = false }: Props) {
               justifyContent: 'center',
             }}
           >
-            <Typography sx={{ fontWeight: 900 }}>กำลังโหลดข้อมูล...</Typography>
+            <Typography sx={{ fontWeight: 600 }}>กำลังโหลดข้อมูล...</Typography>
           </Stack>
         )}
 
+        {!isLoading && !error && !places.length && (
+          <Box sx={{ py: 7, textAlign: 'center', border: '1px dashed #dfe3df', borderRadius: 2 }}>
+            <Typography sx={{ fontWeight: 600 }}>ไม่พบข้อมูลที่ค้นหา</Typography>
+            <Typography sx={{ mt: 1, fontSize: 13, color: 'text.secondary' }}>
+              ลองเปลี่ยนคำค้นหาหรือเลือกจังหวัดอื่น
+            </Typography>
+          </Box>
+        )}
         <Box
           sx={{
             display: 'grid',
@@ -532,7 +576,7 @@ export function CultureCategoryView({ allCategories = false }: Props) {
 
         {!!places.length && hasMore && (
           <Stack ref={loadMoreRef} spacing={1.25} alignItems="center" sx={{ py: 1 }}>
-            <Typography sx={{ color: 'rgba(248,246,238,0.68)', fontSize: 13 }}>
+            <Typography sx={{ color: 'rgba(32,33,36,0.68)', fontSize: 13 }}>
               {isLoadingMore ? 'กำลังโหลดเพิ่มเติม...' : 'เลื่อนลงเพื่อโหลดเพิ่มเติม'}
             </Typography>
           </Stack>
@@ -549,7 +593,7 @@ export function CultureCategoryView({ allCategories = false }: Props) {
               justifyContent: 'center',
             }}
           >
-            <Typography sx={{ fontWeight: 900 }}>
+            <Typography sx={{ fontWeight: 600 }}>
               {allCategories ? 'ยังไม่พบข้อมูลวัฒนธรรม' : 'ยังไม่พบข้อมูลในหมวดนี้'}
             </Typography>
             <Typography sx={{ mt: 1 }}>ลองเลือกทุกจังหวัด หรือล้างคำค้นหาแล้วค้นหาใหม่</Typography>
@@ -571,7 +615,7 @@ export function CultureCategoryView({ allCategories = false }: Props) {
 
       <Container sx={{ textAlign: 'center', mt: 4 }}>
         <Logo sx={{ width: 200, height: '100%' }} />
-        <Box sx={{ mt: 1, typography: 'caption', color: (theme) => theme.palette.common.white }}>
+        <Box sx={{ mt: 1, typography: 'caption', color: 'text.secondary' }}>
           © Thailand Cultural Hub. All rights reserved.
         </Box>
       </Container>

@@ -2,6 +2,7 @@ import type { NextRequest } from 'next/server';
 
 import { NextResponse } from 'next/server';
 
+import { readAuthBody } from 'src/server/auth-request';
 import { getSupabaseAdmin } from 'src/server/supabase-admin';
 import { verifyAdminAccessToken } from 'src/server/admin-api-auth';
 import {
@@ -61,7 +62,9 @@ const LEGACY_SELECT = `
   creator_profiles(display_name, email)
 `;
 
-function isMissingActiveColumn(error: { message?: string; details?: string; hint?: string } | null) {
+function isMissingActiveColumn(
+  error: { message?: string; details?: string; hint?: string } | null
+) {
   const text = [error?.message, error?.details, error?.hint].filter(Boolean).join(' ');
 
   return (
@@ -83,7 +86,9 @@ function normalizeApprovalCount(value: unknown) {
 
 function normalizeReviewerIds(value: unknown) {
   return Array.isArray(value)
-    ? Array.from(new Set(value.filter((item): item is string => typeof item === 'string' && !!item.trim())))
+    ? Array.from(
+        new Set(value.filter((item): item is string => typeof item === 'string' && !!item.trim()))
+      )
     : [];
 }
 
@@ -150,7 +155,10 @@ function normalizeStatus(value: string): CreatorArticleStatus | null {
 }
 
 export async function GET(request: NextRequest) {
-  const auth = await verifyAdminAccessToken(getBearerToken(request.headers), ADMIN_PERMISSION.creators);
+  const auth = await verifyAdminAccessToken(
+    getBearerToken(request.headers),
+    ADMIN_PERMISSION.creators
+  );
 
   if (!auth.ok) {
     return NextResponse.json({ message: auth.message }, { status: auth.status });
@@ -196,13 +204,16 @@ export async function GET(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
-  const auth = await verifyAdminAccessToken(getBearerToken(request.headers), ADMIN_PERMISSION.creators);
+  const auth = await verifyAdminAccessToken(
+    getBearerToken(request.headers),
+    ADMIN_PERMISSION.creators
+  );
 
   if (!auth.ok) {
     return NextResponse.json({ message: auth.message }, { status: auth.status });
   }
 
-  const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
+  const body = await readAuthBody(request);
   const approvalRequiredCount = normalizeApprovalCount(body.approvalRequiredCount);
   const approvalReviewerIds = normalizeReviewerIds(body.approvalReviewerIds);
 
@@ -221,11 +232,15 @@ export async function PUT(request: NextRequest) {
 
   const reviewers = await getArticleReviewers();
   const allowedReviewerIds = getAllowedReviewerIds(reviewers);
-  const hasInvalidReviewer = approvalReviewerIds.some((reviewerId) => !allowedReviewerIds.has(reviewerId));
+  const hasInvalidReviewer = approvalReviewerIds.some(
+    (reviewerId) => !allowedReviewerIds.has(reviewerId)
+  );
 
   if (hasInvalidReviewer) {
     return NextResponse.json(
-      { message: 'รายชื่อ approver ต้องเป็น reviewer ที่ได้รับการยืนยันและมีสิทธิ์อนุมัติเท่านั้น' },
+      {
+        message: 'รายชื่อ approver ต้องเป็น reviewer ที่ได้รับการยืนยันและมีสิทธิ์อนุมัติเท่านั้น',
+      },
       { status: 400 }
     );
   }
@@ -262,41 +277,31 @@ export async function PUT(request: NextRequest) {
 }
 
 export async function PATCH(request: NextRequest) {
-  const auth = await verifyAdminAccessToken(getBearerToken(request.headers), ADMIN_PERMISSION.creators);
+  const auth = await verifyAdminAccessToken(
+    getBearerToken(request.headers),
+    ADMIN_PERMISSION.creators
+  );
 
   if (!auth.ok) {
     return NextResponse.json({ message: auth.message }, { status: auth.status });
   }
 
-  const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
+  const body = await readAuthBody(request);
   const id = cleanText(body.id);
   const status = normalizeStatus(cleanText(body.status));
   const rejectReason = cleanText(body.rejectReason);
   const inactiveReason = cleanText(body.inactiveReason);
   const isActive = typeof body.isActive === 'boolean' ? body.isActive : null;
-  const approvalRequiredCount = normalizeApprovalCount(body.approvalRequiredCount);
-  const approvalReviewerIds = normalizeReviewerIds(body.approvalReviewerIds);
 
   if (!id || !status) {
-    return NextResponse.json({ message: 'Valid article id and review status are required' }, { status: 400 });
+    return NextResponse.json(
+      { message: 'Valid article id and review status are required' },
+      { status: 400 }
+    );
   }
 
   if (status === 'rejected' && !rejectReason) {
     return NextResponse.json({ message: 'กรุณาระบุเหตุผลกรณีไม่อนุมัติ' }, { status: 400 });
-  }
-
-  if (approvalReviewerIds.length > 0 && approvalReviewerIds.length < approvalRequiredCount) {
-    return NextResponse.json(
-      { message: 'กรุณาเลือก reviewer ให้ไม่น้อยกว่าจำนวน approval ที่ต้องการ' },
-      { status: 400 }
-    );
-  }
-
-  if (approvalReviewerIds.length > 0 && !approvalReviewerIds.includes(auth.user.id)) {
-    return NextResponse.json(
-      { message: 'ผู้อนุมัติปัจจุบันต้องอยู่ในรายชื่อ reviewer ที่เลือก' },
-      { status: 400 }
-    );
   }
 
   const supabase = getSupabaseAdmin();
@@ -308,7 +313,7 @@ export async function PATCH(request: NextRequest) {
   const now = new Date().toISOString();
   const existingResult = await supabase.client
     .from('creator_articles')
-    .select('status, approval_reviews')
+    .select('status, approval_reviews, approval_required_count, approval_reviewer_ids')
     .eq('id', id)
     .maybeSingle();
 
@@ -323,7 +328,26 @@ export async function PATCH(request: NextRequest) {
     );
   }
 
-  const nextApprovalReviews = normalizeApprovalReviews((existingResult.data as any)?.approval_reviews);
+  const approvalRequiredCount = normalizeApprovalCount(existingResult.data.approval_required_count);
+  const approvalReviewerIds = normalizeReviewerIds(existingResult.data.approval_reviewer_ids);
+  if (approvalReviewerIds.length > 0 && !approvalReviewerIds.includes(auth.user.id)) {
+    return NextResponse.json(
+      { message: 'คุณไม่ได้อยู่ในรายชื่อผู้ตรวจสอบที่กำหนดไว้สำหรับบทความนี้' },
+      { status: 403 }
+    );
+  }
+  if (approvalReviewerIds.length > 0) {
+    const allowedReviewerIds = getAllowedReviewerIds(await getArticleReviewers());
+    if (!allowedReviewerIds.has(auth.user.id))
+      return NextResponse.json(
+        { message: 'สิทธิ์ผู้ตรวจสอบถูกระงับหรือยังไม่ได้รับการยืนยัน' },
+        { status: 403 }
+      );
+  }
+
+  const nextApprovalReviews = normalizeApprovalReviews(
+    (existingResult.data as any)?.approval_reviews
+  );
   const currentReview = {
     userId: auth.user.id,
     email: auth.user.email ?? '',
@@ -332,7 +356,9 @@ export async function PATCH(request: NextRequest) {
   };
   const currentReviewIndex = nextApprovalReviews.findIndex((item) => item.userId === auth.user.id);
 
-  if (currentReviewIndex === -1) {
+  if (status === 'rejected') {
+    if (currentReviewIndex !== -1) nextApprovalReviews.splice(currentReviewIndex, 1);
+  } else if (currentReviewIndex === -1) {
     nextApprovalReviews.push(currentReview);
   } else {
     nextApprovalReviews[currentReviewIndex] = currentReview;
@@ -344,7 +370,8 @@ export async function PATCH(request: NextRequest) {
       : nextApprovalReviews;
   const approvalCount = countedApprovalReviews.length;
   const hasEnoughApprovals = approvalCount >= approvalRequiredCount;
-  const nextStatus = status === 'rejected' ? status : hasEnoughApprovals ? status : 'pending_review';
+  const nextStatus =
+    status === 'rejected' ? status : hasEnoughApprovals ? status : 'pending_review';
   const updatePayload = {
     status: nextStatus,
     reviewed_at: now,
@@ -375,7 +402,12 @@ export async function PATCH(request: NextRequest) {
   let error = articleResult.error;
 
   if (error && isMissingActiveColumn(error)) {
-    if (isActive === false || inactiveReason || approvalRequiredCount > 1 || approvalReviewerIds.length) {
+    if (
+      isActive === false ||
+      inactiveReason ||
+      approvalRequiredCount > 1 ||
+      approvalReviewerIds.length
+    ) {
       return NextResponse.json(
         {
           message:

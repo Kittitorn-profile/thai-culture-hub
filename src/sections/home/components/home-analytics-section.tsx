@@ -17,7 +17,7 @@ export function HomeAnalyticsSection({ summary }: Props) {
     <Box
       sx={{
         px: HOME_SECTION_PX,
-        pb: { xs: 7, md: 10 },
+        pb: 0,
         position: 'relative',
         overflow: 'hidden',
         zIndex: 1,
@@ -26,13 +26,11 @@ export function HomeAnalyticsSection({ summary }: Props) {
       <Box sx={{ mx: 'auto', maxWidth: HOME_SECTION_MAX_WIDTH }}>
         <Box
           sx={{
-            p: { xs: 2.5, md: 4 },
-            borderRadius: 1.5,
+            py: { xs: 3, md: 4 },
+            borderRadius: 0,
             color: HOME_TEXT,
-            bgcolor: 'rgba(42,55,54,0.34)',
-            border: '1px solid rgba(248,246,238,0.22)',
-            boxShadow: '0 28px 70px rgba(31,40,38,0.2)',
-            backdropFilter: 'blur(8px)',
+            bgcolor: 'transparent',
+            borderTop: '1px solid rgba(32,33,36,0.18)',
           }}
         >
           <Stack
@@ -45,35 +43,34 @@ export function HomeAnalyticsSection({ summary }: Props) {
               <Typography
                 component="p"
                 sx={{
-                  color: 'rgba(234,215,161,0.92)',
+                  color: '#4f575d',
                   fontSize: 13,
-                  fontWeight: 900,
+                  fontWeight: 600,
                   letterSpacing: 1.2,
                   textTransform: 'uppercase',
                 }}
               >
-                Live usage insights
+                การใช้งานเว็บไซต์
               </Typography>
               <Typography
                 variant="h3"
                 sx={{
                   mt: 1,
                   color: HOME_TEXT,
-                  fontSize: { xs: 24, md: 48 },
-                  fontWeight: 900,
+                  fontSize: { xs: 24, md: 34 },
+                  fontWeight: 600,
                   lineHeight: 1.1,
                 }}
               >
-                สถิติการสำรวจวัฒนธรรมบนเว็บไซต์
+                ผู้คนที่ออกสำรวจไปกับเรา
               </Typography>
-              <Typography sx={{ mt: 1.5, maxWidth: 620, color: 'rgba(248,246,238,0.76)' }}>
-                ภาพรวม {summary.days} วันล่าสุดจากการเข้าชม คำค้นหา จังหวัด และอำเภอที่ผู้ใช้สนใจ
+              <Typography sx={{ mt: 1.5, maxWidth: 620, color: 'rgba(32,33,36,0.76)' }}>
+                จำนวนผู้เข้าชมเว็บไซต์ในช่วง {summary.days} วันล่าสุด
               </Typography>
             </Box>
 
             <Box
               sx={{
-                mt: 4,
                 display: 'grid',
                 gap: 1.5,
                 width: { xs: 1, md: '300px' },
@@ -83,14 +80,15 @@ export function HomeAnalyticsSection({ summary }: Props) {
                 sx={{
                   p: { xs: 2, md: 2.5 },
                   borderRadius: 1,
-                  bgcolor: 'rgba(248,246,238,0.12)',
-                  border: '1px solid rgba(248,246,238,0.18)',
+                  bgcolor: 'transparent',
+                  borderLeft: { xs: 'none', md: '1px solid rgba(32,33,36,0.18)' },
                   textAlign: 'center',
                 }}
               >
-                <Typography sx={{ mt: 1, fontSize: { xs: 30, md: 42 }, fontWeight: 950 }}>
+                <Typography sx={{ mt: 1, fontSize: { xs: 30, md: 42 }, fontWeight: 600 }}>
                   {fNumber(summary.visitors)}
                 </Typography>
+                <Typography sx={{ fontSize: 13, color: '#62666a' }}>ผู้เข้าชม</Typography>
               </Box>
             </Box>
           </Stack>

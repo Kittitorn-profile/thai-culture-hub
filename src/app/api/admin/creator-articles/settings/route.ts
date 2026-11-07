@@ -2,6 +2,7 @@ import type { NextRequest } from 'next/server';
 
 import { NextResponse } from 'next/server';
 
+import { readAuthBody } from 'src/server/auth-request';
 import { getBearerToken } from 'src/server/creator-auth';
 import { getSupabaseAdmin } from 'src/server/supabase-admin';
 import { verifyAdminAccessToken } from 'src/server/admin-api-auth';
@@ -101,7 +102,9 @@ function normalizeSettings(value: unknown): ArticleReviewSettings {
   };
 }
 
-function isMissingSettingsTable(error: { message?: string; details?: string; hint?: string } | null) {
+function isMissingSettingsTable(
+  error: { message?: string; details?: string; hint?: string } | null
+) {
   const text = [error?.message, error?.details, error?.hint].filter(Boolean).join(' ');
 
   return (
@@ -157,7 +160,7 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ message: auth.message }, { status: auth.status });
   }
 
-  const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
+  const body = await readAuthBody(request);
   const settings = normalizeSettings(body.settings ?? body);
   const supabase = getSupabaseAdmin();
 

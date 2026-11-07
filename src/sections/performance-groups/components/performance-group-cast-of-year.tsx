@@ -15,8 +15,9 @@ type Props = {
   primaryColor: string;
 };
 
-export function PerformanceGroupCastOfYear({ group, record, primaryColor }: Props) {
-  if (!record.singerIds?.length && !record.leadPerformerIds?.length) return null;
+export function PerformanceGroupCastOfYear({ group, record }: Props) {
+  const visibleIds = [...(record.singerIds ?? []), ...(record.leadPerformerIds ?? [])];
+  if (!group.personnel.some((person) => visibleIds.includes(person.id))) return null;
 
   const leadGroups = [
     {
@@ -38,17 +39,16 @@ export function PerformanceGroupCastOfYear({ group, record, primaryColor }: Prop
       <Box
         sx={{
           mb: 1.75,
-          p: 2,
-          borderRadius: 2,
-          color: '#f8f6ee',
-          background: `linear-gradient(135deg, ${primaryColor}, #2a3736)`,
+          pt: 2.5,
+          borderTop: '1px solid',
+          borderColor: 'divider',
         }}
       >
-        <Typography variant="overline" sx={{ opacity: 0.76, fontWeight: 900 }}>
-          CAST OF THE YEAR · {record.year}
+        <Typography variant="overline" sx={{ opacity: 0.76, fontWeight: 600 }}>
+          บุคลากรประจำปี {record.year}
         </Typography>
-        <Typography variant="h5" sx={{ mt: 0.25, fontWeight: 950 }}>
-          นักร้องนำและนักแสดงนำประจำปี {record.year}
+        <Typography component="h3" variant="h6" sx={{ mt: 0.25, fontWeight: 600 }}>
+          นักร้องนำและนักแสดงนำ
         </Typography>
         <Typography variant="body2" sx={{ mt: 0.5, opacity: 0.76 }}>
           รายชื่อผู้รับบทบาทหลักในการแสดงและผลงานของวงในปีนี้
@@ -76,11 +76,9 @@ export function PerformanceGroupCastOfYear({ group, record, primaryColor }: Prop
                   p: 1.75,
                   minWidth: 0,
                   borderRadius: 2,
-                  bgcolor: leadGroup.tint,
-                  border: '1px solid',
-                  borderColor: 'divider',
-                  borderLeft: `5px solid ${leadGroup.color}`,
-                  boxShadow: '0 8px 24px rgba(42,55,54,0.06)',
+                  bgcolor: '#f5f6f3',
+                  border: 0,
+                  boxShadow: 'none',
                 }}
               >
                 <Stack direction="row" spacing={1.5} alignItems="center">
@@ -88,7 +86,7 @@ export function PerformanceGroupCastOfYear({ group, record, primaryColor }: Prop
                     variant="rounded"
                     src={person.imageUrl}
                     alt={person.fullName}
-                    sx={{ width: 76, height: 76, flexShrink: 0 }}
+                    sx={{ width: 56, height: 56, flexShrink: 0 }}
                   />
                   <Box sx={{ minWidth: 0 }}>
                     <Chip
@@ -97,11 +95,11 @@ export function PerformanceGroupCastOfYear({ group, record, primaryColor }: Prop
                       sx={{
                         mb: 0.75,
                         color: '#fff',
-                        fontWeight: 900,
+                        fontWeight: 600,
                         bgcolor: leadGroup.color,
                       }}
                     />
-                    <Typography sx={{ fontSize: 16, fontWeight: 950 }}>
+                    <Typography sx={{ fontSize: 16, fontWeight: 600 }}>
                       {person.fullName}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">

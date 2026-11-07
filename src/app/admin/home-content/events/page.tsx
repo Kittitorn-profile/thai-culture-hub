@@ -592,7 +592,7 @@ export default function HomeEventsAdminPage() {
           </Stack>
         </Stack>
 
-        {(error || eventsQuery.error) && (
+        {/* {(error || eventsQuery.error) && (
           <Alert severity="error">
             {error ||
               (eventsQuery.error instanceof Error
@@ -607,7 +607,7 @@ export default function HomeEventsAdminPage() {
         <Alert severity="warning">
           รายการที่ sync จาก TAT จะถูกบันทึกเป็นสถานะซ่อนก่อน ต้องกดเปิดใช้งานเอง user
           จึงจะเห็นบนหน้าเว็บ
-        </Alert>
+        </Alert> */}
 
         <Box
           sx={{

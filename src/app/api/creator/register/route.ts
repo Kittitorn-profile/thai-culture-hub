@@ -1,9 +1,11 @@
 import type { NextRequest } from 'next/server';
 
-import crypto from 'node:crypto';
 import { NextResponse } from 'next/server';
 
+import { readAuthBody } from 'src/server/auth-request';
+
 import provinces from 'src/data/thailand-culture/provinces';
+import { hashPassword } from 'src/server/password';
 import { getSupabaseAdmin } from 'src/server/supabase-admin';
 import { cleanText, mapCreatorProfile } from 'src/server/creator-auth';
 
@@ -11,21 +13,24 @@ export const runtime = 'nodejs';
 
 const USERS_TABLE = process.env.ADMIN_USERS_TABLE ?? 'user';
 
-function sha256(value: string) {
-  return crypto.createHash('sha256').update(value).digest('hex');
-}
-
 export async function POST(request: NextRequest) {
-  const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
+  const body = await readAuthBody(request);
   const email = cleanText(body.email).toLowerCase();
-  const password = cleanText(body.password);
-  const confirmPassword = cleanText(body.confirmPassword);
+  const password = typeof body.password === 'string' ? body.password : '';
+  const confirmPassword = typeof body.confirmPassword === 'string' ? body.confirmPassword : '';
   const firstName = cleanText(body.firstName);
   const lastName = cleanText(body.lastName);
   const displayName = cleanText(body.displayName) || `${firstName} ${lastName}`.trim() || email;
   const bio = cleanText(body.bio);
   const phone = cleanText(body.phone);
   const provinceCode = cleanText(body.provinceCode);
+
+  if (body.acceptTerms !== true) {
+    return NextResponse.json({ message: 'กรุณายอมรับเงื่อนไขการใช้บริการ' }, { status: 400 });
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return NextResponse.json({ message: 'รูปแบบอีเมลไม่ถูกต้อง' }, { status: 400 });
+  }
 
   if (!email || !password || !displayName || !provinceCode) {
     return NextResponse.json(
@@ -35,7 +40,10 @@ export async function POST(request: NextRequest) {
   }
 
   if (password.length < 6) {
-    return NextResponse.json({ message: 'Password must be at least 6 characters' }, { status: 400 });
+    return NextResponse.json(
+      { message: 'Password must be at least 6 characters' },
+      { status: 400 }
+    );
   }
 
   if (password !== confirmPassword) {
@@ -71,7 +79,7 @@ export async function POST(request: NextRequest) {
     .insert({
       username: email,
       email,
-      password_hash: `sha256:${sha256(password)}`,
+      password_hash: await hashPassword(password),
       role: 'creator',
       is_active: false,
     })
@@ -79,7 +87,10 @@ export async function POST(request: NextRequest) {
     .single();
 
   if (createError || !createdUser?.id) {
-    return NextResponse.json({ message: createError?.message ?? 'Create user failed' }, { status: 400 });
+    return NextResponse.json(
+      { message: createError?.message ?? 'Create user failed' },
+      { status: 400 }
+    );
   }
 
   const userId = String(createdUser.id);
@@ -105,5 +116,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ message: profileError.message }, { status: 500 });
   }
 
-  return NextResponse.json({ data: mapCreatorProfile(profile), message: 'Registration submitted' }, { status: 201 });
+  return NextResponse.json(
+    { data: mapCreatorProfile(profile), message: 'Registration submitted' },
+    { status: 201 }
+  );
 }

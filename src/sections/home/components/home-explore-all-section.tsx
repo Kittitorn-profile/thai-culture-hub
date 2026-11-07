@@ -8,13 +8,13 @@ import { RouterLink } from 'src/routes/components';
 
 import { Iconify } from 'src/components/iconify';
 
-import { HOME_DEEP, HOME_TEXT, HOME_SECTION_PX, HOME_SECTION_MAX_WIDTH } from './home-constants';
+import { HOME_TEXT, HOME_SECTION_PX, HOME_SECTION_MAX_WIDTH } from './home-constants';
 
 const EXPLORE_HIGHLIGHTS: Array<{ icon: IconifyName; title: string; body: string }> = [
   {
     icon: 'solar:file-text-bold',
     title: 'ค้นหาเร็วขึ้น',
-    body: 'เริ่มจากจังหวัดแรกเพื่อลดเวลารอโหลด แล้วค่อยขยายเป็นทุกจังหวัดได้',
+    body: 'เลือกพื้นที่ที่สนใจ แล้วค้นพบสถานที่และเรื่องราวใกล้ตัว',
   },
   {
     icon: 'solar:add-folder-bold',
@@ -31,9 +31,11 @@ const EXPLORE_HIGHLIGHTS: Array<{ icon: IconifyName; title: string; body: string
 export function HomeExploreAllSection() {
   return (
     <Box
+      component="section"
+      aria-labelledby="explore-all-heading"
       sx={{
         px: HOME_SECTION_PX,
-        py: { xs: 7, md: 9 },
+        py: { xs: 4, md: 6 },
         position: 'relative',
         overflow: 'hidden',
         zIndex: 1,
@@ -44,56 +46,66 @@ export function HomeExploreAllSection() {
           mx: 'auto',
           maxWidth: HOME_SECTION_MAX_WIDTH,
           display: 'grid',
-          gap: { xs: 3, md: 5 },
-          alignItems: 'center',
-          gridTemplateColumns: { xs: '1fr', md: '0.92fr 1.08fr' },
+          gap: { xs: 4, md: 7 },
+          alignItems: 'start',
+          gridTemplateColumns: { xs: '1fr', md: '1fr 1.2fr' },
         }}
       >
         <Box>
           <Typography
             sx={{
-              px: 1.4,
-              py: 0.6,
+              mb: 1,
               width: 'fit-content',
               color: HOME_TEXT,
-              borderRadius: 999,
-              bgcolor: 'rgba(42,55,54,0.28)',
-              border: '1px solid rgba(255,255,255,0.28)',
+              borderRadius: 0,
+              bgcolor: 'transparent',
               fontSize: 12,
-              fontWeight: 800,
+              fontWeight: 500,
             }}
           >
-            Explore all data
+            สำรวจข้อมูลวัฒนธรรม
           </Typography>
           <Typography
-            variant="h3"
+            id="explore-all-heading"
+            component="h2"
             sx={{
-              mt: 2,
+              mt: 1,
               color: HOME_TEXT,
-              fontSize: { xs: 28, md: 44 },
-              fontWeight: 950,
-              lineHeight: 1.15,
+              fontSize: { xs: 27, md: 34 },
+              fontWeight: 600,
+              lineHeight: 1.4,
             }}
           >
-            ค้นหาสถานที่วัฒนธรรมจากข้อมูลทั้งหมด
+            ค้นพบวัฒนธรรม
+            <Box component="span" sx={{ display: 'block' }}>
+              ในพื้นที่ที่คุณสนใจ
+            </Box>
           </Typography>
           <Typography
             sx={{
               mt: 1.5,
               maxWidth: 560,
-              color: 'rgba(248,246,238,0.78)',
-              lineHeight: 1.75,
+              color: 'rgba(32,33,36,0.78)',
+              lineHeight: 1.8,
+              fontSize: 14,
             }}
           >
-            เปิดมุมมองรวมเพื่อค้นหาชื่อสถานที่ อำเภอ จังหวัด หรือเลือกจังหวัดก่อนดูรายการ
-            เหมาะสำหรับสำรวจข้อมูลและส่งคำขอแก้ไขเมื่อพบรายละเอียดที่ควรปรับปรุง
+            ค้นหาสถานที่ตามชื่อ จังหวัด หรือหมวดวัฒนธรรม
+            พร้อมรายละเอียดและแหล่งอ้างอิงให้สำรวจต่อได้ในที่เดียว
           </Typography>
           <Button
             component={RouterLink}
             href="/culture-category"
             variant="contained"
             startIcon={<Iconify icon="solar:add-folder-bold" />}
-            sx={{ mt: 3, width: { xs: 1, sm: 'auto' } }}
+            sx={{
+              mt: 2.5,
+              py: 1.2,
+              px: 2.5,
+              borderRadius: 1.5,
+              boxShadow: 'none',
+              width: { xs: 1, sm: 'auto' },
+            }}
           >
             สำรวจข้อมูลทั้งหมด
           </Button>
@@ -110,31 +122,30 @@ export function HomeExploreAllSection() {
             <Box
               key={item.title}
               sx={{
-                p: { xs: 2, md: 2.5 },
-                minHeight: 210,
-                borderRadius: 1.5,
+                pt: 2.5,
+                pb: 1,
+                borderRadius: 0,
                 color: HOME_TEXT,
-                bgcolor: 'rgba(42,55,54,0.3)',
-                border: '1px solid rgba(248,246,238,0.2)',
-                backdropFilter: 'blur(7px)',
+                bgcolor: 'transparent',
+                borderTop: '1px solid rgba(32,33,36,0.2)',
               }}
             >
               <Box
                 sx={{
-                  width: 46,
-                  height: 46,
+                  width: 28,
+                  height: 28,
                   mb: 2,
-                  borderRadius: 1.25,
                   display: 'grid',
                   placeItems: 'center',
-                  color: HOME_DEEP,
-                  bgcolor: 'rgba(248,246,238,0.86)',
+                  color: '#384740',
                 }}
               >
-                <Iconify icon={item.icon} width={25} />
+                <Iconify icon={item.icon} width={21} />
               </Box>
-              <Typography sx={{ fontSize: 18, fontWeight: 900 }}>{item.title}</Typography>
-              <Typography sx={{ mt: 1, color: 'rgba(248,246,238,0.72)', fontSize: 13.5, lineHeight: 1.65 }}>
+              <Typography sx={{ fontSize: 16, fontWeight: 600 }}>{item.title}</Typography>
+              <Typography
+                sx={{ mt: 1, color: 'rgba(32,33,36,0.72)', fontSize: 13.5, lineHeight: 1.65 }}
+              >
                 {item.body}
               </Typography>
             </Box>

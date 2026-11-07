@@ -37,11 +37,21 @@ export function AuthSplitSection({
 }: AuthSplitSectionProps) {
   return (
     <Box
-      sx={{
-        bgcolor: 'rgba(42,55,54,0.28)',
-        border: '1px solid rgba(255,255,255,0.24)',
-        backdropFilter: 'blur(6px)',
-      }}
+      {...other}
+      sx={[
+        {
+          bgcolor: 'background.neutral',
+          borderRadius: 3,
+          p: { xs: 3, md: 6 },
+          display: { xs: 'none', [layoutQuery]: 'flex' },
+          flexDirection: 'column',
+          justifyContent: 'center',
+          gap: 4,
+          flex: '1 1 50%',
+          minWidth: 0,
+        },
+        ...(Array.isArray(sx) ? sx : [sx]),
+      ]}
     >
       <div>
         <Typography variant="h3" sx={{ textAlign: 'center' }}>

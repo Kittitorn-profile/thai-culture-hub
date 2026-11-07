@@ -22,7 +22,7 @@ import { PerformanceGroupContestEvents } from './performance-group-contest-event
 
 const ReactPlayer = dynamic(() => import('react-player'), {
   ssr: false,
-  loading: () => <Box sx={{ width: 1, height: 1, bgcolor: 'rgba(42,55,54,0.12)' }} />,
+  loading: () => <Box sx={{ width: 1, height: 1, bgcolor: '#fff' }} />,
 });
 
 type Props = {
@@ -37,33 +37,30 @@ export function PerformanceGroupYearlyRecordCard({ group, record, contestEvents 
   return (
     <Box
       sx={{
-        p: { xs: 2, md: 3 },
+        display: 'grid',
+        gridTemplateColumns: 'minmax(0, 1fr)',
+        gap: 2,
         overflow: 'hidden',
         position: 'relative',
-        borderRadius: 3,
-        border: '1px solid rgba(42,55,54,0.16)',
-        bgcolor: '#fff',
-        boxShadow: '0 20px 50px rgba(42,55,54,0.11)',
-        transition: 'transform 180ms ease, box-shadow 180ms ease',
-        '&:hover': {
-          transform: 'translateY(-2px)',
-          boxShadow: '0 26px 60px rgba(42,55,54,0.15)',
-        },
+        borderRadius: 0,
+        border: 0,
+        bgcolor: 'transparent',
+        boxShadow: 'none',
       }}
     >
       <Stack
-        direction={{ xs: 'column', sm: 'row' }}
+        direction="row"
         spacing={2}
-        alignItems={{ xs: 'flex-start', sm: 'center' }}
+        alignItems="center"
         justifyContent="space-between"
+        useFlexGap
+        flexWrap="wrap"
         sx={{
-          mx: { xs: -2, md: -3 },
-          mt: { xs: -2, md: -3 },
-          mb: { xs: 2, md: 3 },
-          px: { xs: 2, md: 3 },
-          py: 2.25,
-          color: '#f8f6ee',
-          background: `linear-gradient(135deg, ${primaryColor}, #2a3736)`,
+          px: { xs: 2, md: 2.5 },
+          py: 1.75,
+          borderRadius: 2,
+          bgcolor: '#ede9de',
+          color: '#252d31',
         }}
       >
         <Stack direction="row" spacing={1.5} alignItems="center">
@@ -72,7 +69,7 @@ export function PerformanceGroupYearlyRecordCard({ group, record, contestEvents 
               variant="circular"
               src={record.logoUrl}
               alt={`โลโก้ปี ${record.year}`}
-              sx={{ width: 60, height: 60, bgcolor: 'rgba(255,255,255,0.16)' }}
+              sx={{ width: 48, height: 48, bgcolor: '#fff', '& img': { objectFit: 'contain' } }}
             />
           ) : (
             <Box
@@ -83,133 +80,158 @@ export function PerformanceGroupYearlyRecordCard({ group, record, contestEvents 
                 flexShrink: 0,
                 placeItems: 'center',
                 borderRadius: 1.5,
-                bgcolor: 'rgba(255,255,255,0.14)',
-                fontWeight: 950,
+                bgcolor: '#f0f2ef',
+                fontWeight: 600,
               }}
             >
               {record.year.slice(-2)}
             </Box>
           )}
           <Box>
-            <Typography variant="overline" sx={{ opacity: 0.7, fontWeight: 900 }}>
-              YEARLY HIGHLIGHT
+            <Typography sx={{ fontSize: 11, color: '#79613b', fontWeight: 600 }}>
+              สรุปผลงาน
             </Typography>
-            <Typography variant="h4" sx={{ fontWeight: 950 }}>
+            <Typography component="h3" variant="h5" sx={{ fontWeight: 600, color: '#293c34' }}>
               ปี {record.year}
             </Typography>
           </Box>
         </Stack>
         <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
-          <Chip
-            label={`${record.performanceImages?.length ?? 0} ภาพ`}
-            size="small"
-            sx={{ color: '#f8f6ee', bgcolor: 'rgba(255,255,255,0.14)' }}
-          />
-          <Chip
-            label={`${record.awards.length} รางวัล`}
-            size="small"
-            sx={{ color: '#f8f6ee', bgcolor: 'rgba(255,255,255,0.14)' }}
-          />
+          {Boolean(record.performanceImages?.length) && (
+            <Chip
+              label={`${record.performanceImages?.length ?? 0} ภาพ`}
+              size="small"
+              sx={{ color: '#52605a', bgcolor: '#f0f2ef' }}
+            />
+          )}
+          {record.awards.length > 0 && (
+            <Chip
+              label={`${record.awards.length} รางวัล`}
+              size="small"
+              sx={{ color: '#52605a', bgcolor: '#f0f2ef' }}
+            />
+          )}
         </Stack>
       </Stack>
 
-      <PerformanceGroupContestEvents group={group} record={record} contestEvents={contestEvents} />
+      <Box sx={{ minWidth: 0 }}>
+        <PerformanceGroupContestEvents
+          group={group}
+          record={record}
+          contestEvents={contestEvents}
+        />
 
-      {record.about && <Typography sx={{ mt: 1 }}>{record.about}</Typography>}
-      {record.details && (
-        <Typography sx={{ mt: 0.75, color: 'text.secondary' }}>{record.details}</Typography>
-      )}
-      {record.note && (
-        <Typography variant="body2" sx={{ mt: 1, color: 'text.secondary' }}>
-          หมายเหตุ: {record.note}
-        </Typography>
-      )}
-      {record.storyTypes?.length ? (
-        <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap" sx={{ mt: 1.5 }}>
-          {record.storyTypes.map((storyType) => (
-            <Chip key={storyType} label={storyType} size="small" variant="outlined" />
-          ))}
-        </Stack>
-      ) : null}
-
-      <PerformanceGroupCastOfYear group={group} record={record} primaryColor={primaryColor} />
-
-      {record.performanceImages?.length ? (
-        <Box sx={{ mt: 3 }}>
-          <Typography sx={{ mb: 1.25, fontWeight: 900 }}>ภาพการแสดง</Typography>
-          <Box
+        {record.about && (
+          <Typography
             sx={{
-              gap: 1,
-              display: 'grid',
-              gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, minmax(0, 1fr))' },
+              mt: 2,
+              pl: 2,
+              py: 0.5,
+              borderLeft: '2px solid #ad8650',
+              fontSize: 14,
+              lineHeight: 1.9,
+              color: 'text.secondary',
+              whiteSpace: 'pre-line',
             }}
           >
-            {record.performanceImages.map((imageUrl, imageIndex) => (
-              <Box
-                key={`${imageUrl}-${imageIndex}`}
-                component="img"
-                src={imageUrl}
-                loading="lazy"
-                alt={`ภาพการแสดง ${group.name} ปี ${record.year}`}
-                sx={{
-                  width: 1,
-                  aspectRatio: '4 / 3',
-                  objectFit: 'cover',
-                  borderRadius: 1.5,
-                  transition: 'transform 180ms ease',
-                  '&:hover': { transform: 'scale(1.02)' },
-                }}
-              />
+            {record.about}
+          </Typography>
+        )}
+        {record.details && (
+          <Typography sx={{ mt: 0.75, color: 'text.secondary' }}>{record.details}</Typography>
+        )}
+        {record.note && (
+          <Typography variant="body2" sx={{ mt: 1, color: 'text.secondary' }}>
+            หมายเหตุ: {record.note}
+          </Typography>
+        )}
+        {record.storyTypes?.length ? (
+          <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap" sx={{ mt: 1.5 }}>
+            {record.storyTypes.map((storyType) => (
+              <Chip key={storyType} label={storyType} size="small" variant="outlined" />
             ))}
-          </Box>
-        </Box>
-      ) : null}
-
-      {record.bookletUrl && (
-        <Button
-          component="a"
-          href={record.bookletUrl}
-          target="_blank"
-          variant="outlined"
-          size="small"
-          sx={{ mt: 1.5 }}
-        >
-          เปิดสูจิบัตร {record.bookletName ? `(${record.bookletName})` : ''}
-        </Button>
-      )}
-
-      {record.youtubeUrl && (
-        <Box sx={{ mt: 2.5 }}>
-          <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1.25 }}>
-            <Iconify icon="solar:video-frame-play-horizontal-bold" width={24} />
-            <Typography sx={{ fontWeight: 900 }}>วิดีโอการแสดง</Typography>
           </Stack>
-          <Box
-            sx={{
-              width: 1,
-              aspectRatio: '16 / 9',
-              overflow: 'hidden',
-              borderRadius: 2,
-              bgcolor: '#1f2928',
-              border: '1px solid rgba(42,55,54,0.18)',
-              boxShadow: '0 16px 38px rgba(31,40,38,0.16)',
-              '& > div': { width: '100% !important', height: '100% !important' },
-            }}
-          >
-            <ReactPlayer
-              src={record.youtubeUrl}
-              light={record.performanceImages?.[0] || true}
-              controls
-              width="100%"
-              height="100%"
-              playIcon={<HomePlayButton />}
-              previewAriaLabel={`เล่นวิดีโอการแสดง ${group.name} ปี ${record.year}`}
-            />
-          </Box>
-        </Box>
-      )}
+        ) : null}
 
-      <PerformanceGroupAwards awards={record.awards} />
+        <PerformanceGroupCastOfYear group={group} record={record} primaryColor={primaryColor} />
+
+        {record.performanceImages?.length ? (
+          <Box sx={{ mt: 3 }}>
+            <Typography sx={{ mb: 1.25, fontWeight: 600 }}>ภาพการแสดง</Typography>
+            <Box
+              sx={{
+                gap: 1,
+                display: 'grid',
+                gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, minmax(0, 1fr))' },
+              }}
+            >
+              {record.performanceImages.map((imageUrl, imageIndex) => (
+                <Box
+                  key={`${imageUrl}-${imageIndex}`}
+                  component="img"
+                  src={imageUrl}
+                  loading="lazy"
+                  alt={`ภาพการแสดง ${group.name} ปี ${record.year}`}
+                  sx={{
+                    width: 1,
+                    aspectRatio: '4 / 3',
+                    objectFit: 'cover',
+                    borderRadius: 1.5,
+                    transition: 'transform 180ms ease',
+                    '&:hover': { transform: 'scale(1.02)' },
+                  }}
+                />
+              ))}
+            </Box>
+          </Box>
+        ) : null}
+
+        {record.bookletUrl && (
+          <Button
+            component="a"
+            href={record.bookletUrl}
+            target="_blank"
+            variant="outlined"
+            size="small"
+            sx={{ mt: 1.5 }}
+          >
+            เปิดสูจิบัตร {record.bookletName ? `(${record.bookletName})` : ''}
+          </Button>
+        )}
+
+        {record.youtubeUrl && (
+          <Box sx={{ mt: 2.5 }}>
+            <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1.25 }}>
+              <Iconify icon="solar:video-frame-play-horizontal-bold" width={24} />
+              <Typography sx={{ fontWeight: 600 }}>วิดีโอการแสดง</Typography>
+            </Stack>
+            <Box
+              sx={{
+                width: 1,
+                aspectRatio: '16 / 9',
+                overflow: 'hidden',
+                borderRadius: 2,
+                bgcolor: '#1f2928',
+                border: '1px solid rgba(42,55,54,0.18)',
+                boxShadow: 'none',
+                '& > div': { width: '100% !important', height: '100% !important' },
+              }}
+            >
+              <ReactPlayer
+                src={record.youtubeUrl}
+                light={record.performanceImages?.[0] || true}
+                controls
+                width="100%"
+                height="100%"
+                playIcon={<HomePlayButton />}
+                previewAriaLabel={`เล่นวิดีโอการแสดง ${group.name} ปี ${record.year}`}
+              />
+            </Box>
+          </Box>
+        )}
+
+        <PerformanceGroupAwards awards={record.awards} />
+      </Box>
     </Box>
   );
 }

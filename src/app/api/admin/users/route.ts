@@ -2,6 +2,7 @@ import type { NextRequest } from 'next/server';
 
 import { NextResponse } from 'next/server';
 
+import { readAuthBody } from 'src/server/auth-request';
 import { getSupabaseAdmin } from 'src/server/supabase-admin';
 import { verifyAdminAccessToken } from 'src/server/admin-api-auth';
 
@@ -25,11 +26,11 @@ function cleanText(value: unknown) {
 function normalizeRole(value: unknown) {
   const role = cleanText(value);
 
-  if (role === ADMIN_ROLE.reviewer) {
-    return ADMIN_ROLE.reviewer;
-  }
-
-  return role === ADMIN_ROLE.manage ? ADMIN_ROLE.manage : ADMIN_ROLE.admin;
+  return [ADMIN_ROLE.admin, ADMIN_ROLE.manage, ADMIN_ROLE.reviewer].some(
+    (allowedRole) => allowedRole === role
+  )
+    ? role
+    : '';
 }
 
 function getUserDisplayName(firstName: string, lastName: string, fallback: string) {
@@ -91,11 +92,18 @@ export async function GET(request: NextRequest) {
       createdAt: user.created_at,
       lastSignInAt: user.last_sign_in_at,
       isActive: getUserIsActive(user),
-      role: user.app_metadata?.role ?? ADMIN_ROLE.admin,
-      permissions: user.app_metadata?.admin_permissions ?? ALL_ADMIN_PERMISSIONS,
+      role: typeof user.app_metadata?.role === 'string' ? user.app_metadata.role : '',
+      permissions:
+        user.app_metadata?.role === ADMIN_ROLE.admin
+          ? ALL_ADMIN_PERMISSIONS
+          : normalizePermissions(user.app_metadata?.admin_permissions),
       firstName: user.user_metadata?.first_name ?? '',
       lastName: user.user_metadata?.last_name ?? '',
-      displayName: user.user_metadata?.display_name ?? '',
+      displayName:
+        user.user_metadata?.display_name ||
+        user.user_metadata?.full_name ||
+        user.user_metadata?.name ||
+        '',
     })),
   });
 }
@@ -107,12 +115,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ message: auth.message }, { status: auth.status });
   }
 
-  const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
+  const body = await readAuthBody(request);
   const email = cleanText(body.email).toLowerCase();
-  const password = cleanText(body.password);
   const firstName = cleanText(body.firstName);
   const lastName = cleanText(body.lastName);
   const role = normalizeRole(body.role);
+  if (!role)
+    return NextResponse.json({ message: 'กรุณาเลือกสิทธิ์ผู้ใช้งานให้ถูกต้อง' }, { status: 400 });
   const isActive = typeof body.isActive === 'boolean' ? body.isActive : true;
   const permissions =
     role === ADMIN_ROLE.admin
@@ -121,12 +130,8 @@ export async function POST(request: NextRequest) {
         ? [ADMIN_PERMISSION.creators]
         : normalizePermissions(body.permissions);
 
-  if (!email || !password) {
-    return NextResponse.json({ message: 'Email and password are required' }, { status: 400 });
-  }
-
-  if (password.length < 6) {
-    return NextResponse.json({ message: 'Password must be at least 6 characters' }, { status: 400 });
+  if (!email) {
+    return NextResponse.json({ message: 'กรุณากรอกอีเมล Google' }, { status: 400 });
   }
 
   if ((role === ADMIN_ROLE.manage || role === ADMIN_ROLE.reviewer) && !permissions.length) {
@@ -139,10 +144,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ message: supabase.error }, { status: 500 });
   }
 
-  const displayName = getUserDisplayName(firstName, lastName, email);
+  const displayName = cleanText(body.displayName) || getUserDisplayName(firstName, lastName, email);
   const { data, error } = await supabase.client.auth.admin.createUser({
     email,
-    password,
     email_confirm: true,
     app_metadata: {
       role,
@@ -182,12 +186,9 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ message: auth.message }, { status: auth.status });
   }
 
-  const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
+  const body = await readAuthBody(request);
   const userId = cleanText(body.id);
   const nextEmail = cleanText(body.email).toLowerCase();
-  const nextPassword = cleanText(body.password);
-  const firstName = cleanText(body.firstName);
-  const lastName = cleanText(body.lastName);
   const hasActiveChange = typeof body.isActive === 'boolean';
 
   if (!userId) {
@@ -196,10 +197,6 @@ export async function PATCH(request: NextRequest) {
 
   if (hasActiveChange && body.isActive === false && userId === auth.user.id) {
     return NextResponse.json({ message: 'You cannot deactivate your own user' }, { status: 400 });
-  }
-
-  if (nextPassword && nextPassword.length < 6) {
-    return NextResponse.json({ message: 'Password must be at least 6 characters' }, { status: 400 });
   }
 
   const supabase = getSupabaseAdmin();
@@ -219,21 +216,24 @@ export async function PATCH(request: NextRequest) {
 
   const currentUser = currentResult.data.user;
   const currentAppMetadata = currentUser.app_metadata ?? {};
-  const currentUserMetadata = currentUser.user_metadata ?? {};
   const role =
     typeof body.role === 'string'
       ? normalizeRole(body.role)
       : typeof currentAppMetadata.role === 'string'
         ? currentAppMetadata.role
-        : ADMIN_ROLE.admin;
+        : '';
+  if (typeof body.role === 'string' && !role)
+    return NextResponse.json({ message: 'กรุณาเลือกสิทธิ์ผู้ใช้งานให้ถูกต้อง' }, { status: 400 });
   const permissions =
     role === ADMIN_ROLE.admin
       ? ALL_ADMIN_PERMISSIONS
-      : Array.isArray(body.permissions)
-        ? normalizePermissions(body.permissions)
-        : Array.isArray(currentAppMetadata.admin_permissions)
-          ? normalizePermissions(currentAppMetadata.admin_permissions)
-          : [];
+      : role === ADMIN_ROLE.reviewer
+        ? [ADMIN_PERMISSION.creators]
+        : Array.isArray(body.permissions)
+          ? normalizePermissions(body.permissions)
+          : Array.isArray(currentAppMetadata.admin_permissions)
+            ? normalizePermissions(currentAppMetadata.admin_permissions)
+            : [];
 
   if ((role === ADMIN_ROLE.manage || role === ADMIN_ROLE.reviewer) && !permissions.length) {
     return NextResponse.json({ message: 'Select at least one permission' }, { status: 400 });
@@ -254,26 +254,8 @@ export async function PATCH(request: NextRequest) {
     updatePayload.email_confirm = true;
   }
 
-  if (nextPassword) {
-    updatePayload.password = nextPassword;
-  }
-
   if (hasActiveChange) {
     updatePayload.ban_duration = body.isActive ? 'none' : '876000h';
-  }
-
-  if ('firstName' in body || 'lastName' in body) {
-    const resolvedFirstName =
-      'firstName' in body ? firstName : typeof currentUserMetadata.first_name === 'string' ? currentUserMetadata.first_name : '';
-    const resolvedLastName =
-      'lastName' in body ? lastName : typeof currentUserMetadata.last_name === 'string' ? currentUserMetadata.last_name : '';
-
-    updatePayload.user_metadata = {
-      ...currentUserMetadata,
-      first_name: resolvedFirstName,
-      last_name: resolvedLastName,
-      display_name: getUserDisplayName(resolvedFirstName, resolvedLastName, nextEmail || (currentUser.email ?? '')),
-    };
   }
 
   const { data, error } = await supabase.client.auth.admin.updateUserById(userId, {
@@ -305,7 +287,7 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ message: auth.message }, { status: auth.status });
   }
 
-  const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
+  const body = await readAuthBody(request);
   const userId = cleanText(body.id);
 
   if (!userId) {

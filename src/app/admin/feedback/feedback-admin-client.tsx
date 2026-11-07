@@ -27,7 +27,7 @@ import { TableNoData, TableHeadCustom, TablePaginationCustom } from 'src/compone
 
 import { useAuthContext } from 'src/auth/hooks';
 
-import { getFeedbackAction } from './actions';
+import { getFeedbackAction, updateFeedbackStatusAction } from './actions';
 
 // ----------------------------------------------------------------------
 
@@ -58,7 +58,7 @@ function getStatusLabel(status: FeedbackItem['status']) {
   return 'ใหม่';
 }
 
-export function FeedbackAdminClient() {
+export function FeedbackAdminClient({ contactOnly = false }: { contactOnly?: boolean }) {
   const { user, checkUserSession } = useAuthContext();
   const [items, setItems] = useState<FeedbackItem[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -67,6 +67,7 @@ export function FeedbackAdminClient() {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [savingId, setSavingId] = useState('');
   const accessToken = user?.accessToken ?? user?.access_token ?? '';
 
   const filteredItems = useMemo(() => {
@@ -103,7 +104,7 @@ export function FeedbackAdminClient() {
     setError('');
 
     try {
-      const result = await getFeedbackAction(accessToken);
+      const result = await getFeedbackAction(accessToken, contactOnly);
 
       if (!result.ok) {
         if (result.status === 401) {
@@ -119,7 +120,24 @@ export function FeedbackAdminClient() {
     } finally {
       setIsLoading(false);
     }
-  }, [accessToken, checkUserSession]);
+  }, [accessToken, checkUserSession, contactOnly]);
+
+  const updateStatus = async (id: string, status: FeedbackStatus) => {
+    if (!accessToken || savingId) return;
+    setSavingId(id);
+    setError('');
+    try {
+      const result = await updateFeedbackStatusAction(accessToken, id, status, contactOnly);
+      if (!result.ok) throw new Error(result.message);
+      setItems((current) =>
+        current.map((item) => (item.id === id ? { ...item, status: result.data.status } : item))
+      );
+    } catch (caughtError) {
+      setError(caughtError instanceof Error ? caughtError.message : 'บันทึกสถานะไม่สำเร็จ');
+    } finally {
+      setSavingId('');
+    }
+  };
 
   useEffect(() => {
     loadFeedback();
@@ -139,10 +157,12 @@ export function FeedbackAdminClient() {
         <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" spacing={2}>
           <Box>
             <Typography variant="h3" sx={{ fontWeight: 900 }}>
-              Feedback
+              {contactOnly ? 'ข้อความติดต่อ' : 'ข้อเสนอแนะ'}
             </Typography>
             <Typography sx={{ mt: 0.5, color: 'text.secondary' }}>
-              ความคิดเห็นที่ผู้ใช้ส่งจากปุ่มมุมขวาล่างของเว็บไซต์
+              {contactOnly
+                ? 'ข้อความที่ส่งจากหน้าติดต่อเรา พร้อมข้อมูลผู้ส่งและช่องทางติดต่อกลับ'
+                : 'ความคิดเห็นที่ผู้ใช้ส่งจากปุ่มมุมขวาล่างของเว็บไซต์'}
             </Typography>
           </Box>
 
@@ -151,8 +171,12 @@ export function FeedbackAdminClient() {
             spacing={1.5}
             sx={{ alignSelf: { md: 'flex-start' } }}
           >
-            <Button variant="outlined" onClick={loadFeedback} disabled={isLoading}>
-              Refresh
+            <Button
+              variant="outlined"
+              onClick={loadFeedback}
+              disabled={isLoading || Boolean(savingId)}
+            >
+              รีเฟรช
             </Button>
           </Stack>
         </Stack>
@@ -164,7 +188,7 @@ export function FeedbackAdminClient() {
           <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
             <TextField
               fullWidth
-              label="ค้นหา feedback"
+              label={contactOnly ? 'ค้นหาข้อความติดต่อ' : 'ค้นหาข้อเสนอแนะ'}
               placeholder="ข้อความ, ผู้ส่ง, ติดต่อ, path"
               value={searchQuery}
               onChange={(event) => {
@@ -192,14 +216,22 @@ export function FeedbackAdminClient() {
           </Stack>
           <Typography sx={{ mt: 1.5, color: 'text.secondary', fontSize: 13 }}>
             แสดง {filteredItems.length.toLocaleString('th-TH')} จาก{' '}
-            {items.length.toLocaleString('th-TH')} feedback
+            {items.length.toLocaleString('th-TH')} รายการ
           </Typography>
         </Card>
 
         <Card>
           <TableContainer sx={{ overflow: 'auto' }}>
             <Table sx={{ minWidth: 980 }}>
-              <TableHeadCustom headCells={TABLE_HEAD} />
+              <TableHeadCustom
+                headCells={
+                  contactOnly
+                    ? TABLE_HEAD.map((cell) =>
+                        cell.id === 'message' ? { ...cell, label: 'ข้อความ' } : cell
+                      )
+                    : TABLE_HEAD
+                }
+              />
               <TableBody>
                 {paginatedItems.map((item) => (
                   <TableRow key={item.id} hover>
@@ -210,7 +242,7 @@ export function FeedbackAdminClient() {
                       <Typography sx={{ whiteSpace: 'pre-wrap', fontWeight: 700 }}>
                         {item.message}
                       </Typography>
-                      {item.userAgent && (
+                      {!contactOnly && item.userAgent && (
                         <Typography sx={{ mt: 0.75, color: 'text.disabled', fontSize: 12 }}>
                           {item.userAgent}
                         </Typography>
@@ -218,7 +250,14 @@ export function FeedbackAdminClient() {
                     </TableCell>
                     <TableCell>
                       <Typography sx={{ fontWeight: 700 }}>{item.name || 'ไม่ระบุชื่อ'}</Typography>
-                      <Typography sx={{ mt: 0.25, color: 'text.secondary', fontSize: 13 }}>
+                      <Typography
+                        sx={{
+                          mt: 0.25,
+                          color: 'text.secondary',
+                          fontSize: 13,
+                          whiteSpace: 'pre-line',
+                        }}
+                      >
                         {item.contact || 'ไม่มีช่องทางติดต่อ'}
                       </Typography>
                     </TableCell>
@@ -228,11 +267,33 @@ export function FeedbackAdminClient() {
                       </Typography>
                     </TableCell>
                     <TableCell>
-                      <Chip
-                        size="small"
-                        label={getStatusLabel(item.status)}
-                        color={item.status === 'new' ? 'warning' : 'default'}
-                      />
+                      {contactOnly ? (
+                        <TextField
+                          select
+                          size="small"
+                          value={item.status}
+                          disabled={Boolean(savingId)}
+                          onChange={(event) => {
+                            void updateStatus(item.id, event.target.value as FeedbackStatus);
+                          }}
+                          aria-label={`สถานะข้อความจาก ${item.name || 'ผู้ติดต่อ'}`}
+                          sx={{ minWidth: 130 }}
+                        >
+                          {STATUS_OPTIONS.filter((option) => option.value !== 'all').map(
+                            (option) => (
+                              <MenuItem key={option.value} value={option.value}>
+                                {option.label}
+                              </MenuItem>
+                            )
+                          )}
+                        </TextField>
+                      ) : (
+                        <Chip
+                          size="small"
+                          label={getStatusLabel(item.status)}
+                          color={item.status === 'new' ? 'warning' : 'default'}
+                        />
+                      )}
                     </TableCell>
                   </TableRow>
                 ))}
@@ -245,7 +306,7 @@ export function FeedbackAdminClient() {
             page={page}
             count={filteredItems.length}
             rowsPerPage={rowsPerPage}
-            labelRowsPerPage="Page size:"
+            labelRowsPerPage="แถวต่อหน้า:"
             rowsPerPageOptions={[5, 10, 25, 50]}
             onPageChange={(_, newPage) => setPage(newPage)}
             onRowsPerPageChange={(event) => {

@@ -21,8 +21,6 @@ import { Box } from '@mui/material';
 
 import { HomeFooter } from 'src/layouts/main/footer';
 
-import { Image } from 'src/components/image';
-
 import { HomeMapSection } from '../components/home-map-section';
 import { HomeHeroSection } from '../components/home-hero-section';
 import { HomePopupBanner } from '../components/home-popup-banner';
@@ -54,7 +52,6 @@ import {
   HOME_TEXT,
   HOME_BG_TOP,
   HOME_BG_MIDDLE,
-  HOME_POSTER_PATTERN,
   CREATOR_ARTICLES_LIMIT,
   DEFAULT_HOME_ANALYTICS,
   HOME_SHARED_BACKGROUND,
@@ -314,16 +311,6 @@ export function HomeView() {
         position: 'relative',
         backgroundImage: HOME_SHARED_BACKGROUND,
         fontFamily: "'LINE Seed Sans TH', sans-serif",
-        '&::before': {
-          content: '""',
-          position: 'absolute',
-          inset: { xs: -80, md: -120 },
-          zIndex: 0,
-          opacity: 0.22,
-          pointerEvents: 'none',
-          backgroundImage: HOME_POSTER_PATTERN,
-          transform: 'rotate(-4deg)',
-        },
       }}
     >
       <HomeHeroSection />
@@ -375,34 +362,6 @@ export function HomeView() {
           onLoadMore={loadCreatorArticles}
         />
       )}
-
-      <Box
-        sx={{
-          width: 1000,
-          p: { xs: 0.7, md: 1 },
-          zIndex: 0,
-          opacity: { xs: 0.64, md: 0.78 },
-          overflow: 'hidden',
-          position: 'absolute',
-          bottom: -140,
-          right: -110,
-          borderRadius: 1,
-          filter: 'saturate(0.78) sepia(0.12)',
-        }}
-      >
-        <Image
-          src="/assets/th-hub/hub-bg-removebg.png"
-          alt="การแสดงศิลปวัฒนธรรมไทย"
-          ratio="4/3"
-          visibleByDefault
-          disablePlaceholder
-          sx={{
-            width: 1,
-            borderRadius: 0.75,
-            '& img': { objectFit: 'cover' },
-          }}
-        />
-      </Box>
 
       <HomeFooter />
 

@@ -1,17 +1,14 @@
 import type { HomeAnalyticsSummary } from './home-types';
 import type { IconifyName } from 'src/components/iconify/register-icons';
 
-export const HOME_BG_TOP = '#6f8790';
-export const HOME_BG_MIDDLE = '#7b8476';
-export const HOME_BG_BOTTOM = '#8f7c5c';
-export const HOME_TEXT = '#f8f6ee';
-export const HOME_DEEP = '#f8f6ee';
+export const HOME_BG_TOP = '#202629';
+export const HOME_BG_MIDDLE = '#f7f7f5';
+export const HOME_BG_BOTTOM = '#191f22';
+export const HOME_TEXT = '#202124';
+export const HOME_DEEP = '#202629';
 export const HOME_SECTION_MAX_WIDTH = 1280;
 export const HOME_SECTION_PX = { xs: 2.5, sm: 4, md: 6, lg: 8 };
-export const HOME_SHARED_BACKGROUND = `
-  radial-gradient(circle at 50% 18%, rgba(239,236,224,0.3) 0%, rgba(239,236,224,0.1) 28%, rgba(111,135,144,0) 58%),
-  linear-gradient(180deg, ${HOME_BG_TOP} 0%, ${HOME_BG_MIDDLE} 54%, ${HOME_BG_BOTTOM} 100%)
-`;
+export const HOME_SHARED_BACKGROUND = 'none';
 export const HOME_POSTER_PATTERN = `
   repeating-radial-gradient(circle at 78% 12%, transparent 0 44px, rgba(230,236,232,0.22) 46px 48px),
   repeating-radial-gradient(circle at 10% 82%, transparent 0 52px, rgba(230,236,232,0.12) 54px 56px),

@@ -1,139 +1,132 @@
-import { Box } from '@mui/material';
+import {
+  RiArrowRightLine,
+  RiDatabase2Line,
+  RiFolderCheckLine,
+  RiGroupLine,
+} from '@remixicon/react';
+
+import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 
 import { RouterLink } from 'src/routes/components';
 
-import { HOME_TEXT, DATA_FLOW_STEPS, HOME_SECTION_PX, HOME_SECTION_MAX_WIDTH } from './home-constants';
+import { HOME_TEXT, HOME_SECTION_PX, HOME_SECTION_MAX_WIDTH } from './home-constants';
+
+const STEPS = [
+  {
+    icon: RiDatabase2Line,
+    title: 'รวมเรื่องราวจากหลายแหล่ง',
+    description: 'ค้นพบข้อมูลวัฒนธรรม แหล่งท่องเที่ยว และเรื่องราวท้องถิ่นในที่เดียว',
+  },
+  {
+    icon: RiFolderCheckLine,
+    title: 'ค้นหาตามพื้นที่และความสนใจ',
+    description: 'เลือกจังหวัด อำเภอ หรือหมวดหมู่ พร้อมเปิดดูแหล่งอ้างอิงของข้อมูล',
+  },
+  {
+    icon: RiGroupLine,
+    title: 'ร่วมเติมข้อมูลให้สมบูรณ์',
+    description: 'ส่งเรื่องเล่าหรือเสนอแก้ไขข้อมูล ให้ทีมงานตรวจสอบก่อนเผยแพร่',
+  },
+];
 
 export function HomeDataFlowSection() {
   return (
     <Box
+      component="section"
+      aria-labelledby="home-data-heading"
       sx={{
         px: HOME_SECTION_PX,
-        py: { xs: 7, md: 9 },
+        py: { xs: 4, md: 6 },
         position: 'relative',
-        overflow: 'hidden',
-        scrollMarginTop: 96,
         zIndex: 1,
+        color: HOME_TEXT,
       }}
     >
       <Box
         sx={{
           mx: 'auto',
           maxWidth: HOME_SECTION_MAX_WIDTH,
-          position: 'relative',
-          zIndex: 1,
+          borderTop: '1px solid #dfe3df',
+          pt: { xs: 3, md: 4 },
         }}
       >
         <Stack
           direction={{ xs: 'column', md: 'row' }}
-          spacing={3}
-          alignItems={{ xs: 'flex-start', md: 'flex-end' }}
+          spacing={2.5}
+          alignItems={{ xs: 'flex-start', md: 'center' }}
           justifyContent="space-between"
-          sx={{ mb: { xs: 3.5, md: 4.5 } }}
+          sx={{ mb: { xs: 3, md: 4 } }}
         >
-          <Box sx={{ maxWidth: 720 }}>
-            <Typography
-              sx={{
-                px: 1.4,
-                py: 0.6,
-                width: 'fit-content',
-                color: HOME_TEXT,
-                borderRadius: 999,
-                bgcolor: 'rgba(42,55,54,0.28)',
-                border: '1px solid rgba(255,255,255,0.28)',
-                fontSize: 12,
-                fontWeight: 800,
-              }}
-            >
-              Scalable data system
+          <Box sx={{ maxWidth: 660 }}>
+            <Typography sx={{ color: '#727b7f', fontSize: 12, mb: 1 }}>
+              เบื้องหลังข้อมูลวัฒนธรรม
             </Typography>
             <Typography
-              variant="h3"
-              sx={{
-                mt: 2,
-                color: HOME_TEXT,
-                fontSize: { xs: 28, md: 44 },
-                fontWeight: 950,
-                lineHeight: 1.15,
-              }}
+              id="home-data-heading"
+              component="h2"
+              sx={{ fontSize: { xs: 26, md: 34 }, fontWeight: 600, lineHeight: 1.4 }}
             >
-              ระบบข้อมูลที่พร้อมขยายต่อ
+              จากข้อมูลท้องถิ่น สู่การค้นพบใหม่
             </Typography>
-            <Typography sx={{ mt: 1.4, color: 'rgba(248,246,238,0.76)', lineHeight: 1.75 }}>
-              ออกแบบให้ข้อมูลวัฒนธรรมไม่หยุดอยู่แค่รายการสถานที่ แต่ต่อยอดเป็นแผนที่ หน้าหมวด บทความ
-              และระบบตรวจแก้ข้อมูลร่วมกับผู้ใช้ได้ในระยะยาว
+            <Typography sx={{ mt: 1.25, color: '#626a6e', fontSize: 14, lineHeight: 1.8 }}>
+              เชื่อมเรื่องราวกับพื้นที่จริง ให้คุณสำรวจต่อได้ง่าย และร่วมดูแลข้อมูลไปกับชุมชน
             </Typography>
           </Box>
-
           <Button
             component={RouterLink}
             href="/culture-category"
-            variant="outlined"
+            endIcon={<RiArrowRightLine size={17} />}
             sx={{
               flexShrink: 0,
-              color: HOME_TEXT,
-              borderColor: 'rgba(248,246,238,0.5)',
-              '&:hover': {
-                borderColor: HOME_TEXT,
-                bgcolor: 'rgba(248,246,238,0.08)',
-              },
+              color: '#303b40',
+              border: '1px solid #d8deda',
+              borderRadius: 1.5,
+              px: 2.5,
+              py: 1,
+              fontWeight: 500,
+              '&:hover': { bgcolor: '#ecefeb', borderColor: '#aab5ae' },
             }}
           >
-            ดูฐานข้อมูล
+            สำรวจข้อมูล
           </Button>
         </Stack>
-
         <Box
+          component="ol"
           sx={{
             display: 'grid',
-            gap: { xs: 2, md: 2.5 },
             gridTemplateColumns: { xs: '1fr', md: 'repeat(3, minmax(0, 1fr))' },
-            mb: { xs: 2.5, md: 3 },
+            gap: { xs: 3, md: 4 },
+            m: 0,
+            p: 0,
+            listStyle: 'none',
           }}
         >
-          {DATA_FLOW_STEPS.map((step, index) => (
-            <Box
-              key={step.title}
-              sx={{
-                p: { xs: 2.2, md: 2.6 },
-                minHeight: 190,
-                borderRadius: 1.5,
-                color: HOME_TEXT,
-                bgcolor: 'rgba(42,55,54,0.3)',
-                border: '1px solid rgba(248,246,238,0.2)',
-                backdropFilter: 'blur(7px)',
-                position: 'relative',
-                overflow: 'hidden',
-                '&::before': {
-                  content: '""',
-                  position: 'absolute',
-                  left: 0,
-                  top: 0,
-                  width: 1,
-                  height: 4,
-                  bgcolor: 'rgba(234,215,161,0.72)',
-                },
-              }}
-            >
-              <Typography
-                sx={{
-                  color: 'rgba(234,215,161,0.92)',
-                  fontSize: 12,
-                  fontWeight: 900,
-                  letterSpacing: 1.1,
-                  textTransform: 'uppercase',
-                }}
+          {STEPS.map(({ icon: StepIcon, title, description }, index) => (
+            <Box component="li" key={title} sx={{ borderTop: '1px solid #dfe3df', pt: 2.5 }}>
+              <Stack
+                direction="row"
+                alignItems="center"
+                justifyContent="space-between"
+                sx={{ mb: 2 }}
               >
-                {String(index + 1).padStart(2, '0')} / {step.label}
+                <StepIcon size={24} color="#4e6658" />
+                <Typography
+                  component="span"
+                  sx={{ color: '#929c96', fontSize: 12, fontVariantNumeric: 'tabular-nums' }}
+                >
+                  {String(index + 1).padStart(2, '0')}
+                </Typography>
+              </Stack>
+              <Typography component="h3" sx={{ fontSize: 17, fontWeight: 600, lineHeight: 1.5 }}>
+                {title}
               </Typography>
-              <Typography sx={{ mt: 2, fontSize: { xs: 19, md: 21 }, fontWeight: 900 }}>
-                {step.title}
-              </Typography>
-              <Typography sx={{ mt: 1, color: 'rgba(248,246,238,0.72)', fontSize: 13.5, lineHeight: 1.7 }}>
-                {step.description}
+              <Typography
+                sx={{ mt: 1, color: '#727b7f', fontSize: 13, lineHeight: 1.8, maxWidth: 360 }}
+              >
+                {description}
               </Typography>
             </Box>
           ))}

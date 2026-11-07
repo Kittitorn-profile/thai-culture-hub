@@ -1,5 +1,7 @@
 'use client';
 
+import { RiArrowLeftSLine, RiArrowRightSLine } from '@remixicon/react';
+
 import type { CarouselOptions, CarouselArrowButtonProps } from '../types';
 
 import { mergeClasses } from 'minimal-shared/utils';
@@ -12,24 +14,6 @@ import { carouselClasses } from '../classes';
 
 // ----------------------------------------------------------------------
 
-const prevSvgPath = (
-  <path
-    fill="currentColor"
-    fillRule="evenodd"
-    d="M15.488 4.43a.75.75 0 0 1 .081 1.058L9.988 12l5.581 6.512a.75.75 0 1 1-1.138.976l-6-7a.75.75 0 0 1 0-.976l6-7a.75.75 0 0 1 1.057-.081"
-    clipRule="evenodd"
-  />
-);
-
-const nextSvgPath = (
-  <path
-    fill="currentColor"
-    fillRule="evenodd"
-    d="M8.512 4.43a.75.75 0 0 1 1.057.082l6 7a.75.75 0 0 1 0 .976l-6 7a.75.75 0 0 1-1.138-.976L14.012 12L8.431 5.488a.75.75 0 0 1 .08-1.057"
-    clipRule="evenodd"
-  />
-);
-
 export function ArrowButton({
   sx,
   svgIcon,
@@ -41,8 +25,6 @@ export function ArrowButton({
 }: CarouselArrowButtonProps) {
   const isPrev = variant === 'prev';
 
-  const svgContent = svgIcon || (isPrev ? prevSvgPath : nextSvgPath);
-
   return (
     <ArrowButtonRoot
       axis={options?.axis}
@@ -52,9 +34,18 @@ export function ArrowButton({
       sx={sx}
       {...other}
     >
-      <SvgIcon className={carouselClasses.arrows.svg} sx={{ width: svgSize, height: svgSize }}>
-        {svgContent}
-      </SvgIcon>
+      {svgIcon ? (
+        <SvgIcon className={carouselClasses.arrows.svg} sx={{ width: svgSize, height: svgSize }}>
+          {svgIcon}
+        </SvgIcon>
+      ) : (
+        <SvgIcon
+          component={isPrev ? RiArrowLeftSLine : RiArrowRightSLine}
+          inheritViewBox
+          className={carouselClasses.arrows.svg}
+          sx={{ width: svgSize, height: svgSize }}
+        />
+      )}
     </ArrowButtonRoot>
   );
 }

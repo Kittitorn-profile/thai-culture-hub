@@ -29,6 +29,7 @@ import { TableNoData, TableHeadCustom, TablePaginationCustom } from 'src/compone
 import { useAuthContext } from 'src/auth/hooks';
 import {
   ADMIN_ROLE,
+  ADMIN_PERMISSION,
   type AdminPermission,
   ADMIN_PERMISSION_OPTIONS,
 } from 'src/auth/admin-permissions';
@@ -48,7 +49,7 @@ type AdminUser = {
 
 type UserForm = {
   email: string;
-  password: string;
+  displayName: string;
   firstName: string;
   lastName: string;
   role: string;
@@ -63,7 +64,7 @@ type AdminUsersResponse = {
 
 const defaultForm: UserForm = {
   email: '',
-  password: '',
+  displayName: '',
   firstName: '',
   lastName: '',
   role: ADMIN_ROLE.manage,
@@ -178,11 +179,11 @@ export function AdminUsersClient() {
         accessToken,
         body: {
           id: selectedUser?.id,
-          email: form.email,
-          password: form.password,
-          firstName: form.firstName,
-          lastName: form.lastName,
+
           isActive: form.isActive,
+          ...(form.role !== selectedUser?.role
+            ? { role: form.role, permissions: form.permissions }
+            : {}),
         },
       }),
     onSuccess: async () => {
@@ -225,7 +226,7 @@ export function AdminUsersClient() {
     setSelectedUser(targetUser);
     setForm({
       email: targetUser.email,
-      password: '',
+      displayName: targetUser.displayName || '',
       firstName: targetUser.firstName ?? '',
       lastName: targetUser.lastName ?? '',
       role: targetUser.role,
@@ -453,7 +454,7 @@ export function AdminUsersClient() {
               </Typography>
               <Typography sx={{ mt: 0.5, color: 'text.secondary', fontSize: 13 }}>
                 {selectedUser
-                  ? 'แก้ไขข้อมูลส่วนตัวหรือเปลี่ยนรหัสผ่าน'
+                  ? 'แก้ไขข้อมูลส่วนตัว บทบาท และสถานะบัญชี'
                   : 'เพิ่มข้อมูลส่วนตัวสำหรับผู้ใช้งานใหม่'}
               </Typography>
             </Box>
@@ -466,49 +467,60 @@ export function AdminUsersClient() {
           <Divider />
 
           <Stack spacing={2.5} sx={{ p: 3, flex: 1, overflow: 'auto' }}>
+            {error && <Alert severity="error">{error}</Alert>}
             <TextField
               fullWidth
-              label="Email"
+              label="อีเมล Google"
+              disabled={Boolean(selectedUser)}
+              helperText="ใช้อีเมลเดียวกับบัญชี Google ที่จะเข้าสู่ระบบ"
               value={form.email}
               onChange={(event) => updateForm('email', event.target.value)}
             />
 
             <TextField
               fullWidth
-              label={selectedUser ? 'Password ใหม่' : 'Password'}
-              type="password"
-              value={form.password}
-              helperText={selectedUser ? 'เว้นว่างไว้ถ้าไม่ต้องการเปลี่ยนรหัสผ่าน' : undefined}
-              onChange={(event) => updateForm('password', event.target.value)}
+              label="ชื่อจากบัญชี Google"
+              disabled={Boolean(selectedUser)}
+              value={form.displayName}
+              onChange={(event) => updateForm('displayName', event.target.value)}
+              helperText={
+                selectedUser
+                  ? 'ข้อมูลอ้างอิงจากบัญชี Google ไม่สามารถแก้ไขที่นี่ได้'
+                  : 'ชื่อสำหรับแสดงในรายการผู้ใช้งาน'
+              }
             />
-
             <TextField
+              select
               fullWidth
-              label="ชื่อ"
-              value={form.firstName}
-              onChange={(event) => updateForm('firstName', event.target.value)}
-            />
-
-            <TextField
-              fullWidth
-              label="นามสกุล"
-              value={form.lastName}
-              onChange={(event) => updateForm('lastName', event.target.value)}
-            />
-
-            {!selectedUser && (
-              <TextField
-                select
-                fullWidth
-                label="Role"
-                value={form.role}
-                helperText="สิทธิ์เมนูหลังสร้างผู้ใช้จัดการได้ที่หน้า จัดการสิทธิ์"
-                onChange={(event) => updateForm('role', event.target.value)}
-              >
-                <MenuItem value={ADMIN_ROLE.admin}>admin</MenuItem>
-                <MenuItem value={ADMIN_ROLE.manage}>manage</MenuItem>
-              </TextField>
-            )}
+              label="บทบาทผู้ใช้งาน (Role)"
+              value={form.role}
+              disabled={isEditingCurrentUser}
+              helperText={
+                form.role === ADMIN_ROLE.reviewer
+                  ? 'Reviewer ได้สิทธิ์ตรวจสอบบทความ จากนั้นเพิ่มโปรไฟล์ที่เมนูจัดการผู้ตรวจสอบ'
+                  : 'กำหนดสิทธิ์เมนูเพิ่มเติมได้ที่หน้าจัดการสิทธิ์'
+              }
+              onChange={(event) => {
+                const role = event.target.value;
+                updateForm('role', role);
+                if (role === ADMIN_ROLE.reviewer)
+                  updateForm('permissions', [ADMIN_PERMISSION.creators]);
+                else if (role === ADMIN_ROLE.manage && !form.permissions.length)
+                  updateForm('permissions', [ADMIN_PERMISSION.profile]);
+              }}
+            >
+              {selectedUser &&
+                ![ADMIN_ROLE.admin, ADMIN_ROLE.manage, ADMIN_ROLE.reviewer].some(
+                  (role) => role === selectedUser.role
+                ) && (
+                  <MenuItem value={selectedUser.role}>
+                    {selectedUser.role || 'ยังไม่ได้กำหนดบทบาท'}
+                  </MenuItem>
+                )}
+              <MenuItem value={ADMIN_ROLE.admin}>Admin — ผู้ดูแลสูงสุด</MenuItem>
+              <MenuItem value={ADMIN_ROLE.manage}>Manage — ทีมงานจัดการข้อมูล</MenuItem>
+              <MenuItem value={ADMIN_ROLE.reviewer}>Reviewer — ผู้ตรวจสอบบทความ</MenuItem>
+            </TextField>
 
             <TextField
               select

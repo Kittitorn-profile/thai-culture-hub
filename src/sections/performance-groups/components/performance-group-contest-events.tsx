@@ -4,6 +4,7 @@ import type { PerformanceGroupYearlyRecord } from './performance-group-types';
 import type { HomeEventItem, PerformanceGroupEntry } from 'src/sections/home/components/home-types';
 
 import { useState } from 'react';
+import { RiAwardLine } from '@remixicon/react';
 
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
@@ -35,7 +36,7 @@ export function PerformanceGroupContestEvents({ group, record, contestEvents }: 
 
   return (
     <Box sx={{ mb: 2.5 }}>
-      <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 900 }}>
+      <Typography variant="subtitle1" sx={{ mb: 1.5, fontWeight: 600, fontSize: 18 }}>
         การประกวดที่เข้าร่วม
       </Typography>
       <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
@@ -75,32 +76,38 @@ export function PerformanceGroupContestEvents({ group, record, contestEvents }: 
             ? categoryCast
             : legacyEventCast;
 
+          const hasCast = eventCast.some((castGroup) =>
+            group.personnel.some((person) => castGroup.ids.includes(person.id))
+          );
+
           return (
             <Box
               key={eventId}
               sx={{
-                p: 1.25,
-                borderRadius: 1.5,
-                bgcolor: 'background.neutral',
-                border: '1px solid',
-                borderColor: 'divider',
+                p: { xs: 2, md: 2.5 },
+                borderRadius: 2,
+                bgcolor: '#fff',
+                border: 0,
                 width: { xs: 1 },
               }}
             >
               <Button
                 component={RouterLink}
                 href={paths.event.details(eventItem ?? eventId)}
-                variant="outlined"
+                variant="text"
+                color="inherit"
                 aria-label={`ดูรายละเอียด ${eventItem?.title || 'การประกวด'}`}
                 sx={{
                   position: 'relative',
                   width: 1,
-                  minHeight: { xs: 148, md: 100 },
+                  minHeight: 72,
                   px: 2,
-                  py: 2,
+                  pr: 3,
+                  py: 0.5,
+                  textAlign: 'left',
                   gap: 1,
-                  flexDirection: { xs: 'column', md: 'row' },
-                  justifyContent: { xs: 'center', md: 'flex-start' },
+                  flexDirection: 'row',
+                  justifyContent: 'flex-start',
                   borderRadius: 1.5,
                 }}
               >
@@ -110,8 +117,8 @@ export function PerformanceGroupContestEvents({ group, record, contestEvents }: 
                     src={eventItem.logoUrl}
                     alt={eventItem.title}
                     sx={{
-                      width: 64,
-                      height: 64,
+                      width: 48,
+                      height: 48,
                       bgcolor: 'common.white',
                       border: '1px solid',
                       borderColor: 'divider',
@@ -120,13 +127,13 @@ export function PerformanceGroupContestEvents({ group, record, contestEvents }: 
                 ) : (
                   <Avatar
                     variant="rounded"
-                    sx={{ width: 64, height: 64, bgcolor: 'primary.lighter' }}
+                    sx={{ width: 48, height: 48, bgcolor: 'primary.lighter' }}
                   >
                     <Iconify icon="solar:cup-star-bold" width={30} />
                   </Avatar>
                 )}
                 <Box>
-                  <Typography sx={{ fontWeight: 950 }}>{record.organizerName}</Typography>
+                  <Typography sx={{ fontWeight: 600 }}>{record.organizerName}</Typography>
 
                   <Typography
                     component="span"
@@ -157,201 +164,244 @@ export function PerformanceGroupContestEvents({ group, record, contestEvents }: 
                   }}
                 />
               </Button>
-              {categoryIds.length > 0 && (
-                <Typography variant="subtitle2" sx={{ mt: 1.5, fontWeight: 950 }}>
-                  ประเภทที่ส่งประกวด
-                </Typography>
-              )}
-              {categoryIds.map((categoryId) => {
-                const categoryName =
-                  eventItem?.contestCategories?.find((category) => category.id === categoryId)
-                    ?.name ?? categoryId;
-                const categoryDetails =
-                  record.contestCategoryDetails?.[eventId]?.[categoryId] ?? '';
-                const categoryResultIds =
-                  record.contestCategoryResultIds?.[eventId]?.[categoryId] ?? [];
-                const resultIds = categoryResultIds.length
-                  ? categoryResultIds
-                  : (record.contestResultIds?.[eventId] ?? []);
-                const categoryResultLabels = resultIds.map(
-                  (resultId) =>
-                    eventItem?.contestResultOptions?.find((option) => option.id === resultId)
-                      ?.name ?? resultId
-                );
-                return (
-                  <Box
-                    key={`${eventId}-category-${categoryId}`}
-                    sx={{
-                      mt: 1,
-                      p: { xs: 1.5, md: 2 },
-                      borderRadius: 1.5,
-                      bgcolor: 'background.paper',
-                      border: '1px solid',
-                      borderColor: 'divider',
-                    }}
-                  >
-                    <Typography variant="subtitle2" sx={{ fontWeight: 950 }}>
-                      {categoryName}
+              <Box
+                sx={{
+                  display: 'grid',
+                  gridTemplateColumns: {
+                    xs: '1fr',
+                    md: categoryIds.length && hasCast ? 'minmax(0, 0.8fr) minmax(0, 1.2fr)' : '1fr',
+                  },
+                  gap: { xs: 2, md: 3 },
+                  mt: 2,
+                  pt: 2,
+                  borderTop: '1px solid',
+                  borderColor: 'divider',
+                }}
+              >
+                <Box sx={{ minWidth: 0, display: categoryIds.length ? 'block' : 'none' }}>
+                  {categoryIds.length > 0 && (
+                    <Typography
+                      variant="subtitle2"
+                      sx={{ fontWeight: 500, color: 'text.secondary', fontSize: 12 }}
+                    >
+                      ประเภทที่ส่งประกวด
                     </Typography>
-                    {categoryDetails && (
-                      <Typography variant="body2" sx={{ mt: 0.75, whiteSpace: 'pre-line' }}>
-                        {categoryDetails}
-                      </Typography>
-                    )}
-                    {categoryResultLabels.length > 0 && (
-                      <Stack
-                        direction="row"
-                        spacing={0.75}
-                        useFlexGap
-                        flexWrap="wrap"
-                        sx={{ mt: 1 }}
-                      >
-                        {categoryResultLabels.map((resultLabel) => (
-                          <Chip
-                            key={resultLabel}
-                            size="small"
-                            icon={<Iconify icon={'solar:medal-ribbons-star-bold' as never} />}
-                            label={resultLabel}
-                            sx={{ color: '#6b4700', bgcolor: '#f3dda0', fontWeight: 850 }}
-                          />
-                        ))}
-                      </Stack>
-                    )}
-                  </Box>
-                );
-              })}
-              {(record.contestCategoryIds?.[eventId] ?? []).some(
-                (categoryId) => record.contestCategoryBookletUrls?.[eventId]?.[categoryId]
-              ) && (
-                <Stack direction="row" spacing={0.75} useFlexGap flexWrap="wrap" sx={{ mt: 1 }}>
-                  {(record.contestCategoryIds?.[eventId] ?? []).map((categoryId) => {
-                    const bookletUrl = record.contestCategoryBookletUrls?.[eventId]?.[categoryId];
-                    if (!bookletUrl) return null;
+                  )}
+                  {categoryIds.map((categoryId) => {
                     const categoryName =
                       eventItem?.contestCategories?.find((category) => category.id === categoryId)
                         ?.name ?? categoryId;
+                    const categoryDetails =
+                      record.contestCategoryDetails?.[eventId]?.[categoryId] ?? '';
+                    const categoryResultIds =
+                      record.contestCategoryResultIds?.[eventId]?.[categoryId] ?? [];
+                    const resultIds = categoryResultIds.length
+                      ? categoryResultIds
+                      : (record.contestResultIds?.[eventId] ?? []);
+                    const categoryResultLabels = resultIds.map(
+                      (resultId) =>
+                        eventItem?.contestResultOptions?.find((option) => option.id === resultId)
+                          ?.name ?? resultId
+                    );
                     return (
-                      <Button
-                        key={categoryId}
-                        component="a"
-                        href={bookletUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        size="small"
-                        variant="outlined"
-                        startIcon={<Iconify icon={'solar:notebook-bookmark-bold' as never} />}
+                      <Box
+                        key={`${eventId}-category-${categoryId}`}
+                        sx={{
+                          mt: 1,
+                          py: 0.5,
+                        }}
                       >
-                        สูจิบัตร {categoryName}
-                      </Button>
+                        <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                          {categoryName}
+                        </Typography>
+                        {categoryDetails && (
+                          <Typography variant="body2" sx={{ mt: 0.75, whiteSpace: 'pre-line' }}>
+                            {categoryDetails}
+                          </Typography>
+                        )}
+                        {categoryResultLabels.length > 0 && (
+                          <Stack
+                            direction="row"
+                            spacing={0.75}
+                            useFlexGap
+                            flexWrap="wrap"
+                            sx={{ mt: 1 }}
+                          >
+                            {categoryResultLabels.map((resultLabel) => (
+                              <Chip
+                                key={resultLabel}
+                                size="small"
+                                icon={<RiAwardLine size={15} />}
+                                label={resultLabel}
+                                sx={{
+                                  height: 'auto',
+                                  minHeight: 28,
+                                  maxWidth: 1,
+                                  py: 0.375,
+                                  color: '#765820',
+                                  bgcolor: '#f8f1df',
+                                  border: '1px solid #eaddbb',
+                                  borderRadius: 1,
+                                  fontSize: 12,
+                                  fontWeight: 500,
+                                  '& .MuiChip-icon': {
+                                    color: 'inherit',
+                                    width: 15,
+                                    height: 15,
+                                    ml: 1,
+                                  },
+                                  '& .MuiChip-label': {
+                                    px: 1,
+                                    whiteSpace: 'normal',
+                                    lineHeight: 1.5,
+                                  },
+                                }}
+                              />
+                            ))}
+                          </Stack>
+                        )}
+                      </Box>
                     );
                   })}
-                </Stack>
-              )}
-              {eventCast.some((castGroup) => castGroup.ids.length > 0) && (
-                <Box
-                  sx={{
-                    mt: 1.5,
-                    p: { xs: 1.5, md: 2 },
-                    borderRadius: 1.5,
-                    bgcolor: 'background.paper',
-                    border: '1px solid',
-                    borderColor: 'divider',
-                  }}
-                >
-                  <Typography variant="subtitle2" sx={{ color: 'text.primary', fontWeight: 950 }}>
-                    บุคลากรหลักของรายการนี้
-                  </Typography>
-                  <Stack spacing={1.5} sx={{ mt: 1.5 }}>
-                    {eventCast.map((castGroup) => {
-                      const people = group.personnel.filter((person) =>
-                        castGroup.ids.includes(person.id)
-                      );
-                      if (!people.length) return null;
-
-                      return (
-                        <Box
-                          key={castGroup.label}
-                          sx={{
-                            gap: 1,
-                            display: 'grid',
-                            alignItems: 'start',
-                            gridTemplateColumns: {
-                              xs: '1fr',
-                              sm: '100px minmax(0, 1fr)',
-                            },
-                          }}
-                        >
-                          <Typography
-                            variant="body2"
-                            sx={{ pt: { sm: 1.25 }, color: castGroup.color, fontWeight: 950 }}
+                  {(record.contestCategoryIds?.[eventId] ?? []).some(
+                    (categoryId) => record.contestCategoryBookletUrls?.[eventId]?.[categoryId]
+                  ) && (
+                    <Stack direction="row" spacing={0.75} useFlexGap flexWrap="wrap" sx={{ mt: 1 }}>
+                      {(record.contestCategoryIds?.[eventId] ?? []).map((categoryId) => {
+                        const bookletUrl =
+                          record.contestCategoryBookletUrls?.[eventId]?.[categoryId];
+                        if (!bookletUrl) return null;
+                        const categoryName =
+                          eventItem?.contestCategories?.find(
+                            (category) => category.id === categoryId
+                          )?.name ?? categoryId;
+                        return (
+                          <Button
+                            key={categoryId}
+                            component="a"
+                            href={bookletUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            size="small"
+                            variant="outlined"
+                            startIcon={<Iconify icon={'solar:notebook-bookmark-bold' as never} />}
                           >
-                            {castGroup.label}
-                          </Typography>
+                            สูจิบัตร {categoryName}
+                          </Button>
+                        );
+                      })}
+                    </Stack>
+                  )}
+                </Box>
+                {hasCast && (
+                  <Box
+                    sx={{
+                      minWidth: 0,
+                    }}
+                  >
+                    <Typography
+                      variant="subtitle2"
+                      sx={{ color: 'text.secondary', fontWeight: 500, fontSize: 12 }}
+                    >
+                      บุคลากรหลักของรายการนี้
+                    </Typography>
+                    <Stack spacing={1.5} sx={{ mt: 1.5 }}>
+                      {eventCast.map((castGroup) => {
+                        const people = group.personnel.filter((person) =>
+                          castGroup.ids.includes(person.id)
+                        );
+                        if (!people.length) return null;
+
+                        return (
                           <Box
+                            key={castGroup.label}
                             sx={{
                               gap: 1,
                               display: 'grid',
+                              alignItems: 'start',
                               gridTemplateColumns: {
-                                xs: 'minmax(0, 1fr)',
-                                md: 'repeat(2, minmax(0, 1fr))',
-                                lg: 'repeat(3, minmax(0, 1fr))',
+                                xs: '1fr',
+                                sm: '1fr',
                               },
                             }}
                           >
-                            {people.map((person) => (
-                              <Stack
-                                key={person.id}
-                                component="button"
-                                type="button"
-                                direction="row"
-                                spacing={1.25}
-                                alignItems="center"
-                                onClick={() => setPreviewPerson(person)}
-                                aria-label={`ดูข้อมูล ${person.fullName}`}
-                                sx={{
-                                  p: 1,
-                                  width: 1,
-                                  minWidth: 0,
-                                  cursor: 'pointer',
-                                  textAlign: 'left',
-                                  font: 'inherit',
-                                  color: 'inherit',
-                                  borderRadius: 1.5,
-                                  bgcolor: 'background.neutral',
-                                  border: '1px solid',
-                                  borderColor: 'divider',
-                                  transition: 'transform 160ms ease, box-shadow 160ms ease',
-                                  '&:hover': {
-                                    transform: 'translateY(-2px)',
-                                    boxShadow: '0 8px 20px rgba(31,40,38,0.12)',
-                                  },
-                                }}
-                              >
-                                <Avatar
-                                  variant="rounded"
-                                  src={person.imageUrl || undefined}
-                                  alt={person.fullName}
-                                  sx={{ width: 48, height: 48, flexShrink: 0 }}
+                            <Typography
+                              variant="body2"
+                              sx={{ color: castGroup.color, fontWeight: 600, fontSize: 12 }}
+                            >
+                              {castGroup.label}
+                            </Typography>
+                            <Box
+                              sx={{
+                                gap: 1,
+                                display: 'grid',
+                                gridTemplateColumns: {
+                                  xs: 'minmax(0, 1fr)',
+                                  md: 'repeat(2, minmax(0, 1fr))',
+                                  lg: 'repeat(2, minmax(0, 1fr))',
+                                },
+                              }}
+                            >
+                              {people.map((person) => (
+                                <Stack
+                                  key={person.id}
+                                  component="button"
+                                  type="button"
+                                  direction="row"
+                                  spacing={1.25}
+                                  alignItems="center"
+                                  onClick={() => setPreviewPerson(person)}
+                                  aria-label={`ดูข้อมูล ${person.fullName}`}
+                                  sx={{
+                                    p: 1,
+                                    width: 1,
+                                    minWidth: 0,
+                                    cursor: 'pointer',
+                                    textAlign: 'left',
+                                    font: 'inherit',
+                                    color: 'inherit',
+                                    borderRadius: 1.5,
+                                    bgcolor: '#f4f2ec',
+                                    border: 0,
+                                    '&:focus-visible': {
+                                      outline: '2px solid #40514c',
+                                      outlineOffset: 2,
+                                    },
+                                    transition: 'transform 160ms ease, box-shadow 160ms ease',
+                                    '&:hover': {
+                                      transform: 'translateY(-2px)',
+                                      boxShadow: 'none',
+                                    },
+                                  }}
                                 >
-                                  {person.fullName.slice(0, 1)}
-                                </Avatar>
-                                <Box sx={{ minWidth: 0 }}>
-                                  <Typography noWrap sx={{ fontSize: 15, fontWeight: 900 }}>
-                                    {person.fullName}
-                                  </Typography>
-                                  <Typography noWrap variant="caption" color="text.secondary">
-                                    {person.nickname ? `ชื่อเล่น ${person.nickname}` : person.role}
-                                  </Typography>
-                                </Box>
-                              </Stack>
-                            ))}
+                                  <Avatar
+                                    variant="rounded"
+                                    src={person.imageUrl || undefined}
+                                    alt={person.fullName}
+                                    sx={{ width: 48, height: 48, flexShrink: 0 }}
+                                  >
+                                    {person.fullName.slice(0, 1)}
+                                  </Avatar>
+                                  <Box sx={{ minWidth: 0 }}>
+                                    <Typography noWrap sx={{ fontSize: 15, fontWeight: 600 }}>
+                                      {person.fullName}
+                                    </Typography>
+                                    <Typography noWrap variant="caption" color="text.secondary">
+                                      {person.nickname
+                                        ? `ชื่อเล่น ${person.nickname}`
+                                        : person.role}
+                                    </Typography>
+                                  </Box>
+                                </Stack>
+                              ))}
+                            </Box>
                           </Box>
-                        </Box>
-                      );
-                    })}
-                  </Stack>
-                </Box>
-              )}
+                        );
+                      })}
+                    </Stack>
+                  </Box>
+                )}
+              </Box>
             </Box>
           );
         })}
@@ -398,7 +448,7 @@ export function PerformanceGroupContestEvents({ group, record, contestEvents }: 
               )}
             </Box>
             <Box sx={{ p: { xs: 2.5, sm: 3.5 } }}>
-              <Typography variant="h4" sx={{ fontWeight: 950 }}>
+              <Typography variant="h4" sx={{ fontWeight: 600 }}>
                 {previewPerson.nickname} {previewPerson.fullName}
               </Typography>
               <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap" sx={{ mt: 1 }}>

@@ -3,7 +3,7 @@
 import type { MouseEvent } from 'react';
 import type { PerformanceGroupsContent } from './home-types';
 
-import { useRef, useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 
 import { Box } from '@mui/material';
 import Chip from '@mui/material/Chip';
@@ -12,7 +12,6 @@ import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import Popover from '@mui/material/Popover';
 import Typography from '@mui/material/Typography';
-import CircularProgress from '@mui/material/CircularProgress';
 
 import { paths } from 'src/routes/paths';
 import { RouterLink } from 'src/routes/components';
@@ -20,17 +19,17 @@ import { RouterLink } from 'src/routes/components';
 import { Iconify } from 'src/components/iconify';
 import { trackAnalyticsEvent } from 'src/components/analytics';
 
-import { HOME_DEEP, HOME_TEXT, HOME_SECTION_PX, HOME_SECTION_MAX_WIDTH } from './home-constants';
+import { HOME_TEXT, HOME_SECTION_PX, HOME_SECTION_MAX_WIDTH } from './home-constants';
 
-const PERFORMANCE_GROUP_BATCH_SIZE = 6;
+const PERFORMANCE_GROUP_BATCH_SIZE = 9;
 
 type Props = {
   content: PerformanceGroupsContent;
 };
 
 export function HomePerformanceGroupsSection({ content }: Props) {
-  const performanceGroupsLoadMoreRef = useRef<HTMLDivElement | null>(null);
   const [selectedCategory, setSelectedCategory] = useState('ทั้งหมด');
+  const [failedImages, setFailedImages] = useState<Record<string, string>>({});
   const [visibleCount, setVisibleCount] = useState(PERFORMANCE_GROUP_BATCH_SIZE);
   const [shareMenu, setShareMenu] = useState<{ anchorEl: HTMLElement; groupId: string } | null>(
     null
@@ -68,30 +67,6 @@ export function HomePerformanceGroupsSection({ content }: Props) {
       setSelectedCategory('ทั้งหมด');
     }
   }, [content, selectedCategory]);
-
-  useEffect(() => {
-    const target = performanceGroupsLoadMoreRef.current;
-
-    if (!target || !hasMoreGroups) {
-      return undefined;
-    }
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry?.isIntersecting) {
-          observer.unobserve(entry.target);
-          setVisibleCount((currentCount) =>
-            Math.min(currentCount + PERFORMANCE_GROUP_BATCH_SIZE, filteredGroups.length)
-          );
-        }
-      },
-      { rootMargin: '160px 0px' }
-    );
-
-    observer.observe(target);
-
-    return () => observer.disconnect();
-  }, [filteredGroups.length, hasMoreGroups, visibleCount]);
 
   useEffect(() => {
     const groupIds = (content?.groups ?? [])
@@ -156,16 +131,18 @@ export function HomePerformanceGroupsSection({ content }: Props) {
 
   return (
     <Box
+      component="section"
+      aria-labelledby="performance-groups-heading"
       sx={{
         px: HOME_SECTION_PX,
-        py: { xs: 8, md: 12 },
+        py: { xs: 5, md: 7 },
         width: '100%',
         minWidth: 0,
         maxWidth: '100%',
         overflowX: 'clip',
         position: 'relative',
         zIndex: 1,
-        background: 'rgba(42,55,54,0.06)',
+        background: 'transparent',
       }}
     >
       <Box
@@ -176,27 +153,71 @@ export function HomePerformanceGroupsSection({ content }: Props) {
           maxWidth: HOME_SECTION_MAX_WIDTH,
         }}
       >
-        <Typography variant="overline" sx={{ display: 'block', letterSpacing: 2, fontWeight: 900 }}>
-          ศิลปิน วงดนตรี และคณะการแสดง
-        </Typography>
-        <Typography component="h2" sx={{ mt: 1, mb: 2, fontSize: { xs: 28, md: 40 }, fontWeight: 900 }}>
-          {content.title}
-        </Typography>
-        {content.description && (
-          <Typography sx={{ mb: 4, maxWidth: 760, lineHeight: 1.75 }}>
-            {content.description}
-          </Typography>
-        )}
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr', md: '1.1fr 1fr' },
+            gap: { xs: 1.5, md: 6 },
+            alignItems: 'end',
+            mb: { xs: 3, md: 4 },
+          }}
+        >
+          <Box>
+            <Typography sx={{ mb: 1, color: '#727b7f', fontSize: 12, fontWeight: 500 }}>
+              ศิลปินและคณะการแสดง
+            </Typography>
+            <Typography
+              id="performance-groups-heading"
+              component="h2"
+              sx={{
+                fontSize: { xs: 28, md: 36 },
+                fontWeight: 600,
+                lineHeight: 1.4,
+                color: HOME_TEXT,
+              }}
+            >
+              {content.title}
+            </Typography>
+          </Box>
+          {content.description && (
+            <Typography
+              sx={{
+                maxWidth: 480,
+                color: '#626a6e',
+                fontSize: 15,
+                lineHeight: 1.8,
+                justifySelf: { md: 'end' },
+              }}
+            >
+              {content.description}
+            </Typography>
+          )}
+        </Box>
 
         {categories.length > 1 && (
-          <Box sx={{ mb: { xs: 3, md: 4 }, minWidth: 0 }}>
-            <Typography
-              variant="body2"
-              sx={{ mb: 1.25, color: 'rgba(248,246,238,0.72)', fontWeight: 800 }}
-            >
-              เลือกหมวดหมู่วง
+          <Box
+            sx={{
+              mb: 3,
+              py: 2,
+              minWidth: 0,
+              borderTop: '1px solid #e0e4e0',
+              borderBottom: '1px solid #e0e4e0',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 2,
+              flexWrap: 'wrap',
+            }}
+          >
+            <Typography variant="body2" sx={{ color: '#727b7f', fontSize: 13, fontWeight: 500 }}>
+              หมวดหมู่
             </Typography>
-            <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap" aria-label="กรองวงตามหมวดหมู่">
+            <Stack
+              direction="row"
+              spacing={1}
+              useFlexGap
+              flexWrap="wrap"
+              aria-label="กรองวงตามหมวดหมู่"
+            >
               {['ทั้งหมด', ...categories].map((category) => {
                 const isSelected = selectedCategory === category;
                 const categoryCount =
@@ -208,19 +229,20 @@ export function HomePerformanceGroupsSection({ content }: Props) {
                   <Chip
                     key={category}
                     clickable
+                    aria-pressed={isSelected}
                     label={`${category} ${categoryCount}`}
                     onClick={() => setSelectedCategory(category)}
                     variant={isSelected ? 'filled' : 'outlined'}
                     sx={{
-                      height: 38,
-                      color: isSelected ? '#35413d' : HOME_TEXT,
-                      fontWeight: 850,
-                      bgcolor: isSelected ? 'rgba(234,215,161,0.94)' : 'rgba(42,55,54,0.18)',
-                      borderColor: isSelected
-                        ? 'rgba(255,239,187,0.94)'
-                        : 'rgba(248,246,238,0.42)',
+                      height: 34,
+                      borderRadius: 1.25,
+                      fontSize: 13,
+                      color: isSelected ? '#fff' : HOME_TEXT,
+                      fontWeight: 500,
+                      bgcolor: isSelected ? '#252d31' : '#fff',
+                      borderColor: isSelected ? '#252d31' : '#dde1dd',
                       '&:hover': {
-                        bgcolor: isSelected ? 'rgba(242,224,171,1)' : 'rgba(248,246,238,0.12)',
+                        bgcolor: isSelected ? '#3b464c' : '#f0f2ef',
                       },
                       '& .MuiChip-label': { px: 1.5 },
                     }}
@@ -235,10 +257,11 @@ export function HomePerformanceGroupsSection({ content }: Props) {
           sx={{
             width: '100%',
             minWidth: 0,
-            gap: 3,
+            gap: { xs: 2, md: 3 },
             display: 'grid',
             gridTemplateColumns: {
               xs: 'minmax(0, 1fr)',
+              sm: 'repeat(2, minmax(0, 1fr))',
               lg: 'repeat(3, minmax(0, 1fr))',
             },
           }}
@@ -248,267 +271,245 @@ export function HomePerformanceGroupsSection({ content }: Props) {
             const yearlyThumbnail = group.yearlyData.find(
               (record) => record.performanceImages?.length
             )?.performanceImages?.[0];
-            const thumbnailUrl = group.coverImageUrl || yearlyThumbnail || group.logoUrl;
+            const thumbnailUrl =
+              group.coverImageUrl?.trim() || yearlyThumbnail?.trim() || group.logoUrl?.trim();
+            const hasImage = Boolean(thumbnailUrl && failedImages[groupId] !== thumbnailUrl);
             const usesLogoAsThumbnail = !group.coverImageUrl && !yearlyThumbnail;
 
             return (
               <Box
                 key={groupId}
                 sx={{
-                  p: { xs: 2, md: 3 },
                   minWidth: 0,
-                  height: '100%',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  borderRadius: 3,
+                  height: { xs: 340, md: 370 },
                   position: 'relative',
-                  color: HOME_TEXT,
-                  bgcolor: 'rgba(69,80,72,0.94)',
-                  border: '1px solid rgba(248,246,238,0.2)',
-                  borderTop: `4px solid ${group.primaryColor || HOME_DEEP}`,
-                  boxShadow: '0 16px 36px rgba(31,40,38,0.18)',
+                  overflow: 'hidden',
+                  borderRadius: 2.5,
+                  bgcolor: hasImage ? '#30393d' : '#e8ece8',
+                  ...(!hasImage && {
+                    border: '1px solid #dde3dd',
+                    '& .MuiTypography-root': { color: '#303c37', textShadow: 'none' },
+                    '& .MuiButton-root': { color: '#303c37', bgcolor: '#ffffffb3' },
+                  }),
                   isolation: 'isolate',
-                  transition: 'transform 180ms ease, box-shadow 180ms ease',
-                  '&:hover': {
-                    transform: 'translateY(-4px)',
-                    borderColor: 'rgba(248,246,238,0.4)',
-                    boxShadow: '0 24px 54px rgba(31,40,38,0.24)',
+                  color: '#fff',
+                  '&:hover .group-cover': { transform: 'scale(1.04)' },
+                  '&:focus-within': { outline: '2px solid #505b63', outlineOffset: 4 },
+                  '@media (prefers-reduced-motion: reduce)': {
+                    '& .group-cover': { transition: 'none' },
                   },
                 }}
               >
+                {hasImage && (
+                  <Box
+                    component="img"
+                    className="group-cover"
+                    src={thumbnailUrl}
+                    alt={`ภาพการแสดง ${group.name}`}
+                    onError={() =>
+                      setFailedImages((current) => ({ ...current, [groupId]: thumbnailUrl! }))
+                    }
+                    loading="lazy"
+                    sx={{
+                      position: 'absolute',
+                      inset: 0,
+                      width: 1,
+                      height: 1,
+                      objectFit: usesLogoAsThumbnail ? 'contain' : 'cover',
+                      p: usesLogoAsThumbnail ? 5 : 0,
+                      transition: 'transform 350ms ease',
+                    }}
+                  />
+                )}
+                {!hasImage && (
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      inset: '50px 0 140px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 1.5,
+                      color: '#92a399',
+                      pointerEvents: 'none',
+                    }}
+                  >
+                    <Iconify icon="solar:video-frame-play-horizontal-bold" width={48} />
+                    <Box component="span" sx={{ fontSize: 12, color: '#798b80' }}>
+                      ยังไม่มีภาพการแสดง
+                    </Box>
+                  </Box>
+                )}
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    inset: 0,
+                    background: hasImage
+                      ? 'linear-gradient(180deg, transparent 35%, rgba(10,16,20,.08) 50%, rgba(10,16,20,.38) 72%, rgba(10,16,20,.78) 100%)'
+                      : 'none',
+                    pointerEvents: 'none',
+                  }}
+                />
                 <Box
                   component={RouterLink}
                   href={paths.performanceGroup.details(groupId)}
                   aria-label={`ดูรายละเอียด ${group.name}`}
-                  sx={{ position: 'absolute', inset: 0, zIndex: 1, borderRadius: 'inherit' }}
+                  sx={{ position: 'absolute', inset: 0, zIndex: 1 }}
                 />
-
-                {thumbnailUrl ? (
-                  <Box
-                    component="img"
-                    src={thumbnailUrl}
-                    alt={`ภาพตัวอย่าง ${group.name}`}
-                    sx={{
-                      width: '100%',
-                      maxWidth: '100%',
-                      mb: 2.5,
-                      display: 'block',
-                      aspectRatio: '16 / 9',
-                      objectFit: usesLogoAsThumbnail ? 'contain' : 'cover',
-                      p: usesLogoAsThumbnail ? { xs: 4, md: 5 } : 0,
-                      borderRadius: 2,
-                      bgcolor: usesLogoAsThumbnail
-                        ? `${group.primaryColor || HOME_DEEP}26`
-                        : 'transparent',
-                      backgroundImage: usesLogoAsThumbnail
-                        ? `radial-gradient(circle, rgba(248,246,238,0.2), ${group.primaryColor || HOME_DEEP}20)`
-                        : 'none',
-                    }}
-                  />
-                ) : (
+                <Stack
+                  direction="row"
+                  spacing={1}
+                  sx={{ position: 'absolute', top: 16, left: 16, right: 16, pointerEvents: 'none' }}
+                >
                   <Box
                     sx={{
-                      width: 1,
-                      mb: 2.5,
-                      display: 'grid',
-                      placeItems: 'center',
-                      aspectRatio: '16 / 9',
-                      borderRadius: 2,
-                      color: 'rgba(248,246,238,0.72)',
-                      background: `linear-gradient(135deg, ${group.primaryColor || HOME_DEEP}88, rgba(42,55,54,0.72))`,
+                      px: 1.25,
+                      py: 0.5,
+                      bgcolor: '#fffffff0',
+                      color: '#30393d',
+                      borderRadius: 99,
+                      fontSize: 11,
                     }}
                   >
-                    <Iconify icon="solar:video-frame-play-horizontal-bold" width={52} />
+                    {group.category || 'ศิลปะการแสดง'}
                   </Box>
-                )}
-
-                <Stack direction="row" justifyContent="space-between" spacing={1.5} alignItems="center">
-                  <Stack direction="row" spacing={1.5} alignItems="center" sx={{ minWidth: 0 }}>
+                  {group.isFeatured && (
+                    <Box
+                      sx={{
+                        px: 1.25,
+                        py: 0.5,
+                        bgcolor: '#242d32cc',
+                        color: '#fff',
+                        borderRadius: 99,
+                        fontSize: 11,
+                      }}
+                    >
+                      วงแนะนำ
+                    </Box>
+                  )}
+                </Stack>
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    p: 2.5,
+                    pointerEvents: 'none',
+                  }}
+                >
+                  {group.provinceName && (
+                    <Typography sx={{ fontSize: 12, color: '#ffffffbd', mb: 0.75 }}>
+                      {group.provinceName}
+                    </Typography>
+                  )}
+                  <Stack alignItems="flex-start" spacing={1.25} sx={{ mb: 1 }}>
                     {group.logoUrl && (
                       <Avatar
-                        variant="circular"
                         src={group.logoUrl}
                         alt={`โลโก้ ${group.name}`}
-                        sx={{ width: 56, height: 56, flexShrink: 0 }}
+                        sx={{
+                          width: 42,
+                          height: 42,
+                          flexShrink: 0,
+                          bgcolor: '#fff',
+                          border: '2px solid #ffffffcc',
+                          '& img': { objectFit: 'contain' },
+                        }}
                       />
                     )}
                     <Typography
-                      variant="h5"
+                      component="h3"
                       sx={{
+                        fontSize: { xs: 23, md: 25 },
+                        textShadow: '0 1px 6px rgba(0,0,0,.5)',
+                        fontWeight: 600,
+                        lineHeight: 1.35,
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden',
                         minWidth: 0,
-                        fontWeight: 900,
-                        color: HOME_DEEP,
-                        overflowWrap: 'anywhere',
                       }}
                     >
                       {group.name}
                     </Typography>
                   </Stack>
-                </Stack>
-
-                <Stack direction="row" spacing={0.75} useFlexGap flexWrap="wrap" sx={{ mt: 1.5 }}>
-                  {group.provinceName && (
-                    <Chip
-                      label={`จังหวัด${group.provinceName}`}
-                      size="small"
-                      variant="outlined"
+                  {group.description && (
+                    <Typography
                       sx={{
-                        color: HOME_TEXT,
-                        fontWeight: 700,
-                        bgcolor: 'rgba(248,246,238,0.08)',
-                        borderColor: 'rgba(248,246,238,0.48)',
+                        fontSize: 12,
+                        lineHeight: 1.7,
+                        color: '#ffffffe0',
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden',
+                        mb: 2,
                       }}
-                    />
+                    >
+                      {group.description}
+                    </Typography>
                   )}
-                  {group.isFeatured && (
-                    <Chip
-                      label="วงแนะนำ"
-                      size="small"
-                      sx={{
-                        color: '#4b402d',
-                        fontWeight: 800,
-                        bgcolor: 'rgba(234,215,161,0.82)',
-                        border: '1px solid rgba(234,215,161,0.95)',
-                      }}
-                    />
-                  )}
-                  {group.acceptsBookings && (
-                    <Chip
-                      label="เปิดรับงาน"
-                      size="small"
-                      variant="outlined"
-                      sx={{
-                        color: '#b9f6ca',
-                        fontWeight: 800,
-                        bgcolor: 'rgba(46,125,50,0.16)',
-                        borderColor: 'rgba(105,240,174,0.72)',
-                      }}
-                    />
-                  )}
-                </Stack>
-
-                {group.description && (
-                  <Typography
-                    sx={{
-                      mt: 2,
-                      color: 'rgba(248,246,238,0.76)',
-                      lineHeight: 1.7,
-                      display: '-webkit-box',
-                      overflow: 'hidden',
-                      WebkitLineClamp: 2,
-                      WebkitBoxOrient: 'vertical',
-                    }}
+                  <Stack
+                    direction="row"
+                    alignItems="center"
+                    justifyContent="space-between"
+                    sx={{ position: 'relative', zIndex: 2, pointerEvents: 'auto' }}
                   >
-                    {group.description}
-                  </Typography>
-                )}
-
-                <Box
-                  sx={{
-                    pt: 1,
-                    mt: 1,
-                    position: 'relative',
-                    zIndex: 1,
-                    borderTop: '1px solid rgba(248,246,238,0.16)',
-                  }}
-                >
-                  <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap" alignItems="center">
                     <Button
                       component={RouterLink}
                       href={paths.performanceGroup.details(groupId)}
-                      variant="contained"
                       size="small"
-                      endIcon={<Iconify icon="eva:diagonal-arrow-right-up-fill" width={17} />}
-                      sx={{ minHeight: 36, px: 1.75, fontSize: 13, fontWeight: 900 }}
-                    >
-                      ดูรายละเอียด
-                    </Button>
-                    {group.contactPhone && (
-                      <Button
-                        component="a"
-                        href={`tel:${group.contactPhone}`}
-                        variant="outlined"
-                        size="small"
-                        sx={{
-                          minHeight: 36,
-                          px: 1.5,
-                          color: HOME_TEXT,
-                          fontSize: 13,
-                          borderColor: 'rgba(248,246,238,0.32)',
-                        }}
-                      >
-                        โทรติดต่อ
-                      </Button>
-                    )}
-                    {group.facebookUrl && (
-                      <Button
-                        component="a"
-                        href={group.facebookUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        size="small"
-                        sx={{
-                          minWidth: 0,
-                          px: 0.75,
-                          color: 'rgba(248,246,238,0.72)',
-                          fontSize: 12,
-                          whiteSpace: 'nowrap',
-                        }}
-                      >
-                        Facebook
-                      </Button>
-                    )}
-                    {group.youtubeUrl && (
-                      <Button
-                        component="a"
-                        href={group.youtubeUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        size="small"
-                        sx={{
-                          minWidth: 0,
-                          px: 0.75,
-                          color: 'rgba(248,246,238,0.72)',
-                          fontSize: 12,
-                          whiteSpace: 'nowrap',
-                        }}
-                      >
-                        YouTube
-                      </Button>
-                    )}
-                  </Stack>
-
-                  <Stack direction="row" spacing={1.75} alignItems="center" sx={{ mt: 2 }}>
-                    <Stack
-                      direction="row"
-                      spacing={0.55}
-                      alignItems="center"
-                      sx={{ color: 'rgba(248,246,238,0.68)' }}
-                    >
-                      <Iconify icon="solar:eye-bold" width={18} />
-                      <Typography variant="caption" sx={{ fontWeight: 800 }}>
-                        {counts[groupId]?.views ?? 0} ครั้ง
-                      </Typography>
-                    </Stack>
-                    <Button
-                      type="button"
-                      size="small"
-                      aria-label={`แชร์ ${group.name}`}
-                      aria-haspopup="menu"
-                      aria-expanded={shareMenu?.groupId === groupId ? 'true' : undefined}
-                      startIcon={<Iconify icon="solar:share-bold" width={18} />}
-                      onClick={(event) => handleOpenShareMenu(event, groupId)}
+                      endIcon={<Iconify icon="eva:diagonal-arrow-right-up-fill" width={15} />}
                       sx={{
-                        minWidth: 0,
-                        px: 0.75,
-                        color: 'rgba(248,246,238,0.78)',
+                        bgcolor: '#fff',
+                        color: '#252d31',
+                        borderRadius: 99,
+                        px: 2,
+                        py: 0.8,
                         fontSize: 12,
-                        fontWeight: 800,
-                        '&:hover': { bgcolor: 'rgba(248,246,238,0.1)' },
+                        fontWeight: 500,
+                        '&:hover': { bgcolor: '#e6eae6' },
                       }}
                     >
-                      {counts[groupId]?.shares ?? 0} แชร์
+                      รู้จักวงนี้
                     </Button>
+                    <Stack direction="row" spacing={0.5}>
+                      {group.facebookUrl && (
+                        <Button
+                          component="a"
+                          href={group.facebookUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          size="small"
+                          sx={{ color: '#fff', minWidth: 0, px: 1, fontSize: 11 }}
+                        >
+                          Facebook
+                        </Button>
+                      )}
+                      <Button
+                        type="button"
+                        size="small"
+                        aria-label={`แชร์ ${group.name}`}
+                        title={`${counts[groupId]?.views ?? 0} ครั้ง · ${counts[groupId]?.shares ?? 0} แชร์`}
+                        aria-haspopup="menu"
+                        aria-expanded={shareMenu?.groupId === groupId}
+                        onClick={(event) => handleOpenShareMenu(event, groupId)}
+                        sx={{
+                          minWidth: 32,
+                          width: 32,
+                          height: 32,
+                          borderRadius: '50%',
+                          color: '#fff',
+                          bgcolor: '#ffffff18',
+                          '&:hover': { bgcolor: '#ffffff30' },
+                        }}
+                      >
+                        <Iconify icon="solar:share-bold" width={16} />
+                      </Button>
+                    </Stack>
                   </Stack>
                 </Box>
               </Box>
@@ -534,7 +535,7 @@ export function HomePerformanceGroupsSection({ content }: Props) {
             },
           }}
         >
-          <Typography sx={{ mb: 1.25, color: '#26312f', fontWeight: 900 }}>แชร์วงนี้</Typography>
+          <Typography sx={{ mb: 1.25, color: '#26312f', fontWeight: 600 }}>แชร์วงนี้</Typography>
           <Stack spacing={1}>
             <Button
               fullWidth
@@ -556,21 +557,33 @@ export function HomePerformanceGroupsSection({ content }: Props) {
             </Button>
           </Stack>
         </Popover>
-        {hasMoreGroups && (
-          <Stack
-            ref={performanceGroupsLoadMoreRef}
-            direction="row"
-            spacing={1.25}
-            alignItems="center"
-            justifyContent="center"
-            sx={{ minHeight: 80, mt: 2, color: 'rgba(248,246,238,0.76)' }}
-          >
-            <CircularProgress size={22} color="inherit" />
-            <Typography variant="body2" sx={{ fontWeight: 800 }}>
-              กำลังโหลดวงเพิ่มเติม
-            </Typography>
-          </Stack>
-        )}
+        <Stack alignItems="center" spacing={1.5} sx={{ mt: 3 }}>
+          <Typography role="status" sx={{ color: '#727b7f', fontSize: 12 }}>
+            แสดง {visibleGroups.length} จาก {filteredGroups.length} รายการ
+          </Typography>
+          {hasMoreGroups && (
+            <Button
+              type="button"
+              variant="outlined"
+              onClick={() =>
+                setVisibleCount((currentCount) =>
+                  Math.min(currentCount + PERFORMANCE_GROUP_BATCH_SIZE, filteredGroups.length)
+                )
+              }
+              endIcon={<Iconify icon="eva:arrow-ios-downward-fill" width={18} />}
+              sx={{
+                px: 3,
+                py: 1,
+                borderRadius: 1.5,
+                color: '#303b40',
+                borderColor: '#d8deda',
+                '&:hover': { bgcolor: '#ecefeb', borderColor: '#aab5ae' },
+              }}
+            >
+              ดูเพิ่มเติม
+            </Button>
+          )}
+        </Stack>
       </Box>
     </Box>
   );

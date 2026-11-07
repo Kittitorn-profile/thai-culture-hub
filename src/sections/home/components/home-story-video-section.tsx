@@ -73,7 +73,7 @@ export function HomeStoryVideoSection({ story, videoItems, videoPreviewKey, onPl
             sx={{
               mt: 4,
               maxWidth: 430,
-              color: 'rgba(248,246,238,0.82)',
+              color: 'rgba(32,33,36,0.82)',
               fontSize: 13,
               lineHeight: 1.75,
             }}
@@ -95,7 +95,7 @@ export function HomeStoryVideoSection({ story, videoItems, videoPreviewKey, onPl
               sx={{
                 p: 1,
                 borderRadius: 1.5,
-                bgcolor: 'rgba(248,246,238,0.1)',
+                bgcolor: 'rgba(32,33,36,0.1)',
                 border: '1px solid rgba(248,246,238,0.22)',
                 boxShadow: '0 24px 60px rgba(0,0,0,0.22)',
               }}
@@ -111,7 +111,7 @@ export function HomeStoryVideoSection({ story, videoItems, videoPreviewKey, onPl
                     borderRadius: 1,
                   },
                   '& .react-player__shadow': {
-                    bgcolor: 'rgba(42,55,54,0.58)',
+                    bgcolor: '#efefec',
                     boxShadow: '0 18px 40px rgba(0,0,0,0.34)',
                   },
                 }}

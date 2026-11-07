@@ -1,6 +1,6 @@
 'use client';
 
-import type { Theme, CSSObject, Breakpoint } from '@mui/material/styles';
+import type { Breakpoint } from '@mui/material/styles';
 import type { AuthCenteredContentProps } from './content';
 import type { MainSectionProps, HeaderSectionProps, LayoutSectionProps } from '../core';
 
@@ -12,8 +12,6 @@ import Alert from '@mui/material/Alert';
 
 import { paths } from 'src/routes/paths';
 import { RouterLink } from 'src/routes/components';
-
-import { CONFIG } from 'src/global-config';
 
 import { Logo } from 'src/components/logo';
 
@@ -125,10 +123,7 @@ export function AuthCenteredLayout({
        *************************************** */
       cssVars={{ '--layout-auth-content-width': '420px', ...cssVars }}
       sx={[
-        (theme) => ({
-          position: 'relative',
-          '&::before': backgroundStyles(theme),
-        }),
+        { position: 'relative', bgcolor: 'background.default' },
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}
     >
@@ -138,18 +133,3 @@ export function AuthCenteredLayout({
 }
 
 // ----------------------------------------------------------------------
-
-const backgroundStyles = (theme: Theme): CSSObject => ({
-  ...theme.mixins.bgGradient({
-    images: [`url(${CONFIG.assetsDir}/assets/background/background-3-blur.webp)`],
-  }),
-  zIndex: 1,
-  opacity: 0.24,
-  width: '100%',
-  height: '100%',
-  content: "''",
-  position: 'absolute',
-  ...theme.applyStyles('dark', {
-    opacity: 0.08,
-  }),
-});

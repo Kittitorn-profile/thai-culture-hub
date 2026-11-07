@@ -62,22 +62,10 @@ type PlaceLikeResponse = {
   };
 };
 
-const PROVINCE_BG_TOP = '#6f8790';
-const PROVINCE_BG_MIDDLE = '#7b8476';
-const PROVINCE_BG_BOTTOM = '#8f7c5c';
-const PROVINCE_PAGE_BACKGROUND = `
-  radial-gradient(circle at 50% 18%, rgba(239,236,224,0.3) 0%, rgba(239,236,224,0.1) 28%, rgba(111,135,144,0) 58%),
-  linear-gradient(180deg, ${PROVINCE_BG_TOP} 0%, ${PROVINCE_BG_MIDDLE} 54%, ${PROVINCE_BG_BOTTOM} 100%)
-`;
-const PROVINCE_POSTER_PATTERN = `
-  repeating-radial-gradient(circle at 78% 12%, transparent 0 44px, rgba(230,236,232,0.22) 46px 48px),
-  repeating-radial-gradient(circle at 10% 82%, transparent 0 52px, rgba(230,236,232,0.12) 54px 56px),
-  linear-gradient(120deg, transparent 0 58%, rgba(229,221,198,0.13) 58% 59%, transparent 59% 100%)
-`;
-// const PROVINCE_GRID_BACKGROUND = `
-//   linear-gradient(90deg, rgba(248,246,238,0.08) 1px, transparent 1px),
-//   linear-gradient(180deg, rgba(248,246,238,0.08) 1px, transparent 1px)
-// `;
+const PROVINCE_BG_MIDDLE = '#f7f7f5';
+const PROVINCE_PAGE_BACKGROUND = 'none';
+const PROVINCE_POSTER_PATTERN = 'none';
+// const PROVINCE_GRID_BACKGROUND = 'none';
 
 // ----------------------------------------------------------------------
 
@@ -484,7 +472,7 @@ export function ProvinceDetailView() {
         backgroundImage: PROVINCE_PAGE_BACKGROUND,
         color: 'text.primary',
         minHeight: '100vh',
-        py: { xs: 11, sm: 12, md: 10 },
+        py: { xs: 4, sm: 5, md: 6 },
         px: { xs: 1.5, sm: 3, md: 5, lg: 8 },
         fontFamily: "'LINE Seed Sans TH', sans-serif",
         '&::before': {
@@ -554,7 +542,7 @@ export function ProvinceDetailView() {
             sx={{
               px: 3,
               borderRadius: 99,
-              fontWeight: 900,
+              fontWeight: 600,
               color: '#11343a',
               bgcolor: '#f8f8f2',
               boxShadow: `0 14px 30px ${alpha(theme.palette.grey[900], 0.18)}`,
@@ -607,7 +595,7 @@ export function ProvinceDetailView() {
 
       <Box textAlign="center" mt={10}>
         <Logo sx={{ width: 200, height: '100%' }} isSingle />
-        <Box sx={{ mt: 1, typography: 'caption', color: theme.palette.common.white }}>
+        <Box sx={{ mt: 1, typography: 'caption', color: 'text.secondary' }}>
           © Thailand Cultural Hub. All rights reserved.
         </Box>
       </Box>

@@ -124,7 +124,7 @@ export function ProvincePlaceCard({
         minWidth: 0,
         flexDirection: 'column',
         border: `1px solid ${alpha(accentColor, 0.16)}`,
-        boxShadow: `0 14px 30px ${alpha(theme.palette.grey[900], 0.1)}`,
+        boxShadow: 'none',
         height: '100%',
       }}
     >
@@ -137,7 +137,7 @@ export function ProvincePlaceCard({
           position: 'relative',
           display: 'grid',
           placeItems: 'center',
-          bgcolor: cardImage ? alpha(accentColor, 0.16) : theme.palette.grey[300],
+          bgcolor: cardImage ? alpha(accentColor, 0.08) : '#f0f2ed',
           backgroundImage: cardImage
             ? `linear-gradient(180deg, ${alpha(
                 theme.palette.common.black,
@@ -152,32 +152,31 @@ export function ProvincePlaceCard({
           <Box
             component="img"
             alt="Thailand Cultural Hub"
-            src="/assets/th-hub/logo-th-hub.png"
+            src="/logo/logo-single.png"
             sx={{
               width: 92,
               maxWidth: '46%',
-              opacity: 0.58,
-              filter: 'grayscale(1)',
+              opacity: 0.8,
             }}
           />
         )}
 
         <Box
           sx={{
-            top: 0,
-            left: '50%',
+            top: 12,
+            left: 12,
             px: { xs: 1.4, sm: 2.2 },
             py: 0.7,
             color: accentColor,
             fontSize: 12,
-            fontWeight: 900,
-            borderRadius: '0 0 10px 10px',
+            fontWeight: 600,
+            borderRadius: 1,
             position: 'absolute',
-            transform: 'translateX(-50%)',
+
             bgcolor: '#ffffff',
-            boxShadow: `0 8px 18px ${alpha(theme.palette.grey[900], 0.12)}`,
+            boxShadow: 'none',
             whiteSpace: 'nowrap',
-            maxWidth: 'calc(100% - 24px)',
+            maxWidth: 'calc(100% - 76px)',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
           }}
@@ -197,7 +196,7 @@ export function ProvincePlaceCard({
               bottom: 12,
               maxWidth: 'calc(100% - 24px)',
               color: 'white',
-              fontWeight: 900,
+              fontWeight: 600,
               position: 'absolute',
               bgcolor: alpha(theme.palette.grey[900], 0.72),
               textDecoration: 'none',
@@ -209,6 +208,7 @@ export function ProvincePlaceCard({
         )}
 
         <Button
+          aria-label={liked ? 'เลิกถูกใจ' : 'ถูกใจ'}
           onClick={() => onPlaceLike(place)}
           disabled={likeState?.loading}
           startIcon={<Iconify icon={liked ? 'solar:heart-bold' : 'solar:heart-outline'} />}
@@ -223,11 +223,11 @@ export function ProvincePlaceCard({
             color: liked ? '#ffffff' : accentColor,
             fontSize: 12,
             cursor: 'pointer',
-            fontWeight: 900,
+            fontWeight: 600,
             borderRadius: 999,
             position: 'absolute',
             bgcolor: liked ? '#e9365f' : alpha('#ffffff', 0.94),
-            boxShadow: `0 8px 18px ${alpha(theme.palette.grey[900], 0.22)}`,
+            boxShadow: 'none',
             '&:hover': {
               bgcolor: liked ? '#d82850' : '#ffffff',
             },
@@ -271,7 +271,7 @@ export function ProvincePlaceCard({
             sx={{
               minWidth: 0,
               color: accentColor,
-              fontWeight: 900,
+              fontWeight: 600,
               fontSize: { xs: 13, sm: 14 },
             }}
           >
@@ -306,7 +306,7 @@ export function ProvincePlaceCard({
             mt: 0.8,
             color: theme.palette.grey[900],
             fontSize: { xs: 16, sm: 18 },
-            fontWeight: 900,
+            fontWeight: 600,
             lineHeight: 1.4,
             minHeight: { xs: 44, sm: 50 },
           }}
@@ -337,7 +337,7 @@ export function ProvincePlaceCard({
             justifyContent: { xs: 'flex-start', sm: 'space-between' },
           }}
         >
-          <Typography sx={{ color: accentColor, fontSize: 12, fontWeight: 900 }} noWrap>
+          <Typography sx={{ color: accentColor, fontSize: 12, fontWeight: 600 }} noWrap>
             {getSourceLabel(place.source)}
           </Typography>
           <Typography
@@ -369,7 +369,7 @@ export function ProvincePlaceCard({
               border: 0,
               color: accentColor,
               cursor: 'pointer',
-              fontWeight: 950,
+              fontWeight: 600,
               borderRadius: 1.2,
               bgcolor: alpha(accentColor, 0.12),
               whiteSpace: 'nowrap',
@@ -411,7 +411,7 @@ export function ProvincePlaceCard({
                   border: 0,
                   color: accentColor,
                   cursor: 'pointer',
-                  fontWeight: 900,
+                  fontWeight: 600,
                   borderRadius: 1.2,
                   bgcolor: alpha(accentColor, 0.1),
                   whiteSpace: 'nowrap',
@@ -436,7 +436,7 @@ export function ProvincePlaceCard({
                 border: 0,
                 color: '#ffffff',
                 cursor: 'pointer',
-                fontWeight: 900,
+                fontWeight: 600,
                 borderRadius: 1.2,
                 bgcolor: accentColor,
                 whiteSpace: 'nowrap',

@@ -25,7 +25,12 @@ export function NavUpgrade({ sx, ...other }: BoxProps) {
     >
       <Box sx={{ display: 'flex', alignItems: 'center', flexDirection: 'column' }}>
         <Box sx={{ position: 'relative' }}>
-          <Avatar src={user?.photoURL} alt={displayName} sx={{ width: 48, height: 48 }}>
+          <Avatar
+            slotProps={{ img: { referrerPolicy: 'no-referrer' } }}
+            src={user?.photoURL}
+            alt={displayName}
+            sx={{ width: 48, height: 48 }}
+          >
             {displayName.charAt(0).toUpperCase()}
           </Avatar>
         </Box>

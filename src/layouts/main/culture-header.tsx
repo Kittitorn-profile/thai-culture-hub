@@ -7,11 +7,11 @@ import { useState, useEffect, useCallback } from 'react';
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
-import { alpha, useTheme } from '@mui/material/styles';
 
 import { paths } from 'src/routes/paths';
 import { RouterLink } from 'src/routes/components';
+
+import { getCreatorAvatarUrl } from 'src/utils/creator-avatar';
 
 import { Logo } from 'src/components/logo';
 
@@ -52,7 +52,6 @@ function isActivePath(pathname: string, path: string) {
 }
 
 export function CultureHeader({ pathname }: CultureHeaderProps) {
-  const theme = useTheme();
   const { user } = useAuthContext();
   const accessToken = user?.accessToken ?? user?.access_token ?? '';
   const isCreator = isCreatorUser(user);
@@ -68,7 +67,8 @@ export function CultureHeader({ pathname }: CultureHeaderProps) {
     ? {
         displayName: creatorProfile.displayName,
         email: creatorProfile.email,
-        photoURL: creatorProfile.avatarUrl,
+        photoURL:
+          getCreatorAvatarUrl(creatorProfile.id, creatorProfile.avatarUrl) || user?.photoURL || '',
       }
     : undefined;
 
@@ -108,69 +108,46 @@ export function CultureHeader({ pathname }: CultureHeaderProps) {
     };
   }, [loadCreatorProfile]);
 
-  console.log('user?.role', user?.role);
-
   return (
     <Box
       sx={{
         width: 1,
-        maxWidth: 1180,
+        maxWidth: 1408,
         mx: 'auto',
-        px: { xs: 2, md: 4 },
+        px: { xs: 2.5, sm: 4, md: 6, lg: 8 },
         display: 'grid',
-        gridTemplateColumns: { xs: '1fr auto', md: '1fr auto 1fr' },
+        gridTemplateColumns: { xs: '1fr auto', md: 'auto 1fr auto' },
         alignItems: 'center',
         gap: { xs: 2, md: 3 },
+        '& a:focus-visible': { outline: '2px solid #50585e', outlineOffset: 4 },
       }}
     >
-      <Logo sx={{ height: 'auto', width: 96 }} isSingle />
-
+      <Logo sx={{ height: 'auto', width: { xs: 76, md: 88 } }} isSingle />
       <Stack
         component="nav"
+        aria-label="เมนูหลัก"
         direction="row"
         alignItems="center"
-        spacing={1}
-        sx={{
-          p: 0.35,
-          gap: 0.5,
-          height: 'auto',
-          display: { xs: 'none', md: 'flex' },
-          borderRadius: 99,
-          bgcolor: alpha(theme.palette.common.white, 0.24),
-          border: `1px solid ${alpha(theme.palette.common.white, 0.28)}`,
-          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.2), 0 10px 30px rgba(35,25,18,0.12)',
-        }}
+        spacing={0.5}
+        sx={{ minWidth: 0, display: { xs: 'none', md: 'flex' }, flexWrap: 'wrap' }}
       >
         {headerNavItems.map((item) => {
           const active = isActivePath(pathname, item.path);
-
           return (
             <Link
-              key={`${item.label}-${item.path}`}
+              key={item.path}
               component={RouterLink}
               href={item.path}
               underline="none"
+              aria-current={active ? 'page' : undefined}
               sx={{
-                px: { md: 1.8, lg: 2.1 },
-                py: 1,
-                height: 'auto',
-                display: 'inline-flex',
-                alignItems: 'center',
-                borderRadius: 99,
-                color: active ? theme.palette.grey[900] : alpha(theme.palette.common.white, 0.9),
-                fontSize: { md: 16, lg: 18 },
-                fontWeight: 800,
+                px: { md: 1.25, lg: 2 },
+                py: 1.25,
+                color: '#202124',
+                fontSize: { md: 14, lg: 15 },
+                fontWeight: active ? 700 : 400,
                 whiteSpace: 'nowrap',
-                bgcolor: active ? alpha(theme.palette.common.white, 0.94) : 'transparent',
-                transition: theme.transitions.create(['background-color', 'color'], {
-                  duration: theme.transitions.duration.shorter,
-                }),
-                '&:hover': {
-                  color: active ? theme.palette.grey[900] : 'white',
-                  bgcolor: active
-                    ? alpha(theme.palette.common.white, 0.94)
-                    : alpha(theme.palette.common.white, 0.14),
-                },
+                '&:hover': { textDecoration: 'underline', textUnderlineOffset: '6px' },
               }}
             >
               {item.label}
@@ -178,54 +155,46 @@ export function CultureHeader({ pathname }: CultureHeaderProps) {
           );
         })}
       </Stack>
-
-      <Stack
-        direction="row"
-        alignItems="center"
-        justifyContent="flex-end"
-        spacing={1}
-        sx={{ display: { xs: 'none', md: 'flex' } }}
-      >
+      <Stack direction="row" alignItems="center" justifyContent="flex-end" spacing={2}>
         {user && user?.access_token ? (
           <AccountPopover
             data={user?.role === 'creator' ? _accountCreator : _account}
             account={accountProfile}
           />
         ) : (
-          <Stack alignItems="flex-end" spacing={0.25}>
-            <Typography variant="subtitle1">Thailand Cultural Hub</Typography>
-            <Stack direction="row" alignItems="center" spacing={0.75}>
-              <Link
-                component={RouterLink}
-                href="/creator/register"
-                underline="none"
-                sx={{
-                  color: alpha(theme.palette.common.white, 0.88),
-                  fontSize: 13,
-                  fontWeight: 400,
-                  '&:hover': { color: theme.palette.common.white },
-                }}
-              >
-                ลงทะเบียน
-              </Link>
-              <Typography component="span" sx={{ color: alpha(theme.palette.common.white, 0.5) }}>
-                |
-              </Typography>
-              <Link
-                component={RouterLink}
-                href="/creator/sign-in"
-                underline="none"
-                sx={{
-                  color: alpha(theme.palette.common.white, 0.88),
-                  fontSize: 13,
-                  fontWeight: 400,
-                  '&:hover': { color: theme.palette.common.white },
-                }}
-              >
-                เข้าสู่ระบบ
-              </Link>
-            </Stack>
-          </Stack>
+          <>
+            <Link
+              component={RouterLink}
+              href="/creator/register"
+              underline="none"
+              sx={{
+                display: { xs: 'none', sm: 'inline-flex' },
+                color: '#202124',
+                fontSize: 13,
+                whiteSpace: 'nowrap',
+                '&:hover': { textDecoration: 'underline' },
+              }}
+            >
+              ลงทะเบียน
+            </Link>
+            <Link
+              component={RouterLink}
+              href="/creator/sign-in"
+              underline="none"
+              sx={{
+                bgcolor: '#202124',
+                color: '#fff',
+                px: 2,
+                py: 1,
+                borderRadius: 1.5,
+                fontSize: 13,
+                whiteSpace: 'nowrap',
+                '&:hover': { bgcolor: '#3c474d' },
+              }}
+            >
+              เข้าสู่ระบบ
+            </Link>
+          </>
         )}
       </Stack>
     </Box>

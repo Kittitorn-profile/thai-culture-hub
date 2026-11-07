@@ -32,7 +32,12 @@ export function AccountButton({ photoURL, displayName, sx, ...other }: AccountBu
           secondaryBorder: { sx: { color: 'warning.main' } },
         }}
       >
-        <Avatar src={photoURL} alt={displayName} sx={{ width: 1, height: 1 }}>
+        <Avatar
+          slotProps={{ img: { referrerPolicy: 'no-referrer' } }}
+          src={photoURL}
+          alt={displayName}
+          sx={{ width: 1, height: 1 }}
+        >
           {displayName?.charAt(0).toUpperCase()}
         </Avatar>
       </AnimateBorder>

@@ -166,7 +166,8 @@ export function HomeFooter({ sx, ...other }: FooterProps) {
     <FooterRoot
       sx={[
         {
-          py: 5,
+          py: 4,
+          borderTop: '1px solid #dfe3df',
           textAlign: 'center',
         },
         ...(Array.isArray(sx) ? sx : [sx]),
@@ -174,8 +175,8 @@ export function HomeFooter({ sx, ...other }: FooterProps) {
       {...other}
     >
       <Container>
-        <Logo isSingle sx={{ width: 200, height: '100%' }} />
-        <Box sx={{ mt: 1, typography: 'caption', color: theme.palette.common.white }}>
+        <Logo isSingle sx={{ width: 112, height: 'auto' }} />
+        <Box sx={{ mt: 1, typography: 'caption', color: theme.palette.text.secondary }}>
           © Thailand Cultural Hub. All rights reserved.
         </Box>
       </Container>

@@ -13,7 +13,10 @@ import provinces from 'src/data/thailand-culture/provinces';
 import { getSupabaseAdmin } from 'src/server/supabase-admin';
 import { getCultureCategoryLabel } from 'src/lib/culture-categories';
 
-import { cleanCulturalText, cleanCulturalUrl } from 'src/sections/province/view/province-detail-utils';
+import {
+  cleanCulturalText,
+  cleanCulturalUrl,
+} from 'src/sections/province/view/province-detail-utils';
 
 // ----------------------------------------------------------------------
 
@@ -148,7 +151,9 @@ function applyOverride(place: SharePlace, override?: PlaceOverride | null): Shar
     lat: override.lat ?? place.lat,
     lng: override.lng ?? place.lng,
     mapUrl: cleanCulturalUrl(override.map_url) || place.mapUrl,
-    imageUrls: cleanCulturalUrl(override.image_url) ? [cleanCulturalUrl(override.image_url)] : place.imageUrls,
+    imageUrls: cleanCulturalUrl(override.image_url)
+      ? [cleanCulturalUrl(override.image_url)]
+      : place.imageUrls,
     highlight: cleanCulturalText(override.note) || place.highlight,
     description: cleanCulturalText(override.detail) || place.description,
   };
@@ -170,7 +175,8 @@ function createSharePlaceFromOverride(override: PlaceOverride): SharePlace | nul
     provinceCode,
     provinceName: getProvinceName(provinceCode),
     name: cleanCulturalText(override.name) || 'สถานที่ใหม่',
-    source: (cleanCulturalText(override.source) as CulturalPlace['source']) || 'thailand_cultural_hub',
+    source:
+      (cleanCulturalText(override.source) as CulturalPlace['source']) || 'thailand_cultural_hub',
     category,
     district: cleanCulturalText(override.district),
     lat: override.lat,
@@ -301,11 +307,8 @@ export default async function Page({ params }: PageProps) {
         minHeight: '100vh',
         px: { xs: 2.5, md: 6 },
         py: { xs: 8, md: 12 },
-        bgcolor: '#7b8476',
-        backgroundImage: `
-          radial-gradient(circle at 50% 18%, rgba(239,236,224,0.3) 0%, rgba(239,236,224,0.1) 28%, rgba(111,135,144,0) 58%),
-          linear-gradient(180deg, #6f8790 0%, #7b8476 54%, #8f7c5c 100%)
-        `,
+        bgcolor: '#f7f7f5',
+        backgroundImage: 'none',
       }}
     >
       <Card sx={{ mx: 'auto', maxWidth: 920, overflow: 'hidden', borderRadius: 1 }}>
@@ -316,10 +319,10 @@ export default async function Page({ params }: PageProps) {
           sx={{ width: 1, height: { xs: 260, md: 420 }, objectFit: 'cover', display: 'block' }}
         />
         <Stack spacing={2.2} sx={{ p: { xs: 3, md: 4 } }}>
-          <Typography sx={{ color: '#8f7c5c', fontSize: 14, fontWeight: 900 }}>
+          <Typography sx={{ color: '#f7f7f5', fontSize: 14, fontWeight: 600 }}>
             {getCategoryLabel(place.category)} / {place.provinceName}
           </Typography>
-          <Typography variant="h3" sx={{ fontWeight: 950 }}>
+          <Typography variant="h3" sx={{ fontWeight: 600 }}>
             {place.name}
           </Typography>
           <Typography sx={{ color: 'text.secondary', fontSize: 16, lineHeight: 1.8 }}>

@@ -48,16 +48,10 @@ type CreatorPublicArticlesViewProps = {
   initialNextOffset: number;
 };
 
-const PAGE_TEXT = '#f8f6ee';
+const PAGE_TEXT = '#202124';
 const PAGE_DEEP = '#2a3736';
-const PAGE_BG = `
-  radial-gradient(circle at 50% 18%, rgba(239,236,224,0.28) 0%, rgba(239,236,224,0.1) 28%, rgba(111,135,144,0) 58%),
-  linear-gradient(180deg, #6f8790 0%, #7b8476 54%, #8f7c5c 100%)
-`;
-const PAGE_PATTERN = `
-  repeating-radial-gradient(circle at 78% 12%, transparent 0 44px, rgba(230,236,232,0.22) 46px 48px),
-  repeating-radial-gradient(circle at 10% 82%, transparent 0 52px, rgba(230,236,232,0.12) 54px 56px)
-`;
+const PAGE_BG = 'none';
+const PAGE_PATTERN = 'none';
 const PAGE_SIZE = 8;
 
 function getStoryHref(article: CreatorArticlePreview) {
@@ -175,7 +169,7 @@ export function CreatorPublicArticlesView({
         color: PAGE_TEXT,
         overflow: 'hidden',
         position: 'relative',
-        bgcolor: '#7b8476',
+        bgcolor: '#f7f7f5',
         backgroundImage: PAGE_BG,
         '&::before': {
           content: '""',
@@ -207,7 +201,7 @@ export function CreatorPublicArticlesView({
             p: { xs: 2.5, md: 3.5 },
             borderRadius: 2,
             bgcolor: 'rgba(250,244,232,0.14)',
-            border: '1px solid rgba(248,246,238,0.22)',
+            border: '1px solid #dfe3df',
           }}
         >
           <Stack direction="row" spacing={2} alignItems="center" sx={{ minWidth: 0 }}>
@@ -221,7 +215,7 @@ export function CreatorPublicArticlesView({
                   bgcolor: 'rgba(234,215,161,0.9)',
                   color: PAGE_DEEP,
                   fontSize: 34,
-                  fontWeight: 950,
+                  fontWeight: 600,
                   border: '3px solid rgba(248,246,238,0.76)',
                 }}
               />
@@ -258,7 +252,7 @@ export function CreatorPublicArticlesView({
                 label="Creator"
                 sx={{
                   color: PAGE_DEEP,
-                  fontWeight: 900,
+                  fontWeight: 600,
                   bgcolor: 'rgba(234,215,161,0.9)',
                 }}
               />
@@ -268,14 +262,14 @@ export function CreatorPublicArticlesView({
                   mt: 1,
                   color: PAGE_TEXT,
                   fontSize: { xs: 34, md: 54 },
-                  fontWeight: 950,
+                  fontWeight: 600,
                   lineHeight: 1.08,
                 }}
               >
                 {creator.displayName}
               </Typography>
               {!!creator.bio && (
-                <Typography sx={{ mt: 1, maxWidth: 620, color: 'rgba(248,246,238,0.76)' }}>
+                <Typography sx={{ mt: 1, maxWidth: 620, color: 'rgba(32,33,36,0.76)' }}>
                   {creator.bio}
                 </Typography>
               )}
@@ -320,7 +314,7 @@ export function CreatorPublicArticlesView({
                         )}
                       </Box>
                       <Box sx={{ minWidth: 0 }}>
-                        <Typography sx={{ fontSize: 13, fontWeight: 950, lineHeight: 1.2 }}>
+                        <Typography sx={{ fontSize: 13, fontWeight: 600, lineHeight: 1.2 }}>
                           {award.title}
                         </Typography>
                         <Typography
@@ -354,10 +348,10 @@ export function CreatorPublicArticlesView({
               }}
             >
               <Box sx={{ textAlign: { xs: 'left', md: 'center' } }}>
-                <Typography sx={{ fontSize: 13, fontWeight: 900, color: 'rgba(42,55,54,0.62)' }}>
+                <Typography sx={{ fontSize: 13, fontWeight: 600, color: 'rgba(42,55,54,0.62)' }}>
                   จำนวนเนื้อหาที่เขียน
                 </Typography>
-                <Typography sx={{ mt: 0.5, fontSize: 36, fontWeight: 950, lineHeight: 1 }}>
+                <Typography sx={{ mt: 0.5, fontSize: 36, fontWeight: 600, lineHeight: 1 }}>
                   {total.toLocaleString('th-TH')}
                 </Typography>
               </Box>
@@ -386,7 +380,7 @@ export function CreatorPublicArticlesView({
                 color: PAGE_DEEP,
                 bgcolor: 'rgba(250,244,232,0.95)',
                 border: '1px solid rgba(255,255,255,0.58)',
-                boxShadow: '0 22px 54px rgba(44,35,21,0.2)',
+                boxShadow: 'none',
               }}
             >
               <Box
@@ -396,7 +390,7 @@ export function CreatorPublicArticlesView({
                   overflow: 'hidden',
                   display: 'block',
                   position: 'relative',
-                  bgcolor: 'rgba(42,55,54,0.16)',
+                  bgcolor: '#fff',
                 }}
               >
                 <Box
@@ -480,7 +474,7 @@ export function CreatorPublicArticlesView({
                     color: '#3b2f24',
                     minHeight: 56,
                     fontSize: 18,
-                    fontWeight: 950,
+                    fontWeight: 600,
                     lineHeight: 1.35,
                     display: '-webkit-box',
                     overflow: 'hidden',
@@ -513,7 +507,7 @@ export function CreatorPublicArticlesView({
                   size="small"
                   component={RouterLink}
                   href={getStoryHref(article)}
-                  sx={{ alignSelf: 'flex-start', color: '#7b5a31', fontSize: 13, fontWeight: 900 }}
+                  sx={{ alignSelf: 'flex-start', color: '#7b5a31', fontSize: 13, fontWeight: 600 }}
                 >
                   อ่านต่อ
                 </Button>

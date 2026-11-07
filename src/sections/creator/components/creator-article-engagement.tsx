@@ -144,8 +144,7 @@ export function CreatorArticleEngagement({
           p: { xs: 1.1, sm: 1.25 },
           position: 'absolute',
           pointerEvents: 'none',
-          backgroundImage:
-            'linear-gradient(180deg, rgba(42,55,54,0.58) 0%, rgba(42,55,54,0) 100%)',
+          backgroundImage: 'linear-gradient(180deg, rgba(42,55,54,0.58) 0%, rgba(42,55,54,0) 100%)',
         }}
       >
         <Stack
@@ -158,16 +157,15 @@ export function CreatorArticleEngagement({
             minWidth: 54,
             color: '#fff',
             borderRadius: 999,
-            fontWeight: 950,
+            fontWeight: 600,
             pointerEvents: 'auto',
-            bgcolor: 'rgba(42,55,54,0.7)',
+            bgcolor: '#fff',
             border: '1px solid rgba(255,255,255,0.26)',
-            boxShadow: '0 10px 24px rgba(18,24,24,0.22)',
-            backdropFilter: 'blur(10px)',
+            boxShadow: 'none',
           }}
         >
           <Iconify icon="solar:eye-bold" width={compact ? 17 : 19} />
-          <Typography sx={{ color: 'inherit', fontSize: compact ? 12 : 14, fontWeight: 950 }}>
+          <Typography sx={{ color: 'inherit', fontSize: compact ? 12 : 14, fontWeight: 600 }}>
             {getCountLabel(stats.viewCount)}
           </Typography>
         </Stack>
@@ -185,12 +183,11 @@ export function CreatorArticleEngagement({
               minWidth: 0,
               color: '#fff',
               borderRadius: 999,
-              fontWeight: 950,
+              fontWeight: 600,
               pointerEvents: 'auto',
               bgcolor: stats.liked ? '#ff4f33' : 'rgba(42,55,54,0.68)',
               border: `1px solid ${stats.liked ? 'rgba(255,255,255,0.36)' : 'rgba(255,255,255,0.24)'}`,
-              boxShadow: '0 10px 24px rgba(18,24,24,0.24)',
-              backdropFilter: 'blur(10px)',
+              boxShadow: 'none',
               '&:hover': {
                 bgcolor: stats.liked ? '#ec4027' : 'rgba(42,55,54,0.82)',
               },
@@ -218,11 +215,10 @@ export function CreatorArticleEngagement({
                 color: '#fff',
                 borderRadius: 999,
                 fontSize: compact ? 12 : 13,
-                fontWeight: 950,
+                fontWeight: 600,
                 bgcolor: 'rgba(237,241,244,0.9)',
                 border: '1px solid rgba(255,255,255,0.6)',
-                boxShadow: '0 10px 24px rgba(18,24,24,0.2)',
-                backdropFilter: 'blur(10px)',
+                boxShadow: 'none',
               }}
             >
               <FacebookIcon size={compact ? 20 : 22} round />
@@ -243,7 +239,7 @@ export function CreatorArticleEngagement({
     >
       <Stack direction="row" spacing={0.6} alignItems="center">
         <Iconify icon="solar:eye-bold" width={compact ? 17 : 19} />
-        <Typography sx={{ fontSize: compact ? 12 : 14, fontWeight: 900 }}>
+        <Typography sx={{ fontSize: compact ? 12 : 14, fontWeight: 600 }}>
           {getCountLabel(stats.viewCount)}
         </Typography>
       </Stack>
@@ -256,7 +252,7 @@ export function CreatorArticleEngagement({
         onClick={handleLike}
         startIcon={<Iconify icon={stats.liked ? 'solar:heart-bold' : 'solar:heart-outline'} />}
         sx={{
-          fontWeight: 900,
+          fontWeight: 600,
           borderRadius: 20,
           ml: 2,
           px: compact ? 0.8 : 1,
@@ -283,7 +279,7 @@ export function CreatorArticleEngagement({
             color: '#ffffff',
             bgcolor: 'rgba(24,119,242,0.08)',
             fontSize: compact ? 12 : 13,
-            fontWeight: 900,
+            fontWeight: 600,
           }}
         >
           <FacebookIcon size={compact ? 18 : 20} round />

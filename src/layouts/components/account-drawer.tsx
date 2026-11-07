@@ -57,7 +57,12 @@ export function AccountDrawer({ data = [], sx, ...other }: AccountDrawerProps) {
         primaryBorder: { size: 120, sx: { color: 'primary.main' } },
       }}
     >
-      <Avatar src={user?.photoURL} alt={user?.displayName} sx={{ width: 1, height: 1 }}>
+      <Avatar
+        slotProps={{ img: { referrerPolicy: 'no-referrer' } }}
+        src={user?.photoURL}
+        alt={user?.displayName}
+        sx={{ width: 1, height: 1 }}
+      >
         {user?.displayName?.charAt(0).toUpperCase()}
       </Avatar>
     </AnimateBorder>

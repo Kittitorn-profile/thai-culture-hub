@@ -5,7 +5,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
-import Alert from '@mui/material/Alert';
 import Stack from '@mui/material/Stack';
 import Drawer from '@mui/material/Drawer';
 import Button from '@mui/material/Button';
@@ -265,7 +264,7 @@ export default function PopupBannerAdminPage() {
           </Stack>
         </Stack>
 
-        {(error || bannersQuery.error) && (
+        {/* {(error || bannersQuery.error) && (
           <Alert severity="error">
             {error ||
               (bannersQuery.error instanceof Error
@@ -275,7 +274,7 @@ export default function PopupBannerAdminPage() {
         )}
         {bannersQuery.isLoading && <Alert severity="info">กำลังโหลด popup banner...</Alert>}
 
-        <Alert severity="info">หน้านี้อ่านและบันทึกข้อมูลผ่าน database table popup_banners</Alert>
+        <Alert severity="info">หน้านี้อ่านและบันทึกข้อมูลผ่าน database table popup_banners</Alert> */}
 
         <Box
           sx={{

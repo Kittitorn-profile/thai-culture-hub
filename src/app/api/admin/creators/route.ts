@@ -1,8 +1,9 @@
 import type { NextRequest } from 'next/server';
 
-import crypto from 'node:crypto';
 import { NextResponse } from 'next/server';
 
+import { hashPassword } from 'src/server/password';
+import { readAuthBody } from 'src/server/auth-request';
 import { getSupabaseAdmin } from 'src/server/supabase-admin';
 import { verifyAdminAccessToken } from 'src/server/admin-api-auth';
 import {
@@ -104,10 +105,6 @@ function normalizeStatus(value: string): CreatorStatus | null {
   return null;
 }
 
-function sha256(value: string) {
-  return crypto.createHash('sha256').update(value).digest('hex');
-}
-
 async function getActiveStateByUserId(client: any, userIds: string[]) {
   if (!userIds.length) {
     return new Map<string, boolean>();
@@ -123,7 +120,9 @@ async function getActiveStateByUserId(client: any, userIds: string[]) {
   );
 }
 
-function isMissingCreatorWarningColumn(error: { message?: string; details?: string; hint?: string } | null) {
+function isMissingCreatorWarningColumn(
+  error: { message?: string; details?: string; hint?: string } | null
+) {
   const text = [error?.message, error?.details, error?.hint].filter(Boolean).join(' ');
 
   return text.includes('warning_note') || text.includes('warned_at');
@@ -285,7 +284,8 @@ function normalizeCreatorSettings(value: unknown): CreatorSettings {
         365
       ),
       publicBadgeMinLevel:
-        creatorPolicy.publicBadgeMinLevel === 'top' || creatorPolicy.publicBadgeMinLevel === 'reliable'
+        creatorPolicy.publicBadgeMinLevel === 'top' ||
+        creatorPolicy.publicBadgeMinLevel === 'reliable'
           ? creatorPolicy.publicBadgeMinLevel
           : 'quality',
     },
@@ -299,14 +299,24 @@ function normalizeArticleReviewSettings(value: unknown): ArticleReviewSettings {
 
   return {
     scoreWeights: {
-      title: numberInRange(scoreWeights.title, DEFAULT_ARTICLE_REVIEW_SETTINGS.scoreWeights.title, 0, 100),
+      title: numberInRange(
+        scoreWeights.title,
+        DEFAULT_ARTICLE_REVIEW_SETTINGS.scoreWeights.title,
+        0,
+        100
+      ),
       coverImage: numberInRange(
         scoreWeights.coverImage,
         DEFAULT_ARTICLE_REVIEW_SETTINGS.scoreWeights.coverImage,
         0,
         100
       ),
-      source: numberInRange(scoreWeights.source, DEFAULT_ARTICLE_REVIEW_SETTINGS.scoreWeights.source, 0, 100),
+      source: numberInRange(
+        scoreWeights.source,
+        DEFAULT_ARTICLE_REVIEW_SETTINGS.scoreWeights.source,
+        0,
+        100
+      ),
       category: numberInRange(
         scoreWeights.category,
         DEFAULT_ARTICLE_REVIEW_SETTINGS.scoreWeights.category,
@@ -357,15 +367,24 @@ function hasArticleSource(article: Record<string, any>) {
   );
 }
 
-function calculateArticleQualityScore(article: Record<string, any>, settings: ArticleReviewSettings) {
+function calculateArticleQualityScore(
+  article: Record<string, any>,
+  settings: ArticleReviewSettings
+) {
   const plainText = getPlainArticleText(article.content_html ?? '');
   const wordCount = plainText.split(/\s+/).filter(Boolean).length;
   const checks = [
     { passed: Boolean(String(article.title ?? '').trim()), weight: settings.scoreWeights.title },
     { passed: Boolean(article.cover_image_url), weight: settings.scoreWeights.coverImage },
     { passed: hasArticleSource(article), weight: settings.scoreWeights.source },
-    { passed: Boolean(article.category_key || article.category_label), weight: settings.scoreWeights.category },
-    { passed: Boolean(String(article.excerpt ?? '').trim()), weight: settings.scoreWeights.excerpt },
+    {
+      passed: Boolean(article.category_key || article.category_label),
+      weight: settings.scoreWeights.category,
+    },
+    {
+      passed: Boolean(String(article.excerpt ?? '').trim()),
+      weight: settings.scoreWeights.excerpt,
+    },
     {
       passed: wordCount >= settings.reviewPolicy.minimumWordCount,
       weight: settings.scoreWeights.contentLength,
@@ -423,7 +442,10 @@ function passesContributorBadge(
 }
 
 export async function GET(request: NextRequest) {
-  const auth = await verifyAdminAccessToken(getBearerToken(request.headers), ADMIN_PERMISSION.creators);
+  const auth = await verifyAdminAccessToken(
+    getBearerToken(request.headers),
+    ADMIN_PERMISSION.creators
+  );
 
   if (!auth.ok) {
     return NextResponse.json({ message: auth.message }, { status: auth.status });
@@ -458,7 +480,37 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ message: error.message }, { status: 500 });
   }
 
-  const rows = (data ?? []) as any[];
+  const profileRows = (data ?? []) as any[];
+  const accountResult = profileRows.length
+    ? await supabase.client
+        .from(USERS_TABLE)
+        .select('id')
+        .eq('role', 'creator')
+        .in(
+          'id',
+          profileRows.map((row) => row.user_id)
+        )
+    : { data: [], error: null };
+  if (accountResult.error)
+    return NextResponse.json({ message: 'ตรวจสอบสิทธิ์ผู้เขียนไม่สำเร็จ' }, { status: 500 });
+  const creatorUserIds = new Set((accountResult.data ?? []).map((row) => row.id));
+  // Explicit Auth roles take precedence over legacy Creator account records.
+  const nonCreatorEmails = new Set<string>();
+  for (let page = 1; ; page += 1) {
+    const result = await supabase.client.auth.admin.listUsers({ page, perPage: 200 });
+    if (result.error)
+      return NextResponse.json({ message: 'ตรวจสอบประเภทบัญชีไม่สำเร็จ' }, { status: 500 });
+    for (const account of result.data.users) {
+      if (account.app_metadata?.role && account.app_metadata.role !== 'creator' && account.email)
+        nonCreatorEmails.add(account.email.toLowerCase());
+    }
+    if (result.data.users.length < 200) break;
+  }
+  const rows = profileRows.filter(
+    (row) =>
+      creatorUserIds.has(row.user_id) &&
+      !nonCreatorEmails.has(String(row.email ?? '').toLowerCase())
+  );
   const creatorIds = rows.map((row) => row.id).filter(Boolean);
   const activeStateByUserId = await getActiveStateByUserId(
     supabase.client,
@@ -507,7 +559,9 @@ export async function GET(request: NextRequest) {
     })(),
   ]);
   const creatorSettings = normalizeCreatorSettings(creatorSettingsResult.data?.value);
-  const articleReviewSettings = normalizeArticleReviewSettings(articleReviewSettingsResult.data?.value);
+  const articleReviewSettings = normalizeArticleReviewSettings(
+    articleReviewSettingsResult.data?.value
+  );
   const publishedArticles = ((articlesResult.data ?? []) as any[]).map((article) => ({
     ...article,
     qualityScore: calculateArticleQualityScore(article, articleReviewSettings),
@@ -775,16 +829,19 @@ export async function GET(request: NextRequest) {
 }
 
 export async function PATCH(request: NextRequest) {
-  const auth = await verifyAdminAccessToken(getBearerToken(request.headers), ADMIN_PERMISSION.creators);
+  const auth = await verifyAdminAccessToken(
+    getBearerToken(request.headers),
+    ADMIN_PERMISSION.creators
+  );
 
   if (!auth.ok) {
     return NextResponse.json({ message: auth.message }, { status: auth.status });
   }
 
-  const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
+  const body = await readAuthBody(request);
   const id = cleanText(body.id);
   const action = cleanText(body.action);
-  const password = cleanText(body.password);
+  const password = typeof body.password === 'string' ? body.password : '';
 
   if (action === 'resetPassword') {
     if (!id) {
@@ -792,7 +849,10 @@ export async function PATCH(request: NextRequest) {
     }
 
     if (password.length < 6) {
-      return NextResponse.json({ message: 'Password must be at least 6 characters' }, { status: 400 });
+      return NextResponse.json(
+        { message: 'Password must be at least 6 characters' },
+        { status: 400 }
+      );
     }
 
     const supabase = getSupabaseAdmin();
@@ -817,7 +877,7 @@ export async function PATCH(request: NextRequest) {
 
     const updateResult = await supabase.client
       .from(USERS_TABLE)
-      .update({ password_hash: `sha256:${sha256(password)}` })
+      .update({ password_hash: await hashPassword(password) })
       .eq('id', profileResult.data.user_id);
 
     if (updateResult.error) {
@@ -833,7 +893,10 @@ export async function PATCH(request: NextRequest) {
   const isActive = typeof body.isActive === 'boolean' ? body.isActive : null;
 
   if (!id || !status) {
-    return NextResponse.json({ message: 'Valid creator id and status are required' }, { status: 400 });
+    return NextResponse.json(
+      { message: 'Valid creator id and status are required' },
+      { status: 400 }
+    );
   }
 
   if (status === 'rejected' && !rejectReason) {
@@ -895,15 +958,20 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ message: error.message }, { status: 500 });
   }
 
-  const nextIsActive = isActive ?? status === 'approved';
+  const nextIsActive = status === 'approved' && (isActive ?? true);
 
-  await supabase.client
+  const accountUpdate = await supabase.client
     .from(USERS_TABLE)
-    .update({
-      role: 'creator',
-      is_active: nextIsActive,
-    })
-    .eq('id', data.user_id);
+    .update({ role: 'creator', is_active: nextIsActive })
+    .eq('id', data.user_id)
+    .select('id')
+    .maybeSingle();
+  if (accountUpdate.error || !accountUpdate.data) {
+    return NextResponse.json(
+      { message: 'บันทึกสถานะโปรไฟล์แล้ว แต่เปิด/ปิดบัญชีไม่สำเร็จ กรุณาลองบันทึกอีกครั้ง' },
+      { status: 500 }
+    );
+  }
 
   return NextResponse.json({
     data: mapCreatorProfile({

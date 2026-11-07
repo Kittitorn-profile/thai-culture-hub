@@ -2,10 +2,11 @@ import type { NextRequest } from 'next/server';
 
 import { NextResponse } from 'next/server';
 
+import { readAuthBody } from 'src/server/auth-request';
 import { getSupabaseAdmin } from 'src/server/supabase-admin';
 import { verifyAdminAccessToken } from 'src/server/admin-api-auth';
 
-import { ADMIN_PERMISSION } from 'src/auth/admin-permissions';
+import { ADMIN_PERMISSION, canAccessAdminPermission } from 'src/auth/admin-permissions';
 
 export const runtime = 'nodejs';
 
@@ -102,10 +103,14 @@ function mapReviewer(
   };
 }
 
-function isMissingReviewersTable(error: { message?: string; details?: string; hint?: string } | null) {
+function isMissingReviewersTable(
+  error: { message?: string; details?: string; hint?: string } | null
+) {
   const text = [error?.message, error?.details, error?.hint].filter(Boolean).join(' ');
 
-  return text.includes('reviewers') && (text.includes('does not exist') || text.includes('schema cache'));
+  return (
+    text.includes('reviewers') && (text.includes('does not exist') || text.includes('schema cache'))
+  );
 }
 
 async function getAdminUsers() {
@@ -123,11 +128,14 @@ async function getAdminUsers() {
 
   return data.users.map((user) => ({
     id: user.id,
+    canReviewArticles:
+      ['admin', 'manage', 'manager', 'reviewer'].includes(user.app_metadata?.role) &&
+      canAccessAdminPermission(user, ADMIN_PERMISSION.creators),
     email: user.email ?? '',
     displayName:
       typeof user.user_metadata?.display_name === 'string'
         ? user.user_metadata.display_name
-        : user.email ?? '',
+        : (user.email ?? ''),
     photoUrl: typeof user.user_metadata?.photo_url === 'string' ? user.user_metadata.photo_url : '',
   }));
 }
@@ -166,11 +174,13 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ message: reviewersResult.error.message }, { status: 500 });
   }
 
-  const reviewerUserIds = new Set(((reviewersResult.data ?? []) as any[]).map((row) => row.user_id));
+  const reviewerUserIds = new Set(
+    ((reviewersResult.data ?? []) as any[]).map((row) => row.user_id)
+  );
 
   return NextResponse.json({
     data: ((reviewersResult.data ?? []) as any[]).map((row) => mapReviewer(row, usersById)),
-    users: users.filter((user) => !reviewerUserIds.has(user.id)),
+    users: users.filter((user) => user.canReviewArticles && !reviewerUserIds.has(user.id)),
   });
 }
 
@@ -181,7 +191,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ message: auth.message }, { status: auth.status });
   }
 
-  const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
+  const body = await readAuthBody(request);
   const userId = cleanText(body.userId);
   const displayName = cleanText(body.displayName);
   const reviewerLevel = REVIEWER_LEVELS.has(cleanText(body.reviewerLevel))
@@ -199,6 +209,22 @@ export async function POST(request: NextRequest) {
 
   if (!supabase.ok) {
     return NextResponse.json({ message: supabase.error }, { status: 500 });
+  }
+
+  const candidate = await supabase.client.auth.admin.getUserById(userId);
+  if (candidate.error || !candidate.data.user)
+    return NextResponse.json({ message: 'ไม่พบบัญชีผู้ใช้งานที่เลือก' }, { status: 400 });
+  if (
+    !['admin', 'manage', 'manager', 'reviewer'].includes(candidate.data.user.app_metadata?.role) ||
+    !canAccessAdminPermission(candidate.data.user, ADMIN_PERMISSION.creators)
+  ) {
+    return NextResponse.json(
+      {
+        message:
+          'บัญชีผู้ตรวจสอบต้องมีสิทธิ์เข้าเมนูตรวจสอบบทความก่อน กรุณาตั้งค่าในจัดการผู้ใช้งาน',
+      },
+      { status: 400 }
+    );
   }
 
   const payload = {
@@ -224,7 +250,11 @@ export async function POST(request: NextRequest) {
     notes: cleanText(body.notes) || null,
   };
 
-  const { data, error } = await supabase.client.from('reviewers').insert(payload).select(SELECT).single();
+  const { data, error } = await supabase.client
+    .from('reviewers')
+    .insert(payload)
+    .select(SELECT)
+    .single();
 
   if (error) {
     return NextResponse.json({ message: error.message }, { status: 500 });
@@ -245,7 +275,7 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ message: auth.message }, { status: auth.status });
   }
 
-  const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
+  const body = await readAuthBody(request);
   const id = cleanText(body.id);
   const displayName = cleanText(body.displayName);
   const reviewerLevel = REVIEWER_LEVELS.has(cleanText(body.reviewerLevel))
@@ -312,7 +342,7 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ message: auth.message }, { status: auth.status });
   }
 
-  const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
+  const body = await readAuthBody(request);
   const id = cleanText(body.id);
 
   if (!id) {

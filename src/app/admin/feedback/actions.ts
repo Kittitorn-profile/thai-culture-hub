@@ -65,7 +65,8 @@ function mapFeedback(row: FeedbackRow): FeedbackItem {
 }
 
 export async function getFeedbackAction(
-  accessToken: string
+  accessToken: string,
+  contactOnly = false
 ): Promise<ActionSuccess<FeedbackItem[]> | ActionError> {
   const authError = await verifyAdminAccess(accessToken);
 
@@ -79,15 +80,35 @@ export async function getFeedbackAction(
     return { ok: false, status: 500, message: supabase.error };
   }
 
-  const { data, error } = await supabase.client
+  let query = supabase.client
     .from(TABLE_NAME)
-    .select('id, created_at, name, contact, message, path, status, user_agent')
-    .order('created_at', { ascending: false })
-    .limit(200);
+    .select('id, created_at, name, contact, message, path, status, user_agent');
+  query = contactOnly ? query.eq('path', '/contact-us') : query.neq('path', '/contact-us');
+  const { data, error } = await query.order('created_at', { ascending: false }).limit(200);
 
   if (error) {
     return { ok: false, status: 500, message: error.message };
   }
 
   return { ok: true, data: ((data ?? []) as FeedbackRow[]).map(mapFeedback) };
+}
+
+export async function updateFeedbackStatusAction(
+  accessToken: string,
+  id: string,
+  status: FeedbackStatus,
+  contactOnly = false
+): Promise<ActionSuccess<{ id: string; status: FeedbackStatus }> | ActionError> {
+  const authError = await verifyAdminAccess(accessToken);
+  if (authError) return authError;
+  if (!id || !['new', 'reviewed', 'archived'].includes(status))
+    return { ok: false, status: 400, message: 'สถานะข้อความไม่ถูกต้อง' };
+  const supabase = getSupabaseAdmin();
+  if (!supabase.ok) return { ok: false, status: 500, message: 'ไม่สามารถบันทึกสถานะได้' };
+  let query = supabase.client.from(TABLE_NAME).update({ status }).eq('id', id);
+  query = contactOnly ? query.eq('path', '/contact-us') : query.neq('path', '/contact-us');
+  const { data, error } = await query.select('id, status').maybeSingle();
+  if (error) return { ok: false, status: 500, message: 'บันทึกสถานะไม่สำเร็จ' };
+  if (!data) return { ok: false, status: 404, message: 'ไม่พบข้อความ' };
+  return { ok: true, data: { id: String(data.id), status: normalizeStatus(data.status) } };
 }

@@ -73,7 +73,7 @@ function FilterSectionHeader({
       }}
     >
       <Stack direction="row" spacing={1} alignItems="center">
-        <Typography sx={{ fontWeight: 900 }}>{title}</Typography>
+        <Typography sx={{ fontWeight: 600 }}>{title}</Typography>
         {!!count && (
           <Box
             component="span"
@@ -82,7 +82,7 @@ function FilterSectionHeader({
               py: 0.15,
               minWidth: 22,
               fontSize: 12,
-              fontWeight: 900,
+              fontWeight: 600,
               borderRadius: 99,
               textAlign: 'center',
               color: '#11343a',
@@ -164,7 +164,7 @@ export function ProvinceFilterDrawer({
         sx={{ p: 2.5, pb: 0 }}
       >
         <Box>
-          <Typography sx={{ fontSize: 20, fontWeight: 900 }}>ตัวกรองข้อมูล</Typography>
+          <Typography sx={{ fontSize: 20, fontWeight: 600 }}>ตัวกรองข้อมูล</Typography>
           <Typography sx={{ color: 'text.secondary', fontSize: 13 }}>
             แสดง {filteredCount} จาก {totalCount} รายการ
           </Typography>
@@ -295,7 +295,7 @@ export function ProvinceFilterDrawer({
             onSelectedSourcesChange([]);
             onSelectedDistrictsChange([]);
           }}
-          sx={{ borderRadius: 1.2, fontWeight: 900 }}
+          sx={{ borderRadius: 1.2, fontWeight: 600 }}
         >
           ล้างตัวกรอง
         </Button>
@@ -303,7 +303,7 @@ export function ProvinceFilterDrawer({
           fullWidth
           variant="contained"
           onClick={onClose}
-          sx={{ borderRadius: 1.2, fontWeight: 900 }}
+          sx={{ borderRadius: 1.2, fontWeight: 600 }}
         >
           ดูผลลัพธ์
         </Button>

@@ -290,10 +290,6 @@ export function AdminPlaceCorrectionsClient() {
           </Stack>
         </Stack>
 
-        {error && <Alert severity="error">{error}</Alert>}
-        {message && <Alert severity="success">{message}</Alert>}
-        {isLoading && <Alert severity="info">กำลังโหลดคำขอ...</Alert>}
-
         <Card sx={{ p: 2.5 }}>
           <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
             <TextField

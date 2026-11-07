@@ -1,3 +1,4 @@
+import { cultureUi } from 'src/theme/culture-ui';
 import type {
   TypeAction,
   PaletteColor,
@@ -97,12 +98,20 @@ export const grey = createPaletteChannel(themeConfig.palette.grey);
  * ➤
  */
 export const text = {
-  light: createPaletteChannel({ primary: grey[800], secondary: grey[600], disabled: grey[500] }),
+  light: createPaletteChannel({
+    primary: cultureUi.text,
+    secondary: '#626a6e',
+    disabled: grey[500],
+  }),
   dark: createPaletteChannel({ primary: '#FFFFFF', secondary: grey[500], disabled: grey[600] }),
 };
 
 export const background = {
-  light: createPaletteChannel({ paper: '#FFFFFF', default: '#FFFFFF', neutral: grey[200] }),
+  light: createPaletteChannel({
+    paper: '#FFFFFF',
+    default: cultureUi.background,
+    neutral: '#ecefeb',
+  }),
   dark: createPaletteChannel({ paper: grey[800], default: grey[900], neutral: '#28323D' }),
 };
 

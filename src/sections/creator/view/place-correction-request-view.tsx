@@ -285,7 +285,7 @@ export function PlaceCorrectionRequestView() {
     >
       <Stack spacing={3} sx={{ mx: 'auto', maxWidth: 1100, position: 'relative', zIndex: 1 }}>
         <Box>
-          <Typography variant="h3" sx={{ color: creatorTone.text, fontWeight: 950 }}>
+          <Typography variant="h3" sx={{ color: creatorTone.text, fontWeight: 600 }}>
             ขอปรับแก้ข้อมูลสถานที่
           </Typography>
           <Typography sx={{ mt: 1, color: creatorTone.muted }}>
@@ -301,9 +301,9 @@ export function PlaceCorrectionRequestView() {
         )}
 
         <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: { xs: '1fr', md: '340px 1fr' } }}>
-          <Card sx={{ p: 2.5, borderRadius: 2, bgcolor: 'rgba(248,246,238,0.94)' }}>
+          <Card sx={{ p: 2.5, borderRadius: 2, bgcolor: '#fff' }}>
             <Stack spacing={1.5}>
-              <Typography variant="h6" sx={{ fontWeight: 900 }}>
+              <Typography variant="h6" sx={{ fontWeight: 600 }}>
                 ข้อมูลปัจจุบัน
               </Typography>
               {isLoadingPlace && <Alert severity="info">กำลังโหลดรายละเอียดสถานที่...</Alert>}
@@ -358,10 +358,10 @@ export function PlaceCorrectionRequestView() {
             </Stack>
           </Card>
 
-          <Card sx={{ p: { xs: 2.5, md: 3 }, borderRadius: 2, bgcolor: 'rgba(248,246,238,0.94)' }}>
+          <Card sx={{ p: { xs: 2.5, md: 3 }, borderRadius: 2, bgcolor: '#fff' }}>
             <Form methods={methods} onSubmit={handleSubmit(submitRequest)}>
               <Stack spacing={2.25}>
-                <Typography variant="h5" sx={{ fontWeight: 900 }}>
+                <Typography variant="h5" sx={{ fontWeight: 600 }}>
                   ข้อมูลที่เสนอแก้
                 </Typography>
                 <RHFTextField name="name" label="ชื่อสถานที่ใหม่" />
@@ -414,7 +414,7 @@ export function PlaceCorrectionRequestView() {
                       justifyContent="space-between"
                     >
                       <Box>
-                        <Typography sx={{ fontWeight: 900, color: 'text.primary' }}>
+                        <Typography sx={{ fontWeight: 600, color: 'text.primary' }}>
                           ภาพปกสถานที่
                         </Typography>
                         <Typography sx={{ mt: 0.25, color: 'text.secondary', fontSize: 13 }}>

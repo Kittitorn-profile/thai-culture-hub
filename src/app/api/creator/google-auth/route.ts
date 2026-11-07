@@ -3,6 +3,8 @@ import type { NextRequest } from 'next/server';
 import crypto from 'node:crypto';
 import { NextResponse } from 'next/server';
 
+import { hashPassword } from 'src/server/password';
+import { readAuthBody } from 'src/server/auth-request';
 import provinces from 'src/data/thailand-culture/provinces';
 import { getSupabaseAdmin } from 'src/server/supabase-admin';
 import { createAdminToken } from 'src/server/admin-api-auth';
@@ -15,7 +17,13 @@ const PROFILE_SELECT =
   'id, user_id, email, display_name, bio, phone, province_code, website_url, facebook_url, avatar_url, status, warning_note, warned_at, reviewed_at, reject_reason, created_at, updated_at';
 
 export async function POST(request: NextRequest) {
-  const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
+  const body = await readAuthBody(request);
+  const isLookup = body.intent === 'lookup';
+  if (!isLookup && body.acceptTerms !== true)
+    return NextResponse.json({ message: 'กรุณายอมรับเงื่อนไขการใช้บริการ' }, { status: 400 });
+  const isRegistration = body.intent === 'register';
+  if (!['register', 'sign-in', 'lookup'].includes(String(body.intent)))
+    return NextResponse.json({ message: 'Invalid authentication intent' }, { status: 400 });
   const accessToken = getBearerToken(request.headers);
   const supabase = getSupabaseAdmin();
 
@@ -39,7 +47,8 @@ export async function POST(request: NextRequest) {
     cleanText(authUser.user_metadata?.full_name) ||
     cleanText(authUser.user_metadata?.name) ||
     email.split('@')[0];
-  const avatarUrl = cleanText(authUser.user_metadata?.avatar_url);
+  const avatarUrl =
+    cleanText(authUser.user_metadata?.avatar_url) || cleanText(authUser.user_metadata?.picture);
   const requestedDisplayName = cleanText(body.displayName);
   const requestedPhone = cleanText(body.phone);
   const requestedProvinceCode = cleanText(body.provinceCode);
@@ -47,6 +56,10 @@ export async function POST(request: NextRequest) {
   const provinceCode = provinces.some((province) => province.code === requestedProvinceCode)
     ? requestedProvinceCode
     : null;
+
+  if (isRegistration && (!provinceCode || !requestedDisplayName)) {
+    return NextResponse.json({ message: 'กรุณากรอกชื่อที่แสดงและเลือกจังหวัด' }, { status: 400 });
+  }
 
   const { data: existingUser, error: userLookupError } = await supabase.client
     .from(USERS_TABLE)
@@ -67,9 +80,20 @@ export async function POST(request: NextRequest) {
 
   let userId = existingUser?.id as string | undefined;
   let isNewCreator = false;
+  let createdUserId: string | undefined;
+
+  if (!userId && !isRegistration)
+    return NextResponse.json(
+      { message: 'ยังไม่มีบัญชี Creator กรุณาสมัครสมาชิกก่อน' },
+      { status: 404 }
+    );
+
+  if (!userId && (!provinceCode || !requestedDisplayName)) {
+    return NextResponse.json({ message: 'กรุณากรอกชื่อที่แสดงและเลือกจังหวัด' }, { status: 400 });
+  }
 
   if (!userId) {
-    const passwordHash = `sha256:${crypto.createHash('sha256').update(crypto.randomUUID()).digest('hex')}`;
+    const passwordHash = await hashPassword(crypto.randomUUID());
     const { data: createdUser, error: createUserError } = await supabase.client
       .from(USERS_TABLE)
       .insert({
@@ -90,6 +114,7 @@ export async function POST(request: NextRequest) {
     }
 
     userId = String(createdUser.id);
+    createdUserId = userId;
     isNewCreator = true;
   }
 
@@ -98,6 +123,16 @@ export async function POST(request: NextRequest) {
     .select(PROFILE_SELECT)
     .eq('user_id', userId)
     .maybeSingle();
+
+  if (!profile && !profileError && !isRegistration)
+    return NextResponse.json(
+      { message: 'ไม่พบโปรไฟล์ Creator กรุณาติดต่อทีมงาน' },
+      { status: 403 }
+    );
+
+  if (!profile && !profileError && (!provinceCode || !requestedDisplayName)) {
+    return NextResponse.json({ message: 'กรุณากรอกชื่อที่แสดงและเลือกจังหวัด' }, { status: 400 });
+  }
 
   if (!profile && !profileError) {
     const result = await supabase.client
@@ -120,12 +155,66 @@ export async function POST(request: NextRequest) {
   }
 
   if (profileError || !profile) {
-    if (isNewCreator) await supabase.client.from(USERS_TABLE).delete().eq('id', userId);
+    if (createdUserId) await supabase.client.from(USERS_TABLE).delete().eq('id', createdUserId);
     return NextResponse.json(
       { message: profileError?.message ?? 'สร้างโปรไฟล์ผู้ร่วมสร้างข้อมูลไม่สำเร็จ' },
       { status: 500 }
     );
   }
+
+  if (!isLookup && !profile.avatar_url && avatarUrl) {
+    const avatarUpdate = await supabase.client
+      .from('creator_profiles')
+      .update({ avatar_url: avatarUrl })
+      .eq('id', profile.id)
+      .or('avatar_url.is.null,avatar_url.eq.')
+      .select(PROFILE_SELECT)
+      .maybeSingle();
+    if (avatarUpdate.error)
+      return NextResponse.json(
+        { message: 'บันทึกรูปโปรไฟล์ Google ไม่สำเร็จ กรุณาลองใหม่' },
+        { status: 500 }
+      );
+    if (avatarUpdate.data) profile = avatarUpdate.data;
+  }
+
+  // App metadata is server-controlled; never replace an existing administrator role.
+  if (!isLookup && !authUser.app_metadata?.role) {
+    const { error: roleError } = await supabase.client.auth.admin.updateUserById(authUser.id, {
+      app_metadata: { ...authUser.app_metadata, role: 'creator' },
+    });
+    if (roleError)
+      return NextResponse.json(
+        { message: 'ตั้งค่าสิทธิ์สมาชิกไม่สำเร็จ กรุณาลองใหม่' },
+        { status: 500 }
+      );
+  }
+
+  if (
+    profile.status === 'rejected' ||
+    (profile.status === 'approved' && existingUser?.is_active !== true)
+  ) {
+    return NextResponse.json(
+      {
+        message:
+          profile.status === 'approved'
+            ? 'บัญชีนี้ได้รับอนุมัติแล้ว แต่ถูกปิดใช้งาน กรุณาติดต่อผู้ดูแลเพื่อเปิดใช้งานบัญชี'
+            : 'คำขอของบัญชีนี้ไม่ได้รับอนุมัติ กรุณาติดต่อทีมงาน',
+      },
+      { status: 403 }
+    );
+  }
+
+  if (!['approved', 'pending'].includes(profile.status))
+    return NextResponse.json(
+      { message: 'สถานะบัญชีไม่พร้อมใช้งาน กรุณาติดต่อทีมงาน' },
+      { status: 403 }
+    );
+  if (isLookup)
+    return NextResponse.json({
+      outcome: 'existing',
+      data: { status: profile.status, isActive: existingUser?.is_active === true },
+    });
 
   const isApproved = profile.status === 'approved' && existingUser?.is_active === true;
   const creatorToken = isApproved ? createAdminToken(userId, 'creator') : null;
@@ -138,6 +227,7 @@ export async function POST(request: NextRequest) {
   }
 
   return NextResponse.json({
+    outcome: isApproved ? 'signed_in' : isNewCreator ? 'registration_submitted' : 'pending',
     data: mapCreatorProfile({ ...profile, is_active: existingUser?.is_active ?? false }),
     token: creatorToken?.ok ? creatorToken.token : null,
     isNewCreator,

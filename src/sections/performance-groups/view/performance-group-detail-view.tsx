@@ -170,47 +170,32 @@ export function PerformanceGroupDetailView({ groupId, initialGroup }: Props) {
       sx={{
         minHeight: '100vh',
         pt: {
-          xs: 'calc(var(--layout-header-mobile-height) + 24px)',
-          md: 'calc(var(--layout-header-desktop-height) + 32px)',
+          xs: 3,
+          md: 4,
         },
         pb: { xs: 5, md: 9 },
         overflow: 'hidden',
         position: 'relative',
-        bgcolor: '#7b8476',
-        backgroundImage: `
-          radial-gradient(circle at 50% 18%, rgba(239,236,224,0.3) 0%, rgba(239,236,224,0.1) 28%, rgba(111,135,144,0) 58%),
-          linear-gradient(180deg, #6f8790 0%, #7b8476 54%, #8f7c5c 100%)
-        `,
+        bgcolor: '#f7f7f5',
+        backgroundImage: 'none',
         fontFamily: "'LINE Seed Sans TH', sans-serif",
-        '&::before': {
-          content: '""',
-          position: 'absolute',
-          inset: { xs: -80, md: -120 },
-          zIndex: 0,
-          opacity: 0.22,
-          pointerEvents: 'none',
-          backgroundImage: `
-            repeating-radial-gradient(circle at 78% 12%, transparent 0 44px, rgba(230,236,232,0.22) 46px 48px),
-            repeating-radial-gradient(circle at 10% 82%, transparent 0 52px, rgba(230,236,232,0.12) 54px 56px),
-            linear-gradient(120deg, transparent 0 58%, rgba(229,221,198,0.13) 58% 59%, transparent 59% 100%)
-          `,
-          transform: 'rotate(-4deg)',
-        },
       }}
     >
-      <Container maxWidth="lg" sx={{ zIndex: 1, px: { xs: 1.5, sm: 3 }, position: 'relative' }}>
+      <Container
+        maxWidth={false}
+        sx={{ maxWidth: 1408, px: { xs: 2.5, sm: 4, md: 6 }, position: 'relative' }}
+      >
         <Button
           component={RouterLink}
           href="/"
           color="inherit"
           startIcon={<Iconify icon="eva:arrowhead-left-fill" width={18} />}
           sx={{
-            mb: 1,
+            mb: 2.5,
             px: 1.5,
-            color: '#f8f6ee',
-            bgcolor: 'rgba(42,55,54,0.28)',
-            backdropFilter: 'blur(8px)',
-            '&:hover': { bgcolor: 'rgba(42,55,54,0.42)' },
+            color: '#202124',
+            bgcolor: 'transparent',
+            '&:hover': { bgcolor: '#eeefec' },
           }}
         >
           กลับหน้าแรก
@@ -218,16 +203,59 @@ export function PerformanceGroupDetailView({ groupId, initialGroup }: Props) {
 
         <Box
           sx={{
-            overflow: 'hidden',
-            borderRadius: 3,
-            bgcolor: 'background.paper',
-            borderTop: `5px solid ${group.primaryColor || '#2a3736'}`,
-            boxShadow: '0 24px 70px rgba(42,55,54,0.12)',
+            minWidth: 0,
           }}
         >
           <PerformanceGroupHeader group={group} counts={counts} onShare={handleShare} />
 
-          <Box sx={{ px: { xs: 2.5, md: 3 }, pt: 0, pb: { xs: 2.5, md: 5 } }}>
+          <Box sx={{ pt: { xs: 3, md: 4 }, pb: { xs: 2.5, md: 4 } }}>
+            <Box
+              component="nav"
+              aria-label="ส่วนข้อมูลวง"
+              sx={{
+                display: 'flex',
+                gap: 1,
+                overflowX: 'auto',
+                py: 1.5,
+                borderTop: '1px solid',
+                borderBottom: '1px solid',
+                borderColor: 'divider',
+                '& .MuiButton-root': {
+                  flexShrink: 0,
+                  minHeight: 44,
+                  fontWeight: 500,
+                  px: 2,
+                  '&:hover': { bgcolor: '#e9ede6', color: '#293c34' },
+                },
+              }}
+            >
+              {Boolean(
+                group.totalMembers ||
+                group.managers.length ||
+                group.principalMembers.length ||
+                group.leadRoles.length ||
+                group.otherPositions.length
+              ) && (
+                <Button href="#group-members" color="inherit">
+                  ข้อมูลสมาชิก
+                </Button>
+              )}
+              {group.personnel.length > 0 && (
+                <Button href="#group-personnel" color="inherit">
+                  บุคลากรในวง
+                </Button>
+              )}
+              {group.yearlyData.length > 0 && (
+                <Button href="#group-archive" color="inherit">
+                  ผลงานรายปี
+                </Button>
+              )}
+              {relatedGroups.length > 0 && (
+                <Button href="#group-related" color="inherit">
+                  วงที่เกี่ยวข้อง
+                </Button>
+              )}
+            </Box>
             <PerformanceGroupMembersSummary group={group} />
             <PerformanceGroupPersonnelList group={group} />
             <PerformanceGroupYearlyArchive

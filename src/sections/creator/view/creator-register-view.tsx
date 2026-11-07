@@ -13,7 +13,6 @@ import Alert from '@mui/material/Alert';
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
 import Stepper from '@mui/material/Stepper';
-import MenuItem from '@mui/material/MenuItem';
 import StepLabel from '@mui/material/StepLabel';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
@@ -22,19 +21,20 @@ import InputAdornment from '@mui/material/InputAdornment';
 import { RouterLink } from 'src/routes/components';
 import { useRouter, useSearchParams } from 'src/routes/hooks';
 
-import { supabase } from 'src/lib/supabase';
+import { creatorGoogleClient } from 'src/lib/creator-google-auth';
 import provinces from 'src/data/thailand-culture/provinces';
 
 import { Iconify } from 'src/components/iconify';
 import { Form, Field } from 'src/components/hook-form';
 
 import { useAuthContext } from 'src/auth/hooks';
-import { getRoleHomePath } from 'src/auth/utils/role-redirect';
+import { getRoleHomePath, getSafeRoleRedirectPath } from 'src/auth/utils/role-redirect';
 import { CREATOR_AUTH_TOKEN_KEY } from 'src/auth/context/supabase/auth-provider';
 
 import { registerCreator } from '../creator-api';
 import { GoogleIdentityButton } from '../components/google-identity-button';
-import { creatorTone, creatorPosterPattern, creatorPageBackground } from '../creator-theme';
+import { cultureUi } from 'src/theme/culture-ui';
+import { HOME_SECTION_PX } from 'src/sections/home/components/home-constants';
 
 const registerSteps = ['ข้อมูลส่วนตัว', 'ตั้งค่าบัญชี', 'ส่งคำขอสมัคร'];
 
@@ -42,10 +42,24 @@ const RegisterSchema = z
   .object({
     firstName: z.string(),
     lastName: z.string(),
-    displayName: z.string().min(1, { error: 'กรุณากรอกชื่อที่แสดง' }),
-    email: z.string().min(1, { error: 'กรุณากรอกอีเมล' }).email({ error: 'รูปแบบอีเมลไม่ถูกต้อง' }),
-    phone: z.string(),
-    provinceCode: z.string().min(1, { error: 'กรุณาเลือกจังหวัดของคุณ' }),
+    displayName: z.string().trim().min(1, { error: 'กรุณากรอกชื่อที่แสดง' }),
+    email: z
+      .string()
+      .trim()
+      .min(1, { error: 'กรุณากรอกอีเมล' })
+      .email({ error: 'รูปแบบอีเมลไม่ถูกต้อง' }),
+    phone: z
+      .string()
+      .trim()
+      .refine((value) => !value || /^\+?[\d\s()-]{8,20}$/.test(value), {
+        error: 'กรุณากรอกเบอร์โทรให้ถูกต้อง',
+      }),
+    provinceCode: z
+      .string()
+      .min(1, { error: 'กรุณาเลือกจังหวัดของคุณ' })
+      .refine((code) => provinces.some((province) => province.code === code), {
+        error: 'กรุณาเลือกจังหวัดจากรายการ',
+      }),
     bio: z.string(),
     authMethod: z.enum(['password', 'google']),
     password: z.string(),
@@ -156,6 +170,7 @@ export function CreatorRegisterView() {
   const [activeRegisterStep, setActiveRegisterStep] = useState(0);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
+  const [registrationCreated, setRegistrationCreated] = useState(true);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [googleAccessToken, setGoogleAccessToken] = useState('');
 
@@ -177,11 +192,11 @@ export function CreatorRegisterView() {
   const acceptTerms = watch('acceptTerms');
   const authMethod = watch('authMethod');
   const returnTo = searchParams.get('returnTo') ?? '';
-  const safeReturnTo = returnTo.startsWith('/creator/') ? returnTo : '';
+  const safeReturnTo = returnTo ? getSafeRoleRedirectPath({ role: 'creator' }, returnTo) : '';
   const signInHref = `/creator/sign-in${safeReturnTo ? `?returnTo=${encodeURIComponent(safeReturnTo)}` : ''}`;
 
   const goNextRegisterStep = async () => {
-    const isValid = await trigger(['displayName', 'provinceCode'], {
+    const isValid = await trigger(['displayName', 'phone', 'provinceCode'], {
       shouldFocus: true,
     });
 
@@ -232,6 +247,8 @@ export function CreatorRegisterView() {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
+            intent: 'register',
+            acceptTerms: data.acceptTerms,
             displayName: data.displayName,
             phone: data.phone,
             provinceCode: data.provinceCode,
@@ -240,11 +257,12 @@ export function CreatorRegisterView() {
         });
         const result = (await response.json().catch(() => ({}))) as {
           token?: string | null;
+          outcome?: 'signed_in' | 'pending' | 'registration_submitted';
           message?: string;
           data?: { status?: string };
         };
 
-        await supabase.auth.signOut({ scope: 'local' });
+        await creatorGoogleClient.auth.signOut({ scope: 'local' });
 
         if (!response.ok) throw new Error(result.message ?? 'สมัครด้วย Google ไม่สำเร็จ');
 
@@ -255,12 +273,21 @@ export function CreatorRegisterView() {
           return;
         }
 
-        setMessage('ส่งคำขอสมัครด้วย Google แล้ว ทีมงานจะตรวจสอบก่อนเปิดใช้งานบัญชี');
+        if (result.data?.status !== 'pending')
+          throw new Error('สถานะบัญชีไม่พร้อมใช้งาน กรุณาติดต่อทีมงาน');
+        const created = result.outcome === 'registration_submitted';
+        setRegistrationCreated(created);
+        setMessage(
+          created
+            ? 'ส่งคำขอสมัครด้วย Google แล้ว ทีมงานจะตรวจสอบก่อนเปิดใช้งานบัญชี'
+            : 'บัญชีนี้มีคำขอสมัครอยู่แล้ว กรุณารอทีมงานตรวจสอบ ไม่ต้องสมัครซ้ำ'
+        );
       } else {
         await registerCreator({
           ...data,
           email: data.email.trim().toLowerCase(),
         });
+        setRegistrationCreated(true);
         setMessage('ส่งคำขอลงทะเบียนแล้ว ทีมงานจะตรวจสอบก่อนเปิดใช้งานบัญชี');
       }
 
@@ -277,325 +304,457 @@ export function CreatorRegisterView() {
     setMessage('');
     setIsGoogleLoading(true);
 
-    const { data: sessionData, error: oauthError } = await supabase.auth.signInWithIdToken({
-      provider: 'google',
-      token: credential,
-    });
+    try {
+      const { data: sessionData, error: oauthError } =
+        await creatorGoogleClient.auth.signInWithIdToken({
+          provider: 'google',
+          token: credential,
+        });
 
-    if (oauthError || !sessionData.session?.access_token) {
-      setError('ไม่สามารถยืนยันตัวตนด้วย Google ได้ กรุณาลองใหม่');
+      if (oauthError || !sessionData.session?.access_token) {
+        setError('ไม่สามารถยืนยันตัวตนด้วย Google ได้ กรุณาลองใหม่');
+        setIsGoogleLoading(false);
+        return;
+      }
+
+      const lookupResponse = await fetch('/api/creator/google-auth', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${sessionData.session.access_token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ intent: 'lookup' }),
+      });
+      const lookup = await lookupResponse.json().catch(() => ({}));
+      if (lookupResponse.ok) {
+        if (lookup.data?.status === 'pending') {
+          setRegistrationCreated(false);
+          setMessage('บัญชีนี้มีคำขอสมัครอยู่แล้ว อยู่ระหว่างรอทีมงานตรวจสอบ ไม่ต้องสมัครซ้ำ');
+        } else {
+          router.replace(signInHref);
+        }
+        await creatorGoogleClient.auth.signOut({ scope: 'local' }).catch(() => undefined);
+        return;
+      }
+      if (lookupResponse.status !== 404) throw new Error(lookup.message ?? 'ตรวจสอบบัญชีไม่สำเร็จ');
+
+      const googleUser = sessionData.user;
+      const metadata = googleUser.user_metadata ?? {};
+      const fullName = String(metadata.full_name ?? metadata.name ?? '').trim();
+      const nameParts = fullName.split(/\s+/).filter(Boolean);
+
+      setValue('authMethod', 'google');
+      setValue('email', googleUser.email ?? '', { shouldValidate: true });
+      setValue('displayName', fullName || googleUser.email?.split('@')[0] || '', {
+        shouldValidate: true,
+      });
+      setValue('firstName', nameParts[0] ?? '');
+      setValue('lastName', nameParts.slice(1).join(' '));
+      setValue('password', '');
+      setValue('confirmPassword', '');
+      setGoogleAccessToken(sessionData.session.access_token);
+      clearErrors(['email', 'password', 'confirmPassword']);
+      setMessage('เชื่อมต่อ Google แล้ว ระบบกรอกชื่อและอีเมลให้เรียบร้อย กรุณาตรวจสอบข้อมูล');
       setIsGoogleLoading(false);
-      return;
+    } catch (caughtError) {
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'เชื่อมต่อ Google ไม่สำเร็จ กรุณาลองใหม่'
+      );
+    } finally {
+      setIsGoogleLoading(false);
     }
-
-    const googleUser = sessionData.user;
-    const metadata = googleUser.user_metadata ?? {};
-    const fullName = String(metadata.full_name ?? metadata.name ?? '').trim();
-    const nameParts = fullName.split(/\s+/).filter(Boolean);
-
-    setValue('authMethod', 'google');
-    setValue('email', googleUser.email ?? '', { shouldValidate: true });
-    setValue('displayName', fullName || googleUser.email?.split('@')[0] || '', {
-      shouldValidate: true,
-    });
-    setValue('firstName', nameParts[0] ?? '');
-    setValue('lastName', nameParts.slice(1).join(' '));
-    setValue('password', '');
-    setValue('confirmPassword', '');
-    setGoogleAccessToken(sessionData.session.access_token);
-    clearErrors(['email', 'password', 'confirmPassword']);
-    setMessage('เชื่อมต่อ Google แล้ว ระบบกรอกชื่อและอีเมลให้เรียบร้อย กรุณาตรวจสอบข้อมูล');
-    setIsGoogleLoading(false);
   };
 
   return (
     <Box
+      component="main"
       sx={{
-        px: { xs: 2, md: 4 },
-        pt: {
-          xs: 'calc(var(--layout-header-mobile-height) + 32px)',
-          md: 'calc(var(--layout-header-desktop-height) + 56px)',
-        },
-        pb: { xs: 5, md: 8 },
-        minHeight: '100vh',
-        display: 'grid',
-        alignItems: 'center',
-        color: creatorTone.text,
-        overflow: 'hidden',
-        position: 'relative',
-        bgcolor: creatorTone.middle,
-        backgroundImage: creatorPageBackground,
-        '&::before': {
-          content: '""',
-          position: 'absolute',
-          inset: { xs: -80, md: -120 },
-          zIndex: 0,
-          opacity: 0.22,
-          pointerEvents: 'none',
-          backgroundImage: creatorPosterPattern,
-          transform: 'rotate(-4deg)',
-        },
+        width: 1,
+        maxWidth: 1408,
+        mx: 'auto',
+        px: HOME_SECTION_PX,
+        pt: { xs: 4, md: 6 },
+        pb: { xs: 5, md: 7 },
+        bgcolor: cultureUi.background,
+        color: cultureUi.text,
       }}
     >
-      <Stack
-        spacing={3}
+      <Box
         sx={{
           mx: 'auto',
-          p: { xs: 2.5, sm: 4.5 },
           width: 1,
-          maxWidth: 480,
-          zIndex: 1,
-          color: creatorTone.deep,
-          position: 'relative',
-          border: '1px solid rgba(248,246,238,0.52)',
-          borderRadius: { xs: 2.5, sm: 3.5 },
-          backdropFilter: 'blur(14px)',
-          bgcolor: 'rgba(248,246,238,0.94)',
-          boxShadow: '0 28px 90px rgba(32,42,43,0.28)',
+          display: 'grid',
+          gridTemplateColumns: { xs: '1fr', md: '0.8fr 1.2fr' },
+          gap: { xs: 4, md: 7 },
+          alignItems: 'start',
         }}
       >
-        <Box>
-          <Typography variant="overline" sx={{ color: 'primary.main', fontWeight: 900 }}>
-            JOIN CREATOR COMMUNITY
+        <Box component="header" sx={{ pt: { md: 2 } }}>
+          <Typography sx={{ color: cultureUi.muted, fontSize: 12, mb: 1 }}>
+            ชุมชน Creator
           </Typography>
           <Typography
-            variant="h4"
-            sx={{ mt: 0.5, fontSize: { xs: 30, sm: 40 }, lineHeight: 1.18, fontWeight: 950 }}
+            component="h1"
+            sx={{ fontSize: { xs: 32, md: 42 }, fontWeight: 600, lineHeight: 1.4 }}
           >
-            สมัครเป็น Creator
+            ร่วมเล่าเรื่อง
+            <br />
+            วัฒนธรรมในมุมของคุณ
           </Typography>
-          <Typography sx={{ mt: 1.25, color: 'text.secondary', lineHeight: 1.7 }}>
-            ลงทะเบียนเพื่อเขียนและส่งบทความวัฒนธรรมให้ทีมงานตรวจสอบ
+          <Typography sx={{ mt: 2, color: cultureUi.muted, fontSize: 15, lineHeight: 1.85 }}>
+            สมัครเพื่อเขียนบทความและเสนอแก้ไขข้อมูลวัฒนธรรม โดยมีทีมงานตรวจสอบก่อนเผยแพร่
           </Typography>
-        </Box>
-
-        {error && <Alert severity="error">{error}</Alert>}
-        {message && <Alert severity="success">{message}</Alert>}
-
-        <Form methods={methods} onSubmit={onSubmit}>
-          <Stack
-            spacing={3}
-            sx={{ '& .MuiOutlinedInput-root': { bgcolor: 'rgba(255,255,255,0.6)' } }}
-          >
-            <Stepper
-              activeStep={activeRegisterStep}
-              alternativeLabel
-              sx={{ '& .MuiStepLabel-label': { fontSize: { xs: 11, sm: 13 } } }}
-            >
-              {registerSteps.map((step) => (
-                <Step key={step}>
-                  <StepLabel>{step}</StepLabel>
-                </Step>
-              ))}
-            </Stepper>
-
-            {activeRegisterStep === 0 && (
-              <Stack spacing={2.5}>
-                <GoogleIdentityButton
-                  disabled={isSubmitting || isGoogleLoading}
-                  loading={isGoogleLoading}
-                  onCredential={handleGoogleCredential}
-                  onConfigError={setError}
-                />
-                <Stack direction="row" spacing={1.5} alignItems="center">
-                  <Box sx={{ height: 1, flex: 1, bgcolor: 'divider' }} />
-                  <Typography variant="caption" color="text.secondary">
-                    หรือกรอกข้อมูลด้วยตัวเอง
+          <Stack spacing={1.5} sx={{ mt: 3, display: { xs: 'none', md: 'flex' } }}>
+            {['สร้างโปรไฟล์ของคุณ', 'เขียนเรื่องราวจากท้องถิ่น', 'ร่วมดูแลข้อมูลให้ถูกต้อง'].map(
+              (text, index) => (
+                <Stack key={text} direction="row" spacing={1.5} alignItems="center">
+                  <Typography component="span" sx={{ color: '#8b9690', fontSize: 12 }}>
+                    0{index + 1}
                   </Typography>
-                  <Box sx={{ height: 1, flex: 1, bgcolor: 'divider' }} />
+                  <Typography sx={{ fontSize: 14, color: cultureUi.muted }}>{text}</Typography>
                 </Stack>
-                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-                  <Field.Text name="firstName" label="ชื่อ" />
-                  <Field.Text name="lastName" label="นามสกุล" />
-                </Stack>
-                <Field.Text name="displayName" label="ชื่อที่แสดง" required />
-                <Field.Text name="phone" label="เบอร์โทร" />
-                <Field.Text
-                  select
-                  name="provinceCode"
-                  label="จังหวัดของคุณ"
-                  helperText="ระบบจะใช้จังหวัดนี้เป็นค่าเริ่มต้นในหน้าข้อมูลวัฒนธรรม"
-                >
-                  {provinceOptions.map((province) => (
-                    <MenuItem key={province.code} value={province.code}>
-                      {province.name}
-                    </MenuItem>
-                  ))}
-                </Field.Text>
-              </Stack>
-            )}
-
-            {activeRegisterStep === 1 && (
-              <Stack spacing={2.5}>
-                <Field.Text
-                  name="email"
-                  label="Email สำหรับเข้าสู่ระบบ"
-                  required
-                  slotProps={{
-                    htmlInput: { autoComplete: 'email', readOnly: authMethod === 'google' },
-                  }}
-                />
-                {authMethod !== 'google' && (
-                  <>
-                    <Field.Text
-                      name="password"
-                      label="Password"
-                      type={showPassword.value ? 'text' : 'password'}
-                      slotProps={{
-                        htmlInput: { autoComplete: 'new-password' },
-                        input: {
-                          endAdornment: (
-                            <InputAdornment position="end">
-                              <IconButton onClick={showPassword.onToggle} edge="end">
-                                <Iconify
-                                  icon={
-                                    showPassword.value ? 'solar:eye-bold' : 'solar:eye-closed-bold'
-                                  }
-                                />
-                              </IconButton>
-                            </InputAdornment>
-                          ),
-                        },
-                      }}
-                    />
-                    <Field.Text
-                      name="confirmPassword"
-                      label="Confirm password"
-                      type={showPassword.value ? 'text' : 'password'}
-                      slotProps={{
-                        htmlInput: { autoComplete: 'new-password' },
-                        input: {
-                          endAdornment: (
-                            <InputAdornment position="end">
-                              <IconButton onClick={showPassword.onToggle} edge="end">
-                                <Iconify
-                                  icon={
-                                    showPassword.value ? 'solar:eye-bold' : 'solar:eye-closed-bold'
-                                  }
-                                />
-                              </IconButton>
-                            </InputAdornment>
-                          ),
-                        },
-                      }}
-                    />
-                  </>
-                )}
-                <Field.Checkbox
-                  name="acceptTerms"
-                  label={
-                    <Typography component="span" sx={{ color: 'text.secondary', fontSize: 13 }}>
-                      ยอมรับเงื่อนไขการใช้บริการ และรับทราบว่าชื่อที่แสดง
-                      รวมถึงรูปโปรไฟล์ของฉันอาจถูกนำไปแสดงบนเว็บไซต์ในบทความหรือพื้นที่ Creator{' '}
-                      <Link
-                        component={RouterLink}
-                        href="/terms-and-conditions"
-                        target="_blank"
-                        onClick={(event) => event.stopPropagation()}
-                      >
-                        เงื่อนไขการใช้บริการ
-                      </Link>{' '}
-                      และ{' '}
-                      <Link
-                        component={RouterLink}
-                        href="/privacy-policy"
-                        target="_blank"
-                        onClick={(event) => event.stopPropagation()}
-                      >
-                        นโยบายความเป็นส่วนตัว
-                      </Link>
-                    </Typography>
-                  }
-                  slotProps={{
-                    wrapper: {
-                      sx: {
-                        px: 1.2,
-                        py: 1,
-                        borderRadius: 1.2,
-                        bgcolor: 'rgba(111,135,144,0.08)',
-                      },
-                    },
-                  }}
-                />
-              </Stack>
-            )}
-
-            {activeRegisterStep === 2 && (
-              <Stack spacing={2.5} alignItems="center" sx={{ textAlign: 'center', py: 2 }}>
-                <Box
-                  sx={{
-                    width: 72,
-                    height: 72,
-                    borderRadius: '50%',
-                    display: 'grid',
-                    placeItems: 'center',
-                    color: '#f8f6ee',
-                    bgcolor: '#6f8790',
-                    boxShadow: '0 18px 48px rgba(32,42,43,0.18)',
-                  }}
-                >
-                  <Iconify icon="solar:check-circle-bold" width={42} />
-                </Box>
-                <Box>
-                  <Typography variant="h4" sx={{ fontWeight: 950 }}>
-                    ส่งคำขอสมัครแล้ว
-                  </Typography>
-                  <Typography sx={{ mt: 1, color: 'text.secondary' }}>
-                    ทีมงานจะตรวจสอบก่อนเปิดใช้งานบัญชี Creator ของคุณ
-                  </Typography>
-                </Box>
-                <Stack
-                  textAlign="center"
-                  direction={{ xs: 'column', sm: 'row' }}
-                  spacing={1.25}
-                  sx={{ width: 1, justifyContent: 'center' }}
-                >
-                  <Button component={RouterLink} href="/creator/sign-in" variant="contained">
-                    ไปหน้าเข้าสู่ระบบ
-                  </Button>
-                </Stack>
-              </Stack>
-            )}
-
-            {activeRegisterStep < 2 && (
-              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.25}>
-                <Button
-                  fullWidth
-                  variant="outlined"
-                  disabled={activeRegisterStep === 0 || isSubmitting}
-                  onClick={() => setActiveRegisterStep((current) => Math.max(current - 1, 0))}
-                >
-                  ย้อนกลับ
-                </Button>
-                {activeRegisterStep === 0 ? (
-                  <Button fullWidth size="large" variant="contained" onClick={goNextRegisterStep}>
-                    ต่อไป
-                  </Button>
-                ) : (
-                  <Button
-                    fullWidth
-                    size="large"
-                    type="submit"
-                    variant="contained"
-                    loading={isSubmitting}
-                    disabled={!acceptTerms}
-                    sx={{ minHeight: 50, fontWeight: 900 }}
-                  >
-                    ส่งคำขอสมัคร
-                  </Button>
-                )}
-              </Stack>
+              )
             )}
           </Stack>
-        </Form>
+          <Typography
+            sx={{
+              mt: 3,
+              pt: 2,
+              borderTop: `1px solid ${cultureUi.border}`,
+              fontSize: 12,
+              color: cultureUi.muted,
+              lineHeight: 1.8,
+            }}
+          >
+            บัญชีจะเริ่มใช้งานได้หลังทีมงานตรวจสอบคำขอสมัคร
+          </Typography>
+        </Box>
+        <Stack
+          spacing={2.5}
+          sx={{
+            mx: 'auto',
+            p: { xs: 2.5, md: 3.5 },
+            width: 1,
+            maxWidth: 520,
+            minWidth: 0,
+            zIndex: 1,
+            color: cultureUi.text,
+            position: 'relative',
+            border: '1px solid #dfe3df',
+            borderRadius: 2.5,
+            bgcolor: '#fff',
+            boxShadow: 'none',
+            '& .MuiFormLabel-asterisk': { color: 'error.main' },
+          }}
+        >
+          <Box>
+            <Typography component="h2" sx={{ fontSize: 24, fontWeight: 600, lineHeight: 1.4 }}>
+              สมัครเป็น Creator
+            </Typography>
+            <Typography sx={{ mt: 0.75, fontSize: 13, color: cultureUi.muted }}>
+              กรอกช่องที่มี * ให้ครบ เพื่อส่งคำขอสมัคร
+            </Typography>
+          </Box>
 
-        <Typography variant="body2" sx={{ color: 'text.secondary', textAlign: 'center' }}>
-          มีบัญชีแล้ว?{' '}
-          <Link component={RouterLink} href={signInHref}>
-            เข้าสู่ระบบ
-          </Link>
-        </Typography>
-      </Stack>
+          {error && <Alert severity="error">{error}</Alert>}
+          {message && (
+            <Alert severity={activeRegisterStep === 2 && registrationCreated ? 'success' : 'info'}>
+              {message}
+            </Alert>
+          )}
+
+          <Form methods={methods} onSubmit={onSubmit}>
+            <Stack
+              spacing={2.5}
+              sx={{ '& .MuiOutlinedInput-root': { bgcolor: 'rgba(255,255,255,0.6)' } }}
+            >
+              <Stepper
+                alternativeLabel
+                activeStep={activeRegisterStep}
+                sx={{
+                  '& .MuiStepLabel-label': { fontSize: { xs: 11, sm: 12 }, mt: '8px !important' },
+                  '& .MuiStepIcon-root': { fontSize: 22 },
+                  '& .MuiStep-root': { px: 0.5 },
+                }}
+              >
+                {registerSteps.map((step) => (
+                  <Step key={step}>
+                    <StepLabel>{step}</StepLabel>
+                  </Step>
+                ))}
+              </Stepper>
+
+              {activeRegisterStep === 0 && (
+                <Stack spacing={2}>
+                  <GoogleIdentityButton
+                    disabled={isSubmitting || isGoogleLoading}
+                    loading={isGoogleLoading}
+                    onCredential={handleGoogleCredential}
+                    onConfigError={setError}
+                  />
+                  <Stack direction="row" spacing={1.5} alignItems="center">
+                    <Box sx={{ height: 1, flex: 1, bgcolor: 'divider' }} />
+                    <Typography variant="caption" color="text.secondary">
+                      หรือกรอกข้อมูลด้วยตัวเอง
+                    </Typography>
+                    <Box sx={{ height: 1, flex: 1, bgcolor: 'divider' }} />
+                  </Stack>
+                  <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                    <Field.Text
+                      size="small"
+                      name="firstName"
+                      label="ชื่อ (ถ้ามี)"
+                      autoComplete="given-name"
+                    />
+                    <Field.Text
+                      size="small"
+                      name="lastName"
+                      label="นามสกุล (ถ้ามี)"
+                      autoComplete="family-name"
+                    />
+                  </Stack>
+                  <Field.Text
+                    size="small"
+                    name="displayName"
+                    label="ชื่อที่แสดงบนเว็บไซต์"
+                    required
+                    helperText="ใช้เป็นชื่อผู้เขียนบทความของคุณ"
+                  />
+                  <Box
+                    sx={{
+                      display: 'grid',
+                      gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
+                      gap: 2,
+                    }}
+                  >
+                    <Field.Text
+                      size="small"
+                      name="phone"
+                      label="เบอร์โทร (ถ้ามี)"
+                      autoComplete="tel"
+                    />
+                    <Field.Autocomplete
+                      name="provinceCode"
+                      size="small"
+                      label="จังหวัดของคุณ"
+                      placeholder="พิมพ์ค้นหาจังหวัด"
+                      options={provinceOptions.map((province) => province.code)}
+                      value={watch('provinceCode') || null}
+                      getOptionLabel={(code: string) =>
+                        provinceOptions.find((province) => province.code === code)?.name ?? ''
+                      }
+                      isOptionEqualToValue={(option, value) => option === value}
+                      onChange={(_event, code) =>
+                        setValue('provinceCode', code ?? '', {
+                          shouldValidate: true,
+                          shouldDirty: true,
+                          shouldTouch: true,
+                        })
+                      }
+                      noOptionsText="ไม่พบจังหวัด"
+                      openText="เปิดรายชื่อจังหวัด"
+                      closeText="ปิดรายชื่อจังหวัด"
+                      clearText="ล้างจังหวัด"
+                      helperText="ใช้เป็นพื้นที่เริ่มต้นในการสำรวจวัฒนธรรม"
+                      slotProps={{ textField: { required: true } }}
+                    />{' '}
+                  </Box>
+                </Stack>
+              )}
+
+              {activeRegisterStep === 1 && (
+                <Stack spacing={2}>
+                  <Field.Text
+                    size="small"
+                    name="email"
+                    label="อีเมลสำหรับเข้าสู่ระบบ"
+                    required
+                    slotProps={{
+                      htmlInput: { autoComplete: 'email', readOnly: authMethod === 'google' },
+                    }}
+                  />
+                  {authMethod !== 'google' && (
+                    <>
+                      <Field.Text
+                        size="small"
+                        name="password"
+                        label="รหัสผ่าน"
+                        required
+                        helperText="อย่างน้อย 6 ตัวอักษร"
+                        type={showPassword.value ? 'text' : 'password'}
+                        slotProps={{
+                          htmlInput: { autoComplete: 'new-password' },
+                          input: {
+                            endAdornment: (
+                              <InputAdornment position="end">
+                                <IconButton
+                                  onClick={showPassword.onToggle}
+                                  edge="end"
+                                  aria-label={showPassword.value ? 'ซ่อนรหัสผ่าน' : 'แสดงรหัสผ่าน'}
+                                >
+                                  <Iconify
+                                    icon={
+                                      showPassword.value
+                                        ? 'solar:eye-bold'
+                                        : 'solar:eye-closed-bold'
+                                    }
+                                  />
+                                </IconButton>
+                              </InputAdornment>
+                            ),
+                          },
+                        }}
+                      />
+                      <Field.Text
+                        size="small"
+                        name="confirmPassword"
+                        label="ยืนยันรหัสผ่าน"
+                        required
+                        type={showPassword.value ? 'text' : 'password'}
+                        slotProps={{
+                          htmlInput: { autoComplete: 'new-password' },
+                          input: {
+                            endAdornment: (
+                              <InputAdornment position="end">
+                                <IconButton
+                                  onClick={showPassword.onToggle}
+                                  edge="end"
+                                  aria-label={showPassword.value ? 'ซ่อนรหัสผ่าน' : 'แสดงรหัสผ่าน'}
+                                >
+                                  <Iconify
+                                    icon={
+                                      showPassword.value
+                                        ? 'solar:eye-bold'
+                                        : 'solar:eye-closed-bold'
+                                    }
+                                  />
+                                </IconButton>
+                              </InputAdornment>
+                            ),
+                          },
+                        }}
+                      />
+                    </>
+                  )}
+                  <Field.Checkbox
+                    name="acceptTerms"
+                    label={
+                      <Typography component="span" sx={{ color: 'text.secondary', fontSize: 13 }}>
+                        ยอมรับเงื่อนไขการใช้บริการ และรับทราบว่าชื่อที่แสดง
+                        รวมถึงรูปโปรไฟล์ของฉันอาจถูกนำไปแสดงบนเว็บไซต์ในบทความหรือพื้นที่ Creator{' '}
+                        <Link
+                          component={RouterLink}
+                          href="/terms-and-conditions"
+                          target="_blank"
+                          onClick={(event) => event.stopPropagation()}
+                        >
+                          เงื่อนไขการใช้บริการ
+                        </Link>{' '}
+                        และ{' '}
+                        <Link
+                          component={RouterLink}
+                          href="/privacy-policy"
+                          target="_blank"
+                          onClick={(event) => event.stopPropagation()}
+                        >
+                          นโยบายความเป็นส่วนตัว
+                        </Link>
+                      </Typography>
+                    }
+                    slotProps={{
+                      wrapper: {
+                        sx: {
+                          px: 1.2,
+                          py: 1,
+                          borderRadius: 1.2,
+                          bgcolor: cultureUi.subtle,
+                        },
+                      },
+                    }}
+                  />
+                </Stack>
+              )}
+
+              {activeRegisterStep === 2 && (
+                <Stack spacing={2.5} alignItems="center" sx={{ textAlign: 'center', py: 2 }}>
+                  <Box
+                    sx={{
+                      width: 72,
+                      height: 72,
+                      borderRadius: '50%',
+                      display: 'grid',
+                      placeItems: 'center',
+                      color: cultureUi.accent,
+                      bgcolor: '#f7f7f5',
+                      boxShadow: 'none',
+                    }}
+                  >
+                    <Iconify icon="solar:check-circle-bold" width={42} />
+                  </Box>
+                  <Box>
+                    <Typography variant="h4" sx={{ fontWeight: 600 }}>
+                      {registrationCreated ? 'ส่งคำขอสมัครแล้ว' : 'บัญชีอยู่ระหว่างรออนุมัติ'}
+                    </Typography>
+                    <Typography sx={{ mt: 1, color: 'text.secondary' }}>
+                      ทีมงานจะตรวจสอบก่อนเปิดใช้งานบัญชี Creator ของคุณ
+                    </Typography>
+                  </Box>
+                  <Stack
+                    textAlign="center"
+                    direction={{ xs: 'column', sm: 'row' }}
+                    spacing={1.25}
+                    sx={{ width: 1, justifyContent: 'center' }}
+                  >
+                    <Button component={RouterLink} href="/creator/sign-in" variant="contained">
+                      ไปหน้าเข้าสู่ระบบ
+                    </Button>
+                  </Stack>
+                </Stack>
+              )}
+
+              {activeRegisterStep < 2 && (
+                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.25}>
+                  <Button
+                    fullWidth
+                    variant="outlined"
+                    disabled={isSubmitting}
+                    sx={{ display: activeRegisterStep === 0 ? 'none' : 'inline-flex' }}
+                    onClick={() => setActiveRegisterStep((current) => Math.max(current - 1, 0))}
+                  >
+                    ย้อนกลับ
+                  </Button>
+                  {activeRegisterStep === 0 ? (
+                    <Button fullWidth size="large" variant="contained" onClick={goNextRegisterStep}>
+                      ต่อไป
+                    </Button>
+                  ) : (
+                    <Button
+                      fullWidth
+                      size="large"
+                      type="submit"
+                      variant="contained"
+                      loading={isSubmitting}
+                      disabled={!acceptTerms}
+                      sx={{ minHeight: 50, fontWeight: 600 }}
+                    >
+                      ส่งคำขอสมัคร
+                    </Button>
+                  )}
+                </Stack>
+              )}
+            </Stack>
+          </Form>
+
+          <Typography variant="body2" sx={{ color: 'text.secondary', textAlign: 'center' }}>
+            มีบัญชีแล้ว?{' '}
+            <Link component={RouterLink} href={signInHref}>
+              เข้าสู่ระบบ
+            </Link>
+          </Typography>
+        </Stack>
+      </Box>
     </Box>
   );
 }

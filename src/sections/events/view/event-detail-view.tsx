@@ -24,7 +24,6 @@ import { RouterLink } from 'src/routes/components';
 
 import { HomeFooter } from 'src/layouts/main/footer';
 
-import { Image } from 'src/components/image';
 import { Iconify } from 'src/components/iconify';
 import { Markdown } from 'src/components/markdown';
 import { trackAnalyticsEvent } from 'src/components/analytics';
@@ -37,13 +36,12 @@ import {
 import {
   HOME_DEEP,
   HOME_TEXT,
-  HOME_SECTION_PX,
   HOME_SHARED_BACKGROUND,
   PERFORMANCE_GROUPS_SECTION_KEY,
 } from 'src/sections/home/components/home-constants';
 
 const ReactPlayer = dynamic(() => import('react-player'), { ssr: false });
-const DEFAULT_EVENT_BACKGROUND = '#6f8790';
+const DEFAULT_EVENT_BACKGROUND = '#f7f7f5';
 const SYSTEM_HASHTAG = '#ThailandCulturalHub';
 
 const RESULT_STYLES: Record<string, { color: string; background: string; icon: string }> = {
@@ -69,17 +67,6 @@ const RESULT_STYLES: Record<string, { color: string; background: string; icon: s
   },
   'royal-honor': { color: '#633c00', background: '#efd18a', icon: 'solar:star-bold' },
 };
-
-function getEventBackground(backgroundColor?: string) {
-  const color = backgroundColor || DEFAULT_EVENT_BACKGROUND;
-
-  if (color.toLowerCase() === DEFAULT_EVENT_BACKGROUND) return HOME_SHARED_BACKGROUND;
-
-  return `
-    radial-gradient(circle at 50% 18%, rgba(255,255,255,0.22) 0%, transparent 52%),
-    linear-gradient(180deg, ${color} 0%, ${color} 100%)
-  `;
-}
 
 export function EventDetailView({
   eventId,
@@ -202,7 +189,7 @@ export function EventDetailView({
   }
 
   const mediaSource = eventItem.coverUrl || eventItem.mediaUrl;
-  const eventBackground = getEventBackground(eventItem.backgroundColor);
+  const eventBackground = DEFAULT_EVENT_BACKGROUND;
   const details = [
     {
       icon: 'solar:calendar-date-bold',
@@ -317,9 +304,7 @@ export function EventDetailView({
     }))
     .filter((section) => section.groups.length > 0);
   const notQualifiedGroupCount = new Set(
-    notQualifiedSections.flatMap((section) =>
-      section.groups.map((group) => group.id || group.name)
-    )
+    notQualifiedSections.flatMap((section) => section.groups.map((group) => group.id || group.name))
   ).size;
   const awaitingQualificationSections = participationSections
     .map((section) => ({
@@ -328,8 +313,7 @@ export function EventDetailView({
         const resultIds = getGroupResultIds(group, section.id);
 
         return (
-          !resultIds.some(isNotQualifiedStatus) &&
-          resultIds.some(isAwaitingQualificationStatus)
+          !resultIds.some(isNotQualifiedStatus) && resultIds.some(isAwaitingQualificationStatus)
         );
       }),
     }))
@@ -344,15 +328,15 @@ export function EventDetailView({
     <Box sx={{ minHeight: '100vh', color: HOME_TEXT, background: eventBackground }}>
       <Box
         sx={{
-          px: { xs: 0, sm: HOME_SECTION_PX.sm, md: HOME_SECTION_PX.md },
+          px: 0,
           pt: {
-            xs: 'calc(var(--layout-header-mobile-height) + 20px)',
-            md: 'calc(var(--layout-header-desktop-height) + 28px)',
+            xs: 2,
+            md: 3,
           },
           pb: { xs: 3, md: 5 },
         }}
       >
-        <Container maxWidth="xl" sx={{ px: { xs: 1.5, sm: 2 }, my: 3 }}>
+        <Container maxWidth={false} sx={{ maxWidth: 1408, px: { xs: 2.5, sm: 4, md: 6 }, my: 1 }}>
           <Button
             component={RouterLink}
             href="/"
@@ -361,9 +345,8 @@ export function EventDetailView({
             sx={{
               mb: 3,
               px: 1.5,
-              bgcolor: 'rgba(42,55,54,0.28)',
-              backdropFilter: 'blur(8px)',
-              '&:hover': { bgcolor: 'rgba(42,55,54,0.42)' },
+              bgcolor: 'transparent',
+              '&:hover': { bgcolor: '#eeefec' },
             }}
           >
             กลับหน้าหลัก
@@ -371,190 +354,241 @@ export function EventDetailView({
 
           <Box
             sx={{
-              overflow: 'hidden',
-              borderRadius: 3,
-              bgcolor: 'rgba(42,55,54,0.48)',
-              border: '1px solid rgba(248,246,238,0.22)',
-              boxShadow: '0 28px 80px rgba(31,40,38,0.28)',
+              minWidth: 0,
             }}
           >
-            <Box sx={{ width: 1, aspectRatio: '16 / 9', bgcolor: HOME_DEEP }}>
-              {eventItem.mediaType === 'video' && eventItem.mediaUrl ? (
-                <ReactPlayer src={eventItem.mediaUrl} controls width="100%" height="100%" />
-              ) : mediaSource ? (
-                <Image
-                  src={mediaSource}
-                  alt={eventItem.title}
-                  ratio="16/9"
-                  visibleByDefault
-                  disablePlaceholder
-                  sx={{ width: 1, height: 1, '& img': { objectFit: 'cover' } }}
-                />
-              ) : null}
-            </Box>
-
-            <Stack spacing={{ xs: 2.5, md: 3 }} sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
-              <Typography
-                variant="overline"
-                sx={{ color: 'rgba(234,215,161,0.95)', fontWeight: 900 }}
-              >
-                รายละเอียดกิจกรรมวัฒนธรรม
-              </Typography>
-              <Stack
-                direction={{ xs: 'column', sm: 'row' }}
-                spacing={{ xs: 1.75, sm: 2.5 }}
-                alignItems={{ sm: 'center' }}
-              >
-                {eventItem.logoUrl && (
-                  <Avatar
-                    variant="rounded"
-                    src={eventItem.logoUrl}
-                    alt={`โลโก้ ${eventItem.title}`}
-                    sx={{
-                      width: { xs: 72, md: 96 },
-                      height: { xs: 72, md: 96 },
-                      flexShrink: 0,
-                      bgcolor: 'common.white',
-                      border: '1px solid rgba(248,246,238,0.32)',
-                      '& img': { objectFit: 'contain' },
-                    }}
-                  />
-                )}
-                <Typography
-                  component="h1"
-                  sx={{
-                    m: 0,
-                    maxWidth: 1500,
-                    fontSize: { xs: 28, lg: 32 },
-                    lineHeight: 1.2,
-                    fontWeight: 950,
-                    textWrap: 'balance',
-                    overflowWrap: 'anywhere',
-                  }}
-                >
-                  {eventItem.title}
-                </Typography>
-              </Stack>
-
-              <Stack
-                direction="row"
-                useFlexGap
-                flexWrap="wrap"
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: {
+                  xs: 'minmax(0, 1fr)',
+                  md: 'minmax(0, 0.8fr) minmax(0, 1.2fr)',
+                },
+                overflow: 'hidden',
+                borderRadius: 3,
+                bgcolor: '#f0ede5',
+              }}
+            >
+              <Box
                 sx={{
-                  gap: 1.5,
+                  width: 1,
+                  minWidth: 0,
+                  alignSelf: 'start',
+                  aspectRatio: eventItem.mediaType === 'video' ? '16 / 9' : 'auto',
+                  bgcolor: '#e8e4da',
                 }}
               >
-                {details.map((detail) => (
-                  <Stack
-                    key={detail.icon}
-                    direction="row"
-                    spacing={1.25}
-                    alignItems="center"
-                    sx={{
-                      px: 1.75,
-                      py: 1.25,
-                      minWidth: { xs: 1, sm: 240 },
-                      width: { xs: 1, sm: 'auto' },
-                      borderRadius: 1.5,
-                      bgcolor: 'rgba(248,246,238,0.07)',
-                      border: '1px solid rgba(248,246,238,0.08)',
-                    }}
-                  >
-                    <Iconify icon={detail.icon as never} width={22} />
-                    <Typography>{detail.label}</Typography>
-                  </Stack>
-                ))}
-              </Stack>
-
-              <Stack direction="row" spacing={1.5} useFlexGap flexWrap="wrap" alignItems="stretch">
-                {(eventItem.organizer || eventItem.organizerLogoUrl) && (
-                  <Stack
-                    direction="row"
-                    spacing={1.5}
-                    alignItems="center"
-                    sx={{
-                      px: 1.75,
-                      py: 1.5,
-                      minWidth: { xs: 1, sm: 320 },
-                      width: { xs: 1, sm: 'auto' },
-                      borderRadius: 2,
-                      bgcolor: 'rgba(248,246,238,0.09)',
-                      border: '1px solid rgba(248,246,238,0.12)',
-                    }}
-                  >
-                    {eventItem.organizerLogoUrl ? (
-                      <Avatar
-                        variant="rounded"
-                        src={eventItem.organizerLogoUrl}
-                        alt={`โลโก้ ${eventItem.organizer || 'ผู้จัดกิจกรรม'}`}
-                        sx={{ width: 52, height: 52, bgcolor: 'common.white' }}
-                      />
-                    ) : (
-                      <Avatar variant="rounded" sx={{ width: 52, height: 52 }}>
-                        <Iconify icon="solar:users-group-rounded-bold" width={25} />
-                      </Avatar>
-                    )}
-                    <Box>
-                      <Typography variant="caption" sx={{ opacity: 0.68, fontWeight: 800 }}>
-                        ผู้จัดกิจกรรม
-                      </Typography>
-                      <Typography sx={{ fontWeight: 900 }}>
-                        {eventItem.organizer || 'ยังไม่ระบุชื่อผู้จัด'}
-                      </Typography>
-                    </Box>
-                  </Stack>
-                )}
-
-                {Boolean(eventItem.relatedAgencyLogoUrls?.length) && (
+                {eventItem.mediaType === 'video' && eventItem.mediaUrl ? (
+                  <ReactPlayer src={eventItem.mediaUrl} controls width="100%" height="100%" />
+                ) : mediaSource ? (
                   <Box
+                    component="img"
+                    src={mediaSource}
+                    alt={eventItem.title}
+                    sx={{ width: 1, height: 'auto', display: 'block' }}
+                  />
+                ) : null}
+              </Box>
+
+              <Stack
+                spacing={2.5}
+                sx={{ p: { xs: 2.5, md: 3.5 }, minWidth: 0, justifyContent: 'center' }}
+              >
+                <Typography
+                  variant="overline"
+                  sx={{ color: '#79613b', fontWeight: 600, fontSize: 11 }}
+                >
+                  รายละเอียดกิจกรรมวัฒนธรรม
+                </Typography>
+                <Stack direction="column" spacing={2} alignItems="flex-start">
+                  {eventItem.logoUrl && (
+                    <Avatar
+                      variant="rounded"
+                      src={eventItem.logoUrl}
+                      alt={`โลโก้ ${eventItem.title}`}
+                      sx={{
+                        width: 52,
+                        height: 52,
+                        flexShrink: 0,
+                        bgcolor: 'common.white',
+                        border: '1px solid #dfe3df',
+                        '& img': { objectFit: 'contain' },
+                      }}
+                    />
+                  )}
+                  <Typography
+                    component="h1"
                     sx={{
-                      px: 1.75,
-                      py: 1.5,
-                      minWidth: { xs: 1, sm: 280 },
-                      borderRadius: 2,
-                      bgcolor: 'rgba(248,246,238,0.06)',
-                      border: '1px solid rgba(248,246,238,0.1)',
+                      m: 0,
+                      maxWidth: 1500,
+                      fontSize: { xs: 24, md: 28, lg: 30 },
+                      lineHeight: 1.45,
+                      fontWeight: 600,
+                      textWrap: 'balance',
+                      overflowWrap: 'anywhere',
                     }}
                   >
-                    <Typography variant="overline" sx={{ opacity: 0.68, fontWeight: 900 }}>
-                      หน่วยงานที่เกี่ยวข้อง
-                    </Typography>
-                    <Stack direction="row" spacing={1.25} useFlexGap flexWrap="wrap" sx={{ mt: 1 }}>
-                      {eventItem.relatedAgencyLogoUrls?.map((logoUrl, index) => (
-                        <Avatar
-                          key={`${logoUrl}-${index}`}
-                          variant="rounded"
-                          src={logoUrl}
-                          alt={`โลโก้หน่วยงานที่เกี่ยวข้อง ${index + 1}`}
-                          sx={{
-                            width: { xs: 52, md: 64 },
-                            height: { xs: 52, md: 64 },
-                            bgcolor: 'common.white',
-                            border: '1px solid rgba(248,246,238,0.24)',
-                            '& img': { objectFit: 'contain' },
-                          }}
-                        />
-                      ))}
-                    </Stack>
-                  </Box>
-                )}
-              </Stack>
+                    {eventItem.title}
+                  </Typography>
+                </Stack>
 
-              {(eventItem.descriptionHtml || eventItem.description) && (
-                <Markdown
+                <Stack
+                  direction="row"
+                  useFlexGap
+                  flexWrap="wrap"
                   sx={{
-                    maxWidth: 920,
-                    color: 'rgba(248,246,238,0.82)',
-                    fontSize: { xs: 16, md: 19 },
-                    lineHeight: 1.9,
-                    '& p': { mb: 1.5 },
-                    '& h1, & h2, & h3, & h4': { color: HOME_TEXT, mt: 3, mb: 1.5 },
-                    '& a': { color: 'rgba(234,215,161,1)' },
-                    '& ul, & ol': { pl: 3 },
+                    gap: 1.5,
+                    flexDirection: 'column',
                   }}
                 >
-                  {eventItem.descriptionHtml || eventItem.description}
-                </Markdown>
+                  {details.map((detail) => (
+                    <Stack
+                      key={detail.icon}
+                      direction="row"
+                      spacing={1.25}
+                      alignItems="center"
+                      sx={{
+                        alignItems: 'flex-start',
+                        '& svg': { flexShrink: 0, mt: 0.25, color: '#79613b' },
+                        '& .MuiTypography-root': { fontSize: 14, lineHeight: 1.7 },
+                      }}
+                    >
+                      <Iconify icon={detail.icon as never} width={22} />
+                      <Typography>{detail.label}</Typography>
+                    </Stack>
+                  ))}
+                </Stack>
+
+                <Stack
+                  direction="row"
+                  spacing={1.5}
+                  useFlexGap
+                  flexWrap="wrap"
+                  alignItems="stretch"
+                >
+                  {(eventItem.organizer || eventItem.organizerLogoUrl) && (
+                    <Stack
+                      direction="row"
+                      spacing={1.5}
+                      alignItems="center"
+                      sx={{
+                        pt: 2,
+                        width: 1,
+                        borderTop: '1px solid #ded9cc',
+                        '& .MuiTypography-root': { fontSize: 13 },
+                      }}
+                    >
+                      {eventItem.organizerLogoUrl ? (
+                        <Avatar
+                          variant="rounded"
+                          src={eventItem.organizerLogoUrl}
+                          alt={`โลโก้ ${eventItem.organizer || 'ผู้จัดกิจกรรม'}`}
+                          sx={{ width: 52, height: 52, bgcolor: 'common.white' }}
+                        />
+                      ) : (
+                        <Avatar variant="rounded" sx={{ width: 52, height: 52 }}>
+                          <Iconify icon="solar:users-group-rounded-bold" width={25} />
+                        </Avatar>
+                      )}
+                      <Box>
+                        <Typography variant="caption" sx={{ opacity: 0.68, fontWeight: 800 }}>
+                          ผู้จัดกิจกรรม
+                        </Typography>
+                        <Typography sx={{ fontWeight: 600 }}>
+                          {eventItem.organizer || 'ยังไม่ระบุชื่อผู้จัด'}
+                        </Typography>
+                      </Box>
+                    </Stack>
+                  )}
+
+                  {Boolean(eventItem.relatedAgencyLogoUrls?.length) && (
+                    <Box
+                      sx={{
+                        px: 1.75,
+                        py: 1.5,
+                        minWidth: { xs: 1, sm: 280 },
+                        borderRadius: 2,
+                        bgcolor: 'rgba(32,33,36,0.06)',
+                        border: '1px solid #dfe3df',
+                      }}
+                    >
+                      <Typography variant="overline" sx={{ opacity: 0.68, fontWeight: 600 }}>
+                        หน่วยงานที่เกี่ยวข้อง
+                      </Typography>
+                      <Stack
+                        direction="row"
+                        spacing={1.25}
+                        useFlexGap
+                        flexWrap="wrap"
+                        sx={{ mt: 1 }}
+                      >
+                        {eventItem.relatedAgencyLogoUrls?.map((logoUrl, index) => (
+                          <Avatar
+                            key={`${logoUrl}-${index}`}
+                            variant="rounded"
+                            src={logoUrl}
+                            alt={`โลโก้หน่วยงานที่เกี่ยวข้อง ${index + 1}`}
+                            sx={{
+                              width: { xs: 52, md: 64 },
+                              height: { xs: 52, md: 64 },
+                              bgcolor: 'common.white',
+                              border: '1px solid #dfe3df',
+                              '& img': { objectFit: 'contain' },
+                            }}
+                          />
+                        ))}
+                      </Stack>
+                    </Box>
+                  )}
+                </Stack>
+              </Stack>
+            </Box>
+            <Stack spacing={{ xs: 3, md: 4 }} sx={{ mt: { xs: 3, md: 4 } }}>
+              <Box
+                component="nav"
+                aria-label="ส่วนข้อมูลกิจกรรม"
+                sx={{
+                  display: 'flex',
+                  gap: 1,
+                  overflowX: 'auto',
+                  pb: 1.5,
+                  borderBottom: '1px solid',
+                  borderColor: 'divider',
+                  '& .MuiButton-root': { minHeight: 44, flexShrink: 0, color: '#293c34' },
+                }}
+              >
+                {(eventItem.descriptionHtml || eventItem.description) && (
+                  <Button href="#event-details">รายละเอียดกิจกรรม</Button>
+                )}
+                {Boolean(eventItem.imageUrls?.length) && (
+                  <Button href="#event-gallery">ภาพกิจกรรม</Button>
+                )}
+                {displayGroups.length > 0 && <Button href="#event-groups">วงที่เข้าร่วม</Button>}
+              </Box>
+              {(eventItem.descriptionHtml || eventItem.description) && (
+                <Box
+                  component="section"
+                  id="event-details"
+                  sx={{ scrollMarginTop: 112, maxWidth: 960 }}
+                >
+                  <Typography component="h2" sx={{ fontSize: 22, fontWeight: 600, mb: 2 }}>
+                    รายละเอียดกิจกรรม
+                  </Typography>
+                  <Markdown
+                    sx={{
+                      maxWidth: 920,
+                      color: 'rgba(32,33,36,0.82)',
+                      fontSize: 15,
+                      lineHeight: 1.9,
+                      '& p': { mb: 1.5 },
+                      '& h1, & h2, & h3, & h4': { color: HOME_TEXT, mt: 3, mb: 1.5 },
+                      '& a': { color: '#365c47', textDecoration: 'underline' },
+                      '& ul, & ol': { pl: 3 },
+                    }}
+                  >
+                    {eventItem.descriptionHtml || eventItem.description}
+                  </Markdown>
+                </Box>
               )}
 
               <Stack
@@ -565,20 +599,15 @@ export function EventDetailView({
                 sx={{
                   p: { xs: 2, md: 2.25 },
                   borderRadius: 2.5,
-                  bgcolor: 'rgba(22,31,30,0.24)',
-                  border: '1px solid rgba(248,246,238,0.18)',
-                  boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05)',
+                  bgcolor: '#eeefea',
                 }}
               >
                 <Stack spacing={1.25}>
                   <Box>
-                    <Typography variant="overline" sx={{ opacity: 0.68, fontWeight: 900 }}>
+                    <Typography variant="overline" sx={{ opacity: 0.68, fontWeight: 600 }}>
                       แชร์กิจกรรมนี้
                     </Typography>
-                    <Typography
-                      variant="caption"
-                      sx={{ ml: 1, color: 'rgba(234,215,161,1)', fontWeight: 800 }}
-                    >
+                    <Typography variant="caption" sx={{ ml: 1, color: '#79613b', fontWeight: 800 }}>
                       {SYSTEM_HASHTAG}
                     </Typography>
                   </Box>
@@ -610,7 +639,7 @@ export function EventDetailView({
                     sx={{ px: 1.5, py: 1, borderRadius: 1.5, bgcolor: 'rgba(255,255,255,0.08)' }}
                   >
                     <Iconify icon="solar:eye-bold" width={21} />
-                    <Typography variant="body2" fontWeight={800}>
+                    <Typography variant="body2" fontWeight={500}>
                       {counts.views.toLocaleString('th-TH')} ครั้ง
                     </Typography>
                   </Stack>
@@ -621,7 +650,7 @@ export function EventDetailView({
                     sx={{ px: 1.5, py: 1, borderRadius: 1.5, bgcolor: 'rgba(255,255,255,0.08)' }}
                   >
                     <Iconify icon="solar:share-bold" width={21} />
-                    <Typography variant="body2" fontWeight={800}>
+                    <Typography variant="body2" fontWeight={500}>
                       กดแชร์ {counts.shares.toLocaleString('th-TH')} ครั้ง
                     </Typography>
                   </Stack>
@@ -630,17 +659,15 @@ export function EventDetailView({
 
               {eventItem.imageUrls?.length ? (
                 <Box
+                  id="event-gallery"
                   sx={{
-                    p: { xs: 2, md: 3 },
-                    borderRadius: 2.5,
-                    bgcolor: 'rgba(248,246,238,0.07)',
-                    border: '1px solid rgba(248,246,238,0.14)',
+                    scrollMarginTop: 112,
                   }}
                 >
                   <Stack direction="row" justifyContent="space-between" sx={{ mb: 2 }}>
                     <Box>
-                      <Typography variant="h5" sx={{ fontWeight: 900 }}>
-                        ภาพบรรยากาศกิจกรรม/รายละเอียด
+                      <Typography variant="h5" sx={{ fontWeight: 600 }}>
+                        ภาพกิจกรรม
                       </Typography>
                       <Typography variant="body2" sx={{ mt: 0.25, opacity: 0.62 }}>
                         <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
@@ -674,7 +701,7 @@ export function EventDetailView({
                       '&::-webkit-scrollbar': { height: 6 },
                       '&::-webkit-scrollbar-thumb': {
                         borderRadius: 999,
-                        bgcolor: 'rgba(248,246,238,0.35)',
+                        bgcolor: 'rgba(32,33,36,0.35)',
                       },
                     }}
                   >
@@ -696,7 +723,7 @@ export function EventDetailView({
                           aspectRatio: gallerySlides.length === 1 ? '16 / 10' : '4 / 3',
                           borderRadius: 2,
                           bgcolor: 'rgba(18,24,23,0.3)',
-                          boxShadow: '0 10px 24px rgba(0,0,0,0.16)',
+                          boxShadow: 'none',
                           '&:hover img': { transform: 'scale(1.04)' },
                           '&:focus-visible': {
                             outline: '3px solid rgba(234,215,161,0.9)',
@@ -728,7 +755,6 @@ export function EventDetailView({
                             borderRadius: '50%',
                             color: 'common.white',
                             bgcolor: 'rgba(0,0,0,0.5)',
-                            backdropFilter: 'blur(6px)',
                           }}
                         >
                           <Iconify icon="carbon:zoom-in" width={20} />
@@ -740,15 +766,13 @@ export function EventDetailView({
               ) : null}
 
               {displayGroups.length > 0 && (
-                <Box>
+                <Box id="event-groups" sx={{ scrollMarginTop: 112 }}>
                   {qualifiedSections.length > 0 && (
                     <Box
                       sx={{
                         mb: 4,
-                        p: { xs: 2, md: 2.5 },
-                        borderRadius: 2.5,
-                        bgcolor: 'rgba(158,226,189,0.08)',
-                        border: '1px solid rgba(158,226,189,0.3)',
+                        pt: 3,
+                        borderTop: '2px solid #496653',
                       }}
                     >
                       <Stack
@@ -758,14 +782,25 @@ export function EventDetailView({
                         sx={{ mb: 2 }}
                       >
                         <Box>
-                          <Typography variant="h5" sx={{ fontWeight: 900 }}>
-                            วงที่ผ่านรอบคัดเลือก · รอแข่งขันจริง
+                          <Typography variant="h5" sx={{ fontWeight: 600 }}>
+                            วงที่ผ่านรอบคัดเลือก
                           </Typography>
                           <Typography variant="body2" sx={{ mt: 0.5, opacity: 0.68 }}>
-                            วงที่มีสถานะ “ผ่านเข้ารอบคัดเลือก”
+                            เตรียมพบกับวงที่ผ่านการคัดเลือก แยกตามประเภทการแข่งขัน
                           </Typography>
                         </Box>
-                        <Typography sx={{ opacity: 0.7 }}>
+                        <Typography
+                          sx={{
+                            alignSelf: 'flex-start',
+                            px: 1.5,
+                            py: 0.5,
+                            borderRadius: 1,
+                            bgcolor: '#e7eee7',
+                            color: '#365641',
+                            fontSize: 13,
+                            fontWeight: 600,
+                          }}
+                        >
                           {qualifiedGroupCount.toLocaleString('th-TH')} วง
                         </Typography>
                       </Stack>
@@ -774,7 +809,24 @@ export function EventDetailView({
                         {qualifiedSections.map((section) => (
                           <Box key={`qualified-${section.id}`}>
                             {section.name && (
-                              <Typography variant="h6" sx={{ mb: 1.25, fontWeight: 900 }}>
+                              <Typography
+                                variant="h6"
+                                sx={{
+                                  mb: 1.25,
+                                  fontWeight: 600,
+                                  fontSize: 16,
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: 1,
+                                  '&::before': {
+                                    content: '""',
+                                    width: 4,
+                                    height: 16,
+                                    borderRadius: 1,
+                                    bgcolor: '#b08a50',
+                                  },
+                                }}
+                              >
                                 {section.name}
                               </Typography>
                             )}
@@ -782,7 +834,11 @@ export function EventDetailView({
                               sx={{
                                 display: 'grid',
                                 gap: 1.25,
-                                gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' },
+                                gridTemplateColumns: {
+                                  xs: 'minmax(0, 1fr)',
+                                  sm: 'repeat(2, minmax(0, 1fr))',
+                                  lg: 'repeat(3, minmax(0, 1fr))',
+                                },
                               }}
                             >
                               {section.groups.map((group) => {
@@ -794,20 +850,26 @@ export function EventDetailView({
                                     component={RouterLink}
                                     href={paths.performanceGroup.details(group.id || group.name)}
                                     sx={{
-                                      p: 1.5,
-                                      gap: 1.25,
+                                      p: 1.75,
+                                      gap: 1.5,
+                                      minWidth: 0,
+                                      minHeight: 100,
                                       display: 'flex',
                                       color: 'inherit',
                                       alignItems: 'center',
                                       borderRadius: 2,
                                       textDecoration: 'none',
-                                      bgcolor: 'rgba(248,246,238,0.09)',
-                                      border: '1px solid rgba(158,226,189,0.3)',
+                                      bgcolor: '#fff',
+                                      border: '1px solid #e2e6df',
                                       transition:
                                         'transform 180ms ease, background-color 180ms ease',
+                                      '&:focus-visible': {
+                                        outline: '2px solid #496653',
+                                        outlineOffset: 3,
+                                      },
                                       '&:hover': {
-                                        transform: 'translateY(-3px)',
-                                        bgcolor: 'rgba(158,226,189,0.13)',
+                                        bgcolor: '#fafbf8',
+                                        borderColor: '#9eaf9f',
                                       },
                                     }}
                                   >
@@ -815,17 +877,32 @@ export function EventDetailView({
                                       src={group.logoUrl || undefined}
                                       alt={group.name}
                                       sx={{
-                                        width: 54,
-                                        height: 54,
+                                        width: 48,
+                                        height: 48,
                                         flexShrink: 0,
-                                        fontWeight: 900,
-                                        bgcolor: group.primaryColor || HOME_DEEP,
+                                        fontWeight: 600,
+                                        color: '#365641',
+                                        bgcolor: '#edf0e8',
+                                        border: '1px solid #edf0e8',
+                                        '& img': { objectFit: 'contain' },
                                       }}
                                     >
                                       {group.name.slice(0, 1)}
                                     </Avatar>
                                     <Box sx={{ minWidth: 0, flex: 1 }}>
-                                      <Typography sx={{ fontWeight: 900 }}>{group.name}</Typography>
+                                      <Typography
+                                        sx={{
+                                          fontWeight: 600,
+                                          fontSize: 15,
+                                          lineHeight: 1.5,
+                                          display: '-webkit-box',
+                                          WebkitLineClamp: 2,
+                                          WebkitBoxOrient: 'vertical',
+                                          overflow: 'hidden',
+                                        }}
+                                      >
+                                        {group.name}
+                                      </Typography>
                                       <Stack
                                         direction="row"
                                         spacing={0.75}
@@ -846,12 +923,22 @@ export function EventDetailView({
                                               size="small"
                                               label={resultLabel}
                                               sx={{
-                                                height: 25,
-                                                fontWeight: 850,
+                                                height: 'auto',
+                                                minHeight: 24,
+                                                maxWidth: 1,
+                                                borderRadius: 1,
+                                                fontSize: 11,
+                                                fontWeight: 500,
+                                                '& .MuiChip-label': {
+                                                  whiteSpace: 'normal',
+                                                  lineHeight: 1.5,
+                                                  py: 0.25,
+                                                },
                                                 color: resultStyle?.color ?? HOME_TEXT,
                                                 bgcolor:
-                                                  resultStyle?.background ??
-                                                  'rgba(234,215,161,0.2)',
+                                                  resultId === 'qualified'
+                                                    ? '#e6f1e8'
+                                                    : (resultStyle?.background ?? '#f5f0e3'),
                                               }}
                                             />
                                           );
@@ -886,7 +973,7 @@ export function EventDetailView({
                         sx={{ mb: 2 }}
                       >
                         <Box>
-                          <Typography variant="h5" sx={{ fontWeight: 900 }}>
+                          <Typography variant="h5" sx={{ fontWeight: 600 }}>
                             วงที่ไม่ผ่านรอบคัดเลือก
                           </Typography>
                           <Typography variant="body2" sx={{ mt: 0.5, opacity: 0.68 }}>
@@ -902,7 +989,7 @@ export function EventDetailView({
                         {notQualifiedSections.map((section) => (
                           <Box key={`not-qualified-${section.id}`}>
                             {section.name && (
-                              <Typography variant="h6" sx={{ mb: 1.25, fontWeight: 900 }}>
+                              <Typography variant="h6" sx={{ mb: 1.25, fontWeight: 600 }}>
                                 {section.name}
                               </Typography>
                             )}
@@ -929,7 +1016,7 @@ export function EventDetailView({
                                       alignItems: 'center',
                                       borderRadius: 2,
                                       textDecoration: 'none',
-                                      bgcolor: 'rgba(248,246,238,0.07)',
+                                      bgcolor: 'rgba(32,33,36,0.07)',
                                       border: '1px solid rgba(241,176,183,0.28)',
                                       transition:
                                         'transform 180ms ease, background-color 180ms ease',
@@ -946,14 +1033,14 @@ export function EventDetailView({
                                         width: 54,
                                         height: 54,
                                         flexShrink: 0,
-                                        fontWeight: 900,
+                                        fontWeight: 600,
                                         bgcolor: group.primaryColor || HOME_DEEP,
                                       }}
                                     >
                                       {group.name.slice(0, 1)}
                                     </Avatar>
                                     <Box sx={{ minWidth: 0, flex: 1 }}>
-                                      <Typography sx={{ fontWeight: 900 }}>{group.name}</Typography>
+                                      <Typography sx={{ fontWeight: 600 }}>{group.name}</Typography>
                                       <Stack
                                         direction="row"
                                         spacing={0.75}
@@ -975,7 +1062,7 @@ export function EventDetailView({
                                               label={resultLabel}
                                               sx={{
                                                 height: 25,
-                                                fontWeight: 850,
+                                                fontWeight: 600,
                                                 color: resultStyle?.color ?? '#842029',
                                                 bgcolor: resultStyle?.background ?? '#f1b0b7',
                                               }}
@@ -1002,7 +1089,7 @@ export function EventDetailView({
                       spacing={0.5}
                       sx={{ mb: 2 }}
                     >
-                      <Typography variant="h5" sx={{ fontWeight: 900 }}>
+                      <Typography variant="h5" sx={{ fontWeight: 600 }}>
                         วงที่รอประกาศผลรอบคัดเลือก
                       </Typography>
                       <Stack direction="row" spacing={1} alignItems="center">
@@ -1028,13 +1115,13 @@ export function EventDetailView({
                               <Box>
                                 <Typography
                                   variant="overline"
-                                  sx={{ opacity: 0.58, fontWeight: 900, lineHeight: 1 }}
+                                  sx={{ opacity: 0.58, fontWeight: 600, lineHeight: 1 }}
                                 >
                                   {section.id === 'uncategorized'
                                     ? 'ข้อมูลรอจัดประเภท'
                                     : 'ประเภทการแข่งขัน'}
                                 </Typography>
-                                <Typography variant="h6" sx={{ mt: 0.25, fontWeight: 900 }}>
+                                <Typography variant="h6" sx={{ mt: 0.25, fontWeight: 600 }}>
                                   {section.name}
                                 </Typography>
                               </Box>
@@ -1048,7 +1135,7 @@ export function EventDetailView({
                                   border: '1px solid rgba(234,215,161,0.28)',
                                 }}
                               >
-                                <Typography variant="body2" sx={{ fontWeight: 850 }}>
+                                <Typography variant="body2" sx={{ fontWeight: 600 }}>
                                   {section.groups.length.toLocaleString('th-TH')}
                                   {' / '}
                                   {'maxParticipants' in section && section.maxParticipants
@@ -1121,14 +1208,14 @@ export function EventDetailView({
                                     textDecoration: 'none',
                                     bgcolor: highlightedStyle
                                       ? `${highlightedStyle.background}1f`
-                                      : 'rgba(248,246,238,0.08)',
+                                      : '#fff',
                                     backgroundImage:
                                       highlightedResultId === 'winner'
                                         ? 'linear-gradient(135deg, rgba(244,207,105,0.18), rgba(244,207,105,0.03))'
                                         : 'none',
                                     border: highlightedStyle
                                       ? `1px solid ${highlightedStyle.background}99`
-                                      : '1px solid rgba(248,246,238,0.14)',
+                                      : '1px solid #dfe3df',
                                     boxShadow:
                                       highlightedResultId === 'winner'
                                         ? '0 10px 30px rgba(244,207,105,0.14)'
@@ -1150,7 +1237,7 @@ export function EventDetailView({
                                       transform: 'translateY(-4px)',
                                       boxShadow: highlightedStyle
                                         ? `0 14px 32px ${highlightedStyle.background}25`
-                                        : '0 14px 30px rgba(0,0,0,0.16)',
+                                        : 'none',
                                     },
                                   }}
                                 >
@@ -1163,7 +1250,7 @@ export function EventDetailView({
                                         width: { xs: 58, md: 80 },
                                         height: { xs: 58, md: 80 },
                                         fontSize: 23,
-                                        fontWeight: 900,
+                                        fontWeight: 600,
                                         color: HOME_TEXT,
                                         bgcolor: group.primaryColor || HOME_DEEP,
                                         border: highlightedStyle
@@ -1186,7 +1273,7 @@ export function EventDetailView({
                                           borderRadius: '50%',
                                           color: highlightedStyle.color,
                                           bgcolor: highlightedStyle.background,
-                                          boxShadow: '0 3px 8px rgba(0,0,0,0.25)',
+                                          boxShadow: 'none',
                                         }}
                                       >
                                         <Iconify icon={highlightedStyle.icon as never} width={18} />
@@ -1199,7 +1286,7 @@ export function EventDetailView({
                                         pr: 1,
                                         fontSize: { xs: 17, md: 18 },
                                         lineHeight: 1.3,
-                                        fontWeight: 950,
+                                        fontWeight: 600,
                                         display: '-webkit-box',
                                         overflow: 'hidden',
                                         WebkitLineClamp: 2,
@@ -1243,7 +1330,7 @@ export function EventDetailView({
                                               sx={{
                                                 height: 26,
                                                 maxWidth: 1,
-                                                fontWeight: 850,
+                                                fontWeight: 600,
                                                 color: resultStyle?.color ?? HOME_TEXT,
                                                 bgcolor:
                                                   resultStyle?.background ??
@@ -1273,7 +1360,7 @@ export function EventDetailView({
                                             variant="caption"
                                             sx={{ opacity: 0.78 }}
                                           >
-                                            <Box component="span" sx={{ fontWeight: 900 }}>
+                                            <Box component="span" sx={{ fontWeight: 600 }}>
                                               {castGroup.label}:{' '}
                                             </Box>
                                             {castGroup.names.join(', ')}
@@ -1290,7 +1377,7 @@ export function EventDetailView({
                                       flexShrink: 0,
                                       placeItems: 'center',
                                       borderRadius: '50%',
-                                      bgcolor: 'rgba(248,246,238,0.09)',
+                                      bgcolor: 'rgba(32,33,36,0.09)',
                                     }}
                                   >
                                     <Iconify icon="eva:arrow-ios-forward-fill" width={21} />
@@ -1324,10 +1411,10 @@ export function EventDetailView({
               )}
 
               {(eventItem.sourceLabel || eventItem.sourceUrl || eventItem.note) && (
-                <Box sx={{ pt: 2.5, borderTop: '1px solid rgba(248,246,238,0.18)' }}>
+                <Box sx={{ pt: 2.5, borderTop: '1px solid #dfe3df' }}>
                   {(eventItem.sourceLabel || eventItem.sourceUrl) && (
                     <Stack spacing={1} alignItems="flex-start">
-                      <Typography variant="overline" sx={{ opacity: 0.68, fontWeight: 900 }}>
+                      <Typography variant="overline" sx={{ opacity: 0.68, fontWeight: 600 }}>
                         ที่มาของข้อมูล
                       </Typography>
                       {eventItem.sourceUrl ? (
@@ -1352,17 +1439,17 @@ export function EventDetailView({
                         mt: 2,
                         p: 2,
                         borderRadius: 1.5,
-                        bgcolor: 'rgba(248,246,238,0.08)',
+                        bgcolor: 'rgba(32,33,36,0.08)',
                         borderLeft: '4px solid rgba(234,215,161,0.9)',
                       }}
                     >
                       <Typography
                         variant="caption"
-                        sx={{ display: 'block', mb: 0.5, opacity: 0.68, fontWeight: 900 }}
+                        sx={{ display: 'block', mb: 0.5, opacity: 0.68, fontWeight: 600 }}
                       >
                         หมายเหตุ
                       </Typography>
-                      <Typography sx={{ whiteSpace: 'pre-line', color: 'rgba(248,246,238,0.82)' }}>
+                      <Typography sx={{ whiteSpace: 'pre-line', color: 'rgba(32,33,36,0.82)' }}>
                         {eventItem.note}
                       </Typography>
                     </Box>

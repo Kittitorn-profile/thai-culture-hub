@@ -62,8 +62,8 @@ export function HomeCultureCategoriesSection({ content, cards }: Props) {
                 width: 'fit-content',
                 color: HOME_TEXT,
                 borderRadius: 999,
-                bgcolor: 'rgba(42,55,54,0.28)',
-                border: '1px solid rgba(255,255,255,0.28)',
+                bgcolor: 'transparent',
+                border: '1px solid rgba(32,33,36,0.28)',
                 fontSize: 12,
                 fontWeight: 800,
               }}
@@ -76,13 +76,13 @@ export function HomeCultureCategoriesSection({ content, cards }: Props) {
                 mt: 2,
                 color: HOME_TEXT,
                 fontSize: { xs: 28, md: 44 },
-                fontWeight: 950,
+                fontWeight: 600,
                 lineHeight: 1.15,
               }}
             >
               {content.title}
             </Typography>
-            <Typography sx={{ mt: 1.3, color: 'rgba(248,246,238,0.76)', lineHeight: 1.75 }}>
+            <Typography sx={{ mt: 1.3, color: 'rgba(32,33,36,0.76)', lineHeight: 1.75 }}>
               {content.description}
             </Typography>
           </Box>
@@ -94,10 +94,10 @@ export function HomeCultureCategoriesSection({ content, cards }: Props) {
             sx={{
               flexShrink: 0,
               color: HOME_TEXT,
-              borderColor: 'rgba(248,246,238,0.5)',
+              borderColor: 'rgba(32,33,36,0.5)',
               '&:hover': {
                 borderColor: HOME_TEXT,
-                bgcolor: 'rgba(248,246,238,0.08)',
+                bgcolor: 'rgba(32,33,36,0.08)',
               },
             }}
           >
@@ -123,105 +123,78 @@ export function HomeCultureCategoriesSection({ content, cards }: Props) {
               href={paths.cultureCategory.details(image.categoryKey)}
               aria-label={`ดูรายละเอียด ${image.title}`}
               sx={{
-                px: 2.2,
-                py: 2.4,
-                m: 0,
+                minWidth: 0,
                 width: 1,
-                minHeight: { xs: 142, md: 168 },
                 display: 'flex',
-                textDecoration: 'none',
-                cursor: 'pointer',
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 2,
+                p: 2,
                 overflow: 'hidden',
-                textAlign: 'left',
-                borderRadius: 1.5,
+                textDecoration: 'none',
                 color: HOME_TEXT,
-                alignItems: 'flex-start',
-                flexDirection: 'column',
-                justifyContent: 'space-between',
-                bgcolor: 'rgba(42,55,54,0.32)',
-                position: 'relative',
-                boxShadow: '0 18px 42px rgba(31,40,38,0.16)',
-                border: '1px solid rgba(248,246,238,0.2)',
-                backdropFilter: 'blur(7px)',
-                transition: 'transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease',
-                '&::after': {
-                  content: '""',
-                  left: 0,
-                  top: 0,
-                  width: 5,
-                  height: 1,
-                  position: 'absolute',
-                  bgcolor: image.color,
-                },
-                '& .culture-category-count': {
-                  color: image.color,
-                },
-                '& .culture-category-icon-wrap': {
-                  color: image.color,
-                  bgcolor: 'rgba(248,246,238,0.9)',
-                },
-                '& .culture-category-arrow': {
-                  opacity: 0,
-                  transform: 'translateX(-4px)',
-                  transition: 'opacity 180ms ease, transform 180ms ease',
-                },
-                '&::before': {
-                  content: '""',
-                  right: -24,
-                  top: -30,
-                  width: 110,
-                  height: 110,
-                  borderRadius: '50%',
-                  position: 'absolute',
-                  bgcolor: 'rgba(248,246,238,0.06)',
+                bgcolor: '#fff',
+                border: '1px solid #e3e5e2',
+                borderRadius: 1.5,
+                transition: 'border-color 180ms ease, box-shadow 180ms ease',
+                '&:hover': {
+                  borderColor: '#aab3b5',
+                  boxShadow: '0 6px 20px rgba(25,35,40,0.05)',
                 },
                 '&:focus-visible': {
-                  outline: `2px solid ${HOME_TEXT}`,
+                  outline: '2px solid #505b63',
                   outlineOffset: 4,
                 },
-                '&:hover, &:focus-visible': {
-                  transform: 'translateY(-3px)',
-                  borderColor: 'rgba(248,246,238,0.36)',
-                  boxShadow: '0 24px 54px rgba(31,40,38,0.22)',
-                },
-                '&:hover .culture-category-arrow, &:focus-visible .culture-category-arrow': {
-                  opacity: 1,
-                  transform: 'translateX(0)',
-                },
+                '&:hover .culture-category-arrow': { transform: 'translateX(3px)' },
+                '& .culture-category-arrow': { transition: 'transform 180ms ease' },
               }}
             >
               <Box
+                component="img"
+                src={image.src}
+                alt=""
+                loading="lazy"
                 sx={{
-                  zIndex: 1,
-                  width: 46,
-                  height: 46,
-                  borderRadius: 1.25,
-                  display: 'grid',
-                  placeItems: 'center',
+                  width: { xs: 52, md: 60 },
+                  height: { xs: 52, md: 60 },
+                  flexShrink: 0,
+                  borderRadius: 1,
+                  opacity: 0.8,
+                  filter: 'saturate(0.55)',
+                  display: 'block',
+                  objectFit: 'cover',
                 }}
-                className="culture-category-icon-wrap"
-              >
-                <Iconify icon={image.icon} width={25} />
-              </Box>
+              />
 
               <Box
                 sx={{
-                  zIndex: 1,
-                  width: 1,
+                  minWidth: 0,
+                  flex: 1,
+                  display: 'flex',
+                  flexDirection: 'column',
                 }}
               >
                 <Typography
                   sx={{
                     color: 'inherit',
-                    fontSize: { xs: 18, md: 20 },
-                    fontWeight: 900,
-                    lineHeight: 1.25,
+                    fontSize: { xs: 15, md: 16 },
+                    fontWeight: 600,
+                    lineHeight: 1.5,
                   }}
                 >
                   {image.title}
                 </Typography>
-                <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 1.2 }}>
-                  <Typography className="culture-category-count" sx={{ fontSize: 13, fontWeight: 900 }}>
+                <Stack
+                  direction="row"
+                  spacing={1}
+                  alignItems="center"
+                  justifyContent="space-between"
+                  sx={{ pt: 0.5, color: '#7a8285' }}
+                >
+                  <Typography
+                    className="culture-category-count"
+                    sx={{ fontSize: 12, fontWeight: 400 }}
+                  >
                     ดูหมวดนี้
                   </Typography>
                   <Iconify
@@ -236,7 +209,7 @@ export function HomeCultureCategoriesSection({ content, cards }: Props) {
         </Box>
 
         {remainingCount > 0 && (
-          <Typography sx={{ mt: 2.5, color: 'rgba(248,246,238,0.68)', fontSize: 13 }}>
+          <Typography sx={{ mt: 2.5, color: 'rgba(32,33,36,0.68)', fontSize: 13 }}>
             ยังมีอีก {remainingCount.toLocaleString('th-TH')} หมวดในหน้าข้อมูลทั้งหมด
           </Typography>
         )}
