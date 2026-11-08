@@ -15,6 +15,7 @@ import { _socials } from 'src/_mock';
 
 import { Logo } from 'src/components/logo';
 import { Iconify } from 'src/components/iconify';
+import { CookieSettingsButton } from 'src/components/cookie-consent';
 
 // ----------------------------------------------------------------------
 
@@ -32,6 +33,7 @@ const LINKS = [
     children: [
       { name: 'Terms and condition', href: paths.termsAndConditions },
       { name: 'Privacy policy', href: paths.privacyPolicy },
+      { name: 'นโยบายคุกกี้', href: paths.cookiePolicy },
     ],
   },
   { headline: 'Contact', children: [{ name: 'support@minimals.cc', href: '#' }] },
@@ -176,6 +178,30 @@ export function HomeFooter({ sx, ...other }: FooterProps) {
     >
       <Container>
         <Logo isSingle sx={{ width: 112, height: 'auto' }} />
+        <Box
+          component="nav"
+          aria-label="นโยบายเว็บไซต์"
+          sx={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 2,
+            mt: 2,
+            typography: 'body2',
+          }}
+        >
+          <Link href={paths.termsAndConditions} color="inherit">
+            เงื่อนไขการใช้งาน
+          </Link>
+          <Link href={paths.privacyPolicy} color="inherit">
+            นโยบายความเป็นส่วนตัว
+          </Link>
+          <Link href={paths.cookiePolicy} color="inherit">
+            นโยบายคุกกี้
+          </Link>
+          <CookieSettingsButton />
+        </Box>
         <Box sx={{ mt: 1, typography: 'caption', color: theme.palette.text.secondary }}>
           © Thailand Cultural Hub. All rights reserved.
         </Box>

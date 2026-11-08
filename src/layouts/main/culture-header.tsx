@@ -2,11 +2,13 @@
 
 import type { CreatorProfile } from 'src/sections/creator/types';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
+import Skeleton from '@mui/material/Skeleton';
 
 import { paths } from 'src/routes/paths';
 import { RouterLink } from 'src/routes/components';
@@ -52,15 +54,26 @@ function isActivePath(pathname: string, path: string) {
 }
 
 export function CultureHeader({ pathname }: CultureHeaderProps) {
-  const { user } = useAuthContext();
+  const { user, loading } = useAuthContext();
   const accessToken = user?.accessToken ?? user?.access_token ?? '';
   const isCreator = isCreatorUser(user);
-  const [creatorProfile, setCreatorProfile] = useState<CreatorProfile | null>(null);
+  const queryClient = useQueryClient();
+  const profileKey = ['header-creator-profile', user?.id];
+  const profileQuery = useQuery({
+    queryKey: profileKey,
+    enabled: !loading && isCreator && !!accessToken,
+    queryFn: () => getCreatorProfile(accessToken),
+    staleTime: 60_000,
+    retry: false,
+    refetchOnWindowFocus: false,
+  });
+  const creatorProfile = profileQuery.data?.data;
+  const accountLoading = loading || (isCreator && !!accessToken && profileQuery.isPending);
   const headerNavItems = isCreator
     ? [
         ...HEADER_NAV_ITEMS,
         { label: 'เขียนบทความ', path: '/creator/write' },
-        { label: 'ร่วมพัฒนาข้อมูล', path: '/creator/place-corrections' },
+        { label: 'ร่วมพัฒนาข้อมูล', path: '/creator/contributions' },
       ]
     : HEADER_NAV_ITEMS;
   const accountProfile = creatorProfile
@@ -72,41 +85,17 @@ export function CultureHeader({ pathname }: CultureHeaderProps) {
       }
     : undefined;
 
-  const loadCreatorProfile = useCallback(async () => {
-    if (!isCreator || !accessToken) {
-      setCreatorProfile(null);
-      return;
-    }
-
-    try {
-      const result = await getCreatorProfile(accessToken);
-      setCreatorProfile(result.data);
-    } catch (error) {
-      console.error(error);
-    }
-  }, [accessToken, isCreator]);
-
-  useEffect(() => {
-    loadCreatorProfile();
-  }, [loadCreatorProfile]);
-
   useEffect(() => {
     function handleCreatorProfileUpdated(event: Event) {
+      if (!isCreator || !user?.id) return;
       const nextProfile = (event as CustomEvent<CreatorProfile>).detail;
-
-      if (nextProfile) {
-        setCreatorProfile(nextProfile);
-      } else {
-        loadCreatorProfile();
-      }
+      if (nextProfile)
+        queryClient.setQueryData(['header-creator-profile', user.id], { data: nextProfile });
+      else void queryClient.invalidateQueries({ queryKey: ['header-creator-profile', user.id] });
     }
-
     window.addEventListener('creator-profile-updated', handleCreatorProfileUpdated);
-
-    return () => {
-      window.removeEventListener('creator-profile-updated', handleCreatorProfileUpdated);
-    };
-  }, [loadCreatorProfile]);
+    return () => window.removeEventListener('creator-profile-updated', handleCreatorProfileUpdated);
+  }, [isCreator, queryClient, user?.id]);
 
   return (
     <Box
@@ -156,11 +145,22 @@ export function CultureHeader({ pathname }: CultureHeaderProps) {
         })}
       </Stack>
       <Stack direction="row" alignItems="center" justifyContent="flex-end" spacing={2}>
-        {user && user?.access_token ? (
-          <AccountPopover
-            data={user?.role === 'creator' ? _accountCreator : _account}
-            account={accountProfile}
-          />
+        {accountLoading ? (
+          <Stack
+            role="status"
+            aria-label="กำลังตรวจสอบบัญชี"
+            direction="row"
+            alignItems="center"
+            spacing={1.5}
+          >
+            <Box sx={{ display: { xs: 'none', sm: 'block' }, width: 180 }}>
+              <Skeleton animation={false} width="80%" height={18} sx={{ ml: 'auto' }} />
+              <Skeleton animation={false} width="100%" height={16} />
+            </Box>
+            <Skeleton animation={false} variant="circular" width={40} height={40} />
+          </Stack>
+        ) : user && accessToken ? (
+          <AccountPopover data={isCreator ? _accountCreator : _account} account={accountProfile} />
         ) : (
           <>
             <Link

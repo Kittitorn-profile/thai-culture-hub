@@ -1,90 +1,102 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { Analytics } from '@vercel/analytics/next';
 
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
-import { alpha } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 
 import { paths } from 'src/routes/paths';
-import { RouterLink } from 'src/routes/components';
 
-const COOKIE_CONSENT_KEY = 'thch_cookie_consent';
+import {
+  readCookiePreference,
+  saveCookiePreference,
+  COOKIE_SETTINGS_EVENT,
+  type CookiePreference,
+  COOKIE_PREFERENCE_EVENT,
+} from 'src/lib/cookie-preferences';
 
-export function CookieConsent() {
-  const [isVisible, setIsVisible] = useState(false);
-
-  useEffect(() => {
-    setIsVisible(window.localStorage.getItem(COOKIE_CONSENT_KEY) !== 'accepted');
-  }, []);
-
-  const handleAccept = () => {
-    window.localStorage.setItem(COOKIE_CONSENT_KEY, 'accepted');
-    setIsVisible(false);
-  };
-
-  if (!isVisible) {
-    return null;
-  }
-
+export function CookieSettingsButton() {
   return (
-    <Box
-      sx={(theme) => ({
-        left: 16,
-        right: 16,
-        bottom: 16,
-        zIndex: theme.zIndex.snackbar,
-        position: 'fixed',
-        mx: 'auto',
-        maxWidth: 980,
-        p: { xs: 2, md: 2.2 },
-        color: theme.palette.grey[900],
-        borderRadius: 2,
-        bgcolor: alpha('#fffaf0', 0.96),
-        border: `1px solid ${alpha('#b2865a', 0.26)}`,
-        boxShadow: `0 18px 46px ${alpha(theme.palette.grey[900], 0.22)}`,
-        backdropFilter: 'blur(10px)',
-      })}
-    >
-      <Stack
-        direction={{ xs: 'column', md: 'row' }}
-        spacing={1.5}
-        alignItems={{ xs: 'stretch', md: 'center' }}
-        justifyContent="space-between"
-      >
-        <Box sx={{ minWidth: 0 }}>
-          <Typography sx={{ fontWeight: 900, fontSize: 15 }}>
-            เว็บไซต์นี้ใช้คุกกี้เพื่อปรับปรุงประสบการณ์และวิเคราะห์การใช้งาน
-          </Typography>
-          <Typography sx={{ mt: 0.5, color: 'text.secondary', fontSize: 13, lineHeight: 1.6 }}>
-            การใช้งานต่อหรือกด “ยอมรับ” หมายถึงคุณยอมรับการใช้คุกกี้ตาม{' '}
-            <Link component={RouterLink} href={paths.privacyPolicy} sx={{ fontWeight: 900 }}>
-              นโยบายความเป็นส่วนตัว
-            </Link>{' '}
-            และ{' '}
-            <Link component={RouterLink} href={paths.termsAndConditions} sx={{ fontWeight: 900 }}>
-              ข้อกำหนดและเงื่อนไข
-            </Link>
-          </Typography>
-        </Box>
-
-        <Button
-          variant="contained"
-          onClick={handleAccept}
+    <Button size="small" onClick={() => window.dispatchEvent(new Event(COOKIE_SETTINGS_EVENT))}>
+      ตั้งค่าคุกกี้
+    </Button>
+  );
+}
+export function CookieConsent() {
+  const [visible, setVisible] = useState(false);
+  const [analytics, setAnalytics] = useState(false);
+  useEffect(() => {
+    const sync = () => {
+      const value = readCookiePreference();
+      setAnalytics(value === 'all');
+      setVisible(value === null);
+    };
+    const open = () => setVisible(true);
+    sync();
+    window.addEventListener(COOKIE_PREFERENCE_EVENT, sync);
+    window.addEventListener(COOKIE_SETTINGS_EVENT, open);
+    window.addEventListener('storage', sync);
+    return () => {
+      window.removeEventListener(COOKIE_PREFERENCE_EVENT, sync);
+      window.removeEventListener(COOKIE_SETTINGS_EVENT, open);
+      window.removeEventListener('storage', sync);
+    };
+  }, []);
+  const choose = (value: CookiePreference) => {
+    saveCookiePreference(value);
+    setVisible(false);
+  };
+  return (
+    <>
+      {analytics && (
+        <Analytics beforeSend={(event) => (readCookiePreference() === 'all' ? event : null)} />
+      )}
+      {visible && (
+        <Box
+          role="region"
+          aria-label="ตัวเลือกคุกกี้"
           sx={{
-            px: 2.6,
-            flexShrink: 0,
-            fontWeight: 900,
-            bgcolor: '#8f3d20',
-            '&:hover': { bgcolor: '#783017' },
+            position: 'fixed',
+            bottom: 16,
+            left: 16,
+            right: 16,
+            zIndex: (theme) => theme.zIndex.modal + 1,
+            mx: 'auto',
+            maxWidth: 980,
+            bgcolor: 'background.paper',
+            border: '1px solid',
+            borderColor: 'divider',
+            borderRadius: 2,
+            boxShadow: 8,
+            p: 2.5,
           }}
         >
-          ยอมรับ
-        </Button>
-      </Stack>
-    </Box>
+          <Stack spacing={2}>
+            <Box>
+              <Typography variant="subtitle1">เลือกการใช้คุกกี้และข้อมูลการใช้งาน</Typography>
+              <Typography variant="body2" color="text.secondary">
+                เราใช้พื้นที่จัดเก็บที่จำเป็นสำหรับการเข้าสู่ระบบและจดจำการตั้งค่า
+                ส่วนการวิเคราะห์การเข้าชมจะเริ่มเมื่อคุณเลือกยอมรับทั้งหมด อ่าน{' '}
+                <Link href={paths.cookiePolicy}>นโยบายคุกกี้</Link> และ{' '}
+                <Link href={paths.privacyPolicy}>นโยบายความเป็นส่วนตัว</Link> เปลี่ยนตัวเลือกได้จาก
+                “ตั้งค่าคุกกี้” ที่ส่วนท้ายเว็บไซต์
+              </Typography>
+            </Box>
+            <Stack direction="row" flexWrap="wrap" gap={1}>
+              <Button variant="outlined" onClick={() => choose('necessary')}>
+                เฉพาะที่จำเป็น
+              </Button>
+              <Button variant="contained" onClick={() => choose('all')}>
+                ยอมรับทั้งหมด
+              </Button>
+            </Stack>
+          </Stack>
+        </Box>
+      )}
+    </>
   );
 }

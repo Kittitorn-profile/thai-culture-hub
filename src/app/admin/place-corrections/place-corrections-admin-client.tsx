@@ -273,10 +273,10 @@ export function AdminPlaceCorrectionsClient() {
         <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" spacing={2}>
           <Box>
             <Typography variant="h3" sx={{ fontWeight: 900 }}>
-              จัดการคำขอแก้ไขข้อมูล
+              คำขอแก้ไขสถานที่และแหล่งวัฒนธรรม
             </Typography>
             <Typography sx={{ mt: 0.5, color: 'text.secondary' }}>
-              ตรวจคำขอแก้ไขข้อมูลสถานที่จากผู้ใช้ก่อนนำไปอัปเดตเป็น override
+              ตรวจข้อมูลและภาพสถานที่ที่สมาชิกเสนอ ก่อนอนุมัติให้อัปเดตบนเว็บไซต์
             </Typography>
           </Box>
           <Stack
@@ -284,8 +284,11 @@ export function AdminPlaceCorrectionsClient() {
             spacing={1.5}
             sx={{ alignSelf: { md: 'flex-start' } }}
           >
+            <Button component="a" href="/admin/contributions" variant="outlined">
+              คำขอข้อมูลอีก 5 ประเภท
+            </Button>
             <Button size="medium" variant="outlined" onClick={loadItems} disabled={isLoading}>
-              Refresh
+              โหลดข้อมูลใหม่
             </Button>
           </Stack>
         </Stack>

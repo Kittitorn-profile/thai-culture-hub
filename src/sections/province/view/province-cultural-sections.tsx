@@ -32,10 +32,9 @@ const GROUPS: { key: ProvinceDataSection; label: string; description: string }[]
     description: 'ข้อมูลจากกรมส่งเสริมวัฒนธรรม ทั้งการแสดง งานฝีมือ ประเพณี ภาษา และภูมิปัญญา',
   },
   {
-    key: 'community',
-    label: 'วิถีชีวิตและหัตถกรรมชุมชน',
-    description:
-      'ชุดรวบรวมเพิ่มเรื่องผ้าทอ เสื่อ จักสาน ความเชื่อ อาชีพ และศิลปาชีพ พร้อมแหล่งอ้างอิง',
+    key: 'crafts',
+    label: 'ผ้าและทักษะงานช่าง',
+    description: 'ชนิดผ้า วิธีทอ ย้อมสี จักสาน และการสืบทอดงานฝีมือ พร้อมแหล่งอ้างอิง',
   },
   {
     key: 'ethnic',
@@ -48,11 +47,6 @@ const GROUPS: { key: ProvinceDataSection; label: string; description: string }[]
     label: 'ผลิตภัณฑ์วัฒนธรรมไทย (CPOT)',
     description:
       'ข้อมูลผลิตภัณฑ์จากตารางต้นฉบับที่ระบุจังหวัดนี้ แม้ยังไม่มีพิกัดสำหรับแสดงบนแผนที่',
-  },
-  {
-    key: 'fabric',
-    label: 'มรดกภูมิปัญญาผ้าไทย',
-    description: 'ชื่อผ้า วัสดุ ลวดลาย และเทคนิคจากชุดข้อมูลผ้าไทย ไม่จำเป็นต้องมีพิกัดสถานที่',
   },
   {
     key: 'groups',

@@ -1,0 +1,247 @@
+{
+  "checkedAt": "2026-11-09",
+  "organization": "กรมหม่อนไหม",
+  "indexUrl": "https://qsds.go.th/silkcotton/",
+  "items": [
+    {
+      "sourceKey": "qsds-textile-1",
+      "sourceUrl": "https://qsds.go.th/silkcotton/k_1.php",
+      "recordType": "fabric",
+      "recordId": "thai-fabric-68",
+      "recordTitle": "ผ้าโฮล",
+      "province": "สุรินทร์",
+      "technique": "มัดย้อมเส้นพุ่งก่อนทอ ใช้เส้นไหมละเอียดและจัดลายตามแบบโฮล",
+      "description": "ผ้าไหมมัดหมี่ในวัฒนธรรมชาวไทยเชื้อสายเขมรของสุรินทร์"
+    },
+    {
+      "sourceKey": "qsds-textile-2",
+      "sourceUrl": "https://qsds.go.th/silkcotton/k_2.php",
+      "recordType": "community",
+      "recordId": "community-qsds-2",
+      "recordTitle": "ผ้าหางกระรอก",
+      "province": "นครราชสีมา"
+    },
+    {
+      "sourceKey": "qsds-textile-3",
+      "sourceUrl": "https://qsds.go.th/silkcotton/k_3.php",
+      "recordType": "community",
+      "recordId": "community-qsds-3",
+      "recordTitle": "ผ้าอัมปรม",
+      "province": "สุรินทร์"
+    },
+    {
+      "sourceKey": "qsds-textile-4",
+      "sourceUrl": "https://qsds.go.th/silkcotton/k_4.php",
+      "recordType": "community",
+      "recordId": "community-qsds-4",
+      "recordTitle": "ผ้าละเบิก",
+      "province": "สุรินทร์"
+    },
+    {
+      "sourceKey": "qsds-textile-5",
+      "sourceUrl": "https://qsds.go.th/silkcotton/k_5.php",
+      "recordType": "community",
+      "recordId": "community-qsds-5",
+      "recordTitle": "ซิ่นทิว",
+      "province": ""
+    },
+    {
+      "sourceKey": "qsds-textile-6",
+      "sourceUrl": "https://qsds.go.th/silkcotton/k_6.php",
+      "recordType": "fabric",
+      "recordId": "thai-fabric-47",
+      "recordTitle": "ผ้าลายสาเกต",
+      "province": "ร้อยเอ็ด",
+      "technique": "รวมลายมัดหมี่พื้นบ้านห้าลาย เช่น โคมเจ็ด นาคน้อย และหมากจับ คั่นด้วยสีพื้น",
+      "description": "ผ้าไหมที่รวมลายท้องถิ่นร้อยเอ็ดไว้ในผืนเดียว สื่อความสัมพันธ์ของชุมชน"
+    },
+    {
+      "sourceKey": "qsds-textile-7",
+      "sourceUrl": "https://qsds.go.th/silkcotton/k_7.php",
+      "recordType": "fabric",
+      "recordId": "thai-fabric-76",
+      "recordTitle": "ผ้ากาบบัว",
+      "province": "อุบลราชธานี",
+      "technique": "จัดเส้นยืนต่างสีเป็นริ้ว ใช้เส้นพุ่งสีพื้น เส้นมับไมที่ควบเกลียวสองสี เส้นขิด และเส้นมัดหมี่ แบบจกเพิ่มลายด้วยเส้นพุ่งพิเศษ ส่วนแบบคำใช้ดิ้นทองหรือดิ้นเงินตามรูปแบบ",
+      "description": "ผ้ากาบบัวเป็นผ้าเอกลักษณ์อุบลราชธานี มีทั้งแบบธรรมดา แบบจก และแบบคำ ผสมลักษณะซิ่นทิว มับไม มัดหมี่ และขิดหรือจกตามชนิดผ้า ใช้ทำเครื่องแต่งกายทั้งชายและหญิง"
+    },
+    {
+      "sourceKey": "qsds-textile-8",
+      "sourceUrl": "https://qsds.go.th/silkcotton/k_8.php",
+      "recordType": "community",
+      "recordId": "community-chonnabot-mudmee",
+      "recordTitle": "ภูมิปัญญาทอไหมมัดหมี่ชนบท",
+      "province": "ขอนแก่น"
+    },
+    {
+      "sourceKey": "qsds-textile-9",
+      "sourceUrl": "https://qsds.go.th/silkcotton/k_9.php",
+      "recordType": "fabric",
+      "recordId": "thai-fabric-31",
+      "recordTitle": "ลายผ้าจวนตานี",
+      "province": "ปัตตานี",
+      "technique": "จัดแถบล่องจวนระหว่างท้องผ้ากับชายผ้า ใช้มัดหมี่หรือยกเสริมดิ้นตามรูปแบบ",
+      "description": "งานทอปัตตานีมีเอกลักษณ์จากริ้วลายและสีตัดกัน โดยต้นทางไม่ยืนยันจุดเริ่มต้นทางประวัติศาสตร์"
+    },
+    {
+      "sourceKey": "qsds-textile-10",
+      "sourceUrl": "https://qsds.go.th/silkcotton/k_10.php",
+      "recordType": "community",
+      "recordId": "community-qsds-10",
+      "recordTitle": "ผ้าพุมเรียง",
+      "province": "สุราษฎร์ธานี"
+    },
+    {
+      "sourceKey": "qsds-textile-11",
+      "sourceUrl": "https://qsds.go.th/silkcotton/k_11.php",
+      "recordType": "community",
+      "recordId": "community-long",
+      "recordTitle": "ผ้าจกเมืองลอง",
+      "province": "แพร่"
+    },
+    {
+      "sourceKey": "qsds-textile-13",
+      "sourceUrl": "https://qsds.go.th/silkcotton/k_13.php",
+      "recordType": "community",
+      "recordId": "community-qsds-13",
+      "recordTitle": "ผ้ายกมุกลับแล",
+      "province": "อุตรดิตถ์"
+    },
+    {
+      "sourceKey": "qsds-textile-14",
+      "sourceUrl": "https://qsds.go.th/silkcotton/k_14.php",
+      "recordType": "community",
+      "recordId": "community-qsds-14",
+      "recordTitle": "ผ้าไหมลายลูกแก้วย้อมมะเกลือ",
+      "province": "อุบลราชธานี"
+    },
+    {
+      "sourceKey": "qsds-textile-15",
+      "sourceUrl": "https://qsds.go.th/silkcotton/k_15.php",
+      "recordType": "community",
+      "recordId": "community-nakhon-raised-weaving",
+      "recordTitle": "ภูมิปัญญาการเก็บเขาผ้ายกเมืองนคร",
+      "province": "นครศรีธรรมราช"
+    },
+    {
+      "sourceKey": "qsds-textile-16",
+      "sourceUrl": "https://qsds.go.th/silkcotton/k_16.php",
+      "recordType": "community",
+      "recordId": "community-buriram-sin-tin-daeng",
+      "recordTitle": "ผ้าซิ่นตีนแดง นาโพธิ์–พุทไธสง",
+      "province": "บุรีรัมย์"
+    },
+    {
+      "sourceKey": "qsds-textile-17",
+      "sourceUrl": "https://qsds.go.th/silkcotton/k_17.php",
+      "recordType": "fabric",
+      "recordId": "thai-fabric-43",
+      "recordTitle": "ผ้าลายแก้วมุกดา",
+      "province": "มุกดาหาร",
+      "technique": "มัดลายสายน้ำ นาคน้อย ดอกช้างน้าว และลายตุ้ม ร่วมกับเส้นพุ่งควบสี",
+      "description": "ลวดลายสื่อถึงแม่น้ำโขง พรรณไม้ และสัญลักษณ์ของจังหวัดมุกดาหาร"
+    },
+    {
+      "sourceKey": "qsds-textile-18",
+      "sourceUrl": "https://qsds.go.th/silkcotton/k_18.php",
+      "recordType": "fabric",
+      "recordId": "thai-fabric-10",
+      "recordTitle": "หมี่คั่นขอนารี",
+      "province": "ชัยภูมิ",
+      "technique": "มัดหมี่ลายขอนารีร่วมกับหมี่คั่นและจัดจังหวะลายก่อนทอ",
+      "description": "งานผ้าไหมชัยภูมิที่ประยุกต์ลายโบราณกับลายขอนารี"
+    },
+    {
+      "sourceKey": "qsds-textile-19",
+      "sourceUrl": "https://qsds.go.th/silkcotton/k_19.php",
+      "recordType": "community",
+      "recordId": "community-praewa",
+      "recordTitle": "ผ้าไหมแพรวาบ้านโพน",
+      "province": "กาฬสินธุ์"
+    },
+    {
+      "sourceKey": "qsds-textile-20",
+      "sourceUrl": "https://qsds.go.th/silkcotton/k_20.php",
+      "recordType": "community",
+      "recordId": "community-wiangyong-weaving",
+      "recordTitle": "งานทอยกดอกชุมชนเวียงยอง",
+      "province": "ลำพูน"
+    },
+    {
+      "sourceKey": "qsds-textile-21",
+      "sourceUrl": "https://qsds.go.th/silkcotton/k_21.php",
+      "recordType": "community",
+      "recordId": "community-maechaem",
+      "recordTitle": "ผ้าจกแม่แจ่ม",
+      "province": "เชียงใหม่"
+    },
+    {
+      "sourceKey": "qsds-textile-22",
+      "sourceUrl": "https://qsds.go.th/silkcotton/k_22.php",
+      "recordType": "fabric",
+      "recordId": "thai-fabric-42",
+      "recordTitle": "ลายสร้อยดอกหมาก",
+      "province": "มหาสารคาม",
+      "technique": "มัดลายโคมห้าซ้อนโคมเก้าและโอบหมี่ให้ลายแน่นละเอียด",
+      "description": "ผ้าไหมมัดหมี่มหาสารคามที่ต้องควบคุมทั้งความละเอียดเส้นไหม การมัด และการย้อม"
+    },
+    {
+      "sourceKey": "qsds-textile-23",
+      "sourceUrl": "https://qsds.go.th/silkcotton/k_23.php",
+      "recordType": "community",
+      "recordId": "community-namuensri",
+      "recordTitle": "ผ้าทอนาหมื่นศรี",
+      "province": "ตรัง"
+    },
+    {
+      "sourceKey": "qsds-textile-24",
+      "sourceUrl": "https://qsds.go.th/silkcotton/k_24.php",
+      "recordType": "community",
+      "recordId": "community-qsds-24",
+      "recordTitle": "ผ้าสะมอ",
+      "province": "สุรินทร์"
+    },
+    {
+      "sourceKey": "qsds-textile-25",
+      "sourceUrl": "https://qsds.go.th/silkcotton/k_25.php",
+      "recordType": "community",
+      "recordId": "community-qsds-25",
+      "recordTitle": "ผ้าอันลูนซีม",
+      "province": "สุรินทร์"
+    },
+    {
+      "sourceKey": "qsds-textile-26",
+      "sourceUrl": "https://qsds.go.th/silkcotton/k_26.php",
+      "recordType": "community",
+      "recordId": "community-srichomchuen-khit",
+      "recordTitle": "ผ้าไหมขิดบ้านศรีชมชื่น",
+      "province": "อุดรธานี"
+    },
+    {
+      "sourceKey": "qsds-textile-27",
+      "sourceUrl": "https://qsds.go.th/silkcotton/k_27.php",
+      "recordType": "fabric",
+      "recordId": "thai-fabric-25",
+      "recordTitle": "ลายน้ำไหล",
+      "province": "น่าน",
+      "technique": "ใช้ล้วงหรือเกาะสีร่วมกับการเก็บมุกและคาดก่านตามชนิดผ้าซิ่น",
+      "description": "ผ้าเมืองน่านมีหลายรูปแบบ ทั้งซิ่นม่าน ซิ่นป้อง และซิ่นน้ำไหล ต้นทางอธิบายบริบทงานทอร่วมกัน"
+    },
+    {
+      "sourceKey": "qsds-textile-28",
+      "sourceUrl": "https://qsds.go.th/silkcotton/k_28.php",
+      "recordType": "community",
+      "recordId": "community-qsds-28",
+      "recordTitle": "ผ้ายกมุกไทยวนสระบุรี",
+      "province": "สระบุรี"
+    },
+    {
+      "sourceKey": "qsds-textile-29",
+      "sourceUrl": "https://qsds.go.th/silkcotton/k_29.php",
+      "recordType": "community",
+      "recordId": "community-khubua-weaving",
+      "recordTitle": "ผ้าจกไทยวนคูบัว",
+      "province": "ราชบุรี"
+    }
+  ]
+}

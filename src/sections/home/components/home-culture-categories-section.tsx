@@ -68,7 +68,7 @@ export function HomeCultureCategoriesSection({ content, cards }: Props) {
                 fontWeight: 800,
               }}
             >
-              Culture categories
+              หมวดสถานที่และแหล่งวัฒนธรรม
             </Typography>
             <Typography
               variant="h3"
@@ -101,7 +101,7 @@ export function HomeCultureCategoriesSection({ content, cards }: Props) {
               },
             }}
           >
-            ดูข้อมูลทั้งหมด
+            ดูสถานที่ทุกหมวด
           </Button>
         </Stack>
 
@@ -195,7 +195,7 @@ export function HomeCultureCategoriesSection({ content, cards }: Props) {
                     className="culture-category-count"
                     sx={{ fontSize: 12, fontWeight: 400 }}
                   >
-                    ดูหมวดนี้
+                    ดูสถานที่ในหมวดนี้
                   </Typography>
                   <Iconify
                     className="culture-category-arrow"

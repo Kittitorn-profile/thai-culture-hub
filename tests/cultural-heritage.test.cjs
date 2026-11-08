@@ -111,9 +111,9 @@ test('CKAN failures are not displayed as an empty successful result', async () =
 
 test('community weaving collection filters local evidence without fetching CKAN or inventing registration', async () => {
   const { getCulturalHeritage } = load('src/server/cultural-heritage.ts');
-  const data = await getCulturalHeritage({ collection: 'community' });
-  assert.equal(data.total, 15);
-  assert.equal(new Set(data.data.map((item) => item.province)).size, 12);
+  const data = await getCulturalHeritage({ collection: 'community', limit: 100 });
+  assert.equal(data.total, 55);
+  assert.equal(new Set(data.data.map((item) => item.province).filter(Boolean)).size, 39);
   for (const item of data.data) {
     assert.ok(item.name && item.description && item.technique && item.lifestyle);
     assert.match(item.sourceUrl, /^https:\/\//);
@@ -127,7 +127,7 @@ test('community weaving collection filters local evidence without fetching CKAN 
   assert.match(filtered.data[0].name, /แม่แจ่ม/);
   const secondPage = await getCulturalHeritage({ collection: 'community', page: 1, limit: 3 });
   assert.equal(secondPage.data.length, 3);
-  assert.equal(secondPage.total, 15);
+  assert.equal(secondPage.total, 55);
 });
 
 test('heritage API rejects unknown collection selectors', async () => {
@@ -140,8 +140,8 @@ test('community craft category filters retain provenance and do not conflate OTO
   const mats = await getCulturalHeritage({ collection: 'community', category: 'ทอเสื่อ/สาด' });
   assert.equal(mats.total, 2);
   assert.ok(mats.data.some((item) => item.name.includes('สาดไตหย่า') && item.province === 'เชียงราย'));
-  assert.equal(mats.collectionTotal, 15);
-  assert.equal(mats.collectionProvinces, 12);
+  assert.equal(mats.collectionTotal, 55);
+  assert.equal(mats.collectionProvinces, 39);
   assert.ok(mats.categories.includes('ศูนย์ศิลปาชีพ'));
   const centers = await getCulturalHeritage({ collection: 'community', category: 'ศูนย์ศิลปาชีพ' });
   assert.equal(centers.total, 2);
@@ -149,7 +149,7 @@ test('community craft category filters retain provenance and do not conflate OTO
   assert.equal(otop.total, 2);
   assert.ok(otop.data.every((item) => item.sourceUrl && item.organization));
   assert.equal((await getCulturalHeritage({ collection: 'community', category: 'จักสาน', province: 'ชลบุรี' })).total, 1);
-  assert.equal(new Set((await getCulturalHeritage({ collection: 'community' })).data.map((item) => item.id)).size, 15);
+  assert.equal(new Set((await getCulturalHeritage({ collection: 'community', limit: 100 })).data.map((item) => item.id)).size, 55);
 });
 
 test('heritage category totals read every source page including rows with multiple category flags', async () => {
@@ -171,4 +171,133 @@ test('heritage category totals read every source page including rows with multip
     global.fetch = async () => new Response(JSON.stringify({ success: true, result: { total: 2, records: [rows[0], rows[0]] } }));
     await assert.rejects(() => service.getAllHeritageRecords(), /ครบชุด/);
   } finally { global.fetch = original; }
+});
+
+test('reviewed weaving additions retain provenance, valid provinces and unique local identities', async () => {
+  const weaving = require('../data/cultural-heritage/community-weaving.json');
+  const provinces = load('src/data/thailand-culture/provinces.ts').default;
+  const reviewedIds = ['community-khubua-weaving', 'community-phathang-weaving', 'community-wiangyong-weaving', 'community-chonnabot-mudmee', 'community-hatsiao-weaving', 'community-nakhon-raised-weaving', 'community-huachang-saeo', 'community-srichomchuen-khit', 'community-maikaen-weaving', 'community-thungmok-tailue'];
+  const additions = weaving.filter(item => reviewedIds.includes(item.id));
+  assert.equal(additions.length, 10);
+  assert.equal(new Set(weaving.map(item => item.id)).size, weaving.length);
+  assert.equal(new Set(weaving.map(item => `${item.province}:${item.name}`)).size, weaving.length);
+  for (const item of additions) {
+    assert.ok(provinces.some(province => province.name === item.province));
+    assert.ok(item.categories.includes('การทอผ้า'));
+    assert.ok(item.practice && item.description && item.technique && item.lifestyle && item.organization);
+    assert.equal(new URL(item.sourceUrl).protocol, 'https:');
+  }
+  const { getCulturalHeritage } = load('src/server/cultural-heritage.ts');
+  const filtered = await getCulturalHeritage({ collection: 'community', category: 'การทอผ้า', province: 'อุทัยธานี', query: 'ผาทั่ง' });
+  assert.equal(filtered.total, 1);
+  assert.equal(filtered.data[0].id, 'community-phathang-weaving');
+  assert.equal(filtered.data[0].nationalYear, '');
+});
+
+test('MSU source search includes weaving and upcycling while retaining original research attribution', async () => {
+  const { getCulturalHeritage } = load('src/server/cultural-heritage.ts');
+  const sourced = await getCulturalHeritage({ collection: 'community', query: 'มหาวิทยาลัยมหาสารคาม', limit: 100 });
+  assert.equal(sourced.total, 5);
+  for (const item of sourced.data) {
+    assert.ok(new URL(item.sourceUrl).hostname.endsWith('.msu.ac.th'));
+    assert.equal(item.checkedAt, '2026-11-09');
+  }
+  const archive = sourced.data.find(item => item.id === 'community-msu-thasawang-research');
+  assert.ok(archive.organization.includes('มหาวิทยาลัยราชภัฏสุรินทร์'));
+  assert.equal(archive.province, 'สุรินทร์');
+  const weaving = await getCulturalHeritage({ collection: 'community', query: 'มหาวิทยาลัยมหาสารคาม', category: 'การทอผ้า' });
+  assert.equal(weaving.total, 4);
+  const products = await getCulturalHeritage({ collection: 'community', query: 'มหาวิทยาลัยมหาสารคาม', category: 'ผลิตภัณฑ์ชุมชน' });
+  assert.equal(products.total, 1);
+  assert.equal(products.data[0].id, 'community-msu-kampu-silk-upcycling');
+});
+
+test('Sakon Nakhon indigo additions are searchable and preserve university attribution', async () => {
+  const { getCulturalHeritage } = load('src/server/cultural-heritage.ts');
+  const result = await getCulturalHeritage({ collection: 'community', category: 'การทอผ้า', province: 'สกลนคร', query: 'คราม', limit: 100 });
+  assert.equal(result.total, 4);
+  assert.equal(new Set(result.data.map(item => item.id)).size, 4);
+  assert.ok(result.data.some(item => item.id === 'community-khamkha'));
+  for (const id of ['community-sakon-donkoi-indigo', 'community-sakon-nongkhrong-indigo', 'community-msu-sakon-indigo-identity']) {
+    const item = result.data.find(record => record.id === id);
+    assert.ok(item && item.sourceUrl && item.organization && item.technique);
+  }
+  const archive = result.data.find(item => item.id === 'community-msu-sakon-indigo-identity');
+  assert.ok(archive.organization.includes('มหาวิทยาลัยราชภัฏสกลนคร'));
+  assert.ok(archive.organization.includes('มหาวิทยาลัยราชภัฏอุดรธานี'));
+});
+
+test('red-footed silk is one documented record searchable by both Buriram districts', async () => {
+  const { getCulturalHeritage } = load('src/server/cultural-heritage.ts');
+  for (const query of ['ซิ่นตีนแดง', 'นาโพธิ์', 'พุทไธสง']) {
+    const result = await getCulturalHeritage({ collection: 'community', category: 'การทอผ้า', province: 'บุรีรัมย์', query });
+    assert.equal(result.total, 1);
+    assert.equal(result.data[0].id, 'community-buriram-sin-tin-daeng');
+    assert.equal(result.data[0].sourceUrl, 'https://qsds.go.th/silkcotton/k_16.php');
+    assert.ok(result.data[0].practice.includes('อำเภอนาโพธิ์ และอำเภอพุทไธสง'));
+  }
+});
+
+test('QSDS index covers all 28 topics through existing identities and ten new records', async () => {
+  const catalog = require('../data/cultural-heritage/qsds-textiles.json');
+  const community = require('../data/cultural-heritage/community-weaving.json');
+  const { getCulturalHeritage } = load('src/server/cultural-heritage.ts');
+  assert.equal(catalog.items.length, 28);
+  assert.equal(new Set(catalog.items.map(item => item.sourceUrl)).size, 28);
+  assert.equal(community.filter(item => item.id.startsWith('community-qsds-')).length, 10);
+  for (const source of catalog.items.filter(item => item.recordType === 'community')) {
+    const record = community.find(item => item.id === source.recordId);
+    assert.ok(record, source.recordId);
+    const result = await getCulturalHeritage({ collection: 'community', query: record.name, limit: 100 });
+    assert.ok(result.data.find(item => item.id === record.id).sourceUrls.includes(source.sourceUrl));
+  }
+  const regional = community.find(item => item.id === 'community-qsds-5');
+  assert.equal(regional.province, '');
+  assert.match(regional.practice, /ไม่ได้เจาะจงจังหวัด/);
+});
+
+test('khit and Kalasin details enrich existing community records', async () => {
+  const { getCulturalHeritage } = load('src/server/cultural-heritage.ts');
+  const khit = await getCulturalHeritage({ collection: 'community', query: 'ผ้าลายขิด', limit: 100 });
+  assert.ok(khit.data.some(item => item.id === 'community-srichomchuen-khit' && item.technique.includes('เส้นพุ่งพิเศษ')));
+  const kalasin = await getCulturalHeritage({ collection: 'community', province: 'กาฬสินธุ์', category: 'การทอผ้า' });
+  assert.equal(kalasin.total, 1);
+  assert.equal(kalasin.data[0].id, 'community-praewa');
+  assert.ok(kalasin.data[0].technique.includes('เก็บลายขิด'));
+  assert.ok(kalasin.data[0].sourceUrls.includes('https://qsds.go.th/silkcotton/k_19.php'));
+});
+
+test('national additions cover six regions with validated provinces and keep batik separate from weaving', async () => {
+  const rows = require('../data/cultural-heritage/community-weaving.json');
+  const additions = rows.filter(item => item.id.startsWith('community-national-'));
+  const provinces = load('src/data/thailand-culture/provinces.ts').default;
+  assert.equal(additions.length, 12);
+  assert.equal(new Set(additions.map(item => item.region)).size, 6);
+  for (const item of additions) {
+    assert.ok(provinces.some(province => province.name === item.province));
+    assert.ok(item.description && item.practice && item.technique && item.lifestyle && item.organization);
+    assert.equal(new URL(item.sourceUrl).protocol, 'https:');
+  }
+  const { getCulturalHeritage } = load('src/server/cultural-heritage.ts');
+  const bangkok = await getCulturalHeritage({ collection: 'community', province: 'กรุงเทพมหานคร', query: 'บ้านครัว' });
+  assert.equal(bangkok.total, 1);
+  const batik = await getCulturalHeritage({ collection: 'community', category: 'ผ้าเขียนลายและมัดย้อม' });
+  assert.equal(batik.total, 4);
+  assert.ok(batik.data.every(item => !item.categories.includes('การทอผ้า')));
+  const weaving = await getCulturalHeritage({ collection: 'community', category: 'การทอผ้า', query: 'บาติก' });
+  assert.equal(weaving.total, 0);
+});
+
+test('national coverage audit retains source evidence for each of the 77 provinces', () => {
+  const audit = require('../docs/data-audits/textile-national-coverage.json');
+  const rows = require('../data/cultural-heritage/community-weaving.json');
+  assert.equal(audit.provinces.length, 77);
+  assert.equal(new Set(audit.provinces.map(item => item.code)).size, 77);
+  assert.equal(audit.communityRecordCount, rows.length);
+  for (const province of audit.provinces) {
+    assert.ok(province.communityRecords.length || province.registryRecords.length);
+    for (const record of province.communityRecords) {
+      assert.ok(rows.some(item => item.id === record.id && item.province === province.province && item.sourceUrl === record.sourceUrl));
+    }
+  }
 });

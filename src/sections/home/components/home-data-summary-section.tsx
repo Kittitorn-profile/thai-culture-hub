@@ -24,7 +24,7 @@ const number = new Intl.NumberFormat('th-TH');
 
 export function HomeDataSummarySection() {
   const { data, isPending, isError, refetch, isFetching } = useQuery<Summary>({
-    queryKey: ['public-cultural-data-summary'],
+    queryKey: ['public-cultural-data-summary', 3],
     queryFn: async ({ signal }) => {
       const response = await fetch('/api/culture/data-summary', { signal });
       if (!response.ok) throw new Error('Summary unavailable');
@@ -66,11 +66,10 @@ export function HomeDataSummarySection() {
               component="h2"
               sx={{ fontSize: { xs: 26, md: 36 }, fontWeight: 700, lineHeight: 1.35 }}
             >
-              เรื่องราวหลากหลาย ในฐานข้อมูลเดียว
+              เลือกข้อมูลวัฒนธรรมที่คุณสนใจ
             </Typography>
             <Typography sx={{ color: 'text.secondary', mt: 1 }}>
-              สำรวจ{data ? ` ${data.groups.length} กลุ่มข้อมูล` : 'ชุดข้อมูล'}{' '}
-              พร้อมจำนวนรายการและแหล่งที่มา
+              เริ่มจากสถานที่ ผู้คน มรดกภูมิปัญญา ผลิตภัณฑ์ หรือผ้าและงานช่าง
             </Typography>
           </Box>
           <Link
@@ -85,7 +84,7 @@ export function HomeDataSummarySection() {
               fontWeight: 600,
             }}
           >
-            สำรวจข้อมูล <RiArrowRightUpLine size={18} />
+            ดูประเภทข้อมูลทั้งหมด <RiArrowRightUpLine size={18} />
           </Link>
         </Stack>
         <Box
@@ -97,7 +96,7 @@ export function HomeDataSummarySection() {
           aria-busy={isPending}
         >
           {isPending &&
-            Array.from({ length: 7 }, (_, i) => (
+            Array.from({ length: PUBLIC_DATA_GROUPS.length }, (_, i) => (
               <Skeleton key={i} variant="rounded" height={188} />
             ))}
           {data?.groups.map((group, index) => (
@@ -118,7 +117,9 @@ export function HomeDataSummarySection() {
                 flexDirection: 'column',
               }}
             >
-              <Typography sx={{ fontWeight: 600, fontSize: 15 }}>{group.label} ↗</Typography>
+              <Typography sx={{ fontWeight: 600, fontSize: 15 }}>
+                {PUBLIC_DATA_GROUPS.find((item) => item.key === group.key)?.label ?? group.label} ↗
+              </Typography>
               <Stack direction="row" alignItems="baseline" spacing={1} sx={{ my: 1.5 }}>
                 <Typography
                   sx={{
@@ -136,7 +137,8 @@ export function HomeDataSummarySection() {
                 </Typography>
               </Stack>
               <Typography variant="caption" sx={{ opacity: 0.8 }}>
-                {group.count === null ? 'ยังอ่านจำนวนไม่ได้' : group.note}
+                {PUBLIC_DATA_GROUPS.find((item) => item.key === group.key)?.description ??
+                  group.note}
               </Typography>
               <Typography
                 variant="caption"
@@ -164,7 +166,7 @@ export function HomeDataSummarySection() {
           </Stack>
         )}
         <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 2 }}>
-          จำนวนแยกตามชุดข้อมูล อาจมีรายการเกี่ยวข้องหรือซ้ำกัน จึงไม่รวมเป็นยอดเดียว ·
+          เรื่องเดียวกันอาจเชื่อมโยงสถานที่ ผู้คน และสินค้า แต่แสดงแยกตามประเภทข้อมูล ·
           อัปเดตจำนวนทุก 5 นาที
         </Typography>
       </Box>

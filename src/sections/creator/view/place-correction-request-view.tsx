@@ -284,6 +284,7 @@ export function PlaceCorrectionRequestView() {
       }}
     >
       <Stack spacing={3} sx={{ mx: 'auto', maxWidth: 1100, position: 'relative', zIndex: 1 }}>
+        <Button component="a" href="/creator/contributions/" sx={{ alignSelf: 'flex-start' }}>← กลับไปร่วมพัฒนาข้อมูล</Button>
         <Box>
           <Typography variant="h3" sx={{ color: creatorTone.text, fontWeight: 600 }}>
             ขอปรับแก้ข้อมูลสถานที่

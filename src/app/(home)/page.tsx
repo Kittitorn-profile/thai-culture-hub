@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 
+import { getPublishedHomeHeroImages } from 'src/server/home-hero';
+
 import { HomeView } from 'src/sections/home/view';
 
 // ----------------------------------------------------------------------
@@ -12,12 +14,12 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
 
   title: {
-    default: 'Thailand Cultural Hub | Discover Thai Culture & Heritage',
+    default: 'Thailand Cultural Hub | ค้นพบวัฒนธรรมไทยผ่านผู้คนและท้องถิ่น',
     template: '%s | Thailand Cultural Hub',
   },
 
   description:
-    'Explore Thailand cultural heritage, traditions, festivals, temples, local wisdom, arts, historical landmarks, and cultural attractions from all 77 provinces of Thailand.',
+    'ค้นหาข้อมูลวัฒนธรรมไทยตามจังหวัดและประเภทข้อมูล ทั้งสถานที่ ศิลปิน มรดกภูมิปัญญา ชุมชนชาติพันธุ์ ผลิตภัณฑ์ ผ้าและงานช่าง พร้อมแหล่งอ้างอิงและเรื่องเล่าจากสมาชิก',
 
   keywords: [
     'Thailand Cultural Hub',
@@ -65,10 +67,10 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Thailand Cultural Hub',
     description:
-      'Discover the rich cultural heritage, traditions, festivals, temples, landmarks, and local wisdom of Thailand.',
+      'สำรวจสถานที่ ศิลปิน ชุมชน ผ้าและงานช่าง และมรดกภูมิปัญญาไทย พร้อมแหล่งอ้างอิงและเรื่องเล่าจากสมาชิก',
     url: SITE_URL,
     siteName: 'Thailand Cultural Hub',
-    locale: 'en_US',
+    locale: 'th_TH',
     type: 'website',
     images: [
       {
@@ -84,7 +86,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Thailand Cultural Hub',
     description:
-      'Explore Thai culture, traditions, festivals, temples, and heritage from all regions of Thailand.',
+      'ค้นหาสถานที่ ศิลปิน ชุมชน ผลิตภัณฑ์ ผ้าและงานช่าง และมรดกภูมิปัญญาไทย พร้อมแหล่งอ้างอิงและเรื่องเล่าจากสมาชิก',
     images: [OG_IMAGE_URL],
   },
 
@@ -95,6 +97,9 @@ export const metadata: Metadata = {
   category: 'Culture & Heritage',
 };
 
-export default function Page() {
-  return <HomeView />;
+export const dynamic = 'force-dynamic';
+
+export default async function Page() {
+  const heroImages = await getPublishedHomeHeroImages();
+  return <HomeView heroImages={heroImages} />;
 }

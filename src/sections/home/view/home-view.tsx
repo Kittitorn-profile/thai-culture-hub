@@ -1,5 +1,6 @@
 'use client';
 
+import type { HomeHeroImage } from 'src/lib/home-hero';
 import type {
   StoryContent,
   HomeEventItem,
@@ -64,7 +65,7 @@ import {
 
 // ----------------------------------------------------------------------
 
-export function HomeView() {
+export function HomeView({ heroImages = [] }: { heroImages?: HomeHeroImage[] }) {
   const creatorArticlesLoadingRef = useRef(false);
   const [selectedVideo, setSelectedVideo] = useState<HomeVideoItem | null>(null);
   const [videoPreviewKey, setVideoPreviewKey] = useState(0);
@@ -314,7 +315,7 @@ export function HomeView() {
         fontFamily: "'LINE Seed Sans TH', sans-serif",
       }}
     >
-      <HomeHeroSection />
+      <HomeHeroSection images={heroImages} />
 
       <HomeMapSection />
 

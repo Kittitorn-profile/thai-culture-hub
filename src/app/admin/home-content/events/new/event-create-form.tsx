@@ -20,7 +20,6 @@ import Divider from '@mui/material/Divider';
 import MenuItem from '@mui/material/MenuItem';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
-import LoadingButton from '@mui/lab/LoadingButton';
 import DialogTitle from '@mui/material/DialogTitle';
 import Autocomplete from '@mui/material/Autocomplete';
 import DialogActions from '@mui/material/DialogActions';
@@ -39,6 +38,10 @@ import { Iconify } from 'src/components/iconify';
 import { Form, Field, RHFEditor } from 'src/components/hook-form';
 
 import { DEFAULT_CONTEST_RESULT_OPTIONS } from 'src/sections/events/event-contest-options';
+import {
+  AdminContentFormHeader,
+  AdminContentFormActions,
+} from 'src/sections/admin/components/admin-content-form-layout';
 
 import { useAuthContext } from 'src/auth/hooks';
 
@@ -300,10 +303,9 @@ export function EventCreateForm({ eventId }: { eventId?: string }) {
                   [eventId]: Object.fromEntries(
                     matchedCategoryIds.map((categoryId) => [
                       categoryId,
-                      (
-                        record.contestCategoryResultIds[eventId]?.[categoryId]?.length
-                          ? record.contestCategoryResultIds[eventId][categoryId]
-                          : (record.contestResultIds[eventId] ?? [])
+                      (record.contestCategoryResultIds[eventId]?.[categoryId]?.length
+                        ? record.contestCategoryResultIds[eventId][categoryId]
+                        : (record.contestResultIds[eventId] ?? [])
                       ).filter((resultId) => validResultIds.has(resultId)),
                     ])
                   ),
@@ -405,10 +407,7 @@ export function EventCreateForm({ eventId }: { eventId?: string }) {
     setResultOptionDraft(null);
   }
 
-  async function uploadImage(
-    file?: File,
-    target: 'cover' | 'logo' | 'organizerLogo' = 'cover'
-  ) {
+  async function uploadImage(file?: File, target: 'cover' | 'logo' | 'organizerLogo' = 'cover') {
     if (!file) return;
     setUploadingTarget(target);
     setError('');
@@ -499,74 +498,38 @@ export function EventCreateForm({ eventId }: { eventId?: string }) {
   }
 
   return (
-    <DashboardContent maxWidth="lg">
+    <DashboardContent maxWidth="xl">
       <Form methods={methods} onSubmit={submit}>
         <Stack spacing={3}>
-          <Card
-            sx={{
-              p: { xs: 2.5, md: 4 },
-              color: 'common.white',
-              background: `linear-gradient(135deg, ${values.backgroundColor || '#6f8790'}, #263635)`,
-            }}
-          >
-            <Stack
-              direction={{ xs: 'column', sm: 'row' }}
-              justifyContent="space-between"
-              spacing={2}
-            >
-              <Stack direction="row" spacing={2} alignItems="center">
-                <Box
-                  sx={{
-                    width: 56,
-                    height: 56,
-                    display: 'grid',
-                    placeItems: 'center',
-                    borderRadius: 2,
-                    bgcolor: 'rgba(255,255,255,0.14)',
-                  }}
-                >
-                  <Iconify icon="solar:calendar-date-bold" width={30} />
-                </Box>
-                <Box>
-                  <Typography variant="h3" sx={{ fontWeight: 900 }}>
-                    {isEditing ? 'แก้ไขกิจกรรม' : 'เพิ่มกิจกรรมใหม่'}
-                  </Typography>
-                  <Typography sx={{ opacity: 0.76 }}>
-                    {isEditing
-                      ? `กิจกรรม • ${values.title || 'กำลังโหลดข้อมูล...'}`
-                      : 'สร้างข้อมูลกิจกรรมสำหรับแสดงบนหน้าเว็บ'}
-                  </Typography>
-                </Box>
-              </Stack>
-              <Box>
-                <Button
-                  color="inherit"
-                  variant="outlined"
-                  onClick={() => router.back()}
-                  sx={{
-                    alignSelf: { sm: 'center' },
-                    borderColor: 'rgba(255,255,255,0.45)',
-                  }}
-                >
-                  กลับหน้ารายการ
-                </Button>
-              </Box>
-            </Stack>
-          </Card>
-
+          <AdminContentFormHeader
+            title={isEditing ? 'แก้ไขกิจกรรม' : 'เพิ่มกิจกรรมใหม่'}
+            description={
+              isEditing
+                ? values.title || 'แก้ไขรายละเอียดและสื่อประกอบกิจกรรม'
+                : 'กรอกข้อมูล วันเวลา สถานที่ ผู้จัด และภาพประกอบ เพื่อแสดงกิจกรรมบนเว็บไซต์'
+            }
+            listHref="/admin/home-content/events/"
+            submitLabel={isEditing ? 'บันทึกการแก้ไข' : 'บันทึกกิจกรรม'}
+            loading={formState.isSubmitting}
+            disabled={!!uploadingTarget || (isEditing && !eventItem)}
+            sections={[
+              { id: 'event-details', label: 'รายละเอียดกิจกรรม' },
+              { id: 'event-media', label: 'สื่อและการแสดงผล' },
+            ]}
+          />
           {error && <Alert severity="error">{error}</Alert>}
           {formState.errors.root?.message && (
             <Alert severity="error">{formState.errors.root.message}</Alert>
           )}
 
-          <Card sx={{ overflow: 'hidden' }}>
+          <Card id="event-details" sx={{ overflow: 'hidden', scrollMarginTop: 120 }}>
             <FormSectionHeader
               step="01"
               icon="solar:file-text-bold"
               title="ข้อมูลหลัก"
               description="ชื่อ รายละเอียด วันเวลา และสถานที่จัดกิจกรรม"
             />
-            <Box sx={{ p: { xs: 2.5, md: 4 } }}>
+            <Box sx={{ p: { xs: 2.5, md: 3 } }}>
               <Stack spacing={3}>
                 <Field.Text name="title" label="ชื่อกิจกรรม" required />
                 <Field.Text
@@ -660,9 +623,7 @@ export function EventCreateForm({ eventId }: { eventId?: string }) {
                         <Button
                           color="error"
                           variant="outlined"
-                          onClick={() =>
-                            setValue('organizerLogoUrl', '', { shouldDirty: true })
-                          }
+                          onClick={() => setValue('organizerLogoUrl', '', { shouldDirty: true })}
                           sx={{ width: 'fit-content' }}
                         >
                           ลบโลโก้ผู้จัด
@@ -756,14 +717,14 @@ export function EventCreateForm({ eventId }: { eventId?: string }) {
             </Box>
           </Card>
 
-          <Card sx={{ overflow: 'hidden' }}>
+          <Card id="event-media" sx={{ overflow: 'hidden', scrollMarginTop: 120 }}>
             <FormSectionHeader
               step="02"
               icon="solar:camera-add-bold"
               title="สื่อและหน้ารายละเอียด"
               description="โลโก้ ภาพปก สีพื้นหลัง และแหล่งที่มาของข้อมูล"
             />
-            <Box sx={{ p: { xs: 2.5, md: 4 } }}>
+            <Box sx={{ p: { xs: 2.5, md: 3 } }}>
               <Stack spacing={3}>
                 <Box>
                   <Typography variant="subtitle2" sx={{ mb: 1 }}>
@@ -1137,7 +1098,12 @@ export function EventCreateForm({ eventId }: { eventId?: string }) {
                               borderColor: 'divider',
                             }}
                           >
-                            <Stack direction="row" spacing={1.25} alignItems="center" sx={{ flex: 1 }}>
+                            <Stack
+                              direction="row"
+                              spacing={1.25}
+                              alignItems="center"
+                              sx={{ flex: 1 }}
+                            >
                               <Chip size="small" label={index + 1} sx={{ minWidth: 32 }} />
                               <Typography sx={{ fontWeight: 800 }}>{option.name}</Typography>
                             </Stack>
@@ -1269,11 +1235,11 @@ export function EventCreateForm({ eventId }: { eventId?: string }) {
                                     const category = values.contestCategories.find(
                                       (item) => item.id === categoryId
                                     );
-                                    const categoryResultIds =
-                                      record.contestCategoryResultIds[eventId ?? '']?.[categoryId]
-                                        ?.length
-                                        ? record.contestCategoryResultIds[eventId ?? ''][categoryId]
-                                        : selectedResultIds;
+                                    const categoryResultIds = record.contestCategoryResultIds[
+                                      eventId ?? ''
+                                    ]?.[categoryId]?.length
+                                      ? record.contestCategoryResultIds[eventId ?? ''][categoryId]
+                                      : selectedResultIds;
 
                                     return (
                                       <Autocomplete
@@ -1324,10 +1290,7 @@ export function EventCreateForm({ eventId }: { eventId?: string }) {
                                         })
                                       }
                                       renderInput={(params) => (
-                                        <TextField
-                                          {...params}
-                                          label="ผลการแข่งขัน / รางวัล"
-                                        />
+                                        <TextField {...params} label="ผลการแข่งขัน / รางวัล" />
                                       )}
                                     />
                                   )}
@@ -1361,30 +1324,12 @@ export function EventCreateForm({ eventId }: { eventId?: string }) {
             </Box>
           </Card>
 
-          <Stack
-            direction="row"
-            justifyContent="flex-end"
-            spacing={1.5}
-            sx={{
-              position: 'sticky',
-              bottom: 16,
-              zIndex: 10,
-              p: 1.5,
-              borderRadius: 2,
-              bgcolor: 'rgba(255,255,255,0.92)',
-              backdropFilter: 'blur(12px)',
-              border: '1px solid',
-              borderColor: 'divider',
-              boxShadow: '0 12px 32px rgba(0,0,0,0.12)',
-            }}
-          >
-            <Button color="inherit" onClick={() => router.back()}>
-              ยกเลิก
-            </Button>
-            <LoadingButton type="submit" variant="contained" loading={formState.isSubmitting}>
-              {isEditing ? 'บันทึกการแก้ไข' : 'บันทึกกิจกรรม'}
-            </LoadingButton>
-          </Stack>
+          <AdminContentFormActions
+            listHref="/admin/home-content/events/"
+            submitLabel={isEditing ? 'บันทึกการแก้ไข' : 'บันทึกกิจกรรม'}
+            loading={formState.isSubmitting}
+            disabled={!!uploadingTarget || (isEditing && !eventItem)}
+          />
         </Stack>
       </Form>
       <Dialog
@@ -1453,7 +1398,7 @@ function FormSectionHeader({
       spacing={1.5}
       alignItems="center"
       sx={{
-        px: { xs: 2.5, md: 4 },
+        px: { xs: 2.5, md: 3 },
         py: 2.25,
         bgcolor: 'background.neutral',
         borderBottom: '1px solid',
@@ -1477,7 +1422,7 @@ function FormSectionHeader({
       <Box sx={{ flex: 1 }}>
         <Stack direction="row" spacing={1} alignItems="center">
           <Typography variant="overline" color="primary.main" sx={{ fontWeight: 900 }}>
-            STEP {step}
+            ส่วนที่ {step}
           </Typography>
           <Typography variant="h6" sx={{ fontWeight: 900 }}>
             {title}

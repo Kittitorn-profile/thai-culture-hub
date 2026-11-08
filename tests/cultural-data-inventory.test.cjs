@@ -71,8 +71,8 @@ test('inventory counts present database rows separately from source and project 
   assert.equal(row('artists').count, 2);
   assert.equal(row('heritage').count, 4718);
   assert.match(row('heritage').basis, /CKAN/);
-  assert.equal(row('community_weaving').count, 8);
-  assert.equal(row('community_crafts').count, 7);
+  assert.equal(row('community_weaving').count, 47);
+  assert.equal(row('community_crafts').count, 8);
   assert.ok(filtered.find((item) => item.table === 'cultural_categories').active);
 });
 test('province scoping leaves unsupported tables global and unknown artist provinces unassigned', async () => {
@@ -80,7 +80,7 @@ test('province scoping leaves unsupported tables global and unknown artist provi
   const result = await service.getCulturalDataInventory(db, 'TH-44', 'มหาสารคาม');
   assert.equal(result.data.find((item) => item.key === 'artists').count, 1);
   assert.equal(result.data.find((item) => item.key === 'heritage').count, null);
-  assert.equal(result.data.find((item) => item.key === 'community_weaving').count, 0);
+  assert.equal(result.data.find((item) => item.key === 'community_weaving').count, 2);
   assert.equal(result.data.find((item) => item.key === 'tat_routes').scope, 'all');
   assert.ok(filtered.filter((item) => item.table === 'cultural_places').every((item) => item.province === 'TH-44'));
 });

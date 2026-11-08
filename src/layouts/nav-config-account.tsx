@@ -8,7 +8,7 @@ export const _accountCreator: AccountDrawerProps['data'] = [
   { label: 'หน้าแรก', href: '/', icon: <Iconify icon="solar:home-angle-bold-duotone" /> },
   {
     label: 'ร่วมพัฒนาข้อมูล',
-    href: '/creator/place-corrections',
+    href: '/creator/contributions',
     icon: <Iconify icon="solar:notebook-bold-duotone" />,
   },
   {

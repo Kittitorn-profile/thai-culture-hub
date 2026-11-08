@@ -92,9 +92,6 @@ export function CulturalDataCardImage({
             alt=""
             sx={{ width: 140, maxHeight: 70, objectFit: 'contain' }}
           />
-          <Typography component="span" variant="caption" sx={{ color: '#718071' }}>
-            ยังไม่มีภาพประกอบ
-          </Typography>
         </Box>
       )}
       {hasImage && (

@@ -18,18 +18,20 @@ import InputAdornment from '@mui/material/InputAdornment';
 import { RouterLink } from 'src/routes/components';
 import { useRouter, useSearchParams } from 'src/routes/hooks';
 
+import { cultureUi } from 'src/theme/culture-ui';
 import { creatorGoogleClient } from 'src/lib/creator-google-auth';
 
+import { Logo } from 'src/components/logo';
 import { Iconify } from 'src/components/iconify';
 import { Form, Field } from 'src/components/hook-form';
 
+import { HOME_SECTION_PX } from 'src/sections/home/components/home-constants';
+
 import { useAuthContext } from 'src/auth/hooks';
-import { getRoleHomePath, getSafeRoleRedirectPath } from 'src/auth/utils/role-redirect';
 import { CREATOR_AUTH_TOKEN_KEY } from 'src/auth/context/supabase/auth-provider';
+import { getRoleHomePath, getSafeRoleRedirectPath } from 'src/auth/utils/role-redirect';
 
 import { GoogleIdentityButton } from '../components/google-identity-button';
-import { cultureUi } from 'src/theme/culture-ui';
-import { HOME_SECTION_PX } from 'src/sections/home/components/home-constants';
 
 const SignInSchema = z.object({
   email: z
@@ -250,11 +252,26 @@ export function CreatorSignInView() {
             '& .MuiFormLabel-asterisk': { color: 'error.main' },
           }}
         >
+          <Logo
+            href="/"
+            aria-label="Thailand Cultural Hub — กลับหน้าแรก"
+            sx={{
+              width: { xs: 160, sm: 184 },
+              height: 'auto',
+              aspectRatio: '2941 / 1169',
+              mx: 'auto',
+              '& img': { display: 'block', objectFit: 'contain' },
+            }}
+          />
           <Box>
-            <Typography component="h2" sx={{ fontSize: 24, fontWeight: 600, lineHeight: 1.4 }}>
+            <Typography
+              component="h2"
+              textAlign="center"
+              sx={{ fontSize: 24, fontWeight: 600, lineHeight: 1.4 }}
+            >
               เข้าสู่ระบบ Creator
             </Typography>
-            <Typography sx={{ mt: 0.75, fontSize: 13, color: cultureUi.muted }}>
+            <Typography textAlign="center" sx={{ mt: 0.75, fontSize: 13, color: cultureUi.muted }}>
               กรอกอีเมลและรหัสผ่านของคุณ
             </Typography>
           </Box>

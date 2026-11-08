@@ -1,23 +1,29 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 import { ARTIST_GROUPS } from 'src/lib/cultural-data-groups';
+import {
+  CRAFT_CATEGORIES,
+  normalizeCraftCategory,
+  getPrimaryCraftCategory,
+} from 'src/lib/public-cultural-data';
 
+import { applyCraftOverrides } from './craft-overrides';
 import { getCulturalHeritage } from './cultural-heritage';
 import fabricImages from '../../data/cultural-images/fabric-images.json';
+import qsdsTextiles from '../../data/cultural-heritage/qsds-textiles.json';
 import { filterEthnicGroups, getEthnicGroupDirectory } from './ethnic-groups';
 import { filterCulturalArtists, getCulturalArtistDirectory } from './cultural-artists';
 
 export const PROVINCE_DATA_SECTIONS = [
   'artists',
   'heritage',
-  'community',
+  'crafts',
   'ethnic',
   'cpot',
-  'fabric',
   'groups',
   'events',
 ] as const;
-export type ProvinceDataSection = (typeof PROVINCE_DATA_SECTIONS)[number];
+export type ProvinceDataSection = (typeof PROVINCE_DATA_SECTIONS)[number] | 'community' | 'fabric';
 export type ProvinceDataItem = {
   id: string;
   title: string;
@@ -26,8 +32,10 @@ export type ProvinceDataItem = {
   sourceUrl: string;
   sourceUrls?: string[];
   detailUrl?: string;
+  images?: { url: string; caption: string; credit: string }[];
   imageUrl?: string;
   imageCredit?: string;
+  craftCategory?: string;
   mapUrl?: string;
   details: { label: string; value: string }[];
 };
@@ -46,16 +54,63 @@ export async function getProvinceCulturalSection(
   section: ProvinceDataSection,
   page = 0,
   pageSize = 9,
-  query = ''
+  query = '',
+  options: { category?: string; offset?: number; recordId?: string } = {}
 ): Promise<ProvinceDataResult> {
-  const result = (data: ProvinceDataItem[], total: number) => ({
-    key: section,
-    data,
-    total,
-    page,
-    pageSize,
-  });
+  const result = async (rows: ProvinceDataItem[], total: number) => {
+    const data = options.recordId ? rows.filter((item) => item.id === options.recordId) : rows;
+    const kind = section === 'cpot' ? 'products' : section;
+    const projected = ['artists', 'heritage', 'ethnic', 'products'].includes(kind)
+      ? await applyCraftOverrides(db, data, kind as 'artists' | 'heritage' | 'ethnic' | 'products')
+      : data;
+    return { key: section, data: projected, total, page, pageSize };
+  };
   const text = (value: unknown) => (typeof value === 'string' ? value : '');
+  if (section === 'crafts') {
+    const category = CRAFT_CATEGORIES.find(
+      (item) => item.key === normalizeCraftCategory(options.category ?? '')
+    );
+    // The community collection is local and small; only database rows are paginated remotely.
+    const community = await getProvinceCulturalSection(
+      db,
+      code,
+      name,
+      'community',
+      0,
+      Number.MAX_SAFE_INTEGER,
+      query,
+      {}
+    );
+    const matchingCommunity = category
+      ? community.data.filter((item) => item.craftCategory === category.key)
+      : community.data;
+    const offset = page * pageSize;
+    const local = matchingCommunity.slice(offset, offset + pageSize).map((item) => ({
+      ...item,
+      id: `community:${item.id}`,
+    }));
+    if (category && category.key !== 'weaving') return result(local, matchingCommunity.length);
+    const fabric = await getProvinceCulturalSection(
+      db,
+      code,
+      name,
+      'fabric',
+      0,
+      Math.max(1, pageSize - local.length),
+      query,
+      { offset: Math.max(0, offset - matchingCommunity.length) }
+    );
+    return result(
+      [
+        ...local,
+        ...fabric.data.slice(0, pageSize - local.length).map((item) => ({
+          ...item,
+          id: `fabric:${item.id}`,
+        })),
+      ],
+      matchingCommunity.length + (fabric.total ?? 0)
+    );
+  }
   if (section === 'cpot' || section === 'fabric') {
     const fabric = section === 'fabric';
     const table = fabric
@@ -65,6 +120,7 @@ export async function getProvinceCulturalSection(
       ? 'id,title,type,description,wisdom,pattern,material,technique,province,source_uri,image_url'
       : 'id,product_name,category,product_type,description,community,district,province,source_uri,image_url';
     let request = db.from(table).select(fields, { count: 'exact' });
+    if (options.recordId) request = request.eq('id', options.recordId);
     if (code && name) request = request.or(`province_code.eq.${code},province.eq.${name}`);
     if (query)
       request = request.ilike(
@@ -73,10 +129,19 @@ export async function getProvinceCulturalSection(
       );
     const { data, count, error } = await request
       .order('id')
-      .range(page * pageSize, (page + 1) * pageSize - 1);
+      .range(options.offset ?? page * pageSize, (options.offset ?? page * pageSize) + pageSize - 1);
     if (error) throw new Error('อ่านชุดผลิตภัณฑ์ไม่ได้');
-    return result(
-      ((data as unknown as Record<string, unknown>[]) ?? []).map((a) => ({
+    const projected = ((data as unknown as Record<string, unknown>[]) ?? []).map((a) => {
+      const qsds = fabric
+        ? qsdsTextiles.items.find(
+            (item) =>
+              item.recordType === 'fabric' &&
+              item.recordId === String(a.id) &&
+              item.recordTitle === a.title &&
+              item.province === a.province
+          )
+        : undefined;
+      return {
         id: String(a.id),
         title: text(fabric ? a.title : a.product_name),
         subtitle: text(fabric ? a.type : a.category),
@@ -104,6 +169,7 @@ export async function getProvinceCulturalSection(
         sourceUrls: fabric
           ? [
               text(a.source_uri),
+              ...(qsds ? [qsds.sourceUrl] : []),
               ...fabricImages
                 .filter(
                   (image) =>
@@ -124,8 +190,13 @@ export async function getProvinceCulturalSection(
           { label: 'ลวดลาย', value: text(a.pattern) },
           { label: 'เทคนิค', value: text(a.technique) },
           { label: 'ภูมิปัญญา', value: text(a.wisdom) },
+          { label: 'ภูมิปัญญาที่เกี่ยวข้อง (กรมหม่อนไหม)', value: qsds?.description ?? '' },
+          { label: 'เทคนิคจากกรมหม่อนไหม', value: qsds?.technique ?? '' },
         ].filter((d) => d.value),
-      })),
+      };
+    });
+    return result(
+      fabric ? await applyCraftOverrides(db, projected, 'fabric') : projected,
       count ?? 0
     );
   }
@@ -292,32 +363,37 @@ export async function getProvinceCulturalSection(
   }
   const records = await getCulturalHeritage({
     collection: section === 'community' ? 'community' : 'registry',
+    category: options.category,
+    recordId: options.recordId,
     province: name,
     query,
     page,
     limit: pageSize,
   });
+  const projected = records.data.map((a) => ({
+    id: a.id,
+    craftCategory: section === 'community' ? getPrimaryCraftCategory(a.categories) : undefined,
+    title: a.name,
+    subtitle: a.categories.join(' · '),
+    description: a.description || a.practice || a.note,
+    sourceUrl: a.sourceUrl,
+    sourceUrls: a.sourceUrls,
+    ...(a.latitude !== null && a.longitude !== null && a.latitude !== 0 && a.longitude !== 0
+      ? { mapUrl: `https://www.google.com/maps/search/?api=1&query=${a.latitude},${a.longitude}` }
+      : {}),
+    details: [
+      { label: 'จังหวัด', value: a.province },
+      { label: 'พื้นที่ปฏิบัติ', value: a.practice },
+      { label: 'เทคนิคและภูมิปัญญา', value: a.technique },
+      { label: 'วิถีชีวิต', value: a.lifestyle },
+      { label: 'ปีขึ้นบัญชีระดับชาติ', value: a.nationalYear },
+      { label: 'ปีขึ้นบัญชีระดับจังหวัด', value: a.provincialYear },
+      { label: 'หมายเหตุ', value: a.note },
+      { label: 'ผู้เผยแพร่', value: a.organization },
+    ].filter((d) => d.value),
+  }));
   return result(
-    records.data.map((a) => ({
-      id: a.id,
-      title: a.name,
-      subtitle: a.categories.join(' · '),
-      description: a.description || a.practice || a.note,
-      sourceUrl: a.sourceUrl,
-      ...(a.latitude !== null && a.longitude !== null && a.latitude !== 0 && a.longitude !== 0
-        ? { mapUrl: `https://www.google.com/maps/search/?api=1&query=${a.latitude},${a.longitude}` }
-        : {}),
-      details: [
-        { label: 'จังหวัด', value: a.province },
-        { label: 'พื้นที่ปฏิบัติ', value: a.practice },
-        { label: 'เทคนิคและภูมิปัญญา', value: a.technique },
-        { label: 'วิถีชีวิต', value: a.lifestyle },
-        { label: 'ปีขึ้นบัญชีระดับชาติ', value: a.nationalYear },
-        { label: 'ปีขึ้นบัญชีระดับจังหวัด', value: a.provincialYear },
-        { label: 'หมายเหตุ', value: a.note },
-        { label: 'ผู้เผยแพร่', value: a.organization },
-      ].filter((d) => d.value),
-    })),
+    section === 'community' ? await applyCraftOverrides(db, projected, 'community') : projected,
     records.total
   );
 }

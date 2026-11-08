@@ -1,9 +1,5 @@
-import { MainLayout } from 'src/layouts/main';
+import { LegalLayout } from 'src/sections/legal/legal-layout';
 
-type Props = {
-  children: React.ReactNode;
-};
-
-export default function Layout({ children }: Props) {
-  return <MainLayout>{children}</MainLayout>;
+export default function Layout({ children }: { children: React.ReactNode }) {
+  return <LegalLayout>{children}</LegalLayout>;
 }

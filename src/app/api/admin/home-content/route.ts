@@ -4,11 +4,13 @@ import { NextResponse } from 'next/server';
 
 import { getSupabaseAdmin } from 'src/server/supabase-admin';
 import { verifyAdminRequest } from 'src/server/admin-api-auth';
+import { homeHeroSchema, HOME_HERO_SECTION_KEY } from 'src/lib/home-hero';
 
 import { ADMIN_PERMISSION } from 'src/auth/admin-permissions';
 
 const TABLE_NAME = process.env.HOME_CONTENT_SECTIONS_TABLE ?? 'home_content_sections';
 const ALLOWED_SECTION_KEYS = new Set([
+  HOME_HERO_SECTION_KEY,
   'story-media',
   'local-wisdom',
   'performance-groups',
@@ -73,7 +75,16 @@ export async function PUT(request: NextRequest) {
     sectionKey?: string;
     content?: unknown;
   };
-  const sectionKey = body.sectionKey?.trim();
+  const sectionKey = typeof body.sectionKey === 'string' ? body.sectionKey.trim() : '';
+  if (sectionKey === HOME_HERO_SECTION_KEY) {
+    const parsed = homeHeroSchema.safeParse(body.content);
+    if (!parsed.success)
+      return NextResponse.json(
+        { message: parsed.error.issues[0]?.message ?? 'ข้อมูลภาพไม่ถูกต้อง' },
+        { status: 400 }
+      );
+    body.content = parsed.data;
+  }
 
   if (!sectionKey || !ALLOWED_SECTION_KEYS.has(sectionKey)) {
     return NextResponse.json({ message: 'Invalid sectionKey' }, { status: 400 });

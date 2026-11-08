@@ -1,27 +1,22 @@
 'use client';
 
-import { cultureUi } from 'src/theme/culture-ui';
-
 import type { Breakpoint } from '@mui/material/styles';
 import type { FooterProps } from './footer';
 import type { NavMainProps } from './nav/types';
 import type { MainSectionProps, HeaderSectionProps, LayoutSectionProps } from '../core';
 
-import { useMemo } from 'react';
-import { useBoolean } from 'minimal-shared/hooks';
-
 import Alert from '@mui/material/Alert';
 
 import { usePathname } from 'src/routes/hooks';
 
+import { cultureUi } from 'src/theme/culture-ui';
+
 import { useAuthContext } from 'src/auth/hooks';
 import { isCreatorUser } from 'src/auth/utils/role-redirect';
 
-import { NavMobile } from './nav/mobile';
 import { Footer, HomeFooter } from './footer';
 import { CultureHeader } from './culture-header';
-import { MenuButton } from '../components/menu-button';
-import { navData as mainNavData } from '../nav-config-main';
+import { MobileBottomNav } from './nav/mobile/mobile-bottom-nav';
 import { MainSection, LayoutSection, HeaderSection } from '../core';
 
 // ----------------------------------------------------------------------
@@ -50,50 +45,15 @@ export function MainLayout({
   const pathname = usePathname();
   const { user } = useAuthContext();
 
-  const { value: open, onFalse: onClose, onTrue: onOpen } = useBoolean();
-
   const isHomePage = pathname === '/';
 
   const isCreator = isCreatorUser(user);
-  const navData = useMemo(() => {
-    const baseNavData = slotProps?.nav?.data ?? mainNavData;
-
-    if (!isCreator) {
-      return baseNavData;
-    }
-
-    return [
-      ...baseNavData,
-      {
-        title: 'เขียนบทความ',
-        path: '/creator/write',
-      },
-      {
-        title: 'ร่วมพัฒนาข้อมูล',
-        path: '/creator/place-corrections',
-      },
-    ];
-  }, [isCreator, slotProps?.nav?.data]);
-
   const renderHeader = () => {
     const headerSlots: HeaderSectionProps['slots'] = {
       topArea: (
         <Alert severity="info" sx={{ display: 'none', borderRadius: 0 }}>
           This is an info Alert.
         </Alert>
-      ),
-      leftArea: (
-        <>
-          {/** @slot Nav mobile */}
-          <MenuButton
-            onClick={onOpen}
-            sx={(theme) => ({
-              mx: 1,
-              [theme.breakpoints.up(layoutQuery)]: { display: 'none' },
-            })}
-          />
-          <NavMobile data={navData} open={open} onClose={onClose} />
-        </>
       ),
       centerArea: <CultureHeader pathname={pathname} />,
     };
@@ -164,10 +124,14 @@ export function MainLayout({
        * @Styles
        *************************************** */
       cssVars={cssVars}
-      sx={sx}
+      sx={[
+        { pb: { xs: 'calc(72px + env(safe-area-inset-bottom, 0px))', [layoutQuery]: 0 } },
+        ...(Array.isArray(sx) ? sx : [sx]),
+      ]}
     >
       {renderHeader()}
       {renderMain()}
+      <MobileBottomNav pathname={pathname} isCreator={isCreator} layoutQuery={layoutQuery} />
       {/* {renderFooter()} */}
     </LayoutSection>
   );

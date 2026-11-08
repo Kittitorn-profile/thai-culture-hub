@@ -1,0 +1,1349 @@
+{
+  "checkedAt": "2026-11-09",
+  "scope": "ผ้าท้องถิ่น: เรื่องชุมชนและทะเบียนผ้าอัตลักษณ์รายจังหวัด",
+  "coverageMeaning": "มีรายการพร้อมแหล่งอ้างอิงอย่างน้อยหนึ่งรายการ ไม่ได้หมายถึงรวบรวมผ้าทุกชนิดของจังหวัดครบแล้ว",
+  "registryReadFrom": "/api/culture/data-groups/?group=fabric",
+  "registryRecordCount": 76,
+  "communityRecordCount": 47,
+  "coveredProvinces": 77,
+  "provinces": [
+    {
+      "code": "TH-10",
+      "province": "กรุงเทพมหานคร",
+      "region": "central",
+      "communityRecords": [
+        {
+          "id": "community-national-bankhrua",
+          "title": "ผ้าไหมชุมชนบ้านครัว",
+          "sourceUrl": "https://webportal.bangkok.go.th/rspgbma/page/sub/24971/ราชเทวี"
+        }
+      ],
+      "registryRecords": [],
+      "hasEvidence": true
+    },
+    {
+      "code": "TH-11",
+      "province": "สมุทรปราการ",
+      "region": "central",
+      "communityRecords": [],
+      "registryRecords": [
+        {
+          "id": "thai-fabric-59",
+          "title": "ลายดอกดาวเรือง",
+          "sourceUrl": "https://gdcatalog.m-culture.go.th/dataset/resource/d12cb480-0071-4b12-a601-d323cb481593"
+        }
+      ],
+      "hasEvidence": true
+    },
+    {
+      "code": "TH-12",
+      "province": "นนทบุรี",
+      "region": "central",
+      "communityRecords": [],
+      "registryRecords": [
+        {
+          "id": "thai-fabric-23",
+          "title": "หม้อน้ำลายวิจิตร",
+          "sourceUrl": "https://gdcatalog.m-culture.go.th/dataset/resource/d12cb480-0071-4b12-a601-d323cb481593"
+        }
+      ],
+      "hasEvidence": true
+    },
+    {
+      "code": "TH-13",
+      "province": "ปทุมธานี",
+      "region": "central",
+      "communityRecords": [],
+      "registryRecords": [
+        {
+          "id": "thai-fabric-28",
+          "title": "ลายรักบัว",
+          "sourceUrl": "https://gdcatalog.m-culture.go.th/dataset/resource/d12cb480-0071-4b12-a601-d323cb481593"
+        }
+      ],
+      "hasEvidence": true
+    },
+    {
+      "code": "TH-14",
+      "province": "พระนครศรีอยุธยา",
+      "region": "central",
+      "communityRecords": [],
+      "registryRecords": [
+        {
+          "id": "thai-fabric-32",
+          "title": "ลายดอกโสน",
+          "sourceUrl": "https://gdcatalog.m-culture.go.th/dataset/resource/d12cb480-0071-4b12-a601-d323cb481593"
+        }
+      ],
+      "hasEvidence": true
+    },
+    {
+      "code": "TH-15",
+      "province": "อ่างทอง",
+      "region": "central",
+      "communityRecords": [],
+      "registryRecords": [
+        {
+          "id": "thai-fabric-71",
+          "title": "รวงทอง",
+          "sourceUrl": "https://gdcatalog.m-culture.go.th/dataset/resource/d12cb480-0071-4b12-a601-d323cb481593"
+        }
+      ],
+      "hasEvidence": true
+    },
+    {
+      "code": "TH-16",
+      "province": "ลพบุรี",
+      "region": "central",
+      "communityRecords": [
+        {
+          "id": "community-national-banmi",
+          "title": "ผ้าทอไทยพวนบ้านหมี่",
+          "sourceUrl": "https://library.tru.ac.th/aritc/index.php?catid=27&id=595&view=article"
+        }
+      ],
+      "registryRecords": [
+        {
+          "id": "thai-fabric-51",
+          "title": "ผ้าเอกลักษณ์ ลายดอกพิกุล",
+          "sourceUrl": "https://gdcatalog.m-culture.go.th/dataset/resource/d12cb480-0071-4b12-a601-d323cb481593"
+        }
+      ],
+      "hasEvidence": true
+    },
+    {
+      "code": "TH-17",
+      "province": "สิงห์บุรี",
+      "region": "central",
+      "communityRecords": [],
+      "registryRecords": [
+        {
+          "id": "thai-fabric-64",
+          "title": "ลายริ้วทอง",
+          "sourceUrl": "https://gdcatalog.m-culture.go.th/dataset/resource/d12cb480-0071-4b12-a601-d323cb481593"
+        }
+      ],
+      "hasEvidence": true
+    },
+    {
+      "code": "TH-18",
+      "province": "ชัยนาท",
+      "region": "central",
+      "communityRecords": [],
+      "registryRecords": [
+        {
+          "id": "thai-fabric-9",
+          "title": "ผ้าทอลายช่อใบมะขาม",
+          "sourceUrl": "https://gdcatalog.m-culture.go.th/dataset/resource/d12cb480-0071-4b12-a601-d323cb481593"
+        }
+      ],
+      "hasEvidence": true
+    },
+    {
+      "code": "TH-19",
+      "province": "สระบุรี",
+      "region": "central",
+      "communityRecords": [
+        {
+          "id": "community-qsds-28",
+          "title": "ผ้ายกมุกไทยวนสระบุรี",
+          "sourceUrl": "https://qsds.go.th/silkcotton/k_28.php"
+        }
+      ],
+      "registryRecords": [
+        {
+          "id": "thai-fabric-63",
+          "title": "ลายก้ามปู",
+          "sourceUrl": "https://gdcatalog.m-culture.go.th/dataset/resource/d12cb480-0071-4b12-a601-d323cb481593"
+        }
+      ],
+      "hasEvidence": true
+    },
+    {
+      "code": "TH-20",
+      "province": "ชลบุรี",
+      "region": "east",
+      "communityRecords": [
+        {
+          "id": "community-national-angsila",
+          "title": "ประวัติและการฟื้นฟูผ้าทอมืออ่างศิลา",
+          "sourceUrl": "https://www.angsilacity.go.th/ข้อมูลทางวัฒนธรรม"
+        }
+      ],
+      "registryRecords": [
+        {
+          "id": "thai-fabric-8",
+          "title": "ดอกประดู่สีเหลือง",
+          "sourceUrl": "https://gdcatalog.m-culture.go.th/dataset/resource/d12cb480-0071-4b12-a601-d323cb481593"
+        }
+      ],
+      "hasEvidence": true
+    },
+    {
+      "code": "TH-21",
+      "province": "ระยอง",
+      "region": "east",
+      "communityRecords": [],
+      "registryRecords": [
+        {
+          "id": "thai-fabric-49",
+          "title": "ลายผ้าตากะหมุก (ตาสมุก)",
+          "sourceUrl": "https://gdcatalog.m-culture.go.th/dataset/resource/d12cb480-0071-4b12-a601-d323cb481593"
+        }
+      ],
+      "hasEvidence": true
+    },
+    {
+      "code": "TH-22",
+      "province": "จันทบุรี",
+      "region": "east",
+      "communityRecords": [],
+      "registryRecords": [
+        {
+          "id": "thai-fabric-6",
+          "title": "ผ้าสีดินเหมืองพลอยลายดอกกล้วยไม้เหลืองจันทบูร",
+          "sourceUrl": "https://gdcatalog.m-culture.go.th/dataset/resource/d12cb480-0071-4b12-a601-d323cb481593"
+        }
+      ],
+      "hasEvidence": true
+    },
+    {
+      "code": "TH-23",
+      "province": "ตราด",
+      "region": "east",
+      "communityRecords": [],
+      "registryRecords": [
+        {
+          "id": "thai-fabric-15",
+          "title": "ศรีตราด",
+          "sourceUrl": "https://gdcatalog.m-culture.go.th/dataset/resource/d12cb480-0071-4b12-a601-d323cb481593"
+        }
+      ],
+      "hasEvidence": true
+    },
+    {
+      "code": "TH-24",
+      "province": "ฉะเชิงเทรา",
+      "region": "east",
+      "communityRecords": [],
+      "registryRecords": [
+        {
+          "id": "thai-fabric-7",
+          "title": "โบสถ์หลวงพ่อโสธรสะท้อนสายน้ำบางปะกงยามอรุณรุ่ง",
+          "sourceUrl": "https://gdcatalog.m-culture.go.th/dataset/resource/d12cb480-0071-4b12-a601-d323cb481593"
+        }
+      ],
+      "hasEvidence": true
+    },
+    {
+      "code": "TH-25",
+      "province": "ปราจีนบุรี",
+      "region": "east",
+      "communityRecords": [],
+      "registryRecords": [
+        {
+          "id": "thai-fabric-30",
+          "title": "ปราจีนบุรี ศรีภูษา",
+          "sourceUrl": "https://gdcatalog.m-culture.go.th/dataset/resource/d12cb480-0071-4b12-a601-d323cb481593"
+        }
+      ],
+      "hasEvidence": true
+    },
+    {
+      "code": "TH-26",
+      "province": "นครนายก",
+      "region": "central",
+      "communityRecords": [],
+      "registryRecords": [
+        {
+          "id": "thai-fabric-17",
+          "title": "ผ้าลายดอกสุพรรณิการ์",
+          "sourceUrl": "https://gdcatalog.m-culture.go.th/dataset/resource/d12cb480-0071-4b12-a601-d323cb481593"
+        }
+      ],
+      "hasEvidence": true
+    },
+    {
+      "code": "TH-27",
+      "province": "สระแก้ว",
+      "region": "east",
+      "communityRecords": [],
+      "registryRecords": [
+        {
+          "id": "thai-fabric-62",
+          "title": "ลายสระแก้ว",
+          "sourceUrl": "https://gdcatalog.m-culture.go.th/dataset/resource/d12cb480-0071-4b12-a601-d323cb481593"
+        }
+      ],
+      "hasEvidence": true
+    },
+    {
+      "code": "TH-30",
+      "province": "นครราชสีมา",
+      "region": "northeast",
+      "communityRecords": [
+        {
+          "id": "community-qsds-2",
+          "title": "ผ้าหางกระรอก",
+          "sourceUrl": "https://qsds.go.th/silkcotton/k_2.php"
+        }
+      ],
+      "registryRecords": [
+        {
+          "id": "thai-fabric-20",
+          "title": "ลายอัตลักษณ์จังหวัดนครราชสีมา\nสีทอง  สีส้ม  สีแดงอิฐ",
+          "sourceUrl": "https://gdcatalog.m-culture.go.th/dataset/resource/d12cb480-0071-4b12-a601-d323cb481593"
+        }
+      ],
+      "hasEvidence": true
+    },
+    {
+      "code": "TH-31",
+      "province": "บุรีรัมย์",
+      "region": "northeast",
+      "communityRecords": [
+        {
+          "id": "community-buriram-sin-tin-daeng",
+          "title": "ผ้าซิ่นตีนแดง นาโพธิ์–พุทไธสง",
+          "sourceUrl": "https://qsds.go.th/silkcotton/k_16.php"
+        }
+      ],
+      "registryRecords": [
+        {
+          "id": "thai-fabric-27",
+          "title": "ลายหางกระรอกคู่",
+          "sourceUrl": "https://gdcatalog.m-culture.go.th/dataset/resource/d12cb480-0071-4b12-a601-d323cb481593"
+        }
+      ],
+      "hasEvidence": true
+    },
+    {
+      "code": "TH-32",
+      "province": "สุรินทร์",
+      "region": "northeast",
+      "communityRecords": [
+        {
+          "id": "community-msu-thasawang-research",
+          "title": "ภูมิปัญญาทอไหมบ้านท่าสว่างจากงานวิจัย",
+          "sourceUrl": "https://isancenter.msu.ac.th/fulltext/ARS/ARS12406.pdf"
+        },
+        {
+          "id": "community-qsds-3",
+          "title": "ผ้าอัมปรม",
+          "sourceUrl": "https://qsds.go.th/silkcotton/k_3.php"
+        },
+        {
+          "id": "community-qsds-4",
+          "title": "ผ้าละเบิก",
+          "sourceUrl": "https://qsds.go.th/silkcotton/k_4.php"
+        },
+        {
+          "id": "community-qsds-24",
+          "title": "ผ้าสะมอ",
+          "sourceUrl": "https://qsds.go.th/silkcotton/k_24.php"
+        },
+        {
+          "id": "community-qsds-25",
+          "title": "ผ้าอันลูนซีม",
+          "sourceUrl": "https://qsds.go.th/silkcotton/k_25.php"
+        }
+      ],
+      "registryRecords": [
+        {
+          "id": "thai-fabric-68",
+          "title": "ผ้าโฮล",
+          "sourceUrl": "https://gdcatalog.m-culture.go.th/dataset/resource/d12cb480-0071-4b12-a601-d323cb481593"
+        }
+      ],
+      "hasEvidence": true
+    },
+    {
+      "code": "TH-33",
+      "province": "ศรีสะเกษ",
+      "region": "northeast",
+      "communityRecords": [
+        {
+          "id": "community-huachang-saeo",
+          "title": "การสืบสานผ้าแส่วบ้านหัวช้าง",
+          "sourceUrl": "https://sisaket.prd.go.th/th/content/category/detail/id/9/iid/62036"
+        }
+      ],
+      "registryRecords": [
+        {
+          "id": "thai-fabric-55",
+          "title": "ผ้าเหยียบลายลูกแก้ว",
+          "sourceUrl": "https://gdcatalog.m-culture.go.th/dataset/resource/d12cb480-0071-4b12-a601-d323cb481593"
+        }
+      ],
+      "hasEvidence": true
+    },
+    {
+      "code": "TH-34",
+      "province": "อุบลราชธานี",
+      "region": "northeast",
+      "communityRecords": [
+        {
+          "id": "community-qsds-14",
+          "title": "ผ้าไหมลายลูกแก้วย้อมมะเกลือ",
+          "sourceUrl": "https://qsds.go.th/silkcotton/k_14.php"
+        }
+      ],
+      "registryRecords": [
+        {
+          "id": "thai-fabric-76",
+          "title": "ผ้ากาบบัว",
+          "sourceUrl": "https://gdcatalog.m-culture.go.th/dataset/resource/d12cb480-0071-4b12-a601-d323cb481593"
+        }
+      ],
+      "hasEvidence": true
+    },
+    {
+      "code": "TH-35",
+      "province": "ยโสธร",
+      "region": "northeast",
+      "communityRecords": [],
+      "registryRecords": [
+        {
+          "id": "thai-fabric-45",
+          "title": "ผ้าขิดลายยศสุนทร \nหรือลายลูกหวาย",
+          "sourceUrl": "https://gdcatalog.m-culture.go.th/dataset/resource/d12cb480-0071-4b12-a601-d323cb481593"
+        }
+      ],
+      "hasEvidence": true
+    },
+    {
+      "code": "TH-36",
+      "province": "ชัยภูมิ",
+      "region": "northeast",
+      "communityRecords": [],
+      "registryRecords": [
+        {
+          "id": "thai-fabric-10",
+          "title": "หมี่คั่นขอนารี",
+          "sourceUrl": "https://gdcatalog.m-culture.go.th/dataset/resource/d12cb480-0071-4b12-a601-d323cb481593"
+        }
+      ],
+      "hasEvidence": true
+    },
+    {
+      "code": "TH-37",
+      "province": "อำนาจเจริญ",
+      "region": "northeast",
+      "communityRecords": [],
+      "registryRecords": [
+        {
+          "id": "thai-fabric-72",
+          "title": "ลายตะขอสลับเอื้อ",
+          "sourceUrl": "https://gdcatalog.m-culture.go.th/dataset/resource/d12cb480-0071-4b12-a601-d323cb481593"
+        }
+      ],
+      "hasEvidence": true
+    },
+    {
+      "code": "TH-38",
+      "province": "บึงกาฬ",
+      "region": "northeast",
+      "communityRecords": [],
+      "registryRecords": [
+        {
+          "id": "thai-fabric-26",
+          "title": "ลายหมากเบ็ง \n(เบญจลักษณ์แห่งบึงกาฬ)",
+          "sourceUrl": "https://gdcatalog.m-culture.go.th/dataset/resource/d12cb480-0071-4b12-a601-d323cb481593"
+        }
+      ],
+      "hasEvidence": true
+    },
+    {
+      "code": "TH-39",
+      "province": "หนองบัวลำภู",
+      "region": "northeast",
+      "communityRecords": [],
+      "registryRecords": [
+        {
+          "id": "thai-fabric-70",
+          "title": "ผ้าขิดสลับหมี่",
+          "sourceUrl": "https://gdcatalog.m-culture.go.th/dataset/resource/d12cb480-0071-4b12-a601-d323cb481593"
+        }
+      ],
+      "hasEvidence": true
+    },
+    {
+      "code": "TH-40",
+      "province": "ขอนแก่น",
+      "region": "northeast",
+      "communityRecords": [
+        {
+          "id": "community-chonnabot-mudmee",
+          "title": "ภูมิปัญญาทอไหมมัดหมี่ชนบท",
+          "sourceUrl": "https://www.qsds.go.th/encyclopedia/viewWord.php?id_words=230"
+        }
+      ],
+      "registryRecords": [
+        {
+          "id": "thai-fabric-5",
+          "title": "แคนแก่นคูน \n( KAN-KAEN-KOON)",
+          "sourceUrl": "https://gdcatalog.m-culture.go.th/dataset/resource/d12cb480-0071-4b12-a601-d323cb481593"
+        }
+      ],
+      "hasEvidence": true
+    },
+    {
+      "code": "TH-41",
+      "province": "อุดรธานี",
+      "region": "northeast",
+      "communityRecords": [
+        {
+          "id": "community-srichomchuen-khit",
+          "title": "ผ้าไหมขิดบ้านศรีชมชื่น",
+          "sourceUrl": "https://udonsilk.wixsite.com/udonsilk"
+        }
+      ],
+      "registryRecords": [
+        {
+          "id": "thai-fabric-73",
+          "title": "ผ้าไหมหมี่ขิด ลายก้นหอย อารยธรรมห้าพันปี",
+          "sourceUrl": "https://gdcatalog.m-culture.go.th/dataset/resource/d12cb480-0071-4b12-a601-d323cb481593"
+        }
+      ],
+      "hasEvidence": true
+    },
+    {
+      "code": "TH-42",
+      "province": "เลย",
+      "region": "northeast",
+      "communityRecords": [
+        {
+          "id": "community-national-napanaad",
+          "title": "ผ้าทอไทดำบ้านนาป่าหนาด",
+          "sourceUrl": "https://ethnicity.sac.or.th/ethnic_research_detail?RES_ID=1999"
+        }
+      ],
+      "registryRecords": [
+        {
+          "id": "thai-fabric-54",
+          "title": "ลายดอกฝ้ายเมืองเลย",
+          "sourceUrl": "https://gdcatalog.m-culture.go.th/dataset/resource/d12cb480-0071-4b12-a601-d323cb481593"
+        }
+      ],
+      "hasEvidence": true
+    },
+    {
+      "code": "TH-43",
+      "province": "หนองคาย",
+      "region": "northeast",
+      "communityRecords": [],
+      "registryRecords": [
+        {
+          "id": "thai-fabric-69",
+          "title": "ลายนาคใหญ่",
+          "sourceUrl": "https://gdcatalog.m-culture.go.th/dataset/resource/d12cb480-0071-4b12-a601-d323cb481593"
+        }
+      ],
+      "hasEvidence": true
+    },
+    {
+      "code": "TH-44",
+      "province": "มหาสารคาม",
+      "region": "northeast",
+      "communityRecords": [
+        {
+          "id": "community-msu-khoklam",
+          "title": "ผ้าไหมย้อมสีธรรมชาติบ้านโคกล่าม",
+          "sourceUrl": "https://isancenter.msu.ac.th/?p=2847"
+        },
+        {
+          "id": "community-msu-portable-loom",
+          "title": "กี่ทอผ้าพกพา: การเรียนรู้งานทอร่วมสมัย",
+          "sourceUrl": "https://news.msu.ac.th/msumagaz/smain/readpost.php?mid=700"
+        }
+      ],
+      "registryRecords": [
+        {
+          "id": "thai-fabric-42",
+          "title": "ลายสร้อยดอกหมาก",
+          "sourceUrl": "https://gdcatalog.m-culture.go.th/dataset/resource/d12cb480-0071-4b12-a601-d323cb481593"
+        }
+      ],
+      "hasEvidence": true
+    },
+    {
+      "code": "TH-45",
+      "province": "ร้อยเอ็ด",
+      "region": "northeast",
+      "communityRecords": [],
+      "registryRecords": [
+        {
+          "id": "thai-fabric-47",
+          "title": "ผ้าลายสาเกต",
+          "sourceUrl": "https://gdcatalog.m-culture.go.th/dataset/resource/d12cb480-0071-4b12-a601-d323cb481593"
+        }
+      ],
+      "hasEvidence": true
+    },
+    {
+      "code": "TH-46",
+      "province": "กาฬสินธุ์",
+      "region": "northeast",
+      "communityRecords": [
+        {
+          "id": "community-praewa",
+          "title": "ผ้าไหมแพรวาบ้านโพน",
+          "sourceUrl": "https://www.kalasinlocal.go.th/public/list/data/detail/id/3114/menu/1171"
+        }
+      ],
+      "registryRecords": [
+        {
+          "id": "thai-fabric-3",
+          "title": "ผ้าไหมแพรวาลายนาค 12 แขน",
+          "sourceUrl": "https://gdcatalog.m-culture.go.th/dataset/resource/d12cb480-0071-4b12-a601-d323cb481593"
+        }
+      ],
+      "hasEvidence": true
+    },
+    {
+      "code": "TH-47",
+      "province": "สกลนคร",
+      "region": "northeast",
+      "communityRecords": [
+        {
+          "id": "community-khamkha",
+          "title": "ผ้าฝ้ายย้อมครามบ้านคำข่า",
+          "sourceUrl": "https://www.thairath.co.th/money/economics/thai_economics/1649606"
+        },
+        {
+          "id": "community-sakon-donkoi-indigo",
+          "title": "ผ้าทอย้อมครามบ้านดอนกอย",
+          "sourceUrl": "https://sakonnakhon.prd.go.th/th/content/category/detail/id/33/iid/63199"
+        },
+        {
+          "id": "community-sakon-nongkhrong-indigo",
+          "title": "ภูมิปัญญาครามบ้านหนองครอง",
+          "sourceUrl": "https://po.snru.ac.th/th/topics/11374"
+        },
+        {
+          "id": "community-msu-sakon-indigo-identity",
+          "title": "อัตลักษณ์ผ้าทอย้อมครามธรรมชาติสกลนคร",
+          "sourceUrl": "https://isancenter.msu.ac.th/fulltext/ARS/ARS12400.pdf"
+        }
+      ],
+      "registryRecords": [
+        {
+          "id": "thai-fabric-56",
+          "title": "ลายสะเก็ดธรรม",
+          "sourceUrl": "https://gdcatalog.m-culture.go.th/dataset/resource/d12cb480-0071-4b12-a601-d323cb481593"
+        }
+      ],
+      "hasEvidence": true
+    },
+    {
+      "code": "TH-48",
+      "province": "นครพนม",
+      "region": "northeast",
+      "communityRecords": [],
+      "registryRecords": [
+        {
+          "id": "thai-fabric-19",
+          "title": "ผ้ามุกนครพนม",
+          "sourceUrl": "https://gdcatalog.m-culture.go.th/dataset/resource/d12cb480-0071-4b12-a601-d323cb481593"
+        }
+      ],
+      "hasEvidence": true
+    },
+    {
+      "code": "TH-49",
+      "province": "มุกดาหาร",
+      "region": "northeast",
+      "communityRecords": [],
+      "registryRecords": [
+        {
+          "id": "thai-fabric-43",
+          "title": "ผ้าลายแก้วมุกดา",
+          "sourceUrl": "https://gdcatalog.m-culture.go.th/dataset/resource/d12cb480-0071-4b12-a601-d323cb481593"
+        }
+      ],
+      "hasEvidence": true
+    },
+    {
+      "code": "TH-50",
+      "province": "เชียงใหม่",
+      "region": "north",
+      "communityRecords": [
+        {
+          "id": "community-maechaem",
+          "title": "ผ้าจกแม่แจ่ม",
+          "sourceUrl": "https://qsds.go.th/encyclopedia/viewWord.php?id_words=174"
+        },
+        {
+          "id": "community-maechaem-beliefs",
+          "title": "วิถีการแต่งกายและความเชื่อบนผ้าจกแม่แจ่ม",
+          "sourceUrl": "https://qsds.go.th/silkcotton/k_21.php"
+        }
+      ],
+      "registryRecords": [
+        {
+          "id": "thai-fabric-13",
+          "title": "หงส์ในโคม",
+          "sourceUrl": "https://gdcatalog.m-culture.go.th/dataset/resource/d12cb480-0071-4b12-a601-d323cb481593"
+        }
+      ],
+      "hasEvidence": true
+    },
+    {
+      "code": "TH-51",
+      "province": "ลำพูน",
+      "region": "north",
+      "communityRecords": [
+        {
+          "id": "community-wiangyong-weaving",
+          "title": "งานทอยกดอกชุมชนเวียงยอง",
+          "sourceUrl": "https://www.lamphun.go.th/public/th/product/22/thai-silk"
+        }
+      ],
+      "registryRecords": [
+        {
+          "id": "thai-fabric-53",
+          "title": "ผ้ายก ลายดอกพิกุล",
+          "sourceUrl": "https://gdcatalog.m-culture.go.th/dataset/resource/d12cb480-0071-4b12-a601-d323cb481593"
+        }
+      ],
+      "hasEvidence": true
+    },
+    {
+      "code": "TH-52",
+      "province": "ลำปาง",
+      "region": "north",
+      "communityRecords": [
+        {
+          "id": "community-national-namlong",
+          "title": "ผ้าฝ้ายย้อมสีธรรมชาติบ้านน้ำหลง",
+          "sourceUrl": "https://culture.lpru.ac.th/Local_lampang/index.php?file=goods_detail&gid=057&modules=lampang"
+        }
+      ],
+      "registryRecords": [
+        {
+          "id": "thai-fabric-52",
+          "title": "ละกอนไส้หมู",
+          "sourceUrl": "https://gdcatalog.m-culture.go.th/dataset/resource/d12cb480-0071-4b12-a601-d323cb481593"
+        }
+      ],
+      "hasEvidence": true
+    },
+    {
+      "code": "TH-53",
+      "province": "อุตรดิตถ์",
+      "region": "north",
+      "communityRecords": [
+        {
+          "id": "community-qsds-13",
+          "title": "ผ้ายกมุกลับแล",
+          "sourceUrl": "https://qsds.go.th/silkcotton/k_13.php"
+        }
+      ],
+      "registryRecords": [
+        {
+          "id": "thai-fabric-74",
+          "title": "ดอกประดู่ศรีอุตรดิตถ์",
+          "sourceUrl": "https://gdcatalog.m-culture.go.th/dataset/resource/d12cb480-0071-4b12-a601-d323cb481593"
+        }
+      ],
+      "hasEvidence": true
+    },
+    {
+      "code": "TH-54",
+      "province": "แพร่",
+      "region": "north",
+      "communityRecords": [
+        {
+          "id": "community-long",
+          "title": "ผ้าจกเมืองลอง",
+          "sourceUrl": "https://www.qsds.go.th/silkcotton/k_11.php"
+        }
+      ],
+      "registryRecords": [
+        {
+          "id": "thai-fabric-40",
+          "title": "ลายดอกสัก",
+          "sourceUrl": "https://gdcatalog.m-culture.go.th/dataset/resource/d12cb480-0071-4b12-a601-d323cb481593"
+        }
+      ],
+      "hasEvidence": true
+    },
+    {
+      "code": "TH-55",
+      "province": "น่าน",
+      "region": "north",
+      "communityRecords": [],
+      "registryRecords": [
+        {
+          "id": "thai-fabric-25",
+          "title": "ลายน้ำไหล",
+          "sourceUrl": "https://gdcatalog.m-culture.go.th/dataset/resource/d12cb480-0071-4b12-a601-d323cb481593"
+        }
+      ],
+      "hasEvidence": true
+    },
+    {
+      "code": "TH-56",
+      "province": "พะเยา",
+      "region": "north",
+      "communityRecords": [
+        {
+          "id": "community-thungmok-tailue",
+          "title": "ผ้าทอไทลื้อบ้านทุ่งมอก",
+          "sourceUrl": "https://so01.tci-thaijo.org/index.php/FEU/article/view/26810"
+        }
+      ],
+      "registryRecords": [
+        {
+          "id": "thai-fabric-33",
+          "title": "ลายดอกสารภี",
+          "sourceUrl": "https://gdcatalog.m-culture.go.th/dataset/resource/d12cb480-0071-4b12-a601-d323cb481593"
+        }
+      ],
+      "hasEvidence": true
+    },
+    {
+      "code": "TH-57",
+      "province": "เชียงราย",
+      "region": "north",
+      "communityRecords": [
+        {
+          "id": "community-national-hatbai",
+          "title": "ผ้าทอไทลื้อบ้านหาดบ้าย",
+          "sourceUrl": "https://chiangrai.mots.go.th/news/1693"
+        }
+      ],
+      "registryRecords": [
+        {
+          "id": "thai-fabric-12",
+          "title": "เชียงแสนหงส์ดำ",
+          "sourceUrl": "https://gdcatalog.m-culture.go.th/dataset/resource/d12cb480-0071-4b12-a601-d323cb481593"
+        }
+      ],
+      "hasEvidence": true
+    },
+    {
+      "code": "TH-58",
+      "province": "แม่ฮ่องสอน",
+      "region": "north",
+      "communityRecords": [],
+      "registryRecords": [
+        {
+          "id": "thai-fabric-44",
+          "title": "เอื้องแซะ",
+          "sourceUrl": "https://gdcatalog.m-culture.go.th/dataset/resource/d12cb480-0071-4b12-a601-d323cb481593"
+        }
+      ],
+      "hasEvidence": true
+    },
+    {
+      "code": "TH-60",
+      "province": "นครสวรรค์",
+      "region": "central",
+      "communityRecords": [],
+      "registryRecords": [
+        {
+          "id": "thai-fabric-22",
+          "title": "ลายพาสาน",
+          "sourceUrl": "https://gdcatalog.m-culture.go.th/dataset/resource/d12cb480-0071-4b12-a601-d323cb481593"
+        }
+      ],
+      "hasEvidence": true
+    },
+    {
+      "code": "TH-61",
+      "province": "อุทัยธานี",
+      "region": "central",
+      "communityRecords": [
+        {
+          "id": "community-phathang-weaving",
+          "title": "ผ้าทอลาวครั่งบ้านผาทั่ง",
+          "sourceUrl": "https://uthaithani.prd.go.th/th/content/category/detail/id/273/iid/447061"
+        }
+      ],
+      "registryRecords": [
+        {
+          "id": "thai-fabric-75",
+          "title": "ลายอุทัยสุพรรณิการ์",
+          "sourceUrl": "https://gdcatalog.m-culture.go.th/dataset/resource/d12cb480-0071-4b12-a601-d323cb481593"
+        }
+      ],
+      "hasEvidence": true
+    },
+    {
+      "code": "TH-62",
+      "province": "กำแพงเพชร",
+      "region": "central",
+      "communityRecords": [],
+      "registryRecords": [
+        {
+          "id": "thai-fabric-4",
+          "title": "ลายศิลาล้อมเพชร",
+          "sourceUrl": "https://gdcatalog.m-culture.go.th/dataset/resource/d12cb480-0071-4b12-a601-d323cb481593"
+        }
+      ],
+      "hasEvidence": true
+    },
+    {
+      "code": "TH-63",
+      "province": "ตาก",
+      "region": "west",
+      "communityRecords": [],
+      "registryRecords": [
+        {
+          "id": "thai-fabric-16",
+          "title": "ลายดอกเสี้ยว",
+          "sourceUrl": "https://gdcatalog.m-culture.go.th/dataset/resource/d12cb480-0071-4b12-a601-d323cb481593"
+        }
+      ],
+      "hasEvidence": true
+    },
+    {
+      "code": "TH-64",
+      "province": "สุโขทัย",
+      "region": "north",
+      "communityRecords": [
+        {
+          "id": "community-hatsiao-weaving",
+          "title": "วิถีทอผ้าตีนจกบ้านหาดเสี้ยว",
+          "sourceUrl": "https://culturalenvi.onep.go.th/site/detail/1150"
+        }
+      ],
+      "registryRecords": [
+        {
+          "id": "thai-fabric-65",
+          "title": "ผ้าซิ่นตีนจกลายปลาสังคโลก (ลายปลาคู่)",
+          "sourceUrl": "https://gdcatalog.m-culture.go.th/dataset/resource/d12cb480-0071-4b12-a601-d323cb481593"
+        }
+      ],
+      "hasEvidence": true
+    },
+    {
+      "code": "TH-65",
+      "province": "พิษณุโลก",
+      "region": "north",
+      "communityRecords": [],
+      "registryRecords": [
+        {
+          "id": "thai-fabric-37",
+          "title": "ผ้าทอลายดอกปีบ",
+          "sourceUrl": "https://gdcatalog.m-culture.go.th/dataset/resource/d12cb480-0071-4b12-a601-d323cb481593"
+        }
+      ],
+      "hasEvidence": true
+    },
+    {
+      "code": "TH-66",
+      "province": "พิจิตร",
+      "region": "central",
+      "communityRecords": [],
+      "registryRecords": [
+        {
+          "id": "thai-fabric-36",
+          "title": "ลายดอกบุนนาค",
+          "sourceUrl": "https://gdcatalog.m-culture.go.th/dataset/resource/d12cb480-0071-4b12-a601-d323cb481593"
+        }
+      ],
+      "hasEvidence": true
+    },
+    {
+      "code": "TH-67",
+      "province": "เพชรบูรณ์",
+      "region": "north",
+      "communityRecords": [],
+      "registryRecords": [
+        {
+          "id": "thai-fabric-39",
+          "title": "ลายมัดหมี่คั่น",
+          "sourceUrl": "https://gdcatalog.m-culture.go.th/dataset/resource/d12cb480-0071-4b12-a601-d323cb481593"
+        }
+      ],
+      "hasEvidence": true
+    },
+    {
+      "code": "TH-70",
+      "province": "ราชบุรี",
+      "region": "west",
+      "communityRecords": [
+        {
+          "id": "community-khubua-weaving",
+          "title": "ผ้าจกไทยวนคูบัว",
+          "sourceUrl": "https://qsds.go.th/silkcotton/k_29.php"
+        }
+      ],
+      "registryRecords": [
+        {
+          "id": "thai-fabric-50",
+          "title": "ลายราชบุรี\n หรือลายกาบโอ่งนกคู่",
+          "sourceUrl": "https://gdcatalog.m-culture.go.th/dataset/resource/d12cb480-0071-4b12-a601-d323cb481593"
+        }
+      ],
+      "hasEvidence": true
+    },
+    {
+      "code": "TH-71",
+      "province": "กาญจนบุรี",
+      "region": "west",
+      "communityRecords": [
+        {
+          "id": "community-national-nongkhao",
+          "title": "ผ้าขาวม้าร้อยสีบ้านหนองขาว",
+          "sourceUrl": "https://snc.lib.su.ac.th/westweb/?p=2021"
+        }
+      ],
+      "registryRecords": [
+        {
+          "id": "thai-fabric-2",
+          "title": "ลายตาจัก",
+          "sourceUrl": "https://gdcatalog.m-culture.go.th/dataset/resource/d12cb480-0071-4b12-a601-d323cb481593"
+        }
+      ],
+      "hasEvidence": true
+    },
+    {
+      "code": "TH-72",
+      "province": "สุพรรณบุรี",
+      "region": "central",
+      "communityRecords": [],
+      "registryRecords": [
+        {
+          "id": "thai-fabric-66",
+          "title": "ลายดอกมะเกลือ",
+          "sourceUrl": "https://gdcatalog.m-culture.go.th/dataset/resource/d12cb480-0071-4b12-a601-d323cb481593"
+        }
+      ],
+      "hasEvidence": true
+    },
+    {
+      "code": "TH-73",
+      "province": "นครปฐม",
+      "region": "central",
+      "communityRecords": [],
+      "registryRecords": [
+        {
+          "id": "thai-fabric-18",
+          "title": "ปูรณฆฏาศรีทวารวดี \n(ปู-ระ-นะ-คะ-ตา-สี-ทะ-วา-ระ-วะ-ดี)",
+          "sourceUrl": "https://gdcatalog.m-culture.go.th/dataset/resource/d12cb480-0071-4b12-a601-d323cb481593"
+        }
+      ],
+      "hasEvidence": true
+    },
+    {
+      "code": "TH-74",
+      "province": "สมุทรสาคร",
+      "region": "central",
+      "communityRecords": [],
+      "registryRecords": [
+        {
+          "id": "thai-fabric-61",
+          "title": "ลายจักรี (ลายต้นแบบจากลวดลายเบญจรงค์)",
+          "sourceUrl": "https://gdcatalog.m-culture.go.th/dataset/resource/d12cb480-0071-4b12-a601-d323cb481593"
+        }
+      ],
+      "hasEvidence": true
+    },
+    {
+      "code": "TH-75",
+      "province": "สมุทรสงคราม",
+      "region": "central",
+      "communityRecords": [],
+      "registryRecords": [
+        {
+          "id": "thai-fabric-60",
+          "title": "ลายสมุทราสุมามาลย์",
+          "sourceUrl": "https://gdcatalog.m-culture.go.th/dataset/resource/d12cb480-0071-4b12-a601-d323cb481593"
+        }
+      ],
+      "hasEvidence": true
+    },
+    {
+      "code": "TH-76",
+      "province": "เพชรบุรี",
+      "region": "west",
+      "communityRecords": [
+        {
+          "id": "community-national-khaoyoi",
+          "title": "ผ้าและงานตัดเย็บไทยทรงดำเขาย้อย",
+          "sourceUrl": "https://www.thaisongdamkhaoyoi.go.th/"
+        }
+      ],
+      "registryRecords": [
+        {
+          "id": "thai-fabric-38",
+          "title": "สุวรรณวัชร์",
+          "sourceUrl": "https://gdcatalog.m-culture.go.th/dataset/resource/d12cb480-0071-4b12-a601-d323cb481593"
+        }
+      ],
+      "hasEvidence": true
+    },
+    {
+      "code": "TH-77",
+      "province": "ประจวบคีรีขันธ์",
+      "region": "west",
+      "communityRecords": [],
+      "registryRecords": [
+        {
+          "id": "thai-fabric-29",
+          "title": "ผ้ายกดอกลายเต่า",
+          "sourceUrl": "https://gdcatalog.m-culture.go.th/dataset/resource/d12cb480-0071-4b12-a601-d323cb481593"
+        }
+      ],
+      "hasEvidence": true
+    },
+    {
+      "code": "TH-80",
+      "province": "นครศรีธรรมราช",
+      "region": "south",
+      "communityRecords": [
+        {
+          "id": "community-nakhon-raised-weaving",
+          "title": "ภูมิปัญญาการเก็บเขาผ้ายกเมืองนคร",
+          "sourceUrl": "https://www.qsds.go.th/silkcotton/k_15.php"
+        }
+      ],
+      "registryRecords": [
+        {
+          "id": "thai-fabric-21",
+          "title": "ลายดอกพิกุล",
+          "sourceUrl": "https://gdcatalog.m-culture.go.th/dataset/resource/d12cb480-0071-4b12-a601-d323cb481593"
+        }
+      ],
+      "hasEvidence": true
+    },
+    {
+      "code": "TH-81",
+      "province": "กระบี่",
+      "region": "south",
+      "communityRecords": [
+        {
+          "id": "community-national-krabi-batik",
+          "title": "ไฑบาติกเขาครามกับการพัฒนาลายผ้า",
+          "sourceUrl": "https://www.ocac.go.th/news/สศร-จับมือดีไซเนอร์รุ่น/"
+        }
+      ],
+      "registryRecords": [
+        {
+          "id": "thai-fabric-1",
+          "title": "ลมหายใจกระบี่",
+          "sourceUrl": "https://gdcatalog.m-culture.go.th/dataset/resource/d12cb480-0071-4b12-a601-d323cb481593"
+        }
+      ],
+      "hasEvidence": true
+    },
+    {
+      "code": "TH-82",
+      "province": "พังงา",
+      "region": "south",
+      "communityRecords": [
+        {
+          "id": "community-national-kohyaonoi",
+          "title": "ผ้าบาติกลายนกเงือกเกาะยาวน้อย",
+          "sourceUrl": "https://www.thailand.go.th/issue-focus-detail/001_02_216?hl=th"
+        }
+      ],
+      "registryRecords": [
+        {
+          "id": "thai-fabric-34",
+          "title": "ลายดอกจำปูน\nและเขาตาปู",
+          "sourceUrl": "https://gdcatalog.m-culture.go.th/dataset/resource/d12cb480-0071-4b12-a601-d323cb481593"
+        }
+      ],
+      "hasEvidence": true
+    },
+    {
+      "code": "TH-83",
+      "province": "ภูเก็ต",
+      "region": "south",
+      "communityRecords": [
+        {
+          "id": "community-national-phuket-batik",
+          "title": "บาติกร่วมสมัยจากกลุ่มผู้ผลิตภูเก็ต",
+          "sourceUrl": "https://www.ocac.go.th/news/สศร-จับมือดีไซเนอร์รุ่น/"
+        }
+      ],
+      "registryRecords": [
+        {
+          "id": "thai-fabric-41",
+          "title": "ลายปะการังและท้องทะเล",
+          "sourceUrl": "https://gdcatalog.m-culture.go.th/dataset/resource/d12cb480-0071-4b12-a601-d323cb481593"
+        }
+      ],
+      "hasEvidence": true
+    },
+    {
+      "code": "TH-84",
+      "province": "สุราษฎร์ธานี",
+      "region": "south",
+      "communityRecords": [
+        {
+          "id": "community-qsds-10",
+          "title": "ผ้าพุมเรียง",
+          "sourceUrl": "https://qsds.go.th/silkcotton/k_10.php"
+        }
+      ],
+      "registryRecords": [
+        {
+          "id": "thai-fabric-67",
+          "title": "ลายราชวัตรโคม \nหรือราชวัตรดอกใหญ่",
+          "sourceUrl": "https://gdcatalog.m-culture.go.th/dataset/resource/d12cb480-0071-4b12-a601-d323cb481593"
+        }
+      ],
+      "hasEvidence": true
+    },
+    {
+      "code": "TH-85",
+      "province": "ระนอง",
+      "region": "south",
+      "communityRecords": [],
+      "registryRecords": [
+        {
+          "id": "thai-fabric-48",
+          "title": "อินทนิล สินธุ์แร่นอง",
+          "sourceUrl": "https://gdcatalog.m-culture.go.th/dataset/resource/d12cb480-0071-4b12-a601-d323cb481593"
+        }
+      ],
+      "hasEvidence": true
+    },
+    {
+      "code": "TH-86",
+      "province": "ชุมพร",
+      "region": "south",
+      "communityRecords": [],
+      "registryRecords": [
+        {
+          "id": "thai-fabric-11",
+          "title": "ลายดอกพุทธรักษา",
+          "sourceUrl": "https://gdcatalog.m-culture.go.th/dataset/resource/d12cb480-0071-4b12-a601-d323cb481593"
+        }
+      ],
+      "hasEvidence": true
+    },
+    {
+      "code": "TH-90",
+      "province": "สงขลา",
+      "region": "south",
+      "communityRecords": [
+        {
+          "id": "community-kohyo",
+          "title": "ผ้าทอเกาะยอ",
+          "sourceUrl": "https://www.culture.go.th/ewtadmin/ewt/culture_th/ewt_news.php?filename=index&nid=5796"
+        }
+      ],
+      "registryRecords": [
+        {
+          "id": "thai-fabric-57",
+          "title": "ผ้าทอเกาะยอ ลายราชวัตร",
+          "sourceUrl": "https://gdcatalog.m-culture.go.th/dataset/resource/d12cb480-0071-4b12-a601-d323cb481593"
+        }
+      ],
+      "hasEvidence": true
+    },
+    {
+      "code": "TH-91",
+      "province": "สตูล",
+      "region": "south",
+      "communityRecords": [],
+      "registryRecords": [
+        {
+          "id": "thai-fabric-58",
+          "title": "ดาวน์บูดิงฟอสซิลสตูล",
+          "sourceUrl": "https://gdcatalog.m-culture.go.th/dataset/resource/d12cb480-0071-4b12-a601-d323cb481593"
+        }
+      ],
+      "hasEvidence": true
+    },
+    {
+      "code": "TH-92",
+      "province": "ตรัง",
+      "region": "south",
+      "communityRecords": [
+        {
+          "id": "community-namuensri",
+          "title": "ผ้าทอนาหมื่นศรี",
+          "sourceUrl": "https://www.culture.go.th/culture_th/ewt_news.php?filename=index&nid=6333"
+        },
+        {
+          "id": "community-namuensri-community",
+          "title": "การสืบสานอาชีพทอผ้าของชุมชนนาหมื่นศรี",
+          "sourceUrl": "https://cbtthailand.dasta.or.th/webapp/relattraction/content/2980/"
+        }
+      ],
+      "registryRecords": [
+        {
+          "id": "thai-fabric-14",
+          "title": "แก้วชิงดวง",
+          "sourceUrl": "https://gdcatalog.m-culture.go.th/dataset/resource/d12cb480-0071-4b12-a601-d323cb481593"
+        }
+      ],
+      "hasEvidence": true
+    },
+    {
+      "code": "TH-93",
+      "province": "พัทลุง",
+      "region": "south",
+      "communityRecords": [],
+      "registryRecords": [
+        {
+          "id": "thai-fabric-35",
+          "title": "ลายดอกพะยอมเล็ก",
+          "sourceUrl": "https://gdcatalog.m-culture.go.th/dataset/resource/d12cb480-0071-4b12-a601-d323cb481593"
+        }
+      ],
+      "hasEvidence": true
+    },
+    {
+      "code": "TH-94",
+      "province": "ปัตตานี",
+      "region": "south",
+      "communityRecords": [
+        {
+          "id": "community-maikaen-weaving",
+          "title": "การฟื้นฟูผ้าทอพื้นเมืองบ้านไม้แก่น",
+          "sourceUrl": "https://clib.psu.ac.th/southerninfo/content/2/ac575a96"
+        }
+      ],
+      "registryRecords": [
+        {
+          "id": "thai-fabric-31",
+          "title": "ลายผ้าจวนตานี",
+          "sourceUrl": "https://gdcatalog.m-culture.go.th/dataset/resource/d12cb480-0071-4b12-a601-d323cb481593"
+        }
+      ],
+      "hasEvidence": true
+    },
+    {
+      "code": "TH-95",
+      "province": "ยะลา",
+      "region": "south",
+      "communityRecords": [
+        {
+          "id": "community-national-yala-batik",
+          "title": "อาดือนันบาติกกับงานผ้าร่วมสมัย",
+          "sourceUrl": "https://www.ocac.go.th/news/สศร-จับมือดีไซเนอร์รุ่น/"
+        }
+      ],
+      "registryRecords": [
+        {
+          "id": "thai-fabric-46",
+          "title": "ยะลารวมใจ",
+          "sourceUrl": "https://gdcatalog.m-culture.go.th/dataset/resource/d12cb480-0071-4b12-a601-d323cb481593"
+        }
+      ],
+      "hasEvidence": true
+    },
+    {
+      "code": "TH-96",
+      "province": "นราธิวาส",
+      "region": "south",
+      "communityRecords": [],
+      "registryRecords": [
+        {
+          "id": "thai-fabric-24",
+          "title": "ผ้าลายพิกุลพลอย",
+          "sourceUrl": "https://gdcatalog.m-culture.go.th/dataset/resource/d12cb480-0071-4b12-a601-d323cb481593"
+        }
+      ],
+      "hasEvidence": true
+    }
+  ]
+}

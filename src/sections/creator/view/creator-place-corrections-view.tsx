@@ -1,7 +1,7 @@
 'use client';
 
-import type { CreatorPlaceCorrection } from '../types';
 import type { IconifyName } from 'src/components/iconify';
+import type { DataCorrectionRow, ContributionCorrection } from 'src/lib/contribution-corrections';
 
 import { useMemo, useState, useEffect, useCallback } from 'react';
 
@@ -13,10 +13,14 @@ import Alert from '@mui/material/Alert';
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
 import Drawer from '@mui/material/Drawer';
+import Dialog from '@mui/material/Dialog';
 import Divider from '@mui/material/Divider';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
 import InputAdornment from '@mui/material/InputAdornment';
 
 import { useRouter } from 'src/routes/hooks';
@@ -24,7 +28,17 @@ import { RouterLink } from 'src/routes/components';
 
 import { fDateTime } from 'src/utils/format-time';
 
+import { adminApiRequest } from 'src/lib/admin-api';
+import { craftImageSchema } from 'src/lib/craft-corrections';
+import { PUBLIC_DATA_GROUPS } from 'src/lib/public-cultural-data';
+import {
+  getContributionLabel,
+  getCorrectionFieldLabels,
+  mergeContributionCorrections,
+} from 'src/lib/contribution-corrections';
+
 import { Iconify } from 'src/components/iconify';
+import { CraftImageGallery } from 'src/components/craft-images/craft-image-gallery';
 
 import { useAuthContext } from 'src/auth/hooks';
 import { isCreatorUser, getRoleHomePath } from 'src/auth/utils/role-redirect';
@@ -43,7 +57,7 @@ const FIELD_LABELS: Record<string, string> = {
   detail: 'รายละเอียด',
 };
 
-function getStatusColor(status: CreatorPlaceCorrection['status']) {
+function getStatusColor(status: ContributionCorrection['status']) {
   if (status === 'approved') return 'success';
   if (status === 'rejected') return 'error';
   return 'warning';
@@ -58,7 +72,7 @@ type StatusMeta = {
   bg: string;
 };
 
-function getStatusMeta(status: CreatorPlaceCorrection['status']): StatusMeta {
+function getStatusMeta(status: ContributionCorrection['status']): StatusMeta {
   if (status === 'approved') {
     return {
       icon: 'solar:check-circle-bold',
@@ -91,17 +105,19 @@ function getStatusMeta(status: CreatorPlaceCorrection['status']): StatusMeta {
   };
 }
 
-function getStatusLabel(status: CreatorPlaceCorrection['status']) {
+function getStatusLabel(status: ContributionCorrection['status']) {
   if (status === 'approved') return 'ผ่านแล้ว';
   if (status === 'rejected') return 'ไม่ผ่าน';
   return 'รอตรวจ';
 }
 
-function getPayloadEntries(payload: Record<string, unknown>) {
+function getPayloadEntries(payload: Record<string, unknown>, recordId = '') {
+  const labels: Record<string, string> = { ...FIELD_LABELS, ...getCorrectionFieldLabels(recordId) };
   return Object.entries(payload)
+    .filter(([key]) => key !== 'images')
     .map(([key, value]) => ({
       key,
-      label: FIELD_LABELS[key] ?? key,
+      label: labels[key] ?? key,
       value: `${value ?? ''}`.trim(),
     }))
     .filter((item) => item.value);
@@ -178,7 +194,7 @@ function StatCard({
   );
 }
 
-function EmptyState() {
+function EmptyState({ onNew }: { onNew: () => void }) {
   return (
     <Card
       sx={{
@@ -208,25 +224,26 @@ function EmptyState() {
         ยังไม่มีคำขอแก้ไขข้อมูล
       </Typography>
       <Typography sx={{ mt: 1, mx: 'auto', maxWidth: 540, color: 'text.secondary' }}>
-        เมื่อคุณพบข้อมูลสถานที่ที่ควรปรับปรุง ให้เปิดหน้าสถานที่นั้นแล้วส่งคำขอแก้ไข
+        เลือกข้อมูลจากทั้ง 6 ประเภท เปิดรายละเอียดแล้วเสนอแก้ไขหรือเพิ่มภาพประกอบ
         รายการและผลตรวจสอบจะมาแสดงที่นี่
       </Typography>
       <Button
-        component={RouterLink}
-        href="/culture-category"
+        onClick={onNew}
         variant="contained"
         startIcon={<Iconify icon="solar:add-folder-bold" />}
         sx={{ mt: 3 }}
       >
-        ค้นหาสถานที่
+        เลือกประเภทข้อมูล
       </Button>
     </Card>
   );
 }
 
-function CorrectionCard({ item, onOpen }: { item: CreatorPlaceCorrection; onOpen: () => void }) {
+function CorrectionCard({ item, onOpen }: { item: ContributionCorrection; onOpen: () => void }) {
   const statusMeta = getStatusMeta(item.status);
-  const suggestedCount = getPayloadEntries(item.suggestedPayload).length;
+  const suggestedCount =
+    getPayloadEntries(item.suggestedPayload, item.placeId).length +
+    ('images' in item.suggestedPayload ? 1 : 0);
 
   return (
     <Card
@@ -313,7 +330,7 @@ function CorrectionCard({ item, onOpen }: { item: CreatorPlaceCorrection; onOpen
               size="small"
               variant="outlined"
               icon={<Iconify icon="solar:calendar-date-bold" />}
-              label={item.provinceCode || item.placeId}
+              label={getContributionLabel(item.kind)}
               sx={{ alignSelf: { xs: 'flex-start', sm: 'center' }, maxWidth: 1 }}
             />
           </Stack>
@@ -338,13 +355,19 @@ export function CreatorPlaceCorrectionsView() {
   const router = useRouter();
   const { user, loading, checkUserSession } = useAuthContext();
   const accessToken = user?.accessToken ?? user?.access_token ?? '';
-  const [items, setItems] = useState<CreatorPlaceCorrection[]>([]);
-  const [selected, setSelected] = useState<CreatorPlaceCorrection | null>(null);
+  const [items, setItems] = useState<ContributionCorrection[]>([]);
+  const [selected, setSelected] = useState<ContributionCorrection | null>(null);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [statusFilter, setStatusFilter] = useState('all');
   const [search, setSearch] = useState('');
-  const filteredItems = items.filter(
+  const [kindFilter, setKindFilter] = useState('all');
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const typeItems = useMemo(
+    () => items.filter((item) => kindFilter === 'all' || item.kind === kindFilter),
+    [items, kindFilter]
+  );
+  const filteredItems = typeItems.filter(
     (item) =>
       (statusFilter === 'all' || item.status === statusFilter) &&
       (!search.trim() ||
@@ -355,12 +378,12 @@ export function CreatorPlaceCorrectionsView() {
 
   const stats = useMemo(
     () => ({
-      total: items.length,
-      pending: items.filter((item) => item.status === 'pending').length,
-      approved: items.filter((item) => item.status === 'approved').length,
-      rejected: items.filter((item) => item.status === 'rejected').length,
+      total: typeItems.length,
+      pending: typeItems.filter((item) => item.status === 'pending').length,
+      approved: typeItems.filter((item) => item.status === 'approved').length,
+      rejected: typeItems.filter((item) => item.status === 'rejected').length,
     }),
-    [items]
+    [typeItems]
   );
 
   const loadItems = useCallback(async () => {
@@ -370,9 +393,22 @@ export function CreatorPlaceCorrectionsView() {
     setError('');
 
     try {
-      const result = await getCreatorPlaceCorrections(accessToken);
-
-      setItems(result.data ?? []);
+      const results = await Promise.allSettled([
+        getCreatorPlaceCorrections(accessToken),
+        adminApiRequest<{ requests: DataCorrectionRow[] }>('/api/creator/craft-corrections/', {
+          accessToken,
+        }),
+      ]);
+      const places = results[0];
+      const records = results[1];
+      setItems(
+        mergeContributionCorrections(
+          places.status === 'fulfilled' ? (places.value.data ?? []) : [],
+          records.status === 'fulfilled' ? records.value.requests : []
+        )
+      );
+      const failures = results.filter((result) => result.status === 'rejected');
+      if (failures.length) setError('โหลดคำขอบางประเภทไม่สำเร็จ กรุณาลองอีกครั้ง');
     } catch (caughtError) {
       setError(caughtError instanceof Error ? caughtError.message : 'โหลดคำขอแก้ไขไม่สำเร็จ');
       await checkUserSession?.();
@@ -383,7 +419,7 @@ export function CreatorPlaceCorrectionsView() {
 
   useEffect(() => {
     if (!loading && !accessToken) {
-      router.replace('/creator/sign-in');
+      router.replace('/creator/sign-in?returnTo=%2Fcreator%2Fcontributions%2F');
       return;
     }
 
@@ -395,9 +431,9 @@ export function CreatorPlaceCorrectionsView() {
     loadItems();
   }, [accessToken, loadItems, loading, router, user]);
 
-  const renderCorrectionDetails = (item: CreatorPlaceCorrection) => {
-    const suggestedEntries = getPayloadEntries(item.suggestedPayload);
-    const originalEntries = getPayloadEntries(item.originalSnapshot);
+  const renderCorrectionDetails = (item: ContributionCorrection) => {
+    const suggestedEntries = getPayloadEntries(item.suggestedPayload, item.placeId);
+    const originalEntries = getPayloadEntries(item.originalSnapshot, item.placeId);
 
     return (
       <Stack spacing={2.5} sx={{ p: { xs: 2.5, md: 3 } }}>
@@ -411,7 +447,9 @@ export function CreatorPlaceCorrectionsView() {
           <Typography variant="h5" sx={{ fontWeight: 600 }}>
             {item.placeName || 'คำขอแก้ไขสถานที่'}
           </Typography>
-          <Typography sx={{ color: 'text.secondary' }}>{item.placeId}</Typography>
+          <Typography sx={{ color: 'text.secondary' }}>
+            {getContributionLabel(item.kind)}
+          </Typography>
           <Typography sx={{ color: 'text.secondary', fontSize: 13 }}>
             ส่งเมื่อ {fDateTime(item.createdAt)}
           </Typography>
@@ -437,7 +475,14 @@ export function CreatorPlaceCorrectionsView() {
             {suggestedEntries.map((entry) => (
               <DetailBlock key={entry.key} label={entry.label} value={entry.value} />
             ))}
-            {!suggestedEntries.length && <Alert severity="info">ไม่มีรายละเอียดที่เสนอแก้</Alert>}
+            {Array.isArray(item.suggestedPayload.images) && (
+              <CraftImageGallery
+                images={craftImageSchema.array().parse(item.suggestedPayload.images)}
+              />
+            )}
+            {!suggestedEntries.length && !Array.isArray(item.suggestedPayload.images) && (
+              <Alert severity="info">ไม่มีรายละเอียดที่เสนอแก้</Alert>
+            )}
           </Stack>
         </Box>
 
@@ -447,17 +492,28 @@ export function CreatorPlaceCorrectionsView() {
             {originalEntries.map((entry) => (
               <DetailBlock key={entry.key} label={entry.label} value={entry.value} />
             ))}
-            {!originalEntries.length && <Alert severity="info">ไม่มี snapshot ข้อมูลเดิม</Alert>}
+            {Array.isArray(item.originalSnapshot.images) && (
+              <CraftImageGallery
+                images={craftImageSchema.array().parse(item.originalSnapshot.images)}
+              />
+            )}
+            {!originalEntries.length && !Array.isArray(item.originalSnapshot.images) && (
+              <Alert severity="info">ไม่มีข้อมูลเดิม</Alert>
+            )}
           </Stack>
         </Box>
 
         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
           <Button
             component={RouterLink}
-            href={`/culture-place/${encodeURIComponent(item.placeId)}`}
+            href={
+              item.kind === 'places'
+                ? `/culture-place/${encodeURIComponent(item.placeId)}`
+                : `/creator/contributions/edit/?recordId=${encodeURIComponent(item.placeId)}`
+            }
             variant="outlined"
           >
-            ดูหน้าสถานที่
+            {item.kind === 'places' ? 'ดูหน้าสถานที่' : 'เปิดรายการเพื่อเสนอข้อมูล'}
           </Button>
           <Button variant="contained" onClick={() => setSelected(null)}>
             ปิด
@@ -499,15 +555,14 @@ export function CreatorPlaceCorrectionsView() {
         >
           <Box>
             <Typography component="h1" sx={{ fontSize: { xs: 26, md: 32 }, fontWeight: 600 }}>
-              คำขอแก้ไขข้อมูล
+              ร่วมพัฒนาข้อมูล
             </Typography>
             <Typography sx={{ mt: 0.5, maxWidth: 680, fontSize: 13, color: 'text.secondary' }}>
-              ติดตามข้อมูลสถานที่ที่คุณเสนอแก้ไข ดูสถานะการตรวจสอบ และอ่านข้อความตอบกลับจากทีมงาน
+              ติดตามคำขอของคุณจากทั้ง 6 ประเภทข้อมูล ดูผลการตรวจสอบและข้อความจากทีมงานในที่เดียว
             </Typography>
           </Box>
           <Button
-            component={RouterLink}
-            href="/culture-category"
+            onClick={() => setPickerOpen(true)}
             variant="contained"
             startIcon={<Iconify icon="solar:add-circle-bold" />}
             sx={{
@@ -522,6 +577,38 @@ export function CreatorPlaceCorrectionsView() {
           </Button>
         </Stack>
 
+        <Stack direction="row" flexWrap="wrap" useFlexGap spacing={1}>
+          {[{ key: 'all', label: 'ทุกประเภท' }, ...PUBLIC_DATA_GROUPS].map((group) => (
+            <Button
+              key={group.key}
+              variant={kindFilter === group.key ? 'contained' : 'outlined'}
+              size="small"
+              onClick={() => {
+                setKindFilter(group.key);
+                setStatusFilter('all');
+              }}
+            >
+              {group.label} (
+              {group.key === 'all'
+                ? items.length
+                : items.filter((item) => item.kind === group.key).length}
+              )
+            </Button>
+          ))}
+        </Stack>
+        {error && (
+          <Alert
+            severity="warning"
+            action={
+              <Button color="inherit" onClick={() => void loadItems()}>
+                ลองอีกครั้ง
+              </Button>
+            }
+          >
+            {error}
+          </Alert>
+        )}
+        {isLoading && <Typography role="status">กำลังโหลดคำขอ…</Typography>}
         <Grid container spacing={2}>
           <Grid size={{ xs: 6, md: 3 }}>
             <StatCard
@@ -572,11 +659,11 @@ export function CreatorPlaceCorrectionsView() {
           alignItems={{ sm: 'center' }}
         >
           <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
-            แสดง {filteredItems.length} จาก {items.length} คำขอ
+            แสดง {filteredItems.length} จาก {typeItems.length} คำขอ
           </Typography>
           <TextField
             size="small"
-            label="ค้นหาสถานที่หรือคำขอ"
+            label="ค้นหาชื่อรายการหรือคำขอ"
             value={search}
             onChange={(event) => setSearch(event.target.value)}
             sx={{ width: { xs: 1, sm: 320 } }}
@@ -599,18 +686,19 @@ export function CreatorPlaceCorrectionsView() {
               onClick={() => {
                 setSearch('');
                 setStatusFilter('all');
+                setKindFilter('all');
               }}
             >
               แสดงคำขอทั้งหมด
             </Button>
           </Card>
         )}
-        {!items.length && !isLoading ? (
-          <EmptyState />
+        {!items.length && !isLoading && !error ? (
+          <EmptyState onNew={() => setPickerOpen(true)} />
         ) : (
           <Grid container spacing={2}>
             {filteredItems.map((item) => (
-              <Grid key={item.id} size={{ xs: 12, md: 6 }}>
+              <Grid key={`${item.kind}:${item.id}`} size={{ xs: 12, md: 6 }}>
                 <CorrectionCard item={item} onOpen={() => setSelected(item)} />
               </Grid>
             ))}
@@ -618,6 +706,30 @@ export function CreatorPlaceCorrectionsView() {
         )}
       </Stack>
 
+      <Dialog open={pickerOpen} onClose={() => setPickerOpen(false)} fullWidth maxWidth="sm">
+        <DialogTitle>เลือกประเภทข้อมูลที่ต้องการร่วมพัฒนา</DialogTitle>
+        <DialogContent>
+          <Typography color="text.secondary" sx={{ mb: 2 }}>
+            ค้นหารายการ เปิดรายละเอียด แล้วเลือกเสนอแก้ไข / เพิ่มเติมข้อมูล
+          </Typography>
+          <Stack spacing={1.5}>
+            {PUBLIC_DATA_GROUPS.map((group) => (
+              <Button
+                key={group.key}
+                component={RouterLink}
+                href={group.href}
+                variant="outlined"
+                sx={{ justifyContent: 'flex-start', py: 1.5 }}
+              >
+                {group.label} ↗
+              </Button>
+            ))}
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setPickerOpen(false)}>กลับ</Button>
+        </DialogActions>
+      </Dialog>
       <Drawer
         anchor="right"
         open={!!selected}

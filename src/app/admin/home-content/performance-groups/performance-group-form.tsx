@@ -4,13 +4,12 @@ import type { Control } from 'react-hook-form';
 
 import { useState, useEffect } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Grid } from 'node_modules/@mui/material/esm';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm, useWatch, Controller, useFieldArray, useFormContext } from 'react-hook-form';
 
 import Box from '@mui/material/Box';
+import Grid from '@mui/material/Grid';
 import Card from '@mui/material/Card';
-import Chip from '@mui/material/Chip';
 import Alert from '@mui/material/Alert';
 import Stack from '@mui/material/Stack';
 import Avatar from '@mui/material/Avatar';
@@ -23,7 +22,6 @@ import TextField from '@mui/material/TextField';
 import Accordion from '@mui/material/Accordion';
 import Pagination from '@mui/material/Pagination';
 import Typography from '@mui/material/Typography';
-import LoadingButton from '@mui/lab/LoadingButton';
 import DialogTitle from '@mui/material/DialogTitle';
 import Autocomplete from '@mui/material/Autocomplete';
 import DialogActions from '@mui/material/DialogActions';
@@ -39,6 +37,11 @@ import provinces from 'src/data/thailand-culture/provinces';
 
 import { Iconify } from 'src/components/iconify';
 import { Form, Field } from 'src/components/hook-form';
+
+import {
+  AdminContentFormHeader,
+  AdminContentFormActions,
+} from 'src/sections/admin/components/admin-content-form-layout';
 
 import { useAuthContext } from 'src/auth/hooks';
 
@@ -389,7 +392,7 @@ export function PerformanceGroupForm({ groupId }: Props) {
   );
 
   return (
-    <DashboardContent maxWidth="lg">
+    <DashboardContent maxWidth="xl">
       <Snackbar
         open={Boolean(uploadError)}
         autoHideDuration={7000}
@@ -402,60 +405,29 @@ export function PerformanceGroupForm({ groupId }: Props) {
       </Snackbar>
       <Form methods={methods} onSubmit={onSubmit}>
         <Stack spacing={3}>
-          <Card
-            sx={{
-              p: { xs: 2.5, md: 4 },
-              color: 'common.white',
-              background: `linear-gradient(135deg, ${group.primaryColor || '#8b5e3c'} 0%, #182625 100%)`,
-            }}
-          >
-            <Stack spacing={2.5}>
-              <Stack
-                direction={{ xs: 'column', sm: 'row' }}
-                justifyContent="space-between"
-                spacing={2}
-              >
-                <Box>
-                  <Typography variant="overline" sx={{ opacity: 0.72, letterSpacing: 1.4 }}>
-                    จัดการข้อมูลวง
-                  </Typography>
-                  <Typography variant="h3" sx={{ fontWeight: 900 }}>
-                    {isEditing ? `แก้ไข ${group.name || 'ข้อมูลวง'}` : 'สร้างวงใหม่'}
-                  </Typography>
-                  <Typography sx={{ mt: 0.75, opacity: 0.8 }}>
-                    กรอกข้อมูลตามลำดับ และสามารถกลับมาแก้ไขเพิ่มเติมภายหลังได้
-                  </Typography>
-                </Box>
-                <Button
-                  color="inherit"
-                  variant="outlined"
-                  onClick={() => router.back()}
-                  sx={{ alignSelf: { sm: 'flex-start' }, borderColor: 'rgba(255,255,255,0.45)' }}
-                >
-                  กลับหน้ารายการ
-                </Button>
-              </Stack>
-              <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
-                <Chip
-                  label="1 · ข้อมูลและภาพ"
-                  sx={{ color: 'common.white', bgcolor: 'rgba(255,255,255,0.16)' }}
-                />
-                <Chip
-                  label={`2 · บุคลากร ${group.personnel.length} คน`}
-                  sx={{ color: 'common.white', bgcolor: 'rgba(255,255,255,0.16)' }}
-                />
-                <Chip
-                  label={`3 · ข้อมูลรายปี ${group.yearlyData.length} ปี`}
-                  sx={{ color: 'common.white', bgcolor: 'rgba(255,255,255,0.16)' }}
-                />
-              </Stack>
-            </Stack>
-          </Card>
+          <AdminContentFormHeader
+            title={isEditing ? 'แก้ไขวงดนตรี / คณะการแสดง' : 'เพิ่มวงดนตรี / คณะการแสดง'}
+            description={
+              isEditing
+                ? group.name || 'แก้ไขข้อมูลวง บุคลากร และผลงานรายปี'
+                : 'กรอกข้อมูลวง ภาพประกอบ บุคลากร และผลงาน เพื่อแสดงบนเว็บไซต์'
+            }
+            listHref="/admin/home-content/performance-groups/"
+            submitLabel={isEditing ? 'บันทึกการแก้ไข' : 'สร้างวง / คณะการแสดง'}
+            loading={save.isPending}
+            disabled={query.isLoading || !!uploadingImageKey}
+            sections={[
+              { id: 'group-basics', label: 'ข้อมูลและภาพ' },
+              { id: 'group-personnel', label: 'บุคลากร (' + group.personnel.length + ')' },
+              { id: 'group-years', label: 'ผลงานรายปี (' + group.yearlyData.length + ')' },
+              { id: 'group-publishing', label: 'เผยแพร่และติดต่อ' },
+            ]}
+          />
           {error || query.error ? (
             <Alert severity="error">{error || 'โหลดข้อมูลไม่สำเร็จ'}</Alert>
           ) : null}
 
-          <Card sx={{ overflow: 'hidden' }}>
+          <Card id="group-basics" sx={{ overflow: 'hidden', scrollMarginTop: 120 }}>
             <SectionHeader
               title="1. ข้อมูลหลักและอัตลักษณ์"
               subtitle="ข้อมูลที่ใช้แนะนำวงและแสดงบนหน้าเว็บไซต์"
@@ -616,7 +588,7 @@ export function PerformanceGroupForm({ groupId }: Props) {
             </Box>
           </Card>
 
-          <Card sx={{ overflow: 'hidden' }}>
+          <Card id="group-personnel" sx={{ overflow: 'hidden', scrollMarginTop: 120 }}>
             <SectionHeader
               title="2. บุคลากรและตำแหน่ง"
               subtitle="เพิ่มประวัติและกำหนดบทบาทของสมาชิกในวง"
@@ -759,7 +731,7 @@ export function PerformanceGroupForm({ groupId }: Props) {
             </Box>
           </Card>
 
-          <Card sx={{ overflow: 'hidden' }}>
+          <Card id="group-years" sx={{ overflow: 'hidden', scrollMarginTop: 120 }}>
             <SectionHeader
               title="3. ข้อมูลรายปี ผลงาน และรางวัล"
               subtitle="เปิดแก้ไขเฉพาะปีที่ต้องการ เพื่อลดความซับซ้อนของหน้า"
@@ -894,7 +866,7 @@ export function PerformanceGroupForm({ groupId }: Props) {
             </Box>
           </Card>
 
-          <Card sx={{ overflow: 'hidden' }}>
+          <Card id="group-publishing" sx={{ overflow: 'hidden', scrollMarginTop: 120 }}>
             <SectionHeader
               title="4. การเผยแพร่และช่องทางติดต่อ"
               subtitle="ควบคุมการแสดงผลและข้อมูลสำหรับผู้สนใจติดต่อวง"
@@ -946,35 +918,12 @@ export function PerformanceGroupForm({ groupId }: Props) {
               </Stack>
             </Box>
           </Card>
-          <Stack
-            direction="row"
-            justifyContent="flex-end"
-            spacing={1.5}
-            sx={{
-              position: 'sticky',
-              bottom: 16,
-              zIndex: 10,
-              p: 1.5,
-              borderRadius: 2,
-              bgcolor: 'rgba(255,255,255,0.92)',
-              backdropFilter: 'blur(12px)',
-              border: '1px solid',
-              borderColor: 'divider',
-              boxShadow: '0 12px 32px rgba(0,0,0,0.12)',
-            }}
-          >
-            <Button color="inherit" onClick={() => router.back()}>
-              ยกเลิก
-            </Button>
-            <LoadingButton
-              type="submit"
-              variant="contained"
-              loading={save.isPending}
-              disabled={query.isLoading}
-            >
-              {isEditing ? 'บันทึกการแก้ไข' : 'สร้างวง'}
-            </LoadingButton>
-          </Stack>
+          <AdminContentFormActions
+            listHref="/admin/home-content/performance-groups/"
+            submitLabel={isEditing ? 'บันทึกการแก้ไข' : 'สร้างวง / คณะการแสดง'}
+            loading={save.isPending}
+            disabled={query.isLoading || !!uploadingImageKey}
+          />
         </Stack>
       </Form>
 

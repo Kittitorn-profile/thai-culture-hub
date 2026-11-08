@@ -114,7 +114,7 @@ export function HomeCreatorArticlesSection({
                 lineHeight: 1.15,
               }}
             >
-              งานเขียนจาก Creator
+              เรื่องเล่าจากสมาชิก
             </Typography>
             <Typography
               sx={{
@@ -124,7 +124,7 @@ export function HomeCreatorArticlesSection({
                 lineHeight: 1.75,
               }}
             >
-              เรื่องเล่าวัฒนธรรมที่ผ่านการตรวจสอบแล้วจากผู้ร่วมเขียนในชุมชน
+              บทความวัฒนธรรมจากสมาชิกที่ทีมงานอนุมัติให้เผยแพร่
               กดอ่านรายละเอียดเพื่อดูบทความฉบับเต็มและมุมมองจากผู้เขียน
             </Typography>
           </Box>
@@ -143,7 +143,7 @@ export function HomeCreatorArticlesSection({
               },
             }}
           >
-            สมัครเป็น Creator
+            สมัครสมาชิกร่วมเขียน
           </Button>
         </Stack>
 
@@ -296,7 +296,7 @@ export function HomeCreatorArticlesSection({
                     WebkitBoxOrient: 'vertical',
                   }}
                 >
-                  {article.excerpt || 'เรื่องราววัฒนธรรมจาก creator ของ Thai Culture Hub'}
+                  {article.excerpt || 'เรื่องราววัฒนธรรมจากสมาชิก Thailand Cultural Hub'}
                 </Typography>
 
                 <Stack

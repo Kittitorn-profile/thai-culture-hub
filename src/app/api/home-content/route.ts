@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 
 import { getSupabaseAdmin } from 'src/server/supabase-admin';
 import { getCultureCategoryKeyByTitle } from 'src/lib/culture-categories';
+import { parseHeroImages, HOME_HERO_SECTION_KEY } from 'src/lib/home-hero';
 
 const TABLE_NAME = process.env.HOME_CONTENT_SECTIONS_TABLE ?? 'home_content_sections';
 
@@ -33,6 +34,12 @@ export async function GET() {
   const sections = Object.fromEntries(
     ((data ?? []) as HomeContentRow[]).map((row) => [row.section_key, row.content])
   );
+
+  if (sections[HOME_HERO_SECTION_KEY]) {
+    sections[HOME_HERO_SECTION_KEY] = {
+      images: parseHeroImages(sections[HOME_HERO_SECTION_KEY]).filter((image) => image.isActive),
+    };
+  }
 
   const categories = sections['culture-categories'] as
     | { items?: Array<{ title?: string; imageUrl?: string }> }

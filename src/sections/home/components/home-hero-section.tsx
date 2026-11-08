@@ -1,3 +1,9 @@
+'use client';
+
+import type { HomeHeroImage } from 'src/lib/home-hero';
+
+import { useState } from 'react';
+
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
@@ -6,7 +12,11 @@ import { RouterLink } from 'src/routes/components';
 
 import { HOME_SECTION_PX, HOME_SECTION_MAX_WIDTH } from './home-constants';
 
-export function HomeHeroSection() {
+export function HomeHeroSection({ images = [] }: { images?: HomeHeroImage[] }) {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const visibleImages = images.filter((image) => image.isActive);
+  const index = Math.min(activeIndex, Math.max(0, visibleImages.length - 1));
+  const image = visibleImages[index];
   return (
     <Box
       component="section"
@@ -26,21 +36,24 @@ export function HomeHeroSection() {
           alignItems: { xs: 'flex-end', md: 'center' },
         }}
       >
-        <Box
-          component="img"
-          src="/assets/th-hub/hub-bg.png"
-          alt="ศิลปะและการแสดงวัฒนธรรมไทย"
-          fetchPriority="high"
-          sx={{
-            position: 'absolute',
-            inset: 0,
-            width: 1,
-            height: 1,
-            objectFit: 'cover',
-            objectPosition: { xs: '60% center', md: 'center' },
-            filter: 'saturate(0.55)',
-          }}
-        />
+        {image && (
+          <Box
+            key={image.id}
+            component="img"
+            src={image.imageUrl}
+            alt={image.alt}
+            fetchPriority="high"
+            sx={{
+              position: 'absolute',
+              inset: 0,
+              width: 1,
+              height: 1,
+              objectFit: 'cover',
+              objectPosition: { xs: '60% center', md: 'center' },
+              filter: 'saturate(0.55)',
+            }}
+          />
+        )}
         <Box
           sx={{
             position: 'absolute',
@@ -53,6 +66,7 @@ export function HomeHeroSection() {
           sx={{
             position: 'relative',
             p: { xs: 3, sm: 5, md: 7 },
+            pb: visibleImages.length > 1 ? { xs: 10, sm: 10, md: 10 } : undefined,
             maxWidth: 740,
             color: '#fff',
             width: 1,
@@ -73,9 +87,9 @@ export function HomeHeroSection() {
               fontWeight: 600,
             }}
           >
-            เปิดมุมมองใหม่
+            ค้นพบวัฒนธรรมไทย
             <br />
-            ผ่านวัฒนธรรมไทย
+            ผ่านผู้คนและท้องถิ่น
           </Typography>
           <Typography
             sx={{
@@ -86,9 +100,9 @@ export function HomeHeroSection() {
               color: '#ffffffde',
             }}
           >
-            สำรวจสถานที่ ประเพณี และภูมิปัญญาท้องถิ่น
+            ค้นหาสถานที่ ศิลปิน ชุมชน ผ้า และภูมิปัญญา
             <br />
-            ค้นพบเรื่องราวที่ทำให้แต่ละพื้นที่ไม่เหมือนใคร
+            จากข้อมูลหลายแหล่ง พร้อมที่มาให้ศึกษาเพิ่มเติม
           </Typography>
           <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 2, mt: 3.5 }}>
             <Button
@@ -105,20 +119,67 @@ export function HomeHeroSection() {
                 '&:hover': { bgcolor: '#e9e9e7' },
               }}
             >
-              เริ่มสำรวจวัฒนธรรม
+              สำรวจตามจังหวัด
             </Button>
             <Button
               component={RouterLink}
               href="/culture-category"
               sx={{ color: '#fff', fontWeight: 500, px: 1.5, '&:hover': { bgcolor: '#ffffff14' } }}
             >
-              เลือกหมวดที่สนใจ{' '}
+              ค้นหาสถานที่ตามหมวด{' '}
               <Box component="span" aria-hidden="true" sx={{ ml: 1 }}>
                 →
               </Box>
             </Button>
           </Box>
         </Box>
+        {visibleImages.length > 1 && (
+          <Box
+            role="group"
+            aria-label="เลือกภาพแบนเนอร์"
+            sx={{
+              position: 'absolute',
+              bottom: 20,
+              right: { xs: 20, md: 32 },
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1,
+              p: 0.5,
+              borderRadius: 99,
+              bgcolor: 'rgba(16,22,24,.65)',
+              color: '#fff',
+            }}
+          >
+            <Button
+              aria-label="ภาพก่อนหน้า"
+              onClick={() =>
+                setActiveIndex((index + visibleImages.length - 1) % visibleImages.length)
+              }
+              sx={{ minWidth: 44, minHeight: 44, color: 'inherit', borderRadius: 99 }}
+            >
+              ←
+            </Button>
+            <Typography
+              role="status"
+              aria-live="polite"
+              sx={{
+                fontSize: 13,
+                minWidth: 44,
+                textAlign: 'center',
+                fontVariantNumeric: 'tabular-nums',
+              }}
+            >
+              {index + 1} / {visibleImages.length}
+            </Typography>
+            <Button
+              aria-label="ภาพถัดไป"
+              onClick={() => setActiveIndex((index + 1) % visibleImages.length)}
+              sx={{ minWidth: 44, minHeight: 44, color: 'inherit', borderRadius: 99 }}
+            >
+              →
+            </Button>
+          </Box>
+        )}
       </Box>
       <Box
         sx={{
@@ -136,12 +197,12 @@ export function HomeHeroSection() {
             component="h2"
             sx={{ fontSize: { xs: 27, md: 36 }, fontWeight: 600, lineHeight: 1.3, mb: 2 }}
           >
-            รู้จักไทยให้ใกล้กว่าเดิม
+            พื้นที่เรียนรู้วัฒนธรรมไทย
           </Typography>
           <Typography sx={{ maxWidth: 510, color: '#62666a', lineHeight: 1.85, fontSize: 15 }}>
-            Thailand Cultural Hub รวมเรื่องราววัฒนธรรมจากท้องถิ่นให้ค้นหาได้ในที่เดียว
-            เริ่มจากจังหวัดที่คุณสนใจ แล้วทำความรู้จักสถานที่ วิถีชีวิต อาหาร และงานศิลป์
-            ผ่านข้อมูลที่เชื่อมโยงกับพื้นที่จริง
+            Thailand Cultural Hub รวบรวมข้อมูลสถานที่ ศิลปิน มรดกภูมิปัญญา ชุมชนชาติพันธุ์
+            ผลิตภัณฑ์วัฒนธรรม และผ้ากับงานช่าง ให้ค้นหาตามจังหวัดหรือประเภทข้อมูล
+            พร้อมแหล่งอ้างอิงและเรื่องเล่าจากสมาชิก
           </Typography>
         </Box>
         <Box
@@ -154,10 +215,10 @@ export function HomeHeroSection() {
           }}
         >
           {[
-            ['สถานที่', 'แหล่งเรียนรู้และมรดกท้องถิ่น'],
-            ['ประเพณี', 'วิถีชีวิตที่ส่งต่อกันมา'],
-            ['ภูมิปัญญา', 'ความรู้จากผู้คนในชุมชน'],
-            ['เรื่องเล่า', 'มุมมองจากคนในพื้นที่'],
+            ['สถานที่และชุมชน', 'แหล่งวัฒนธรรมและผู้คนในแต่ละพื้นที่'],
+            ['ศิลปินและภูมิปัญญา', 'ผู้สร้างสรรค์และความรู้ที่สืบทอดกันมา'],
+            ['ผ้าและงานช่าง', 'ลวดลาย เทคนิค และทักษะท้องถิ่น'],
+            ['ผลิตภัณฑ์และเรื่องเล่า', 'ผลงานชุมชนและบทความจากสมาชิก'],
           ].map(([title, detail]) => (
             <Box key={title} sx={{ borderTop: '1px solid #dfe3df', pt: 2 }}>
               <Typography sx={{ fontWeight: 600, fontSize: { xs: 19, md: 23 }, mb: 0.5 }}>

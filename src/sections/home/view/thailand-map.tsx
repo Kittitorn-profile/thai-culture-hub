@@ -402,7 +402,7 @@ export default function ThailandMap() {
               outline: 'none',
               transition: 'fill 140ms ease, opacity 140ms ease',
             }}
-           />
+          />
         );
       }),
     [
@@ -453,7 +453,7 @@ export default function ThailandMap() {
             lineHeight: 1.45,
           }}
         >
-          คลิกจังหวัดเพื่อสำรวจประเพณี อาหาร หัตถกรรม ภาษา และเรื่องเล่าของแต่ละพื้นที่
+          เลือกจังหวัดเพื่อดูสถานที่ ศิลปิน ชุมชน และข้อมูลวัฒนธรรมที่มีในพื้นที่
         </Typography>
 
         <Box

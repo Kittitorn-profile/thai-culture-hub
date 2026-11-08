@@ -13,6 +13,7 @@ export const ADMIN_PERMISSION = {
   categories: 'categories',
   culturalPlaces: 'cultural_places',
   culturalHeritage: 'cultural_heritage',
+  contributions: 'contributions',
   culturalArtists: 'cultural_artists',
   analytics: 'analytics',
   feedback: 'feedback',
@@ -30,6 +31,7 @@ export const ADMIN_PERMISSION_OPTIONS: { value: AdminPermission; label: string }
   { value: ADMIN_PERMISSION.culturalPlaces, label: 'Cultural Places' },
   { value: ADMIN_PERMISSION.culturalArtists, label: 'ศิลปินรายจังหวัด' },
   { value: ADMIN_PERMISSION.culturalHeritage, label: 'มรดกภูมิปัญญาทางวัฒนธรรม' },
+  { value: ADMIN_PERMISSION.contributions, label: 'ตรวจคำขอร่วมพัฒนาข้อมูล' },
   { value: ADMIN_PERMISSION.analytics, label: 'Analytics' },
   { value: ADMIN_PERMISSION.feedback, label: 'Feedback' },
   { value: ADMIN_PERMISSION.creators, label: 'Creators' },
@@ -119,6 +121,8 @@ export function getAdminPermissionFromPath(pathname: string): AdminPermission | 
 
   if (pathname === '/admin/cultural-data' || pathname.startsWith('/admin/cultural-data/'))
     return ADMIN_PERMISSION.culturalPlaces;
+
+  if (pathname.startsWith('/admin/contributions')) return ADMIN_PERMISSION.contributions;
 
   if (pathname.startsWith('/admin/ethnic-groups')) return ADMIN_PERMISSION.culturalPlaces;
 

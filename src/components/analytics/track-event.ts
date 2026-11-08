@@ -1,5 +1,7 @@
 'use client';
 
+import { readCookiePreference } from 'src/lib/cookie-preferences';
+
 // ----------------------------------------------------------------------
 
 export type AnalyticsMetadata = Record<string, string | number | boolean | null | undefined>;
@@ -33,7 +35,7 @@ export function shouldSkipAnalytics() {
   // Authentication must not suppress analytics on public pages. Previously the
   // flag persisted while an admin/creator was signed in, so opening a public
   // event or performance-group page never produced a page view.
-  return isPrivatePath(window.location.pathname);
+  return readCookiePreference() !== 'all' || isPrivatePath(window.location.pathname);
 }
 
 function getBrowserId(storage: Storage, key: string) {

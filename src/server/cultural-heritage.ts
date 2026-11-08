@@ -1,3 +1,4 @@
+import qsdsTextiles from '../../data/cultural-heritage/qsds-textiles.json';
 import communityCrafts from '../../data/cultural-heritage/community-crafts.json';
 import communityWeaving from '../../data/cultural-heritage/community-weaving.json';
 
@@ -26,6 +27,9 @@ export function mapHeritageRecord(row: Record<string, unknown>) {
     technique: text(row.technique),
     lifestyle: text(row.lifestyle),
     sourceUrl: text(row.sourceUrl) || HERITAGE_SOURCE_URL,
+    sourceUrls: Array.isArray(row.sourceUrls)
+      ? row.sourceUrls.filter((url): url is string => typeof url === 'string')
+      : [],
     organization: text(row.organization),
     checkedAt: text(row.checkedAt),
     name: text(row.Name),
@@ -52,9 +56,11 @@ export async function getCulturalHeritage({
   limit = 20,
   collection = 'registry',
   category = '',
+  recordId = '',
 }: {
   collection?: 'registry' | 'community';
   category?: string;
+  recordId?: string;
   query?: string;
   province?: string;
   page?: number;
@@ -84,6 +90,7 @@ export async function getCulturalHeritage({
             item.description,
             item.technique,
             item.lifestyle,
+            item.organization,
             ...item.categories,
           ]
             .join(' ')
@@ -99,6 +106,12 @@ export async function getCulturalHeritage({
           Region: item.region,
           Practice: item.practice,
           ...item,
+          sourceUrls: [
+            item.sourceUrl,
+            ...qsdsTextiles.items
+              .filter((source) => source.recordType === 'community' && source.recordId === item.id)
+              .map((source) => source.sourceUrl),
+          ],
         }),
         categories: item.categories,
       })),
@@ -107,7 +120,7 @@ export async function getCulturalHeritage({
       limit,
       sourceUrl: null,
       collectionTotal: community.length,
-      collectionProvinces: new Set(community.map((item) => item.province)).size,
+      collectionProvinces: new Set(community.map((item) => item.province).filter(Boolean)).size,
       categories: [...new Set(community.flatMap((item) => item.categories))].sort((a, b) =>
         a.localeCompare(b, 'th')
       ),
@@ -134,7 +147,14 @@ export async function getCulturalHeritage({
   url.searchParams.set('offset', String(page * limit));
   url.searchParams.set('sort', '_id asc');
   if (query) url.searchParams.set('q', query);
-  if (province) url.searchParams.set('filters', JSON.stringify({ Province: province }));
+  if (province || recordId)
+    url.searchParams.set(
+      'filters',
+      JSON.stringify({
+        ...(province ? { Province: province } : {}),
+        ...(recordId ? { _id: Number(recordId) } : {}),
+      })
+    );
   const response = await fetch(url, {
     signal: AbortSignal.timeout(20000),
     next: { revalidate: 300 },

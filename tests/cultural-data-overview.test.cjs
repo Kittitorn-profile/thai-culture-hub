@@ -62,7 +62,7 @@ test('overview explains datasets, counts categories and preserves source attribu
   assert.equal(heritage.total, 1);
   assert.equal(heritage.rows.filter((row) => row.count === 1).length, 2);
   const community = result.sections.find((section) => section.key === 'community');
-  assert.equal(community.total, 15);
+  assert.equal(community.total, 55);
   assert.equal(community.rows.find((row) => row.key === 'mats').count, 2);
   assert.ok(community.sources.every((source) => source.url.startsWith('https://')));
 });

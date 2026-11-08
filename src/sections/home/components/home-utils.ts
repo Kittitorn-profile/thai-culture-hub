@@ -338,8 +338,15 @@ export function normalizeCultureCategoriesContent(content?: CultureCategoriesCon
     return undefined;
   }
 
-  const title = getFilledText(content.title);
-  const description = getFilledText(content.description);
+  const storedTitle = getFilledText(content.title);
+  const title =
+    storedTitle === 'สำรวจวัฒนธรรมไทยผ่านหมวดข้อมูล' ? 'ค้นหาสถานที่ตามหมวดวัฒนธรรม' : storedTitle;
+  const storedDescription = getFilledText(content.description);
+  const description =
+    storedDescription ===
+    'ข้อมูลแต่ละรายการถูกจัดให้อ่านง่ายขึ้นตามหมวดวัฒนธรรมและพื้นที่ เพื่อช่วยให้เห็นทั้งสถานที่ท่องเที่ยว แหล่งเรียนรู้ อาหารพื้นบ้าน งานช่าง การแสดง ประเพณี และภูมิปัญญาที่กระจายอยู่ในแต่ละจังหวัด'
+      ? 'เลือกหมวดเพื่อดูสถานที่และแหล่งเรียนรู้ที่เกี่ยวข้องกับอาหาร งานช่าง ประเพณี พิธีกรรม และภูมิปัญญา พร้อมค้นหาต่อในจังหวัดที่คุณสนใจ'
+      : storedDescription;
 
   if (!title || !description) {
     return undefined;

@@ -3,7 +3,6 @@ import 'src/global.css';
 import type { Metadata, Viewport } from 'next';
 
 import { Suspense } from 'react';
-import { Analytics } from '@vercel/analytics/next';
 
 import InitColorSchemeScript from '@mui/material/InitColorSchemeScript';
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v15-appRouter';
@@ -44,12 +43,30 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  icons: [
-    {
-      rel: 'icon',
-      url: `${CONFIG.assetsDir}/favicon.ico`,
-    },
-  ],
+  icons: {
+    icon: [
+      { url: `${CONFIG.assetsDir}/favicon/favicon.ico?v=20261109`, type: 'image/x-icon' },
+      {
+        url: `${CONFIG.assetsDir}/favicon/favicon-32x32.png?v=20261109`,
+        type: 'image/png',
+        sizes: '32x32',
+      },
+      {
+        url: `${CONFIG.assetsDir}/favicon/favicon-16x16.png?v=20261109`,
+        type: 'image/png',
+        sizes: '16x16',
+      },
+    ],
+    shortcut: `${CONFIG.assetsDir}/favicon/favicon.ico?v=20261109`,
+    apple: [
+      {
+        url: `${CONFIG.assetsDir}/favicon/apple-touch-icon.png?v=20261109`,
+        sizes: '180x180',
+        type: 'image/png',
+      },
+    ],
+  },
+  manifest: `${CONFIG.assetsDir}/favicon/site.webmanifest?v=20261109`,
   openGraph: {
     images: [OG_IMAGE_URL],
   },
@@ -118,7 +135,6 @@ export default async function RootLayout({ children }: RootLayoutProps) {
                         <Suspense fallback={null}>
                           <VisitorAnalytics />
                         </Suspense>
-                        <Analytics />
                         <CookieConsent />
                         <FeedbackWidget />
                         {children}

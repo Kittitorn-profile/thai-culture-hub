@@ -13,18 +13,18 @@ import { HOME_TEXT, HOME_SECTION_PX, HOME_SECTION_MAX_WIDTH } from './home-const
 const EXPLORE_HIGHLIGHTS: Array<{ icon: IconifyName; title: string; body: string }> = [
   {
     icon: 'solar:file-text-bold',
-    title: 'ค้นหาเร็วขึ้น',
-    body: 'เลือกพื้นที่ที่สนใจ แล้วค้นพบสถานที่และเรื่องราวใกล้ตัว',
+    title: 'ค้นจากชื่อหรือพื้นที่',
+    body: 'ค้นชื่อสถานที่ หรือเลือกจังหวัดเพื่อดูแหล่งวัฒนธรรมในพื้นที่',
   },
   {
     icon: 'solar:add-folder-bold',
-    title: 'ดูรวมทุกหมวด',
-    body: 'รวมสถานที่ ประเพณี อาหาร งานช่าง ภูมิปัญญา และแหล่งเรียนรู้ไว้ในหน้าเดียว',
+    title: 'เลือกหมวดสถานที่',
+    body: 'ดูสถานที่ที่เกี่ยวข้องกับอาหาร ประเพณี งานช่าง และภูมิปัญญา',
   },
   {
     icon: 'solar:check-circle-bold',
-    title: 'ช่วยแก้ข้อมูล',
-    body: 'เมื่อพบข้อมูลคลาดเคลื่อน สามารถเปิดสถานที่และส่งคำขอให้ทีมงานตรวจสอบ',
+    title: 'ร่วมเสนอแก้ไข',
+    body: 'เปิดรายละเอียดสถานที่ แล้วส่งข้อมูลเพิ่มเติมให้ทีมงานตรวจสอบ',
   },
 ];
 
@@ -63,7 +63,7 @@ export function HomeExploreAllSection() {
               fontWeight: 500,
             }}
           >
-            สำรวจข้อมูลวัฒนธรรม
+            ค้นหาสถานที่และแหล่งวัฒนธรรม
           </Typography>
           <Typography
             id="explore-all-heading"
@@ -76,9 +76,9 @@ export function HomeExploreAllSection() {
               lineHeight: 1.4,
             }}
           >
-            ค้นพบวัฒนธรรม
+            ค้นหาสถานที่
             <Box component="span" sx={{ display: 'block' }}>
-              ในพื้นที่ที่คุณสนใจ
+              ตามหมวดที่คุณสนใจ
             </Box>
           </Typography>
           <Typography
@@ -107,7 +107,7 @@ export function HomeExploreAllSection() {
               width: { xs: 1, sm: 'auto' },
             }}
           >
-            สำรวจข้อมูลทั้งหมด
+            ดูสถานที่ทุกหมวด
           </Button>
         </Box>
 

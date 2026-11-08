@@ -1,9 +1,9 @@
 import type { BoxProps } from '@mui/material/Box';
 
 import {
+  RiEdit2Line,
   RiMapPinLine,
   RiSearchLine,
-  RiEdit2Line,
   RiArrowRightLine,
   RiExternalLinkLine,
 } from '@remixicon/react';
@@ -21,6 +21,8 @@ import { HomeFooter } from 'src/layouts/main/footer';
 
 import { HOME_SECTION_PX } from 'src/sections/home/components/home-constants';
 
+import { AboutSystem } from './about-system';
+
 const FEATURES = [
   {
     icon: RiMapPinLine,
@@ -32,16 +34,16 @@ const FEATURES = [
   {
     icon: RiSearchLine,
     title: 'ค้นหาตามความสนใจ',
-    description: 'เลือกหมวดอาหาร ศิลปะ งานช่าง หรือภูมิปัญญาที่อยากรู้จัก',
-    href: '/culture-category',
-    action: 'ดูหมวดวัฒนธรรม',
+    description: 'ค้นหาสถานที่ ศิลปิน มรดกภูมิปัญญา ชุมชน ผลิตภัณฑ์ และผ้ากับงานช่าง',
+    href: '/cultural-data/',
+    action: 'ดูประเภทข้อมูล',
   },
   {
     icon: RiEdit2Line,
     title: 'ร่วมแบ่งปันเรื่องราว',
-    description: 'สมัคร Creator เพื่อเขียนบทความหรือเสนอแก้ไขข้อมูลให้ทีมงานตรวจสอบ',
+    description: 'สมัครสมาชิกเพื่อเขียนบทความ หรือเสนอข้อมูลและภาพเพิ่มเติมให้ทีมงานตรวจสอบ',
     href: '/creator/register',
-    action: 'ร่วมเป็น Creator',
+    action: 'สมัครสมาชิก',
   },
 ];
 
@@ -121,12 +123,12 @@ export function AboutTeam({ sx, ...other }: BoxProps) {
             <Typography
               sx={{ mt: 2, maxWidth: 530, color: cultureUi.muted, fontSize: 15, lineHeight: 1.85 }}
             >
-              เรารวมข้อมูลสถานที่ ประเพณี อาหาร และภูมิปัญญาท้องถิ่น
-              ให้คุณค้นหาผ่านแผนที่และหมวดหมู่ พร้อมแหล่งอ้างอิงสำหรับอ่านต่อ
+              รวมข้อมูลสถานที่ ศิลปิน มรดกภูมิปัญญา ชุมชน ผลิตภัณฑ์ และผ้ากับงานช่าง
+              ให้ค้นหาตามพื้นที่หรือประเภทข้อมูล พร้อมแหล่งอ้างอิงสำหรับศึกษาเพิ่มเติม
             </Typography>
             <Button
               component={RouterLink}
-              href="/culture-category"
+              href="/cultural-data/"
               variant="contained"
               endIcon={<RiArrowRightLine size={18} />}
               sx={{
@@ -159,6 +161,8 @@ export function AboutTeam({ sx, ...other }: BoxProps) {
             </Typography>
           </Box>
         </Box>
+
+        <AboutSystem />
 
         <Box
           component="section"

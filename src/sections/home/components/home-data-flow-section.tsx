@@ -1,8 +1,8 @@
 import {
-  RiArrowRightLine,
-  RiDatabase2Line,
-  RiFolderCheckLine,
   RiGroupLine,
+  RiDatabase2Line,
+  RiArrowRightLine,
+  RiFolderCheckLine,
 } from '@remixicon/react';
 
 import Box from '@mui/material/Box';
@@ -17,18 +17,19 @@ import { HOME_TEXT, HOME_SECTION_PX, HOME_SECTION_MAX_WIDTH } from './home-const
 const STEPS = [
   {
     icon: RiDatabase2Line,
-    title: 'รวมเรื่องราวจากหลายแหล่ง',
-    description: 'ค้นพบข้อมูลวัฒนธรรม แหล่งท่องเที่ยว และเรื่องราวท้องถิ่นในที่เดียว',
+    title: 'เรียนรู้จากข้อมูลหลายแหล่ง',
+    description: 'สำรวจข้อมูลจากหน่วยงานและแหล่งอ้างอิง พร้อมบทความจากสมาชิก',
   },
   {
     icon: RiFolderCheckLine,
     title: 'ค้นหาตามพื้นที่และความสนใจ',
-    description: 'เลือกจังหวัด อำเภอ หรือหมวดหมู่ พร้อมเปิดดูแหล่งอ้างอิงของข้อมูล',
+    description: 'เลือกจังหวัดหรือประเภทข้อมูล แล้วเปิดรายละเอียดและแหล่งอ้างอิง',
   },
   {
     icon: RiGroupLine,
     title: 'ร่วมเติมข้อมูลให้สมบูรณ์',
-    description: 'ส่งเรื่องเล่าหรือเสนอแก้ไขข้อมูล ให้ทีมงานตรวจสอบก่อนเผยแพร่',
+    description:
+      'สมัครสมาชิกเพื่อเขียนบทความ หรือเสนอข้อมูลและภาพเพิ่มเติมได้ทั้ง 6 ประเภท ให้ทีมงานตรวจสอบ',
   },
 ];
 
@@ -62,17 +63,17 @@ export function HomeDataFlowSection() {
         >
           <Box sx={{ maxWidth: 660 }}>
             <Typography sx={{ color: '#727b7f', fontSize: 12, mb: 1 }}>
-              เบื้องหลังข้อมูลวัฒนธรรม
+              เรียนรู้และร่วมดูแลข้อมูล
             </Typography>
             <Typography
               id="home-data-heading"
               component="h2"
               sx={{ fontSize: { xs: 26, md: 34 }, fontWeight: 600, lineHeight: 1.4 }}
             >
-              จากข้อมูลท้องถิ่น สู่การค้นพบใหม่
+              ค้นหา เรียนรู้ และร่วมเติมข้อมูล
             </Typography>
             <Typography sx={{ mt: 1.25, color: '#626a6e', fontSize: 14, lineHeight: 1.8 }}>
-              เชื่อมเรื่องราวกับพื้นที่จริง ให้คุณสำรวจต่อได้ง่าย และร่วมดูแลข้อมูลไปกับชุมชน
+              อ่านข้อมูลพร้อมที่มา และช่วยเพิ่มเติมสิ่งที่คุณรู้ เพื่อให้ผู้อื่นได้เรียนรู้ต่อ
             </Typography>
           </Box>
           <Button
@@ -90,7 +91,7 @@ export function HomeDataFlowSection() {
               '&:hover': { bgcolor: '#ecefeb', borderColor: '#aab5ae' },
             }}
           >
-            สำรวจข้อมูล
+            เริ่มค้นหาสถานที่
           </Button>
         </Stack>
         <Box

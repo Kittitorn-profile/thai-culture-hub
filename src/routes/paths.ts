@@ -26,6 +26,7 @@ export const paths = {
   about: '/about-us',
   contact: '/contact-us',
   privacyPolicy: '/privacy-policy',
+  cookiePolicy: '/cookie-policy',
   termsAndConditions: '/terms-and-conditions',
   province: {
     details: (id: string, name?: string) =>
@@ -38,8 +39,9 @@ export const paths = {
     details: (groupId: string) => `/performance-groups/${encodeURIComponent(groupId)}`,
   },
   event: {
-    details: (event: string | { id: string; title: string; slug?: string | null; tatSlug?: string | null }) =>
-      `/events/${encodeURIComponent(typeof event === 'string' ? event : getEventSlug(event))}`,
+    details: (
+      event: string | { id: string; title: string; slug?: string | null; tatSlug?: string | null }
+    ) => `/events/${encodeURIComponent(typeof event === 'string' ? event : getEventSlug(event))}`,
   },
   faqs: '/faqs',
   page403: '/error/403',

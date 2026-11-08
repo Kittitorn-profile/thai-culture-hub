@@ -58,11 +58,16 @@ const navData: AdminNavGroup[] = [
         icon: <RiHome4Line size={22} />,
         permission: ADMIN_PERMISSION.homeContent,
         children: [
+          { title: 'ภาพแบนเนอร์หน้าแรก', path: '/admin/home-content/hero' },
           { title: 'เรื่องเล่าและสื่อ', path: '/admin/home-content' },
           { title: 'หมวดวัฒนธรรมหน้าแรก', path: '/admin/home-content/culture-categories' },
           { title: 'ภูมิปัญญาท้องถิ่น', path: '/admin/home-content/local-wisdom' },
-          { title: 'วงดนตรีและคณะการแสดง', path: '/admin/home-content/performance-groups' },
-          { title: 'กิจกรรม', path: '/admin/home-content/events' },
+          {
+            title: 'วงดนตรีและคณะการแสดง',
+            path: '/admin/home-content/performance-groups',
+            deepMatch: true,
+          },
+          { title: 'กิจกรรม', path: '/admin/home-content/events', deepMatch: true },
           { title: 'ป๊อปอัปแบนเนอร์', path: '/admin/home-content/popup-banner' },
         ],
       },
@@ -78,24 +83,24 @@ const navData: AdminNavGroup[] = [
         permission: ADMIN_PERMISSION.culturalPlaces,
       },
       {
-        title: 'ข้อมูลสถานที่',
+        title: 'สถานที่และแหล่งวัฒนธรรม',
         path: '/admin/cultural-places',
         icon: <RiMapPinLine size={22} />,
         permission: ADMIN_PERMISSION.culturalPlaces,
         children: [
           { title: 'รายการสถานที่', path: '/admin/cultural-places' },
-          { title: 'คำขอแก้ไขข้อมูล', path: '/admin/cultural-places/place-corrections' },
+          { title: 'คำขอแก้ไขสถานที่', path: '/admin/cultural-places/place-corrections' },
           { title: 'นำเข้าและซิงก์ข้อมูล', path: '/admin/cultural-places/sync' },
         ],
       },
       {
-        title: 'กลุ่มชาติพันธุ์',
+        title: 'ชุมชนชาติพันธุ์',
         path: '/admin/ethnic-groups',
         icon: <RiGroupLine size={22} />,
         permission: ADMIN_PERMISSION.culturalPlaces,
       },
       {
-        title: 'ศิลปินรายจังหวัด',
+        title: 'ศิลปินและผู้สร้างสรรค์',
         path: '/admin/cultural-artists',
         icon: <RiUserStarLine size={22} />,
         permission: ADMIN_PERMISSION.culturalArtists,
@@ -108,12 +113,22 @@ const navData: AdminNavGroup[] = [
         ],
       },
       {
+        title: 'คำขอร่วมพัฒนาข้อมูล',
+        path: '/admin/contributions',
+        icon: <RiBookOpenLine size={22} />,
+        permission: ADMIN_PERMISSION.contributions,
+      },
+      {
         title: 'มรดกภูมิปัญญาทางวัฒนธรรม',
         path: '/admin/cultural-heritage',
         icon: <RiBookOpenLine size={22} />,
         permission: ADMIN_PERMISSION.culturalHeritage,
         children: [
           { title: 'ทะเบียนมรดกต้นทาง', path: '/admin/cultural-heritage' },
+          {
+            title: 'คำขอผ้าและงานช่าง',
+            path: '/admin/cultural-heritage/craft-corrections',
+          },
           ...COMMUNITY_GROUPS.map((group) => ({
             title: group.label,
             path: `/admin/cultural-heritage/group/${group.key}`,

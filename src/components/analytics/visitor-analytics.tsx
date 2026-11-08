@@ -1,7 +1,9 @@
 'use client';
 
-import { useRef, useEffect } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
+
+import { COOKIE_PREFERENCE_EVENT } from 'src/lib/cookie-preferences';
 
 import {
   trackAnalyticsEvent,
@@ -24,6 +26,19 @@ export function VisitorAnalytics() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const lastTrackedUrl = useRef('');
+  const [preferenceVersion, setPreferenceVersion] = useState(0);
+  useEffect(() => {
+    const update = () => {
+      lastTrackedUrl.current = '';
+      setPreferenceVersion((value) => value + 1);
+    };
+    window.addEventListener(COOKIE_PREFERENCE_EVENT, update);
+    window.addEventListener('storage', update);
+    return () => {
+      window.removeEventListener(COOKIE_PREFERENCE_EVENT, update);
+      window.removeEventListener('storage', update);
+    };
+  }, []);
 
   useEffect(() => {
     if (!pathname || !shouldTrackPath(pathname) || shouldSkipAnalytics()) {
@@ -48,7 +63,7 @@ export function VisitorAnalytics() {
       visitorId,
       sessionId,
     });
-  }, [pathname, searchParams]);
+  }, [pathname, searchParams, preferenceVersion]);
 
   useEffect(() => {
     const handleClick = (event: MouseEvent) => {

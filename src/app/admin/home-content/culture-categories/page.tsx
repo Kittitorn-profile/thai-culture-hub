@@ -66,9 +66,9 @@ type HomeContentResponse = {
 const SECTION_KEY = 'culture-categories';
 
 const DEFAULT_CONTENT: CultureCategoriesContent = {
-  title: 'สำรวจวัฒนธรรมไทยผ่านหมวดข้อมูล',
+  title: 'ค้นหาสถานที่ตามหมวดวัฒนธรรม',
   description:
-    'ข้อมูลแต่ละรายการถูกจัดให้อ่านง่ายขึ้นตามหมวดวัฒนธรรมและพื้นที่ เพื่อช่วยให้เห็นทั้งสถานที่ท่องเที่ยว แหล่งเรียนรู้ อาหารพื้นบ้าน งานช่าง การแสดง ประเพณี และภูมิปัญญาที่กระจายอยู่ในแต่ละจังหวัด',
+    'เลือกหมวดเพื่อดูสถานที่และแหล่งเรียนรู้ที่เกี่ยวข้องกับอาหาร งานช่าง ประเพณี พิธีกรรม และภูมิปัญญา พร้อมค้นหาต่อในจังหวัดที่คุณสนใจ',
 };
 
 const DEFAULT_CATEGORY_ITEMS: CultureCategoryItem[] = [
@@ -404,7 +404,7 @@ export default function CultureCategoriesContentPage() {
               หมวดวัฒนธรรม
             </Typography>
             <Typography sx={{ mt: 0.5, color: 'text.secondary' }}>
-              แก้ content section “สำรวจวัฒนธรรมไทยผ่านหมวดข้อมูล” ในหน้า home-view
+              แก้ content section “ค้นหาสถานที่ตามหมวดวัฒนธรรม” ในหน้า home-view
             </Typography>
           </Box>
 
