@@ -1,0 +1,12 @@
+{
+  "TH-44": {
+    "colors": [
+      { "name": "น้ำตาล", "preview": "#795548" },
+      { "name": "เหลือง", "preview": "#f4cf45" }
+    ],
+    "colorsStatus": "verified",
+    "colorsSourceUrl": "https://www.mvc.ac.th/wp-content/uploads/2019/04/mahasarakham1.pdf#page=1",
+    "sourceUrl": "https://www.mvc.ac.th/wp-content/uploads/2019/04/mahasarakham1.pdf#page=1",
+    "sourceName": "แผนพัฒนาจังหวัดมหาสารคาม — เผยแพร่โดยวิทยาลัยอาชีวศึกษามหาสารคาม"
+  }
+}

@@ -1,18 +1,16 @@
 'use client';
 
-import type { Feature, Geometry, GeoJsonProperties, FeatureCollection } from 'geojson';
-import type { CulturalPlace } from 'src/sections/province/province-data';
 import type { CategoryConfigMap } from 'src/sections/province/category-config';
 
 import { useQuery } from '@tanstack/react-query';
-import { geoPath, geoCentroid, geoMercator } from 'd3-geo';
-import { useMemo, useState, useEffect, useCallback } from 'react';
+import { useRef, useMemo, useState, useEffect, useCallback } from 'react';
 
-import Popover from '@mui/material/Popover';
+import Popper from '@mui/material/Popper';
+import Button from '@mui/material/Button';
 import InputBase from '@mui/material/InputBase';
 import Typography from '@mui/material/Typography';
+import { Box, CircularProgress } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
-import { Box, Button, CircularProgress } from '@mui/material';
 
 import { paths } from 'src/routes/paths';
 import { useRouter } from 'src/routes/hooks';
@@ -22,13 +20,11 @@ import provinces from 'src/data/thailand-culture/provinces';
 import { Iconify } from 'src/components/iconify';
 import { trackAnalyticsEvent } from 'src/components/analytics';
 
-import { getProvinceCulturalPlaces } from 'src/sections/province/province-data';
 import {
   getCategoryLabel,
   getCategoryColor,
-  useCategoryConfig,
+  useCategoryConfigQuery,
 } from 'src/sections/province/category-config';
-import { rewindGeoJson, useThailandProvincesGeoJson } from 'src/sections/province/thailand-geojson';
 
 // ----------------------------------------------------------------------
 
@@ -36,10 +32,6 @@ type ThailandProvince = {
   id?: string;
   name: string;
   iso?: string;
-};
-
-type ThailandProvinceFeature = Feature<Geometry, GeoJsonProperties> & {
-  rsmKey?: string;
 };
 
 type ThailandProvinceMapItem = {
@@ -76,10 +68,9 @@ type ApiProvinceCategorySummary = {
   total?: unknown;
 };
 
-const EMPTY_GEOJSON = {
-  type: 'FeatureCollection',
-  features: [],
-} satisfies FeatureCollection;
+const EMPTY_CATEGORY_CONFIG: CategoryConfigMap = {};
+const PENDING_PROVINCE_FILL = '#e4e8e3';
+const EMPTY_MAP_ITEMS: Omit<ThailandProvinceMapItem, 'provinceFill'>[] = [];
 
 const DEFAULT_PROVINCE_FILL = '#ffffff';
 const THAI_PROVINCE_NAME_BY_CODE = new Map(
@@ -100,45 +91,6 @@ function getProvinceDisplayName(province: ThailandProvince) {
   return (provinceId && THAI_PROVINCE_NAME_BY_CODE.get(provinceId)) || province.name;
 }
 
-function getProvinceFromGeography(geo: ThailandProvinceFeature): ThailandProvince {
-  const properties = geo.properties ?? {};
-  const name = String(properties.shapeName ?? properties.name ?? 'Unknown Province').replace(
-    /\s+Province$/,
-    ''
-  );
-  const shapeID = properties.shapeID;
-  const shapeISO = properties.shapeISO;
-
-  return {
-    name,
-    id: typeof shapeID === 'string' ? shapeID : undefined,
-    iso: typeof shapeISO === 'string' ? shapeISO : undefined,
-  };
-}
-
-function getCategoryCounts(places: CulturalPlace[]) {
-  const uniquePlaces = new Map<string, CulturalPlace>();
-
-  places.forEach((place) => {
-    const placeKey = `${place.name}-${place.district}-${place.lat}-${place.lng}`;
-
-    if (!uniquePlaces.has(placeKey)) {
-      uniquePlaces.set(placeKey, place);
-    }
-  });
-
-  return Array.from(uniquePlaces.values()).reduce<ProvinceCategoryCounts>((counts, place) => {
-    if (!place.category) {
-      return counts;
-    }
-
-    return {
-      ...counts,
-      [place.category]: (counts[place.category] ?? 0) + 1,
-    };
-  }, {});
-}
-
 function getDominantCategoryFromCounts(counts: ProvinceCategoryCounts) {
   return Object.entries(counts).reduce<string | null>((dominantCategory, [category, count]) => {
     if (!category || !count) {
@@ -151,28 +103,6 @@ function getDominantCategoryFromCounts(counts: ProvinceCategoryCounts) {
 
     return dominantCategory;
   }, null);
-}
-
-function getCategorySummary(
-  places: CulturalPlace[],
-  categoryConfig: CategoryConfigMap
-): ProvinceCategorySummary | null {
-  if (!places.length) {
-    return null;
-  }
-
-  const counts = getCategoryCounts(places);
-  const dominantCategory = getDominantCategoryFromCounts(counts);
-
-  if (!dominantCategory) {
-    return null;
-  }
-
-  return {
-    counts,
-    dominantCategory,
-    color: getCategoryColor(categoryConfig, dominantCategory),
-  };
 }
 
 function isCategoryCounts(value: unknown): value is ProvinceCategoryCounts {
@@ -209,183 +139,94 @@ function getProvinceCategorySummaryFromApi(
   };
 }
 
-function getProvinceColor(
-  province: ThailandProvince,
-  provinceCategorySummaries: ProvinceCategorySummaryMap,
-  categoryConfig: CategoryConfigMap
-) {
-  const provinceId = province.iso ?? province.id ?? '';
-  const remoteCategorySummary = provinceId ? provinceCategorySummaries[provinceId] : undefined;
-
-  if (remoteCategorySummary?.color) {
-    return remoteCategorySummary.color;
-  }
-
-  const places = getProvinceCulturalPlaces(provinceId, province.name);
-
-  if (!places.length) {
-    return DEFAULT_PROVINCE_FILL;
-  }
-
-  return getCategorySummary(places, categoryConfig)?.color ?? DEFAULT_PROVINCE_FILL;
+function getProvinceColor(province: ThailandProvince, summaries: ProvinceCategorySummaryMap) {
+  return summaries[getProvinceId(province)]?.color ?? DEFAULT_PROVINCE_FILL;
 }
 
-function getMapItems(
-  mapGeoJson: FeatureCollection,
-  geoPathGenerator: ReturnType<typeof geoPath>,
-  provinceCategorySummaries: ProvinceCategorySummaryMap,
-  categoryConfig: CategoryConfigMap
-) {
-  const mapFeatures = Array.isArray(mapGeoJson.features) ? mapGeoJson.features : [];
-  const items = mapFeatures.reduce<ThailandProvinceMapItem[]>((provinceItems, geo, index) => {
-    const pathData = geoPathGenerator(geo);
-
-    if (!pathData) {
-      return provinceItems;
-    }
-
-    const province = getProvinceFromGeography(geo);
-    const [lng, lat] = geoCentroid(geo);
-
-    provinceItems.push({
-      pathData,
-      province,
-      provinceCenter: { lat, lng },
-      provinceFill: getProvinceColor(province, provinceCategorySummaries, categoryConfig),
-      id: String(geo.id ?? geo.properties?.shapeID ?? province.iso ?? index),
-    });
-
-    return provinceItems;
-  }, []);
-
-  return items;
+async function fetchHomeMapPaths(signal: AbortSignal) {
+  const response = await fetch('/assets/maps/thailand-home-paths.json', { signal });
+  if (!response.ok) throw new Error('Unable to load map paths');
+  const items = await response.json();
+  if (
+    !Array.isArray(items) ||
+    items.length !== 77 ||
+    items.some((item) => !item.pathData || !item.province?.iso)
+  )
+    throw new Error('Invalid map paths');
+  return items as Omit<ThailandProvinceMapItem, 'provinceFill'>[];
 }
 
-function getMapProvinces(mapGeoJson: FeatureCollection) {
-  const mapFeatures = Array.isArray(mapGeoJson.features) ? mapGeoJson.features : [];
-
-  return mapFeatures.map((geo) => getProvinceFromGeography(geo));
-}
-
-function getMapProvinceIds(mapGeoJson: FeatureCollection) {
-  return getMapProvinces(mapGeoJson)
-    .map((province) => province.iso ?? province.id)
-    .filter((provinceId): provinceId is string => Boolean(provinceId));
-}
-
-function getProvinceIdsCacheKey(provinceIds: string[]) {
-  return provinceIds.join('|');
-}
-
-function getCategoryConfigCacheKey(categoryConfig: CategoryConfigMap) {
-  return Object.values(categoryConfig)
-    .map((category) => `${category.key}:${category.color}`)
-    .sort()
-    .join('|');
-}
-
-function fetchProvincePlacesApi(url: string, signal: AbortSignal) {
-  return fetch(url, { signal }).catch((error) => {
-    if (error?.name === 'AbortError') {
-      throw error;
-    }
-
-    return null;
-  });
-}
-
-async function fetchProvinceApiPlaces(provinceId: string, signal: AbortSignal) {
-  const response = await fetchProvincePlacesApi(
-    `/api/culture/province-places?provinceCode=${provinceId}&limit=100&summary=true`,
-    signal
-  );
-  const json = response?.ok ? await response.json() : { data: [] };
-
-  return Array.isArray(json?.data) ? (json.data as CulturalPlace[]) : [];
-}
-
-async function fetchProvinceCategorySummaries(
-  provinceIds: string[],
-  signal: AbortSignal,
-  categoryConfig: CategoryConfigMap
-) {
-  const summaryResponse = await fetchProvincePlacesApi('/api/culture/province-places', signal);
-  const summaryJson = summaryResponse?.ok ? await summaryResponse.json() : {};
-  const apiSummaries =
-    summaryJson?.summaries && typeof summaryJson.summaries === 'object'
-      ? (summaryJson.summaries as Record<string, ApiProvinceCategorySummary>)
-      : null;
-
-  if (apiSummaries) {
-    return Object.fromEntries(
-      provinceIds
-        .map((provinceId) => {
-          const summary = getProvinceCategorySummaryFromApi(
-            apiSummaries[provinceId] ?? {},
-            categoryConfig
-          );
-
-          return summary ? [provinceId, summary] : null;
-        })
-        .filter((entry): entry is [string, ProvinceCategorySummary] => Boolean(entry))
-    );
-  }
-
-  const entries = await Promise.all(
-    provinceIds.map(async (provinceId) => {
-      const places = await fetchProvinceApiPlaces(provinceId, signal);
-      const summary = getCategorySummary(places, categoryConfig);
-
-      return summary ? [provinceId, summary] : null;
-    })
-  );
-
-  return Object.fromEntries(
-    entries.filter((entry): entry is [string, ProvinceCategorySummary] => Boolean(entry))
-  );
+async function fetchProvinceCategorySummaries(signal: AbortSignal) {
+  const response = await fetch('/api/culture/province-places/?summary=true&v=4', { signal });
+  if (!response.ok) throw new Error('Unable to load province summaries');
+  const result = await response.json();
+  if (!result.summaries || typeof result.summaries !== 'object')
+    throw new Error('Invalid province summaries');
+  return result.summaries as Record<string, ApiProvinceCategorySummary>;
 }
 
 export default function ThailandMap() {
   const theme = useTheme();
   const router = useRouter();
-  const categoryConfig = useCategoryConfig();
-  const { data: mapGeoJson = EMPTY_GEOJSON, isLoading: isMapGeoJsonLoading } =
-    useThailandProvincesGeoJson({
-      select: rewindGeoJson,
-    });
+  const {
+    data: loadedCategoryConfig,
+    isPending: isCategoryConfigLoading,
+    isError: isCategoryConfigError,
+    refetch: refetchCategoryConfig,
+  } = useCategoryConfigQuery();
+  const categoryConfig = loadedCategoryConfig ?? EMPTY_CATEGORY_CONFIG;
+  const { data: baseMapItems = EMPTY_MAP_ITEMS, isLoading: isMapGeoJsonLoading } = useQuery({
+    queryKey: ['thailand', 'home-map-paths', 'v1'],
+    queryFn: ({ signal }) => fetchHomeMapPaths(signal),
+    staleTime: Infinity,
+    gcTime: 86_400_000,
+    refetchOnWindowFocus: false,
+  });
   const [searchQuery, setSearchQuery] = useState('');
   const [popoverAnchor, setPopoverAnchor] = useState<SVGPathElement | null>(null);
   const [popoverProvince, setPopoverProvince] = useState<ThailandProvince | null>(null);
-  const projection = useMemo(
-    () => geoMercator().center([101.49, 13.04]).scale(3000).translate([480, 380]),
-    []
-  );
-  const geoPathGenerator = useMemo(() => geoPath(projection), [projection]);
-  const provinceIds = useMemo(() => getMapProvinceIds(mapGeoJson), [mapGeoJson]);
-  const categoryConfigKey = useMemo(
-    () => getCategoryConfigCacheKey(categoryConfig),
-    [categoryConfig]
-  );
-  const provinceSummaryQueryKey = useMemo(
-    () => [
-      'thailand',
-      'province-category-summaries',
-      getProvinceIdsCacheKey(provinceIds),
-      categoryConfigKey,
-    ],
-    [categoryConfigKey, provinceIds]
-  );
-  const { data: provinceCategorySummaries = {}, isLoading: isProvinceSummaryLoading } = useQuery({
-    enabled: provinceIds.length > 0,
-    queryKey: provinceSummaryQueryKey,
-    queryFn: ({ signal }) => fetchProvinceCategorySummaries(provinceIds, signal, categoryConfig),
-    staleTime: Infinity,
-    gcTime: Infinity,
+  const hoverTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const cancelPopoverTimers = useCallback(() => {
+    if (hoverTimer.current) clearTimeout(hoverTimer.current);
+    hoverTimer.current = null;
+  }, []);
+  useEffect(() => () => cancelPopoverTimers(), [cancelPopoverTimers]);
+  // Start summaries independently of the map file; never fan out to 77 place APIs.
+  const {
+    data: apiSummaries,
+    isPending: isSummaryLoading,
+    isError: isSummaryError,
+    refetch: refetchSummaries,
+  } = useQuery({
+    queryKey: ['thailand', 'province-category-summaries', 'v4'],
+    queryFn: ({ signal }) => fetchProvinceCategorySummaries(signal),
+    staleTime: 300_000,
+    refetchInterval: 300_000,
+    refetchIntervalInBackground: false,
+    gcTime: 86_400_000,
+    retry: 1,
+    refetchOnWindowFocus: false,
   });
-
+  const provinceCategorySummaries = useMemo<ProvinceCategorySummaryMap>(() => {
+    const summaries: ProvinceCategorySummaryMap = {};
+    // Do not publish hash/default colors while the saved category palette is still loading.
+    if (!apiSummaries || !loadedCategoryConfig) return summaries;
+    Object.entries(apiSummaries).forEach(([id, value]) => {
+      const summary = getProvinceCategorySummaryFromApi(value, categoryConfig);
+      if (summary) summaries[id] = summary;
+    });
+    return summaries;
+  }, [apiSummaries, categoryConfig, loadedCategoryConfig]);
   const mapItems = useMemo(
-    () => getMapItems(mapGeoJson, geoPathGenerator, provinceCategorySummaries, categoryConfig),
-    [categoryConfig, geoPathGenerator, mapGeoJson, provinceCategorySummaries]
+    () =>
+      baseMapItems.map((item) => ({
+        ...item,
+        provinceFill:
+          apiSummaries && loadedCategoryConfig
+            ? getProvinceColor(item.province, provinceCategorySummaries)
+            : PENDING_PROVINCE_FILL,
+      })),
+    [baseMapItems, provinceCategorySummaries, apiSummaries, loadedCategoryConfig]
   );
   const normalizedSearchQuery = useMemo(() => normalizeSearchText(searchQuery), [searchQuery]);
   const provinceSearchOptions = useMemo<ProvinceSearchOption[]>(
@@ -417,7 +258,7 @@ export default function ThailandMap() {
     [normalizedSearchQuery, provinceSearchOptions]
   );
 
-  const isMapLoading = isMapGeoJsonLoading || isProvinceSummaryLoading;
+  const isMapLoading = isMapGeoJsonLoading || isCategoryConfigLoading || isSummaryLoading;
   const hasMapContent = mapItems.length > 0;
   const showProvinceSearchResults = Boolean(normalizedSearchQuery);
   const popoverProvinceId = popoverProvince ? getProvinceId(popoverProvince) : '';
@@ -425,13 +266,6 @@ export default function ThailandMap() {
   const popoverProvinceSummary = popoverProvinceId
     ? provinceCategorySummaries[popoverProvinceId]
     : undefined;
-  const popoverProvinceCenter = popoverProvinceId
-    ? mapItems.find((item) => getProvinceId(item.province) === popoverProvinceId)?.provinceCenter
-    : undefined;
-  const popoverProvinceCoordinate = popoverProvinceCenter
-    ? `Lat ${popoverProvinceCenter.lat.toFixed(7)}, Lng ${popoverProvinceCenter.lng.toFixed(7)}`
-    : 'Lat / Lng';
-  const popoverAccentColor = popoverProvinceSummary?.color ?? '#d98b35';
 
   useEffect(() => {
     const query = searchQuery.trim();
@@ -452,49 +286,27 @@ export default function ThailandMap() {
     };
   }, [matchedProvinceSearchOptions.length, searchQuery]);
 
-  const handleToggleProvincePopover = useCallback(
-    (event: React.SyntheticEvent<SVGPathElement>, province: ThailandProvince) => {
-      const anchor = event.currentTarget;
-
-      setPopoverAnchor((currentAnchor) => {
-        if (currentAnchor === anchor) {
-          setPopoverProvince(null);
-          return null;
-        }
-
-        trackAnalyticsEvent('province_map_click', getProvinceDisplayName(province), {
-          provinceId: getProvinceId(province),
-          provinceName: getProvinceDisplayName(province),
-        });
-        setPopoverProvince(province);
-        return anchor;
+  const handleSelectMapProvince = useCallback(
+    (_event: React.SyntheticEvent<SVGPathElement>, province: ThailandProvince) => {
+      cancelPopoverTimers();
+      const provinceId = getProvinceId(province);
+      if (!provinceId) return;
+      trackAnalyticsEvent('province_map_click', getProvinceDisplayName(province), {
+        provinceId,
+        provinceName: getProvinceDisplayName(province),
       });
+      setPopoverAnchor(null);
+      setPopoverProvince(null);
+      router.push(paths.province.details(provinceId, getProvinceDisplayName(province)));
     },
-    []
+    [cancelPopoverTimers, router]
   );
 
   const handleCloseProvincePopover = useCallback(() => {
+    cancelPopoverTimers();
     setPopoverAnchor(null);
     setPopoverProvince(null);
-  }, []);
-
-  const handleViewProvinceDetails = useCallback(() => {
-    if (!popoverProvince) {
-      return;
-    }
-
-    const provinceId = getProvinceId(popoverProvince);
-
-    if (provinceId) {
-      trackAnalyticsEvent('province_select', getProvinceDisplayName(popoverProvince), {
-        provinceId,
-        provinceName: getProvinceDisplayName(popoverProvince),
-        source: 'map_popover',
-      });
-      handleCloseProvincePopover();
-      router.push(paths.province.details(provinceId, getProvinceDisplayName(popoverProvince)));
-    }
-  }, [handleCloseProvincePopover, popoverProvince, router]);
+  }, [cancelPopoverTimers]);
 
   const handleSelectSearchProvince = useCallback(
     (province: ThailandProvince) => {
@@ -541,7 +353,7 @@ export default function ThailandMap() {
           !!popoverProvince &&
           (popoverProvince.iso ?? popoverProvince.id) === (province.iso ?? province.id);
         const matchedFill = theme.palette.secondary.main;
-        const selectedFill = '#ffffff';
+        const selectedFill = alpha(provinceFill, 0.75);
 
         return (
           <path
@@ -556,13 +368,33 @@ export default function ThailandMap() {
             strokeLinecap="round"
             strokeLinejoin="round"
             vectorEffect="non-scaling-stroke"
+            onPointerEnter={(event) => {
+              if (event.pointerType !== 'mouse') return;
+              cancelPopoverTimers();
+              const anchor = event.currentTarget;
+              hoverTimer.current = setTimeout(() => {
+                setPopoverAnchor(anchor);
+                setPopoverProvince(province);
+              }, 60);
+            }}
+            onPointerLeave={() => {
+              if (hoverTimer.current) clearTimeout(hoverTimer.current);
+              hoverTimer.current = null;
+              handleCloseProvincePopover();
+            }}
+            onFocus={(event) => {
+              cancelPopoverTimers();
+              setPopoverAnchor(event.currentTarget);
+              setPopoverProvince(province);
+            }}
+            onBlur={handleCloseProvincePopover}
             onClick={(event) => {
-              handleToggleProvincePopover(event, province);
+              handleSelectMapProvince(event, province);
             }}
             onKeyDown={(event) => {
               if (event.key === 'Enter' || event.key === ' ') {
                 event.preventDefault();
-                handleToggleProvincePopover(event, province);
+                handleSelectMapProvince(event, province);
               }
             }}
             style={{
@@ -570,13 +402,13 @@ export default function ThailandMap() {
               outline: 'none',
               transition: 'fill 140ms ease, opacity 140ms ease',
             }}
-          >
-            <title>{displayName}</title>
-          </path>
+           />
         );
       }),
     [
-      handleToggleProvincePopover,
+      handleSelectMapProvince,
+      handleCloseProvincePopover,
+      cancelPopoverTimers,
       mapItems,
       normalizedSearchQuery,
       popoverProvince,
@@ -908,6 +740,30 @@ export default function ThailandMap() {
         </Box>
       </Box>
 
+      {(isCategoryConfigError || isSummaryError) && (
+        <Box
+          role="alert"
+          sx={{
+            mb: 2,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 2,
+            color: 'text.secondary',
+            fontSize: 13,
+          }}
+        >
+          ยังโหลดข้อมูลสีแผนที่ไม่สำเร็จ
+          <Button
+            size="small"
+            onClick={() => {
+              void refetchCategoryConfig();
+              void refetchSummaries();
+            }}
+          >
+            ลองอีกครั้ง
+          </Button>
+        </Box>
+      )}
       <Box
         component="section"
         aria-label="คำอธิบายสีแผนที่"
@@ -973,194 +829,58 @@ export default function ThailandMap() {
                 {getCategoryLabel(categoryConfig, key)}
               </Box>
             ))}
-          <Box
-            component="li"
-            sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: 13, color: '#50595d' }}
-          >
+          {loadedCategoryConfig && apiSummaries && (
             <Box
-              aria-hidden="true"
-              sx={{
-                width: 12,
-                height: 12,
-                borderRadius: 0.5,
-                bgcolor: DEFAULT_PROVINCE_FILL,
-                border: '1px solid #cbd1cd',
-              }}
-            />
-            ยังไม่มีข้อมูลหมวดวัฒนธรรม
-          </Box>
+              component="li"
+              sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: 13, color: '#50595d' }}
+            >
+              <Box
+                aria-hidden="true"
+                sx={{
+                  width: 12,
+                  height: 12,
+                  borderRadius: 0.5,
+                  bgcolor: DEFAULT_PROVINCE_FILL,
+                  border: '1px solid #cbd1cd',
+                }}
+              />
+              ยังไม่มีข้อมูลหมวดวัฒนธรรม
+            </Box>
+          )}
         </Box>
       </Box>
 
-      <Popover
+      <Popper
         open={Boolean(popoverAnchor && popoverProvince)}
         anchorEl={popoverAnchor}
-        onClose={handleCloseProvincePopover}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-        transformOrigin={{ vertical: 'top', horizontal: 'center' }}
-        slotProps={{
-          paper: {
-            onMouseLeave: handleCloseProvincePopover,
-            sx: {
-              mt: 1.8,
-              width: { xs: 272, sm: 310 },
-              p: 1,
-              borderRadius: 3.2,
-              overflow: 'visible',
-              color: '#263331',
-              bgcolor: alpha('#fbfaf3', 0.97),
-              border: `1px solid ${alpha('#fff8e6', 0.86)}`,
-              boxShadow: `0 28px 80px ${alpha('#2f2418', 0.28)}, inset 0 1px 0 ${alpha(
-                '#ffffff',
-                0.72
-              )}`,
-              backdropFilter: 'blur(16px)',
-              '&::before': {
-                content: '""',
-                position: 'absolute',
-                top: -10,
-                left: '50%',
-                width: 20,
-                height: 20,
-                bgcolor: alpha('#fbfaf3', 0.97),
-                transform: 'translateX(-50%) rotate(45deg)',
-                borderRadius: 0.4,
-                borderTop: `1px solid ${alpha('#fff8e6', 0.86)}`,
-                borderLeft: `1px solid ${alpha('#fff8e6', 0.86)}`,
-              },
-            },
-          },
-        }}
+        placement="top"
+        modifiers={[{ name: 'offset', options: { offset: [0, 12] } }]}
+        sx={{ zIndex: 1300, pointerEvents: 'none' }}
       >
-        {popoverProvince && (
-          <Box sx={{ position: 'relative', overflow: 'hidden', borderRadius: 2.4 }}>
-            <Box
-              sx={{
-                position: 'absolute',
-                top: -42,
-                right: -48,
-                width: 124,
-                height: 124,
-                borderRadius: '50%',
-                bgcolor: alpha(popoverAccentColor, 0.13),
-              }}
-            />
-            <Box
-              sx={{
-                p: 1.3,
-                display: 'flex',
-                gap: 1.2,
-                alignItems: 'center',
-                position: 'relative',
-                borderRadius: 2.2,
-                background:
-                  'linear-gradient(135deg, rgba(244,237,208,0.98), rgba(231,228,204,0.88))',
-                border: `1px solid ${alpha('#ffffff', 0.82)}`,
-              }}
-            >
-              <Box
-                sx={{
-                  width: 46,
-                  height: 46,
-                  display: 'grid',
-                  flexShrink: 0,
-                  borderRadius: '50%',
-                  placeItems: 'center',
-                  color: '#7a311f',
-                  bgcolor: '#f8d36a',
-                  border: `3px solid ${alpha('#7b3d27', 0.94)}`,
-                  boxShadow: `0 10px 22px ${alpha('#6f3d24', 0.18)}`,
-                }}
-              >
-                <Iconify icon="custom:location-fill" width={22} />
-              </Box>
-              <Box sx={{ minWidth: 0, flex: 1 }}>
-                <Typography
-                  sx={{
-                    color: '#1f2e2c',
-                    fontSize: 18,
-                    fontWeight: 950,
-                    lineHeight: 1.14,
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {popoverProvinceDisplayName}
-                </Typography>
-                <Typography sx={{ mt: 0.15, color: '#64716f', fontSize: 12, fontWeight: 800 }}>
-                  จังหวัด
-                </Typography>
-              </Box>
-            </Box>
-
-            <Box
-              sx={{
-                px: 1.4,
-                pt: 1.5,
-                pb: 1.2,
-                position: 'relative',
-                '&::before': {
-                  content: '""',
-                  position: 'absolute',
-                  left: 1.6,
-                  top: 20,
-                  bottom: 18,
-                  width: 1,
-                },
-              }}
-            >
-              {[popoverProvinceCoordinate].map((item) => (
-                <Box key={item} sx={{ display: 'flex', alignItems: 'center', gap: 1.1, py: 0.5 }}>
-                  <Box
-                    sx={{
-                      width: 6,
-                      height: 6,
-                      zIndex: 1,
-                      flexShrink: 0,
-                      borderRadius: '50%',
-                      bgcolor: popoverAccentColor,
-                      boxShadow: `0 0 0 3px ${alpha(popoverAccentColor, 0.13)}`,
-                    }}
-                  />
-                  <Typography sx={{ color: '#233331', fontSize: 13, fontWeight: 800 }}>
-                    {item}
-                  </Typography>
-                </Box>
-              ))}
-            </Box>
-
-            <Button
-              onClick={handleViewProvinceDetails}
-              color="primary"
-              variant="contained"
-              sx={{
-                width: 1,
-                m: 0,
-                py: 1.05,
-                px: 1.5,
-                cursor: 'pointer',
-                display: 'flex',
-                borderRadius: 2.2,
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                color: '#fffdf6',
-                bgcolor: '#827568',
-                fontSize: 14,
-                fontWeight: 900,
-                boxShadow: `0 14px 30px ${alpha('#4a3525', 0.22)}`,
-                '&:hover': {
-                  bgcolor: '#6f6257',
-                  boxShadow: `0 18px 36px ${alpha('#4a3525', 0.28)}`,
-                },
-              }}
-              endIcon={<Iconify icon="eva:arrow-ios-forward-fill" width={16} />}
-            >
-              ดูรายละเอียด
-            </Button>
-          </Box>
-        )}
-      </Popover>
+        <Box
+          sx={{
+            maxWidth: 280,
+            px: 2,
+            py: 1.5,
+            bgcolor: '#fff',
+            borderRadius: 2,
+            border: '1px solid #e7ebe4',
+            boxShadow: '0 4px 18px rgba(30,45,35,0.12)',
+          }}
+        >
+          <Typography sx={{ fontSize: 15, fontWeight: 600, color: '#293c34' }}>
+            {popoverProvinceDisplayName}
+          </Typography>
+          <Typography sx={{ mt: 0.5, fontSize: 12, color: 'text.secondary' }}>
+            {typeof popoverProvinceSummary?.total === 'number'
+              ? `ข้อมูลวัฒนธรรมในจังหวัด ${popoverProvinceSummary.total.toLocaleString('th-TH')} รายการ`
+              : 'สำรวจเรื่องราวและข้อมูลวัฒนธรรมในจังหวัด'}
+          </Typography>
+          <Typography sx={{ mt: 0.75, fontSize: 12, color: '#568080' }}>
+            คลิกจังหวัดเพื่อดูข้อมูลและสำรวจพื้นที่
+          </Typography>
+        </Box>
+      </Popper>
     </Box>
   );
 }

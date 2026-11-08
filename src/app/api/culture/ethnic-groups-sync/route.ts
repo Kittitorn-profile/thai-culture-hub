@@ -2,6 +2,8 @@ import type { NextRequest } from 'next/server';
 
 import { NextResponse } from 'next/server';
 
+import { parseCoordinate } from 'src/utils/coordinates';
+
 import provinces from 'src/data/thailand-culture/provinces';
 import { getSupabaseAdmin } from 'src/server/supabase-admin';
 import { verifyAdminAccessToken } from 'src/server/admin-api-auth';
@@ -72,7 +74,9 @@ function cleanText(value: unknown) {
     return null;
   }
 
-  const text = String(value).replace(/^\uFEFF/, '').trim();
+  const text = String(value)
+    .replace(/^\uFEFF/, '')
+    .trim();
 
   return text && text !== '-' ? text : null;
 }
@@ -122,9 +126,7 @@ function getProvinceCodes(body: EthnicGroupsSyncBody, request: NextRequest) {
 }
 
 function toCoordinate(value: unknown) {
-  const numberValue = Number(value);
-
-  return Number.isFinite(numberValue) ? numberValue : null;
+  return parseCoordinate(value);
 }
 
 function getProvinceCode(record: EthnicGroupSourceRecord) {
@@ -165,6 +167,7 @@ async function fetchEthnicGroupRecords(limit: number, offset: number) {
 
     const response = await fetch(url, {
       cache: 'no-store',
+      signal: AbortSignal.timeout(20000),
       headers: { Accept: 'application/json' },
     });
 
@@ -173,6 +176,8 @@ async function fetchEthnicGroupRecords(limit: number, offset: number) {
     }
 
     const json = await response.json();
+    if (json?.success !== true || !Array.isArray(json?.result?.records))
+      throw new Error('แหล่งข้อมูลกลุ่มชาติพันธุ์ตอบกลับไม่ถูกต้อง');
     const nextRecords = Array.isArray(json?.result?.records)
       ? (json.result.records as EthnicGroupSourceRecord[])
       : [];
@@ -424,9 +429,25 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
-  return handleSync(request, { defaultDryRun: true });
+  return safeHandleSync(request, { defaultDryRun: true });
 }
 
 export async function POST(request: NextRequest) {
-  return handleSync(request);
+  return safeHandleSync(request);
+}
+
+async function safeHandleSync(request: NextRequest, options?: { defaultDryRun?: boolean }) {
+  try {
+    return await handleSync(request, options);
+  } catch (error) {
+    return NextResponse.json(
+      {
+        message:
+          error instanceof Error && error.name === 'TimeoutError'
+            ? 'API กลุ่มชาติพันธุ์ตอบกลับช้าเกินไป กรุณาลองใหม่'
+            : 'ไม่สามารถอ่านข้อมูลกลุ่มชาติพันธุ์จากแหล่งต้นทางได้ กรุณาลองใหม่',
+      },
+      { status: error instanceof Error && error.name === 'TimeoutError' ? 504 : 502 }
+    );
+  }
 }

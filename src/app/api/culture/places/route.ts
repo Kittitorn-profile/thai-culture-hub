@@ -3,6 +3,8 @@ import type { CulturalPlace, CulturalCategory } from 'src/sections/province/prov
 
 import { NextResponse } from 'next/server';
 
+import { parseCoordinate, isValidCoordinatePair } from 'src/utils/coordinates';
+
 import provinces from 'src/data/thailand-culture/provinces';
 
 // ----------------------------------------------------------------------
@@ -157,11 +159,11 @@ function mapCultureRecordToPlace(
   provinceCode: string,
   provinceName: string
 ): CulturalPlace | null {
-  const lat = toNumber(record.Latitude);
-  const lng = toNumber(record.Longitude);
+  const lat = parseCoordinate(record.Latitude);
+  const lng = parseCoordinate(record.Longitude);
   const name = record.Name?.replace(/^["“”]+|["“”]+$/g, '').trim();
 
-  if (!record._id || !name || lat == null || lng == null) {
+  if (!record._id || !name || lat == null || lng == null || !isValidCoordinatePair(lat, lng)) {
     return null;
   }
 

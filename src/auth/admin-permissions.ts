@@ -13,6 +13,7 @@ export const ADMIN_PERMISSION = {
   categories: 'categories',
   culturalPlaces: 'cultural_places',
   culturalHeritage: 'cultural_heritage',
+  culturalArtists: 'cultural_artists',
   analytics: 'analytics',
   feedback: 'feedback',
   creators: 'creators',
@@ -27,6 +28,7 @@ export const ADMIN_PERMISSION_OPTIONS: { value: AdminPermission; label: string }
   { value: ADMIN_PERMISSION.homeContent, label: 'Home Content' },
   { value: ADMIN_PERMISSION.categories, label: 'Categories' },
   { value: ADMIN_PERMISSION.culturalPlaces, label: 'Cultural Places' },
+  { value: ADMIN_PERMISSION.culturalArtists, label: 'ศิลปินรายจังหวัด' },
   { value: ADMIN_PERMISSION.culturalHeritage, label: 'มรดกภูมิปัญญาทางวัฒนธรรม' },
   { value: ADMIN_PERMISSION.analytics, label: 'Analytics' },
   { value: ADMIN_PERMISSION.feedback, label: 'Feedback' },
@@ -115,6 +117,13 @@ export function getAdminPermissionFromPath(pathname: string): AdminPermission | 
     return ADMIN_PERMISSION.homeContent;
   }
 
+  if (pathname === '/admin/cultural-data' || pathname.startsWith('/admin/cultural-data/'))
+    return ADMIN_PERMISSION.culturalPlaces;
+
+  if (pathname.startsWith('/admin/ethnic-groups')) return ADMIN_PERMISSION.culturalPlaces;
+
+  if (pathname.startsWith('/admin/cultural-artists')) return ADMIN_PERMISSION.culturalArtists;
+
   if (pathname.startsWith('/admin/cultural-heritage')) return ADMIN_PERMISSION.culturalHeritage;
 
   if (pathname.startsWith('/admin/categories')) {
@@ -161,6 +170,8 @@ export function getFirstAllowedAdminPath(user: Record<string, any> | null | unde
   switch (permission) {
     case ADMIN_PERMISSION.categories:
       return '/admin/categories';
+    case ADMIN_PERMISSION.culturalArtists:
+      return '/admin/cultural-artists';
     case ADMIN_PERMISSION.culturalHeritage:
       return '/admin/cultural-heritage';
     case ADMIN_PERMISSION.culturalPlaces:

@@ -3,8 +3,14 @@ import type { CulturalPlace, CulturalCategory } from 'src/sections/province/prov
 
 import { NextResponse } from 'next/server';
 
+import { parseCoordinate } from 'src/utils/coordinates';
+
+import { readAuthBody } from 'src/server/auth-request';
 import provinces from 'src/data/thailand-culture/provinces';
 import { getSupabaseAdmin } from 'src/server/supabase-admin';
+import { verifyAdminAccessToken } from 'src/server/admin-api-auth';
+
+import { ADMIN_PERMISSION } from 'src/auth/admin-permissions';
 
 // ----------------------------------------------------------------------
 
@@ -135,7 +141,7 @@ async function readSyncBody(request: NextRequest): Promise<SyncBody> {
   }
 
   try {
-    return (await request.json()) as SyncBody;
+    return (await readAuthBody(request)) as SyncBody;
   } catch {
     return {};
   }
@@ -170,9 +176,7 @@ function getString(record: FineArtsRecord, keys: string[]) {
 }
 
 function toCoordinate(value: unknown) {
-  const coordinate = typeof value === 'number' ? value : Number(value);
-
-  return Number.isFinite(coordinate) ? coordinate : null;
+  return parseCoordinate(value);
 }
 
 function getCoordinate(record: FineArtsRecord, keys: string[]) {
@@ -211,7 +215,7 @@ function getRecords(json: unknown): FineArtsRecord[] {
       : null,
   ];
 
-  return candidates.find(Array.isArray) as FineArtsRecord[] ?? [];
+  return (candidates.find(Array.isArray) as FineArtsRecord[]) ?? [];
 }
 
 function getImageUrls(record: FineArtsRecord) {
@@ -254,7 +258,15 @@ function mapFineArtsRecordToPlace(
     'name_th',
   ]);
   const lat = getCoordinate(record, ['latitude', 'lat', 'Latitude', 'LAT']);
-  const lng = getCoordinate(record, ['longitude', 'lng', 'lon', 'long', 'Longitude', 'LON', 'LONG']);
+  const lng = getCoordinate(record, [
+    'longitude',
+    'lng',
+    'lon',
+    'long',
+    'Longitude',
+    'LON',
+    'LONG',
+  ]);
 
   if (!name || lat == null || lng == null) {
     return null;
@@ -283,7 +295,8 @@ function mapFineArtsRecordToPlace(
   ]
     .filter(Boolean)
     .join(' ');
-  const sourceUrl = getString(record, ['url', 'link', 'sourceUrl', 'source_url']) || config.endpoint;
+  const sourceUrl =
+    getString(record, ['url', 'link', 'sourceUrl', 'source_url']) || config.endpoint;
   const mapUrl = getString(record, ['mapUrl', 'map_url', 'googleMapUrl']);
 
   return {
@@ -330,9 +343,9 @@ async function fetchFineArtsPlaces(
 
   const response = await fetch(url, {
     cache: 'no-store',
+    signal: AbortSignal.timeout(20000),
     headers: {
       'x-api-key': apiKey,
-      'X-API-KEY': apiKey,
       'api-key': apiKey,
       Authorization: `Bearer ${apiKey}`,
     },
@@ -417,6 +430,11 @@ async function handleSync(request: NextRequest, options?: { defaultDryRun?: bool
   const body = await readSyncBody(request);
   const dryRunParam = request.nextUrl.searchParams.get('dryRun');
   const dryRun = body.dryRun ?? (dryRunParam ? dryRunParam === 'true' : options?.defaultDryRun);
+  if (!dryRun) {
+    const token = request.headers.get('authorization')?.match(/^Bearer\s+(.+)$/i)?.[1] ?? '';
+    const auth = await verifyAdminAccessToken(token, ADMIN_PERMISSION.culturalPlaces);
+    if (!auth.ok) return NextResponse.json({ message: auth.message }, { status: auth.status });
+  }
   const tableName = process.env.CULTURAL_PLACES_TABLE ?? DEFAULT_TABLE_NAME;
   const limit = getLimit(body.limit ?? request.nextUrl.searchParams.get('limit'));
   const sources = getSources(body.sources ?? request.nextUrl.searchParams.get('sources'));
@@ -424,8 +442,13 @@ async function handleSync(request: NextRequest, options?: { defaultDryRun?: bool
 
   if (!apiKey) {
     return NextResponse.json(
-      { table: tableName, total: 0, upserted: 0, message: 'Missing FINE_ARTS_API_KEY' },
-      { status: 500 }
+      {
+        table: tableName,
+        total: 0,
+        upserted: 0,
+        message: 'ยังไม่ได้ตั้งค่า FINE_ARTS_API_KEY บนเซิร์ฟเวอร์ กรุณาเพิ่มคีย์กรมศิลป์ก่อนซิงก์',
+      },
+      { status: 503 }
     );
   }
 
@@ -440,7 +463,19 @@ async function handleSync(request: NextRequest, options?: { defaultDryRun?: bool
 
   for (const provinceCode of provinceCodes) {
     for (const source of sources) {
-      results.push(await fetchFineArtsPlaces(provinceCode, source, limit, apiKey));
+      try {
+        results.push(await fetchFineArtsPlaces(provinceCode, source, limit, apiKey));
+      } catch (error) {
+        results.push({
+          source,
+          provinceCode,
+          status: error instanceof Error && error.name === 'TimeoutError' ? 504 : 502,
+          total: 0,
+          mapped: 0,
+          data: [],
+          message: 'เชื่อมต่อ API กรมศิลป์ไม่สำเร็จหรือใช้เวลานานเกินไป กรุณาลองใหม่',
+        });
+      }
     }
   }
 
@@ -448,16 +483,6 @@ async function handleSync(request: NextRequest, options?: { defaultDryRun?: bool
     result.data.map((place) => mapPlaceToRow(place, result.provinceCode))
   );
   const uniqueRows = Array.from(new Map(rows.map((row) => [row.id, row])).values());
-
-  if (dryRun) {
-    return NextResponse.json({
-      dryRun: true,
-      table: tableName,
-      total: uniqueRows.length,
-      provinceCodes,
-      sources: results.map(({ data, ...result }) => result),
-    });
-  }
 
   const failedResults = results.filter((result) => result.status >= 400);
 
@@ -473,6 +498,16 @@ async function handleSync(request: NextRequest, options?: { defaultDryRun?: bool
       },
       { status: failedResults[0].status }
     );
+  }
+
+  if (dryRun) {
+    return NextResponse.json({
+      dryRun: true,
+      table: tableName,
+      total: uniqueRows.length,
+      provinceCodes,
+      sources: results.map(({ data, ...result }) => result),
+    });
   }
 
   const upsertResult = await upsertRows(tableName, uniqueRows);

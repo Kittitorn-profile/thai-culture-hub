@@ -144,11 +144,11 @@ function hasRemappablePayload(
 ): payload is RemappablePlacePayload {
   return Boolean(
     payload &&
-      typeof payload === 'object' &&
-      typeof payload.name === 'string' &&
-      payload.name.trim() &&
-      toNumber(payload.lat) != null &&
-      toNumber(payload.lng) != null
+    typeof payload === 'object' &&
+    typeof payload.name === 'string' &&
+    payload.name.trim() &&
+    toNumber(payload.lat) != null &&
+    toNumber(payload.lng) != null
   );
 }
 
@@ -203,6 +203,7 @@ async function getRemapRows(provinceCode?: string | null, source?: string | null
         'id, province_code, name, district, category, lat, lng, description, highlight, image_urls, source_url, map_url, source, payload, updated_at'
       )
       .order('updated_at', { ascending: false })
+      .order('id', { ascending: true })
       .range(from, to);
 
     if (provinceCode) {
@@ -249,6 +250,7 @@ async function getStoredPlaces(provinceCode?: string | null) {
         'id, province_code, name, district, category, lat, lng, description, highlight, image_urls, source_url, map_url, source, payload'
       )
       .order('updated_at', { ascending: false })
+      .order('id', { ascending: true })
       .range(from, to);
 
     if (provinceCode) {
@@ -276,7 +278,12 @@ async function getStoredPlaces(provinceCode?: string | null) {
 }
 
 function isReadyPlace(place: CulturalPlace) {
-  return place.lat != null && place.lng != null && Number.isFinite(Number(place.lat)) && Number.isFinite(Number(place.lng));
+  return (
+    place.lat != null &&
+    place.lng != null &&
+    Number.isFinite(Number(place.lat)) &&
+    Number.isFinite(Number(place.lng))
+  );
 }
 
 async function getOverrides(provinceCode?: string | null) {
@@ -286,9 +293,7 @@ async function getOverrides(provinceCode?: string | null) {
     return { ok: false as const, error: supabase.error, data: [] as PlaceOverride[] };
   }
 
-  let query = supabase.client
-    .from(OVERRIDES_TABLE)
-    .select('*');
+  let query = supabase.client.from(OVERRIDES_TABLE).select('*');
 
   if (provinceCode) {
     query = query.eq('province_code', provinceCode);
@@ -314,9 +319,13 @@ export async function GET(request: NextRequest) {
   const query = request.nextUrl.searchParams.get('q')?.trim().toLowerCase() ?? '';
   const status = request.nextUrl.searchParams.get('status') ?? '';
   const page = Math.max(Number(request.nextUrl.searchParams.get('page') ?? 1), 1);
-  const pageSize = Math.min(Math.max(Number(request.nextUrl.searchParams.get('pageSize') ?? 10), 1), 100);
+  const pageSize = Math.min(
+    Math.max(Number(request.nextUrl.searchParams.get('pageSize') ?? 10), 1),
+    100
+  );
   const district = request.nextUrl.searchParams.get('district') ?? '';
   const source = request.nextUrl.searchParams.get('source') ?? '';
+  const category = request.nextUrl.searchParams.get('category') ?? '';
 
   const [places, overridesResult] = await Promise.all([
     getStoredPlaces(provinceCode),
@@ -326,34 +335,34 @@ export async function GET(request: NextRequest) {
     overridesResult.data.map((override) => [override.place_id, override])
   );
   const allPlaces = places.map((place) => applyOverride(place, overrideMap.get(place.id)));
-  const filteredData = allPlaces
-    .filter((place) => {
-      if (status === 'ready' && !isReadyPlace(place)) {
-        return false;
-      }
+  const filteredData = allPlaces.filter((place) => {
+    if (status === 'ready' && !isReadyPlace(place)) {
+      return false;
+    }
 
-      if (status === 'not_ready' && isReadyPlace(place)) {
-        return false;
-      }
+    if (status === 'not_ready' && isReadyPlace(place)) {
+      return false;
+    }
 
-      if (district && place.district !== district) {
-        return false;
-      }
+    if (district && place.district !== district) {
+      return false;
+    }
 
-      if (source && place.source !== source) {
-        return false;
-      }
+    if (category && place.category !== category) return false;
+    if (source && place.source !== source) {
+      return false;
+    }
 
-      if (!query) {
-        return true;
-      }
+    if (!query) {
+      return true;
+    }
 
-      return [place.name, place.district, place.highlight, place.source]
-        .filter(Boolean)
-        .join(' ')
-        .toLowerCase()
-        .includes(query);
-    });
+    return [place.name, place.district, place.highlight, place.source]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase()
+      .includes(query);
+  });
   const total = filteredData.length;
   const totalPages = Math.max(Math.ceil(total / pageSize), 1);
   const normalizedPage = Math.min(page, totalPages);
@@ -387,7 +396,10 @@ export async function GET(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
-  const auth = await verifyAdminAccessToken(getBearerToken(request), ADMIN_PERMISSION.culturalPlaces);
+  const auth = await verifyAdminAccessToken(
+    getBearerToken(request),
+    ADMIN_PERMISSION.culturalPlaces
+  );
 
   if (!auth.ok) {
     return NextResponse.json({ message: auth.message }, { status: auth.status });
@@ -480,7 +492,10 @@ export async function PUT(request: NextRequest) {
 }
 
 export async function PATCH(request: NextRequest) {
-  const auth = await verifyAdminAccessToken(getBearerToken(request), ADMIN_PERMISSION.culturalPlaces);
+  const auth = await verifyAdminAccessToken(
+    getBearerToken(request),
+    ADMIN_PERMISSION.culturalPlaces
+  );
 
   if (!auth.ok) {
     return NextResponse.json({ message: auth.message }, { status: auth.status });

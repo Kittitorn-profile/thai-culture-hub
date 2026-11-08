@@ -164,10 +164,7 @@ async function fetchKongvutDistrictSource() {
 async function getProvinceFeature(provinceId: string) {
   const geoJson = await getProvincesGeoJson();
 
-  return (
-    geoJson?.features.find((feature) => feature.properties?.shapeISO === provinceId) ??
-    null
-  );
+  return geoJson?.features.find((feature) => feature.properties?.shapeISO === provinceId) ?? null;
 }
 
 function doBoundsOverlap(
@@ -309,7 +306,9 @@ function isPointInRing([x, y]: [number, number], ring: number[][]) {
 }
 
 function isPointInPolygon(point: [number, number], polygon: number[][][]) {
-  return isPointInRing(point, polygon[0]) && !polygon.slice(1).some((ring) => isPointInRing(point, ring));
+  return (
+    isPointInRing(point, polygon[0]) && !polygon.slice(1).some((ring) => isPointInRing(point, ring))
+  );
 }
 
 function isPointInGeometry(point: [number, number], geometry: Geometry) {
@@ -557,6 +556,39 @@ export async function GET(request: NextRequest) {
     }
 
     const provinceId = request.nextUrl.searchParams.get('provinceId');
+    if (request.nextUrl.searchParams.get('boundaries') === 'true') {
+      if (!provinceId || !provinces.some((province) => province.code === provinceId))
+        return NextResponse.json({ message: 'จังหวัดไม่ถูกต้อง' }, { status: 400 });
+      const db = getSupabaseAdmin();
+      if (db.ok) {
+        const result = await db.client
+          .from(process.env.THAILAND_DISTRICTS_TABLE ?? DEFAULT_DISTRICTS_TABLE_NAME)
+          .select('id, name, geometry')
+          .eq('province_code', provinceId);
+        const rows = result.data?.filter(
+          (row) => row.geometry && ['Polygon', 'MultiPolygon'].includes(row.geometry.type)
+        );
+        if (!result.error && rows?.length)
+          return NextResponse.json(
+            {
+              type: 'FeatureCollection',
+              features: rows.map((row) => ({
+                type: 'Feature',
+                id: row.id,
+                properties: { name: row.name },
+                geometry: row.geometry,
+              })),
+            },
+            {
+              headers: { 'Cache-Control': 'public, s-maxage=86400, stale-while-revalidate=604800' },
+            }
+          );
+      }
+      const boundaries = await filterDistrictsByProvince(await getDistrictsGeoJson(), provinceId);
+      return NextResponse.json(boundaries, {
+        headers: { 'Cache-Control': 'public, s-maxage=86400, stale-while-revalidate=604800' },
+      });
+    }
     const databaseDistrictCenters = await getDistrictCentersFromDatabase(provinceId);
 
     if (databaseDistrictCenters) {

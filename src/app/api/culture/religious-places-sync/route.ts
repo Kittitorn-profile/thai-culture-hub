@@ -2,8 +2,9 @@ import type { NextRequest } from 'next/server';
 import type { CulturalPlace } from 'src/sections/province/province-data';
 
 import crypto from 'node:crypto';
-
 import { NextResponse } from 'next/server';
+
+import { parseCoordinate, isValidCoordinatePair } from 'src/utils/coordinates';
 
 import provinces from 'src/data/thailand-culture/provinces';
 import { getSupabaseAdmin } from 'src/server/supabase-admin';
@@ -60,7 +61,9 @@ function cleanText(value: unknown) {
     return null;
   }
 
-  const text = String(value).replace(/^\uFEFF/, '').trim();
+  const text = String(value)
+    .replace(/^\uFEFF/, '')
+    .trim();
 
   return text ? text : null;
 }
@@ -114,9 +117,7 @@ function getProvinceCodes(body: ReligiousPlaceSyncBody, request: NextRequest) {
 }
 
 function toCoordinate(value: unknown) {
-  const numberValue = Number(value);
-
-  return Number.isFinite(numberValue) ? numberValue : null;
+  return parseCoordinate(value);
 }
 
 function getStablePlaceId(record: ReligiousPlaceRecord, provinceCode: string) {
@@ -204,10 +205,11 @@ function parseDelimitedCsv(text: string, delimiter = '|') {
   const [headerRow = [], ...dataRows] = rows;
   const headers = headerRow.map((header) => cleanText(header) ?? '');
 
-  return dataRows.map((cells) =>
-    Object.fromEntries(
-      headers.map((header, index) => [header, cleanText(cells[index])])
-    ) as ReligiousPlaceRecord
+  return dataRows.map(
+    (cells) =>
+      Object.fromEntries(
+        headers.map((header, index) => [header, cleanText(cells[index])])
+      ) as ReligiousPlaceRecord
   );
 }
 
@@ -303,7 +305,7 @@ function mapRecord(
   const lat = toCoordinate(record.latitude);
   const lng = toCoordinate(record.longitude);
 
-  if (!name || !provinceCode || lat == null || lng == null) {
+  if (!name || !provinceCode || lat == null || lng == null || !isValidCoordinatePair(lat, lng)) {
     return null;
   }
 

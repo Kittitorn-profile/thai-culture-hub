@@ -1,21 +1,17 @@
 import type { Metadata } from 'next';
 import type { CulturalPlace } from 'src/sections/province/province-data';
 
+import { cache } from 'react';
 import { notFound } from 'next/navigation';
-
-import Box from '@mui/material/Box';
-import Card from '@mui/material/Card';
-import Stack from '@mui/material/Stack';
-import Button from '@mui/material/Button';
-import Typography from '@mui/material/Typography';
 
 import provinces from 'src/data/thailand-culture/provinces';
 import { getSupabaseAdmin } from 'src/server/supabase-admin';
 import { getCultureCategoryLabel } from 'src/lib/culture-categories';
 
+import { CulturePlaceDetailView } from 'src/sections/province/view/culture-place-detail-view';
 import {
-  cleanCulturalText,
   cleanCulturalUrl,
+  cleanCulturalText,
 } from 'src/sections/province/view/province-detail-utils';
 
 // ----------------------------------------------------------------------
@@ -188,14 +184,14 @@ function createSharePlaceFromOverride(override: PlaceOverride): SharePlace | nul
   };
 }
 
-async function getSharePlace(placeId: string) {
+const getSharePlace = cache(async (placeId: string) => {
   const supabase = getSupabaseAdmin();
 
   if (!supabase.ok) {
     return null;
   }
 
-  const [placeResult, overrideResult] = await Promise.all([
+  const [placeResult, overrideResult, detailsResult] = await Promise.all([
     supabase.client
       .from(process.env.CULTURAL_PLACES_TABLE ?? 'cultural_places')
       .select(
@@ -210,6 +206,13 @@ async function getSharePlace(placeId: string) {
       )
       .eq('place_id', placeId)
       .maybeSingle(),
+    supabase.client
+      .from(process.env.CULTURAL_PLACE_DETAILS_TABLE ?? 'cultural_place_details')
+      .select(
+        'place_id, detail_th, address, address_road, subdistrict_name_th, postcode, tel, email, opening_hours, fee_th, website, facebook'
+      )
+      .eq('place_id', placeId)
+      .maybeSingle(),
   ]);
 
   if (placeResult.error && !overrideResult.data) {
@@ -219,12 +222,37 @@ async function getSharePlace(placeId: string) {
   const override = overrideResult.data as PlaceOverride | null;
   const place = placeResult.data ? mapPlaceRow(placeResult.data as CulturalPlaceRow) : null;
 
-  if (place) {
-    return applyOverride(place, override);
-  }
-
-  return override ? createSharePlaceFromOverride(override) : null;
-}
+  const resolved = place
+    ? applyOverride(place, override)
+    : override
+      ? createSharePlaceFromOverride(override)
+      : null;
+  if (!resolved) return null;
+  const detail = detailsResult.data as Record<string, string | null> | null;
+  if (!detail) return resolved;
+  return {
+    ...resolved,
+    description:
+      cleanCulturalText(override?.detail) ||
+      cleanCulturalText(detail.detail_th) ||
+      resolved.description,
+    details: {
+      ...resolved.details,
+      placeId,
+      provinceCode: resolved.provinceCode,
+      address: cleanCulturalText(detail.address),
+      addressRoad: cleanCulturalText(detail.address_road),
+      subdistrictNameTh: cleanCulturalText(detail.subdistrict_name_th),
+      postcode: cleanCulturalText(detail.postcode),
+      tel: cleanCulturalText(detail.tel),
+      email: cleanCulturalText(detail.email),
+      openingHours: cleanCulturalText(detail.opening_hours),
+      feeTh: cleanCulturalText(detail.fee_th),
+      website: cleanCulturalUrl(detail.website),
+      facebook: cleanCulturalUrl(detail.facebook),
+    },
+  };
+});
 
 function getSeoDescription(place: SharePlace) {
   const parts = [
@@ -292,56 +320,5 @@ export default async function Page({ params }: PageProps) {
     notFound();
   }
 
-  const imageUrl = getAbsoluteUrl(place.imageUrls?.[0]) ?? OG_FALLBACK_IMAGE;
-  const mapUrl =
-    place.mapUrl || `https://www.google.com/maps/search/?api=1&query=${place.lat},${place.lng}`;
-  const descriptionText =
-    cleanCulturalText(place.description) ||
-    cleanCulturalText(place.highlight) ||
-    'ยังไม่มีรายละเอียดเพิ่มเติมสำหรับสถานที่นี้';
-
-  return (
-    <Box
-      component="main"
-      sx={{
-        minHeight: '100vh',
-        px: { xs: 2.5, md: 6 },
-        py: { xs: 8, md: 12 },
-        bgcolor: '#f7f7f5',
-        backgroundImage: 'none',
-      }}
-    >
-      <Card sx={{ mx: 'auto', maxWidth: 920, overflow: 'hidden', borderRadius: 1 }}>
-        <Box
-          component="img"
-          src={imageUrl}
-          alt={place.name}
-          sx={{ width: 1, height: { xs: 260, md: 420 }, objectFit: 'cover', display: 'block' }}
-        />
-        <Stack spacing={2.2} sx={{ p: { xs: 3, md: 4 } }}>
-          <Typography sx={{ color: '#f7f7f5', fontSize: 14, fontWeight: 600 }}>
-            {getCategoryLabel(place.category)} / {place.provinceName}
-          </Typography>
-          <Typography variant="h3" sx={{ fontWeight: 600 }}>
-            {place.name}
-          </Typography>
-          <Typography sx={{ color: 'text.secondary', fontSize: 16, lineHeight: 1.8 }}>
-            {descriptionText}
-          </Typography>
-          <Typography sx={{ color: 'text.secondary', fontSize: 14, fontWeight: 800 }}>
-            {place.district ? `${place.district} / ` : ''}
-            {place.provinceName}
-          </Typography>
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.2}>
-            <Button variant="contained" href={`/province/${place.provinceCode}`}>
-              ดูจังหวัดนี้
-            </Button>
-            <Button variant="outlined" href={mapUrl} target="_blank" rel="noopener noreferrer">
-              เปิด Google Map
-            </Button>
-          </Stack>
-        </Stack>
-      </Card>
-    </Box>
-  );
+  return <CulturePlaceDetailView place={place} />;
 }

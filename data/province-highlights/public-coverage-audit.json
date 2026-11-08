@@ -1,0 +1,470 @@
+{
+  "checkedAt": "2026-11-08",
+  "provinces": 77,
+  "withHighlights": 77,
+  "shown": 208,
+  "results": [
+    {
+      "code": "TH-10",
+      "shown": 4,
+      "available": 704,
+      "missing": []
+    },
+    {
+      "code": "TH-11",
+      "shown": 3,
+      "available": 222,
+      "missing": []
+    },
+    {
+      "code": "TH-12",
+      "shown": 2,
+      "available": 201,
+      "missing": []
+    },
+    {
+      "code": "TH-13",
+      "shown": 2,
+      "available": 244,
+      "missing": []
+    },
+    {
+      "code": "TH-14",
+      "shown": 4,
+      "available": 416,
+      "missing": []
+    },
+    {
+      "code": "TH-15",
+      "shown": 2,
+      "available": 168,
+      "missing": []
+    },
+    {
+      "code": "TH-16",
+      "shown": 3,
+      "available": 218,
+      "missing": []
+    },
+    {
+      "code": "TH-17",
+      "shown": 3,
+      "available": 194,
+      "missing": []
+    },
+    {
+      "code": "TH-18",
+      "shown": 3,
+      "available": 132,
+      "missing": []
+    },
+    {
+      "code": "TH-19",
+      "shown": 3,
+      "available": 257,
+      "missing": []
+    },
+    {
+      "code": "TH-20",
+      "shown": 4,
+      "available": 432,
+      "missing": []
+    },
+    {
+      "code": "TH-21",
+      "shown": 3,
+      "available": 377,
+      "missing": []
+    },
+    {
+      "code": "TH-22",
+      "shown": 3,
+      "available": 242,
+      "missing": []
+    },
+    {
+      "code": "TH-23",
+      "shown": 3,
+      "available": 261,
+      "missing": []
+    },
+    {
+      "code": "TH-24",
+      "shown": 2,
+      "available": 544,
+      "missing": []
+    },
+    {
+      "code": "TH-25",
+      "shown": 3,
+      "available": 280,
+      "missing": []
+    },
+    {
+      "code": "TH-26",
+      "shown": 3,
+      "available": 245,
+      "missing": []
+    },
+    {
+      "code": "TH-27",
+      "shown": 3,
+      "available": 308,
+      "missing": []
+    },
+    {
+      "code": "TH-30",
+      "shown": 2,
+      "available": 609,
+      "missing": []
+    },
+    {
+      "code": "TH-31",
+      "shown": 2,
+      "available": 283,
+      "missing": []
+    },
+    {
+      "code": "TH-32",
+      "shown": 3,
+      "available": 198,
+      "missing": []
+    },
+    {
+      "code": "TH-33",
+      "shown": 2,
+      "available": 284,
+      "missing": []
+    },
+    {
+      "code": "TH-34",
+      "shown": 3,
+      "available": 419,
+      "missing": []
+    },
+    {
+      "code": "TH-35",
+      "shown": 2,
+      "available": 124,
+      "missing": []
+    },
+    {
+      "code": "TH-36",
+      "shown": 3,
+      "available": 634,
+      "missing": []
+    },
+    {
+      "code": "TH-37",
+      "shown": 2,
+      "available": 190,
+      "missing": []
+    },
+    {
+      "code": "TH-38",
+      "shown": 2,
+      "available": 88,
+      "missing": []
+    },
+    {
+      "code": "TH-39",
+      "shown": 2,
+      "available": 144,
+      "missing": []
+    },
+    {
+      "code": "TH-40",
+      "shown": 2,
+      "available": 470,
+      "missing": []
+    },
+    {
+      "code": "TH-41",
+      "shown": 2,
+      "available": 128,
+      "missing": []
+    },
+    {
+      "code": "TH-42",
+      "shown": 2,
+      "available": 245,
+      "missing": []
+    },
+    {
+      "code": "TH-43",
+      "shown": 2,
+      "available": 237,
+      "missing": []
+    },
+    {
+      "code": "TH-44",
+      "shown": 4,
+      "available": 145,
+      "missing": []
+    },
+    {
+      "code": "TH-45",
+      "shown": 3,
+      "available": 229,
+      "missing": []
+    },
+    {
+      "code": "TH-46",
+      "shown": 3,
+      "available": 169,
+      "missing": []
+    },
+    {
+      "code": "TH-47",
+      "shown": 2,
+      "available": 452,
+      "missing": []
+    },
+    {
+      "code": "TH-48",
+      "shown": 3,
+      "available": 301,
+      "missing": []
+    },
+    {
+      "code": "TH-49",
+      "shown": 3,
+      "available": 196,
+      "missing": []
+    },
+    {
+      "code": "TH-50",
+      "shown": 2,
+      "available": 823,
+      "missing": []
+    },
+    {
+      "code": "TH-51",
+      "shown": 3,
+      "available": 222,
+      "missing": []
+    },
+    {
+      "code": "TH-52",
+      "shown": 2,
+      "available": 287,
+      "missing": []
+    },
+    {
+      "code": "TH-53",
+      "shown": 3,
+      "available": 179,
+      "missing": []
+    },
+    {
+      "code": "TH-54",
+      "shown": 2,
+      "available": 231,
+      "missing": []
+    },
+    {
+      "code": "TH-55",
+      "shown": 3,
+      "available": 321,
+      "missing": []
+    },
+    {
+      "code": "TH-56",
+      "shown": 3,
+      "available": 337,
+      "missing": []
+    },
+    {
+      "code": "TH-57",
+      "shown": 4,
+      "available": 876,
+      "missing": []
+    },
+    {
+      "code": "TH-58",
+      "shown": 2,
+      "available": 261,
+      "missing": []
+    },
+    {
+      "code": "TH-60",
+      "shown": 2,
+      "available": 227,
+      "missing": []
+    },
+    {
+      "code": "TH-61",
+      "shown": 3,
+      "available": 158,
+      "missing": []
+    },
+    {
+      "code": "TH-62",
+      "shown": 2,
+      "available": 159,
+      "missing": []
+    },
+    {
+      "code": "TH-63",
+      "shown": 3,
+      "available": 264,
+      "missing": []
+    },
+    {
+      "code": "TH-64",
+      "shown": 2,
+      "available": 217,
+      "missing": []
+    },
+    {
+      "code": "TH-65",
+      "shown": 3,
+      "available": 183,
+      "missing": []
+    },
+    {
+      "code": "TH-66",
+      "shown": 3,
+      "available": 156,
+      "missing": []
+    },
+    {
+      "code": "TH-67",
+      "shown": 3,
+      "available": 185,
+      "missing": []
+    },
+    {
+      "code": "TH-70",
+      "shown": 3,
+      "available": 409,
+      "missing": []
+    },
+    {
+      "code": "TH-71",
+      "shown": 3,
+      "available": 430,
+      "missing": []
+    },
+    {
+      "code": "TH-72",
+      "shown": 2,
+      "available": 612,
+      "missing": []
+    },
+    {
+      "code": "TH-73",
+      "shown": 3,
+      "available": 326,
+      "missing": []
+    },
+    {
+      "code": "TH-74",
+      "shown": 2,
+      "available": 147,
+      "missing": []
+    },
+    {
+      "code": "TH-75",
+      "shown": 3,
+      "available": 285,
+      "missing": []
+    },
+    {
+      "code": "TH-76",
+      "shown": 3,
+      "available": 301,
+      "missing": []
+    },
+    {
+      "code": "TH-77",
+      "shown": 3,
+      "available": 313,
+      "missing": []
+    },
+    {
+      "code": "TH-80",
+      "shown": 3,
+      "available": 402,
+      "missing": []
+    },
+    {
+      "code": "TH-81",
+      "shown": 3,
+      "available": 326,
+      "missing": []
+    },
+    {
+      "code": "TH-82",
+      "shown": 3,
+      "available": 241,
+      "missing": []
+    },
+    {
+      "code": "TH-83",
+      "shown": 3,
+      "available": 381,
+      "missing": []
+    },
+    {
+      "code": "TH-84",
+      "shown": 2,
+      "available": 389,
+      "missing": []
+    },
+    {
+      "code": "TH-85",
+      "shown": 3,
+      "available": 174,
+      "missing": []
+    },
+    {
+      "code": "TH-86",
+      "shown": 3,
+      "available": 454,
+      "missing": []
+    },
+    {
+      "code": "TH-90",
+      "shown": 3,
+      "available": 307,
+      "missing": []
+    },
+    {
+      "code": "TH-91",
+      "shown": 3,
+      "available": 187,
+      "missing": []
+    },
+    {
+      "code": "TH-92",
+      "shown": 3,
+      "available": 224,
+      "missing": []
+    },
+    {
+      "code": "TH-93",
+      "shown": 3,
+      "available": 174,
+      "missing": []
+    },
+    {
+      "code": "TH-94",
+      "shown": 3,
+      "available": 238,
+      "missing": []
+    },
+    {
+      "code": "TH-95",
+      "shown": 2,
+      "available": 446,
+      "missing": []
+    },
+    {
+      "code": "TH-96",
+      "shown": 2,
+      "available": 177,
+      "missing": []
+    }
+  ]
+}

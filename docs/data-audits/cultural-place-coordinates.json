@@ -1,0 +1,2697 @@
+{
+  "checked_at": "2026-11-08T05:41:46.112Z",
+  "total_records": 25431,
+  "initial_missing": 363,
+  "verified_count": 37,
+  "pending_count": 326,
+  "verification": "Exact place name and province; district confirmed from source address or OSM administrative boundary. Unconfirmed records remain unchanged.",
+  "verified": [
+    {
+      "id": "tat-attraction-201005182246291298",
+      "name": "วัดจามเทวี",
+      "province_code": "TH-51",
+      "district": "เมืองลำพูน",
+      "lat": 18.58152,
+      "lng": 98.99628,
+      "reference": "tat-4108-วัดจามเทวี",
+      "source": "tat"
+    },
+    {
+      "id": "tat-attraction-201005182246292071",
+      "name": "วัดเขาถ้ำ",
+      "province_code": "TH-63",
+      "district": "เมืองตาก",
+      "lat": 16.90211,
+      "lng": 99.1337,
+      "reference": "tat-3610-วัดเขาถ้ำ",
+      "source": "tat"
+    },
+    {
+      "id": "tat-attraction-2010120911214113399",
+      "name": "วัดหงษ์ทอง",
+      "province_code": "TH-24",
+      "district": "บางปะกง",
+      "lat": 13.47436,
+      "lng": 100.87234,
+      "reference": "tat-3810-วัดหงษ์ทอง",
+      "source": "tat"
+    },
+    {
+      "id": "tat-attraction-2010120911214113918",
+      "name": "วัดหนองกลับ",
+      "province_code": "TH-60",
+      "district": "หนองบัว",
+      "lat": 15.86478,
+      "lng": 100.58189,
+      "reference": "tat-2967-วัดหนองกลับ",
+      "source": "tat"
+    },
+    {
+      "id": "m-culture-religious-23d7ca898e90ce33",
+      "name": "วัดหวายเหนียว",
+      "province_code": "TH-71",
+      "district": "ท่ามะกา",
+      "lat": 13.9060635,
+      "lng": 99.7617956,
+      "reference": "https://www.openstreetmap.org/way/565294602",
+      "source": "openstreetmap",
+      "attribution": "© OpenStreetMap contributors"
+    },
+    {
+      "id": "m-culture-religious-ebdc9ce6e585025e",
+      "name": "วัดจอมพลเจ้าพระยา",
+      "province_code": "TH-21",
+      "district": "ปลวกแดง",
+      "lat": 13.0432853,
+      "lng": 101.19583,
+      "reference": "https://www.openstreetmap.org/way/1561678910",
+      "source": "openstreetmap",
+      "attribution": "© OpenStreetMap contributors"
+    },
+    {
+      "id": "m-culture-religious-030ad0295e87ac8d",
+      "name": "วัดวังม้า",
+      "province_code": "TH-60",
+      "district": "ลาดยาว",
+      "lat": 15.6760439,
+      "lng": 99.82686,
+      "reference": "https://www.openstreetmap.org/way/550223624",
+      "source": "openstreetmap",
+      "attribution": "© OpenStreetMap contributors"
+    },
+    {
+      "id": "m-culture-religious-12386920ad21f45f",
+      "name": "วัดป่าลานหินตัด",
+      "province_code": "TH-31",
+      "district": "บ้านกรวด",
+      "lat": 14.3649358,
+      "lng": 103.085347,
+      "reference": "https://www.openstreetmap.org/node/6533544587",
+      "source": "openstreetmap",
+      "attribution": "© OpenStreetMap contributors"
+    },
+    {
+      "id": "m-culture-religious-163fd7ad7598e9b7",
+      "name": "วัดนฤภัยประชาบำรุง",
+      "province_code": "TH-24",
+      "district": "บางปะกง",
+      "lat": 13.5308233,
+      "lng": 100.9035123,
+      "reference": "https://www.openstreetmap.org/way/1254925464",
+      "source": "openstreetmap",
+      "attribution": "© OpenStreetMap contributors"
+    },
+    {
+      "id": "m-culture-religious-1ec780548d2e6089",
+      "name": "วัดหัวถนนใต้",
+      "province_code": "TH-60",
+      "district": "ท่าตะโก",
+      "lat": 15.6032193,
+      "lng": 100.444019,
+      "reference": "https://www.openstreetmap.org/way/544258724",
+      "source": "openstreetmap",
+      "attribution": "© OpenStreetMap contributors"
+    },
+    {
+      "id": "m-culture-religious-25b337c4899f5dff",
+      "name": "วัดพิกุล",
+      "province_code": "TH-60",
+      "district": "ชุมแสง",
+      "lat": 15.9279941,
+      "lng": 100.2939894,
+      "reference": "https://www.openstreetmap.org/way/543208847",
+      "source": "openstreetmap",
+      "attribution": "© OpenStreetMap contributors"
+    },
+    {
+      "id": "m-culture-religious-2994b8a6bba82913",
+      "name": "วัดบำเพ็ญบุญ",
+      "province_code": "TH-55",
+      "district": "บ้านหลวง",
+      "lat": 18.8494989,
+      "lng": 100.430668,
+      "reference": "https://www.openstreetmap.org/way/816162991",
+      "source": "openstreetmap",
+      "attribution": "© OpenStreetMap contributors"
+    },
+    {
+      "id": "m-culture-religious-2cde810a50accf25",
+      "name": "วัดเตาเหล็ก",
+      "province_code": "TH-24",
+      "district": "พนมสารคาม",
+      "lat": 13.743403,
+      "lng": 101.3297122,
+      "reference": "https://www.openstreetmap.org/node/12369183110",
+      "source": "openstreetmap",
+      "attribution": "© OpenStreetMap contributors"
+    },
+    {
+      "id": "m-culture-religious-35050a51099e5984",
+      "name": "วัดหนองโพ",
+      "province_code": "TH-60",
+      "district": "ตาคลี",
+      "lat": 15.3807332,
+      "lng": 100.2508199,
+      "reference": "https://www.openstreetmap.org/way/543487533",
+      "source": "openstreetmap",
+      "attribution": "© OpenStreetMap contributors"
+    },
+    {
+      "id": "m-culture-religious-4576549e21f5ccb3",
+      "name": "วัดท่าตะโก",
+      "province_code": "TH-60",
+      "district": "ท่าตะโก",
+      "lat": 15.6328762,
+      "lng": 100.4827443,
+      "reference": "https://www.openstreetmap.org/way/544249137",
+      "source": "openstreetmap",
+      "attribution": "© OpenStreetMap contributors"
+    },
+    {
+      "id": "m-culture-religious-4b850db4a4e805e9",
+      "name": "วัดโพธิ์ทอง",
+      "province_code": "TH-25",
+      "district": "ศรีมหาโพธิ",
+      "lat": 13.9670123,
+      "lng": 101.5656109,
+      "reference": "https://www.openstreetmap.org/node/7999239608",
+      "source": "openstreetmap",
+      "attribution": "© OpenStreetMap contributors"
+    },
+    {
+      "id": "m-culture-religious-4da1d46b2745021b",
+      "name": "วัดท่านา",
+      "province_code": "TH-60",
+      "district": "ชุมแสง",
+      "lat": 15.8751935,
+      "lng": 100.2791522,
+      "reference": "https://www.openstreetmap.org/way/542876331",
+      "source": "openstreetmap",
+      "attribution": "© OpenStreetMap contributors"
+    },
+    {
+      "id": "m-culture-religious-5647d3005d0d1b4e",
+      "name": "วัดหาดนางแก้ว",
+      "province_code": "TH-25",
+      "district": "ศรีมหาโพธิ",
+      "lat": 13.9746872,
+      "lng": 101.5871278,
+      "reference": "https://www.openstreetmap.org/node/7999051155",
+      "source": "openstreetmap",
+      "attribution": "© OpenStreetMap contributors"
+    },
+    {
+      "id": "m-culture-religious-6a17938d0b8c8596",
+      "name": "วัดโพธิ์งาม",
+      "province_code": "TH-18",
+      "district": "สรรพยา",
+      "lat": 15.164229,
+      "lng": 100.1961196,
+      "reference": "https://www.openstreetmap.org/node/5139620973",
+      "source": "openstreetmap",
+      "attribution": "© OpenStreetMap contributors"
+    },
+    {
+      "id": "m-culture-religious-6fc5051d3f14a46a",
+      "name": "วัดบางไทร",
+      "province_code": "TH-24",
+      "district": "บางน้ำเปรี้ยว",
+      "lat": 13.9159665,
+      "lng": 101.1389966,
+      "reference": "https://www.openstreetmap.org/way/1254330313",
+      "source": "openstreetmap",
+      "attribution": "© OpenStreetMap contributors"
+    },
+    {
+      "id": "m-culture-religious-7a91e2ed099c5414",
+      "name": "วัดบ้านทวน",
+      "province_code": "TH-71",
+      "district": "พนมทวน",
+      "lat": 14.1289904,
+      "lng": 99.7035787,
+      "reference": "https://www.openstreetmap.org/way/1334258952",
+      "source": "openstreetmap",
+      "attribution": "© OpenStreetMap contributors"
+    },
+    {
+      "id": "m-culture-religious-7ca37910ff7ee764",
+      "name": "วัดวงฆ้อง",
+      "province_code": "TH-64",
+      "district": "ศรีสำโรง",
+      "lat": 17.116791,
+      "lng": 99.8907741,
+      "reference": "https://www.openstreetmap.org/way/1485349281",
+      "source": "openstreetmap",
+      "attribution": "© OpenStreetMap contributors"
+    },
+    {
+      "id": "m-culture-religious-7ee90a03a50dfd69",
+      "name": "วัดขนอน",
+      "province_code": "TH-70",
+      "district": "โพธาราม",
+      "lat": 13.7267204,
+      "lng": 99.8449044,
+      "reference": "https://www.openstreetmap.org/way/558382841",
+      "source": "openstreetmap",
+      "attribution": "© OpenStreetMap contributors"
+    },
+    {
+      "id": "m-culture-religious-86e314b7ea259afd",
+      "name": "วัดปากล้อง",
+      "province_code": "TH-51",
+      "district": "ป่าซาง",
+      "lat": 18.4823937,
+      "lng": 98.8352248,
+      "reference": "https://www.openstreetmap.org/way/305655414",
+      "source": "openstreetmap",
+      "attribution": "© OpenStreetMap contributors"
+    },
+    {
+      "id": "m-culture-religious-8c3fa31566a14d09",
+      "name": "วัดป่าตาล",
+      "province_code": "TH-51",
+      "district": "ป่าซาง",
+      "lat": 18.4826564,
+      "lng": 98.936402,
+      "reference": "https://www.openstreetmap.org/node/2579542598",
+      "source": "openstreetmap",
+      "attribution": "© OpenStreetMap contributors"
+    },
+    {
+      "id": "m-culture-religious-9833e57edf44a717",
+      "name": "วัดปราสาทแก้ว",
+      "province_code": "TH-32",
+      "district": "เขวาสินรินทร์",
+      "lat": 14.9663347,
+      "lng": 103.5844002,
+      "reference": "https://www.openstreetmap.org/node/14041438413",
+      "source": "openstreetmap",
+      "attribution": "© OpenStreetMap contributors"
+    },
+    {
+      "id": "m-culture-religious-a2e57b08a113cb91",
+      "name": "วัดบ้านกลิ้ง",
+      "province_code": "TH-14",
+      "district": "บางปะอิน",
+      "lat": 14.297314,
+      "lng": 100.562183,
+      "reference": "https://www.openstreetmap.org/way/746174460",
+      "source": "openstreetmap",
+      "attribution": "© OpenStreetMap contributors"
+    },
+    {
+      "id": "m-culture-religious-b78264db3b9dda1a",
+      "name": "วัดหนองเกิด",
+      "province_code": "TH-51",
+      "district": "ป่าซาง",
+      "lat": 18.4780423,
+      "lng": 98.8731394,
+      "reference": "https://www.openstreetmap.org/node/2012308637",
+      "source": "openstreetmap",
+      "attribution": "© OpenStreetMap contributors"
+    },
+    {
+      "id": "m-culture-religious-d2ec4d59122db424",
+      "name": "วัดดอนมะเกลือ",
+      "province_code": "TH-72",
+      "district": "อู่ทอง",
+      "lat": 14.2535406,
+      "lng": 99.9633195,
+      "reference": "https://www.openstreetmap.org/way/583059621",
+      "source": "openstreetmap",
+      "attribution": "© OpenStreetMap contributors"
+    },
+    {
+      "id": "m-culture-religious-e0e82cc87999360e",
+      "name": "วัดคร้อพนัน",
+      "province_code": "TH-71",
+      "district": "ท่ามะกา",
+      "lat": 13.8907455,
+      "lng": 99.8056647,
+      "reference": "https://www.openstreetmap.org/way/564183002",
+      "source": "openstreetmap",
+      "attribution": "© OpenStreetMap contributors"
+    },
+    {
+      "id": "m-culture-religious-ff04a6f1f514d5ad",
+      "name": "วัดเขาวงพระจันทร์",
+      "province_code": "TH-71",
+      "district": "เลาขวัญ",
+      "lat": 14.7119135,
+      "lng": 99.6362314,
+      "reference": "https://www.openstreetmap.org/way/1576310794",
+      "source": "openstreetmap",
+      "attribution": "© OpenStreetMap contributors"
+    },
+    {
+      "id": "tat-attraction-20100518224629292",
+      "name": "วัดกู้",
+      "province_code": "TH-12",
+      "district": "ปากเกร็ด",
+      "lat": 13.9316317,
+      "lng": 100.5049677,
+      "reference": "https://www.openstreetmap.org/way/377487659",
+      "source": "openstreetmap",
+      "attribution": "© OpenStreetMap contributors"
+    },
+    {
+      "id": "tat-attraction-20100518224629349",
+      "name": "วัดพระแก้ว",
+      "province_code": "TH-18",
+      "district": "สรรคบุรี",
+      "lat": 15.03803,
+      "lng": 100.177,
+      "reference": "https://www.openstreetmap.org/node/2957145964",
+      "source": "openstreetmap",
+      "attribution": "© OpenStreetMap contributors"
+    },
+    {
+      "id": "tat-attraction-2011041210423615847",
+      "name": "วัดพระยาแพรก",
+      "province_code": "TH-18",
+      "district": "สรรคบุรี",
+      "lat": 15.0512243,
+      "lng": 100.1611449,
+      "reference": "https://www.openstreetmap.org/node/7024970785",
+      "source": "openstreetmap",
+      "attribution": "© OpenStreetMap contributors"
+    },
+    {
+      "id": "tat-attraction-2015120421550717432",
+      "name": "วัดสนามจันทร์",
+      "province_code": "TH-24",
+      "district": "บ้านโพธิ์",
+      "lat": 13.6014896,
+      "lng": 101.0790702,
+      "reference": "https://www.openstreetmap.org/way/1305509349",
+      "source": "openstreetmap",
+      "attribution": "© OpenStreetMap contributors"
+    },
+    {
+      "id": "tat-attraction-2015120421550717755",
+      "name": "วัดนาหนอง",
+      "province_code": "TH-70",
+      "district": "เมืองราชบุรี",
+      "lat": 13.492079,
+      "lng": 99.7640921,
+      "reference": "https://www.openstreetmap.org/way/555324297",
+      "source": "openstreetmap",
+      "attribution": "© OpenStreetMap contributors"
+    },
+    {
+      "id": "tat-attraction-2015120421550718259",
+      "name": "วัดบ้านดอน",
+      "province_code": "TH-21",
+      "district": "เมืองระยอง",
+      "lat": 12.6965133,
+      "lng": 101.299898,
+      "reference": "https://www.openstreetmap.org/node/1687343010",
+      "source": "openstreetmap",
+      "attribution": "© OpenStreetMap contributors"
+    }
+  ],
+  "pending": [
+    {
+      "id": "m-culture-religious-01652738efeee8f3",
+      "name": "โบสถ์วัดวังม้า",
+      "province_code": "TH-60",
+      "district": "ลาดยาว",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-01f032add07eb224",
+      "name": "วัดหนองชาติ",
+      "province_code": "TH-25",
+      "district": "ประจันตคาม",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-023f7d427815de4d",
+      "name": "วัดสวนขวัญ",
+      "province_code": "TH-61",
+      "district": "ทัพทัน",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-02c4805443980737",
+      "name": "วิหารหลวงปู่ฮวด วัดหัวถนนใต้",
+      "province_code": "TH-60",
+      "district": "ท่าตะโก",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-034ba30893fcea9b",
+      "name": "วัดพันเสด็จนอก",
+      "province_code": "TH-20",
+      "district": "ศรีราชา",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-03ba3bef605a6759",
+      "name": "วัดประตูน้ำท่าไข่",
+      "province_code": "TH-24",
+      "district": "เมืองฉะเชิงเทรา",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-07be60281b2f5fa7",
+      "name": "วัดโสมสุทธาวาส",
+      "province_code": "TH-25",
+      "district": "กบินทร์บุรี",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-0856fb3a1fd1b04f",
+      "name": "วัดเหล่าพงเสือ",
+      "province_code": "TH-51",
+      "district": "เวียงหนองล่อง",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-0968cc97e7b2e31e",
+      "name": "วัดบ้านยาง(ประตูดาน)",
+      "province_code": "TH-25",
+      "district": "ประจันตคาม",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-098ee55159e07eb0",
+      "name": "วัดใหม่สงเคราะห์ราษฎร์",
+      "province_code": "TH-24",
+      "district": "บางปะกง",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-09e550be7c2ff54c",
+      "name": "วัดอรัญญาราม",
+      "province_code": "TH-25",
+      "district": "ประจันตคาม",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-0a4c2bce51931d36",
+      "name": "วัดหนองจิกทรายมูล",
+      "province_code": "TH-60",
+      "district": "ชุมตาบง",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-0b194bd3c0052c18",
+      "name": "คริสตจักรพระคุณท่าตะโก",
+      "province_code": "TH-60",
+      "district": "ท่าตะโก",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-0b1f65d1b0c902e0",
+      "name": "วัดสิงห์",
+      "province_code": "TH-76",
+      "district": "เมืองเพชรบุรี",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-0cb1940f8a249716",
+      "name": "วัดหนองคล้า",
+      "province_code": "TH-25",
+      "district": "กบินทร์บุรี",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-0cccaf0248dccd1b",
+      "name": "พระเวทธรรมโพธิสัตว์ (อุ่ยท้อ) วัดจีนประชาสโมสร",
+      "province_code": "TH-24",
+      "district": "เมืองฉะเชิงเทรา",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-0d3a5894b02cc117",
+      "name": "วัดบ้านก้อง",
+      "province_code": "TH-51",
+      "district": "ป่าซาง",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-0e1a61d5cd75a0ac",
+      "name": "วัดภูเขาแก้ว",
+      "province_code": "TH-57",
+      "district": "เทิง",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-0f5026fd191e4ff3",
+      "name": "วัดแสมขาวเจริญราษฎร์ศรัทธาราม",
+      "province_code": "TH-24",
+      "district": "บางปะกง",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-1194fcfa94ed4d9c",
+      "name": "วัดทุ่งนาผาสุก",
+      "province_code": "TH-60",
+      "district": "ลาดยาว",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-11c966bbf70bd8d8",
+      "name": "วิหารหลวงปู่ดีวัดหัวถนนกลาง",
+      "province_code": "TH-60",
+      "district": "ท่าตะโก",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-1237b81e176fdd52",
+      "name": "วัดโป่งรู",
+      "province_code": "TH-51",
+      "district": "ป่าซาง",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-1359dfd26c1772ac",
+      "name": "วัดเขาน้อยล่าง",
+      "province_code": "TH-61",
+      "district": "ทัพทัน",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-14e5ce739a0a46d5",
+      "name": "โรงเจหอคุณธรรมฟ้า",
+      "province_code": "TH-73",
+      "district": "กำแพงแสน",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-15a21f3a5a4ce86e",
+      "name": "วัดคำภู",
+      "province_code": "TH-25",
+      "district": "ประจันตคาม",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-16616399fae198d1",
+      "name": "ประวัติวัดเจริญชัย",
+      "province_code": "TH-47",
+      "district": "สว่างแดนดิน",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-177aa432eb422279",
+      "name": "วัดบ้านใหม่เจริญธรรม",
+      "province_code": "TH-65",
+      "district": "บางระกำ",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-17ed72d252ae65d4",
+      "name": "ประวัติวัดศรีชมชื่น",
+      "province_code": "TH-47",
+      "district": "บ้านม่วง",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-188407b3926560a6",
+      "name": "วัดอาคมสิทธาภรณ์",
+      "province_code": "TH-24",
+      "district": "บางน้ำเปรี้ยว",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-19532b77bf1fe7ce",
+      "name": "วัดราษฎบำรุง",
+      "province_code": "TH-57",
+      "district": "ดอยหลวง",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-19f6abae1237707b",
+      "name": "วัดเขาน้อย",
+      "province_code": "TH-25",
+      "district": "ประจันตคาม",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-1a2c1f681a721ec6",
+      "name": "หอไตรกลางน้ำ(วัดป่าเหียง)",
+      "province_code": "TH-51",
+      "district": "ป่าซาง",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-1d428f17e39fd6e0",
+      "name": "วัดหาดสูง",
+      "province_code": "TH-25",
+      "district": "กบินทร์บุรี",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-1e1b2ab7cbd7ae6a",
+      "name": "มัสยิดราฎอตุลยันนะห์",
+      "province_code": "TH-96",
+      "district": "บาเจาะ",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-1ef5c043caf126c1",
+      "name": "ประวัติวัดแจ้งสว่าง",
+      "province_code": "TH-47",
+      "district": "เมืองสกลนคร",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-1f958dfc7babcd23",
+      "name": "วัดเขาโคกเผ่น",
+      "province_code": "TH-60",
+      "district": "ท่าตะโก",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-20b9fcdd8fe68e31",
+      "name": "มัสยิดญันนาตุลมุล์มีนีน",
+      "province_code": "TH-92",
+      "district": "ย่านตาขาว",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-22373f76785c0e26",
+      "name": "วัดบ้านด่าน(ท่าเรือ)",
+      "province_code": "TH-25",
+      "district": "ประจันตคาม",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-230c12bf96f7ad73",
+      "name": "วัดวิสิตวิทยาราม",
+      "province_code": "TH-60",
+      "district": "แม่วงก์",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-2391d16e7a072942",
+      "name": "วัดคณิศรธรรมิการาม",
+      "province_code": "TH-48",
+      "district": "ปลาปาก",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-23d4bc1c5ba22571",
+      "name": "วัดคลองขุด",
+      "province_code": "TH-93",
+      "district": "เขาชัยสน",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-26aa88645ec38176",
+      "name": "วัดเที่ยงพิมลมุข",
+      "province_code": "TH-24",
+      "district": "เมืองฉะเชิงเทรา",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-2802e13194786ec2",
+      "name": "ศาลาวัดหัวเขา",
+      "province_code": "TH-60",
+      "district": "ตาคลี",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-284fecf66334f738",
+      "name": "วัดคำเลียบ",
+      "province_code": "TH-25",
+      "district": "ประจันตคาม",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-298cbdd980050cd5",
+      "name": "กุฎิหลวงพ่อเดิม",
+      "province_code": "TH-60",
+      "district": "ตาคลี",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-29b8c447005801f8",
+      "name": "วัดไทรงาม",
+      "province_code": "TH-25",
+      "district": "ประจันตคาม",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-29d739eafa22e360",
+      "name": "วัดหนองแคน",
+      "province_code": "TH-45",
+      "district": "เกษตรวิสัย",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-2b4e89bb319c4bdb",
+      "name": "โบสถ์วัดบางหลวง",
+      "province_code": "TH-13",
+      "district": "เมืองปทุมธานี",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-2bbe13850e245791",
+      "name": "วัดพรหมประสิทธิ์",
+      "province_code": "TH-25",
+      "district": "ประจันตคาม",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-2c3f38cb74c3a9b8",
+      "name": "วัดประสาทรังสฤษฎิ์(หนองแสง)",
+      "province_code": "TH-25",
+      "district": "ประจันตคาม",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-2c71844263967ef3",
+      "name": "วัดสระบัว",
+      "province_code": "TH-13",
+      "district": "ธัญบุรี",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-2ca0a0e8327ec814",
+      "name": "วัดสวรรค์นิมิต",
+      "province_code": "TH-24",
+      "district": "แปลงยาว",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-2d2af86ed5f4b9be",
+      "name": "วัดถ้ำนาใน",
+      "province_code": "TH-47",
+      "district": "พรรณานิคม",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-2d8dd181ffc8ec16",
+      "name": "วัดมหาวัน",
+      "province_code": "TH-51",
+      "district": "เมืองลำพูน",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-2daf3824b62364f2",
+      "name": "วัดตะเคียนทอง",
+      "province_code": "TH-25",
+      "district": "ประจันตคาม",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-2e024dc217811827",
+      "name": "วัดบ้านด่านศรัทธาอุดม",
+      "province_code": "TH-25",
+      "district": "ประจันตคาม",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-2e151112d9534b1c",
+      "name": "วัดหนองรี",
+      "province_code": "TH-24",
+      "district": "พนมสารคาม",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-2e65b43b3bd76826",
+      "name": "วัดเซนต์ร็อค",
+      "province_code": "TH-24",
+      "district": "เมืองฉะเชิงเทรา",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-2e9310f36600e157",
+      "name": "วัดแหลมทอง",
+      "province_code": "TH-20",
+      "district": "ศรีราชา",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-2ee0669a77a8d67c",
+      "name": "วัดบ้านกล้วย",
+      "province_code": "TH-24",
+      "district": "คลองเขื่อน",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-2f4b8565df76a549",
+      "name": "อุโบสถวัดดอนเจดีย์",
+      "province_code": "TH-25",
+      "district": "เมืองปราจีนบุรี",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-30462aaa9c460b58",
+      "name": "วัดหนองนมวัว",
+      "province_code": "TH-60",
+      "district": "ลาดยาว",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-30a7c98c0339cdfb",
+      "name": "วัดบ้านเปราะ",
+      "province_code": "TH-60",
+      "district": "แม่วงก์",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-31796a64f2dca905",
+      "name": "วัดหนองแก้ว",
+      "province_code": "TH-25",
+      "district": "ประจันตคาม",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-334b49da6057f09c",
+      "name": "ศาลาไม้สักวัดพระยืน",
+      "province_code": "TH-51",
+      "district": "เมืองลำพูน",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-33bcb3e8d36f571d",
+      "name": "วัดวัฒนารังษี",
+      "province_code": "TH-25",
+      "district": "กบินทร์บุรี",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-33e86d925b69bcb0",
+      "name": "วัดกู่งูลืน",
+      "province_code": "TH-51",
+      "district": "ป่าซาง",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-34bbb96093fccb1b",
+      "name": "มัสยิดกลางฉะเชิงเทรา",
+      "province_code": "TH-24",
+      "district": "เมืองฉะเชิงเทรา",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-370f93488d98a7f3",
+      "name": "สำนักวิปัสสนาปรกเจริญธรรม",
+      "province_code": "TH-24",
+      "district": "บางคล้า",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-37bf93a6169eacfc",
+      "name": "วัดโสนงาม",
+      "province_code": "TH-71",
+      "district": "เลาขวัญ",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-39045a587ee065f5",
+      "name": "วัดน้อยชมภู่",
+      "province_code": "TH-72",
+      "district": "ศรีประจันต์",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-390c6ae675d1d706",
+      "name": "วัดจีนประชาสโมสร",
+      "province_code": "TH-24",
+      "district": "เมืองฉะเชิงเทรา",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-3a04f24bd8404e3b",
+      "name": "วัดอินทร์ประชาราษฎร์ (วังหวาย)",
+      "province_code": "TH-25",
+      "district": "กบินทร์บุรี",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-3a3e1ed09694c8b4",
+      "name": "วัดหนองหัวคู",
+      "province_code": "TH-25",
+      "district": "ประจันตคาม",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-3b2025ae44cd586b",
+      "name": "เจดีย์สี่ครูบา",
+      "province_code": "TH-51",
+      "district": "ป่าซาง",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-3b44db5b76a4bb53",
+      "name": "ศาลเจ้าแม่แหลมศอก",
+      "province_code": "TH-23",
+      "district": "เมืองตราด",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-3cd4222ae0e63c4a",
+      "name": "หอเทวบุตรหลวง",
+      "province_code": "TH-51",
+      "district": "เมืองลำพูน",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-3f282ffa0d7982ab",
+      "name": "วัดมาบพระยอม",
+      "province_code": "TH-72",
+      "district": "หนองหญ้าไซ",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-3f4a98ae8c719c1f",
+      "name": "วัดบางไผ่",
+      "province_code": "TH-25",
+      "district": "ประจันตคาม",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-40bdc8ed50431ab0",
+      "name": "วัดหนองกระดี่ใน",
+      "province_code": "TH-61",
+      "district": "ทัพทัน",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-40c1d767391c5afa",
+      "name": "วัดวิเวกวนาราม",
+      "province_code": "TH-24",
+      "district": "บางน้ำเปรี้ยว",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-41801772d15dc7ea",
+      "name": "วัดฝาง",
+      "province_code": "TH-18",
+      "district": "เมืองชัยนาท",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-420c559cae0f1581",
+      "name": "วัดหนองขุย",
+      "province_code": "TH-61",
+      "district": "ทัพทัน",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-42cde6a1a398e8ab",
+      "name": "วิหารเทพสถิย์",
+      "province_code": "TH-60",
+      "district": "ท่าตะโก",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-45566f9edcb96952",
+      "name": "วัดบึงทองหลาง",
+      "province_code": "TH-24",
+      "district": "บางน้ำเปรี้ยว",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-45b247a7041f6f90",
+      "name": "วัดขุมแก้ว",
+      "province_code": "TH-13",
+      "district": "ธัญบุรี",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-468536ddfca3cd72",
+      "name": "วัดโคกมะม่วง",
+      "province_code": "TH-25",
+      "district": "กบินทร์บุรี",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-470097364f1286df",
+      "name": "วัดพี้เหนือ",
+      "province_code": "TH-55",
+      "district": "บ้านหลวง",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-47028a496f699932",
+      "name": "วัดสอนิมิตร",
+      "province_code": "TH-25",
+      "district": "ประจันตคาม",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-487000818d533607",
+      "name": "วัดบ้านโนน",
+      "province_code": "TH-25",
+      "district": "ประจันตคาม",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-4879aaed9686c674",
+      "name": "ศาลเจ้าพ่อกวนอู",
+      "province_code": "TH-60",
+      "district": "ท่าตะโก",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-497d3ce3ccf07004",
+      "name": "วัดคลองหกวา",
+      "province_code": "TH-24",
+      "district": "บางน้ำเปรี้ยว",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-4b94887d493771d3",
+      "name": "หอสวดมนต์วัดปทุมวงษาวาส",
+      "province_code": "TH-26",
+      "district": "ปากพลี",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-4f66316671fb58b7",
+      "name": "วัดสุภัทรบูรพาราม",
+      "province_code": "TH-31",
+      "district": "บ้านกรวด",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-4f7e457e3bd80cf7",
+      "name": "วัดโพธิ์งาม",
+      "province_code": "TH-25",
+      "district": "ประจันตคาม",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-515daea9688d144b",
+      "name": "วัดหนองไม้เอก",
+      "province_code": "TH-25",
+      "district": "ประจันตคาม",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-51ad6bf9f2b0313d",
+      "name": "วัดศรีวิชัยวนาราม",
+      "province_code": "TH-42",
+      "district": "เมืองเลย",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-52d4a4fdd010c689",
+      "name": "วัดคลองกลาง",
+      "province_code": "TH-25",
+      "district": "กบินทร์บุรี",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-536d69b0d2be63b1",
+      "name": "มณฑปพระครูสีลวิสุทธาจารย์(หลวงปู่ผิว) วัดสง่างาม",
+      "province_code": "TH-25",
+      "district": "เมืองปราจีนบุรี",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-5513259b610920b8",
+      "name": "วัดดงไชยมัน",
+      "province_code": "TH-25",
+      "district": "ประจันตคาม",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-5631e0a7ccf115df",
+      "name": "วัดศรีโพนสูง (บ้านถ่อน)",
+      "province_code": "TH-47",
+      "district": "สว่างแดนดิน",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-5741a79ac47ad6cc",
+      "name": "วัดอรัญญ์ไพรศรี",
+      "province_code": "TH-25",
+      "district": "ศรีมหาโพธิ",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-585c89534de76b21",
+      "name": "วัดจันทรสุข",
+      "province_code": "TH-13",
+      "district": "ธัญบุรี",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-5a91fd1cb0cefbf7",
+      "name": "พระวิหารวัดชินวรารามวรวิหาร",
+      "province_code": "TH-13",
+      "district": "เมืองปทุมธานี",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-5aa5f60fbedbe200",
+      "name": "วัดอรัญญเขตตาราม",
+      "province_code": "TH-38",
+      "district": "บึงโขงหลง",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-5ae1fa1caf4bc0c3",
+      "name": "วัดบ้านซ่อง",
+      "province_code": "TH-24",
+      "district": "พนมสารคาม",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-5c5a64b9772be77b",
+      "name": "ตำหนักชินวร วัดชินวรารามวรวิหาร",
+      "province_code": "TH-13",
+      "district": "เมืองปทุมธานี",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-5f3f37fe2d3a08b3",
+      "name": "วัดประดิษฐาราม",
+      "province_code": "TH-25",
+      "district": "ประจันตคาม",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-5fb7bbe143b639a0",
+      "name": "ที่พักสงฆ์เทพสวรรค์สีมาราม",
+      "province_code": "TH-60",
+      "district": "แม่วงก์",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-6016c55898022bfc",
+      "name": "วัดท่าพาณิชย์",
+      "province_code": "TH-25",
+      "district": "กบินทร์บุรี",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-60be489bfdd0b855",
+      "name": "วัดหัวเมือง",
+      "province_code": "TH-55",
+      "district": "นาน้อย",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-6195f4b374866f4a",
+      "name": "วัดหัวเขาตาคลี",
+      "province_code": "TH-60",
+      "district": "ตาคลี",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-64a0edca98f33b18",
+      "name": "ศาลาการเปรียญ วัดไผ่ดำเจริญศุข",
+      "province_code": "TH-24",
+      "district": "บางน้ำเปรี้ยว",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-665719968a4accbb",
+      "name": "มัสยิดประชาสัมพันธ์",
+      "province_code": "TH-13",
+      "district": "ลำลูกกา",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-6703a63096c5442c",
+      "name": "วัดศรีชมภู บ้านคำข่า",
+      "province_code": "TH-47",
+      "district": "พรรณานิคม",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-67a36b61c39c62e0",
+      "name": "วัดอินทร์ไตรย์",
+      "province_code": "TH-25",
+      "district": "ประจันตคาม",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-68accefda0b3255f",
+      "name": "วัดบ่อหลวง",
+      "province_code": "TH-55",
+      "district": "บ่อเกลือ",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-694740b15796ae88",
+      "name": "วิหารหลวงพ่อเดิม วัดเขาล้อ",
+      "province_code": "TH-60",
+      "district": "ท่าตะโก",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-6aa6ac55c395a118",
+      "name": "วัดสว่างวงษ์ (คณะกิจ)",
+      "province_code": "TH-60",
+      "district": "ตาคลี",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-6b930c1257342d71",
+      "name": "วัดศรีจันทราราม",
+      "province_code": "TH-25",
+      "district": "ประจันตคาม",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-6c63bd23d48382d0",
+      "name": "วัดโนนม่วง",
+      "province_code": "TH-45",
+      "district": "พนมไพร",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-6d381d367e3fd5be",
+      "name": "วัดหนองนมหนู",
+      "province_code": "TH-25",
+      "district": "กบินทร์บุรี",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-6d57260f6827b6fd",
+      "name": "วัดหัวถนนกลาง",
+      "province_code": "TH-60",
+      "district": "ท่าตะโก",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-6decacdd651015af",
+      "name": "วัดหนองกระดี่นอก",
+      "province_code": "TH-61",
+      "district": "ทัพทัน",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-6f39e5b6832b0a11",
+      "name": "มณฑปรอยพระพุทธบาทจำลอง วัดไชยชุมพลชนะสงคราม",
+      "province_code": "TH-71",
+      "district": "เมืองกาญจนบุรี",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-6f5929cf40121ed7",
+      "name": "วัดทัพช้าง",
+      "province_code": "TH-25",
+      "district": "ประจันตคาม",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-6f6c7ed06952223e",
+      "name": "โบสถ์วัดหนองนมวัว",
+      "province_code": "TH-60",
+      "district": "ลาดยาว",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-70ea4c209bed7652",
+      "name": "มัสยิดก้ามาลุ้ลอิสลาม",
+      "province_code": "TH-24",
+      "district": "บางน้ำเปรี้ยว",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-716a27711a9a3648",
+      "name": "วัดคลองหนึ่ง",
+      "province_code": "TH-13",
+      "district": "ธัญบุรี",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-73322567e55bced1",
+      "name": "อุโบสถวัดสุวรรณบำรุงราชวราราม",
+      "province_code": "TH-13",
+      "district": "ลำลูกกา",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-73590666e0688112",
+      "name": "วัดเขาไม้แก้ว",
+      "province_code": "TH-20",
+      "district": "บางละมุง",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-73998d4992eb34db",
+      "name": "โบสถ์ดอนคา",
+      "province_code": "TH-60",
+      "district": "ท่าตะโก",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-7406f188c07d7987",
+      "name": "วัดปทุมสูตยาราม",
+      "province_code": "TH-72",
+      "district": "อู่ทอง",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-751c083fd71e4e35",
+      "name": "วิหารหลวงปู่ฉิ่ง หลวงปู่ฉาบ วัดท่ามะกา",
+      "province_code": "TH-71",
+      "district": "ท่ามะกา",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-758b5c362d494382",
+      "name": "กุฏิไม้สักวัดสันป่ายางหลวง",
+      "province_code": "TH-51",
+      "district": "เมืองลำพูน",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-75947d2572e955b7",
+      "name": "วัดสุนีย์ศรัทธาธรรม",
+      "province_code": "TH-24",
+      "district": "บางปะกง",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-7648cdb10720db56",
+      "name": "วิหารหลวงพ่อเดิม วัดทำนบ",
+      "province_code": "TH-60",
+      "district": "ท่าตะโก",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-76842891b08cefe2",
+      "name": "วัดโพธิ์เย็น",
+      "province_code": "TH-71",
+      "district": "ท่ามะกา",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-773518ef16658420",
+      "name": "วัดสุวรรณเตมีย์",
+      "province_code": "TH-24",
+      "district": "บางน้ำเปรี้ยว",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-77ea2bd952230957",
+      "name": "อุโบสถวัดธาตุมหาชัย",
+      "province_code": "TH-48",
+      "district": "ปลาปาก",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-789a93d0973922b2",
+      "name": "วัดเนินสูง",
+      "province_code": "TH-25",
+      "district": "ประจันตคาม",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-7933eb89b55881e2",
+      "name": "วัดคลองคล้า",
+      "province_code": "TH-25",
+      "district": "ประจันตคาม",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-7ab727ddb1976e83",
+      "name": "ศาลเจ้าพ่อ-เจ้าแม่ท่าตะโก",
+      "province_code": "TH-60",
+      "district": "ท่าตะโก",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-7acf63c4e2dc56d8",
+      "name": "วัดสะพานคำสกลนคร",
+      "province_code": "TH-47",
+      "district": "เมืองสกลนคร",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-7ae7c3fcb551357c",
+      "name": "วัดรัตนโชติการาม",
+      "province_code": "TH-25",
+      "district": "กบินทร์บุรี",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-7e980b1c2c4115ab",
+      "name": "วัดศรีสมบูรณ์",
+      "province_code": "TH-48",
+      "district": "ศรีสงคราม",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-7f9c2d99c3c82592",
+      "name": "อุโบสถวัดดง",
+      "province_code": "TH-26",
+      "district": "เมืองนครนายก",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-7fcda3aa6faf150c",
+      "name": "วัดโพนทอง",
+      "province_code": "TH-60",
+      "district": "ตาคลี",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-81ab1ce2edd1894c",
+      "name": "หอไตรวัดดงฤาษี",
+      "province_code": "TH-51",
+      "district": "บ้านโฮ่ง",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-821cd8a766b6c7ea",
+      "name": "มัสยิดยามีอุ้ลคอยรียะห์",
+      "province_code": "TH-13",
+      "district": "ลำลูกกา",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-82deb632caf579b4",
+      "name": "วัดดอนทอง",
+      "province_code": "TH-24",
+      "district": "พนมสารคาม",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-83918e15200326f1",
+      "name": "วัดมหาเจดีย์",
+      "province_code": "TH-24",
+      "district": "พนมสารคาม",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-83a36db5e44f9e14",
+      "name": "วัดโพธิ์มงคล",
+      "province_code": "TH-18",
+      "district": "สรรพยา",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-83c4d6bd06fe3052",
+      "name": "วัดนักบุญฟรังซิสเซเวียร์(วัดตาก)",
+      "province_code": "TH-63",
+      "district": "เมืองตาก",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-846132faaad3a359",
+      "name": "วัดนาแขม",
+      "province_code": "TH-25",
+      "district": "ประจันตคาม",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-846f18d2c2b6cdd2",
+      "name": "วัดคลองร่วมพัฒนา",
+      "province_code": "TH-25",
+      "district": "กบินทร์บุรี",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-84b39fb99ffeed49",
+      "name": "วัดกรุงราษฎร์บำรุง",
+      "province_code": "TH-25",
+      "district": "กบินทร์บุรี",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-84b90b92e0edf476",
+      "name": "วัดศรีสุวรรณ",
+      "province_code": "TH-84",
+      "district": "ท่าชนะ",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-86a2087c5cc7a4e2",
+      "name": "วัดมาบแก",
+      "province_code": "TH-60",
+      "district": "ลาดยาว",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-89829bfc680df6cf",
+      "name": "วัดสะปุ๋ง",
+      "province_code": "TH-51",
+      "district": "ป่าซาง",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-8a466a9b8898ac37",
+      "name": "วัดดอนสีนนท์",
+      "province_code": "TH-24",
+      "district": "บ้านโพธิ์",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-8b3222d840b6edc0",
+      "name": "วัดโนนศรีบัวทอง",
+      "province_code": "TH-48",
+      "district": "ปลาปาก",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-8c6ea347c7ec68f8",
+      "name": "วัดพระพุทธทักษิณดิตมงคล (ท่าลาดใต้)",
+      "province_code": "TH-24",
+      "district": "พนมสารคาม",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-8d9edc2769648e32",
+      "name": "วัดสามัคคีธรรม",
+      "province_code": "TH-25",
+      "district": "ประจันตคาม",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-8e1ef429e909b9b2",
+      "name": "วัดประเถท",
+      "province_code": "TH-25",
+      "district": "ประจันตคาม",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-8e2ff3aea7dc3c81",
+      "name": "วัดถ้ำผาพิรุณ",
+      "province_code": "TH-71",
+      "district": "ศรีสวัสดิ์",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-8e8252a47754ed49",
+      "name": "วัดบ้านดอย",
+      "province_code": "TH-57",
+      "district": "ดอยหลวง",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-904d113ada61e736",
+      "name": "วัดหนองมะเขือ",
+      "province_code": "TH-61",
+      "district": "ทัพทัน",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-90ff9f3d5aa1b7d6",
+      "name": "วัดพี้ใต้",
+      "province_code": "TH-55",
+      "district": "บ้านหลวง",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-910c1621c399092e",
+      "name": "วัดบ่อทองรังสรรค์",
+      "province_code": "TH-25",
+      "district": "กบินทร์บุรี",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-9176db96e9138062",
+      "name": "วัดป่าสุภราราม",
+      "province_code": "TH-48",
+      "district": "ศรีสงคราม",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-917cfa112bbbf46c",
+      "name": "วัดศรีมาราม (ดงยาว)",
+      "province_code": "TH-60",
+      "district": "แม่วงก์",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-93f3d7dd09eb861b",
+      "name": "วัดบึงกระจับ",
+      "province_code": "TH-24",
+      "district": "พนมสารคาม",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-9408f4fb79cc7a55",
+      "name": "วัดมโนธรรมาราม (นางโน)",
+      "province_code": "TH-71",
+      "district": "ท่าม่วง",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-940bce7e93257c63",
+      "name": "เจดีย์ผุด วัดเขาล้อ",
+      "province_code": "TH-60",
+      "district": "ท่าตะโก",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-96a3d8f29df47755",
+      "name": "วัดพิไชยธาราม (ชุกพี้)",
+      "province_code": "TH-71",
+      "district": "ท่าม่วง",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-96e05b23f57824bf",
+      "name": "วัดหนองรี",
+      "province_code": "TH-20",
+      "district": "เมืองชลบุรี",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-99ac67fada8d790b",
+      "name": "กุฏิสงฆ์วัดเหล่ายาว",
+      "province_code": "TH-51",
+      "district": "บ้านโฮ่ง",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-9b722d5bcd1c6d92",
+      "name": "เทศกาลหนังสืออุดรธานี ครั้งที่ 8",
+      "province_code": "TH-52",
+      "district": "งาว",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-9bcb858046017bbb",
+      "name": "วัดสว่างอารมณ์",
+      "province_code": "TH-48",
+      "district": "นาหว้า",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-9dfe47ca086e595f",
+      "name": "วัดดอนหวาย",
+      "province_code": "TH-61",
+      "district": "ทัพทัน",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-9e3f273956de3b9f",
+      "name": "วัดตะเคียนงาม",
+      "province_code": "TH-60",
+      "district": "แม่วงก์",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-9e5268d3c626e69a",
+      "name": "วิหารหลวงพ่อแหลม",
+      "province_code": "TH-60",
+      "district": "ท่าตะโก",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-9e6c93ac878b5a08",
+      "name": "มัสยิดก็อยยูมุดดีน",
+      "province_code": "TH-92",
+      "district": "ย่านตาขาว",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-9eced4cedda82cf3",
+      "name": "วัดตะคร้อวนาราม",
+      "province_code": "TH-25",
+      "district": "ประจันตคาม",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-9f4714535b2bc435",
+      "name": "วัดบุฝ้าย",
+      "province_code": "TH-25",
+      "district": "ประจันตคาม",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-9feb0b8cf73af697",
+      "name": "วัดคลองเตย",
+      "province_code": "TH-24",
+      "district": "สนามชัยเขต",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-a15948ac55683cc6",
+      "name": "วัดอินทรีย์ศรีสังวร",
+      "province_code": "TH-64",
+      "district": "กงไกรลาศ",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-a3067d937ea70589",
+      "name": "วัดตรอกปลาไหล",
+      "province_code": "TH-25",
+      "district": "กบินทร์บุรี",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-a4fa5fd6e8f26fdb",
+      "name": "วัดปทุมสราราม",
+      "province_code": "TH-25",
+      "district": "กบินทร์บุรี",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-a537cd02cae276c5",
+      "name": "ศาลเซียนซือ ตลาดเกาะขนุน",
+      "province_code": "TH-24",
+      "district": "พนมสารคาม",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-a5e507d2b0de25c3",
+      "name": "วัดกระบกเตี้ย",
+      "province_code": "TH-24",
+      "district": "สนามชัยเขต",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-a661560e384f2f02",
+      "name": "คริสตจักรพระกิติคุณ",
+      "province_code": "TH-57",
+      "district": "แม่จัน",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-a682183382d6a9df",
+      "name": "วัดหนองเป็ดก่า",
+      "province_code": "TH-61",
+      "district": "ทัพทัน",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-a6efa157d25bb49a",
+      "name": "วัดคลองม่วง",
+      "province_code": "TH-60",
+      "district": "แม่วงก์",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-a8260d805f6543ed",
+      "name": "อุโบสถกระเบื้องดินเผา วัดนครเนื่องเขต",
+      "province_code": "TH-24",
+      "district": "เมืองฉะเชิงเทรา",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-a8bf5e243b32aa5b",
+      "name": "วัดบุญเกิด",
+      "province_code": "TH-25",
+      "district": "กบินทร์บุรี",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-a8e9d7965958167a",
+      "name": "วัดเขาลูกช้าง",
+      "province_code": "TH-25",
+      "district": "กบินทร์บุรี",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-a8fc82293cf4c3d7",
+      "name": "วัดบรรพตรัตนาราม",
+      "province_code": "TH-25",
+      "district": "กบินทร์บุรี",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-a9c4be1084db5bf8",
+      "name": "วัดดอนคา",
+      "province_code": "TH-60",
+      "district": "ท่าตะโก",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-ab144d559f97ae56",
+      "name": "วิหารหลวงพ่อคล้าย",
+      "province_code": "TH-60",
+      "district": "ท่าตะโก",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-ab8179ad8a3359d8",
+      "name": "ศาลาเฉลิมพระเกียรติฯ วัดสามัคยาราม",
+      "province_code": "TH-60",
+      "district": "ท่าตะโก",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-abe80bf1932ffb15",
+      "name": "วัดหนองเนิน",
+      "province_code": "TH-60",
+      "district": "ท่าตะโก",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-ac59735825851eb9",
+      "name": "กุฎิวัดศรีเตี้ย",
+      "province_code": "TH-51",
+      "district": "บ้านโฮ่ง",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-ac6c7850de58ef94",
+      "name": "มัสยิดดารุลมุตตากีน",
+      "province_code": "TH-95",
+      "district": "เมืองยะลา",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-ac85faf740a663c9",
+      "name": "วัดสว้า",
+      "province_code": "TH-55",
+      "district": "บ่อเกลือ",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-ad0fc5d740d57520",
+      "name": "เรือนวัดน้อย วัดเซนต์ปอล",
+      "province_code": "TH-24",
+      "district": "เมืองฉะเชิงเทรา",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-ad2d99a64a0015e6",
+      "name": "โบสถ์ วัดสระโบสถ์",
+      "province_code": "TH-60",
+      "district": "ท่าตะโก",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-ad44c6b5ea6d3733",
+      "name": "วัดหนองกระจับ(เกาะลอย)",
+      "province_code": "TH-25",
+      "district": "ประจันตคาม",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-ae3f1385b7d445c9",
+      "name": "พระธาตุเจดีย์ธรรมกิติ วัดเขาโคกเผ่น",
+      "province_code": "TH-60",
+      "district": "ท่าตะโก",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-ae66e4975cea64b9",
+      "name": "วัดวังซ่าน",
+      "province_code": "TH-60",
+      "district": "แม่วงก์",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-aebbe1678139ae69",
+      "name": "ศาลาการเปรียญหลังเก่า",
+      "province_code": "TH-26",
+      "district": "เมืองนครนายก",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-aef5dca117774c10",
+      "name": "ศาลาการเปรียญวัดรัตนรังษี",
+      "province_code": "TH-25",
+      "district": "เมืองปราจีนบุรี",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-b0192b4aaa5d9708",
+      "name": "วัดโนนศรีสว่างธรรมิการาม",
+      "province_code": "TH-48",
+      "district": "ปลาปาก",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-b06952450bc40f2e",
+      "name": "วัดสิกขวัฒนาราม",
+      "province_code": "TH-25",
+      "district": "กบินทร์บุรี",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-b243cbc6f49fec70",
+      "name": "วัดธารพูด",
+      "province_code": "TH-24",
+      "district": "พนมสารคาม",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-b2708df05041dabe",
+      "name": "วัดแก้วฟ้ารังษี",
+      "province_code": "TH-25",
+      "district": "กบินทร์บุรี",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-b2d5132c33b55983",
+      "name": "พุทธสถานเชิงท่า - หน้าโบสถ์",
+      "province_code": "TH-12",
+      "district": "ปากเกร็ด",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-b33bf5729a31445a",
+      "name": "วัดบ้านดอกรัก",
+      "province_code": "TH-45",
+      "district": "เกษตรวิสัย",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-b34de605bc761f9e",
+      "name": "วัดดงบัง",
+      "province_code": "TH-25",
+      "district": "ประจันตคาม",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-b3c2e4eece5ed956",
+      "name": "วัดถวิลศิลามงคล",
+      "province_code": "TH-24",
+      "district": "เมืองฉะเชิงเทรา",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-b4701a2aafe6e9a6",
+      "name": "วัดสว่างธรรมาราม",
+      "province_code": "TH-48",
+      "district": "ปลาปาก",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-b4ea1428a81818f8",
+      "name": "วัดบ้านไผ่รส",
+      "province_code": "TH-25",
+      "district": "กบินทร์บุรี",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-b54763e11f9a41f9",
+      "name": "อุโบสถ วัดศรีสุวรรณคงคาราม",
+      "province_code": "TH-75",
+      "district": "เมืองสมุทรสงคราม",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-b5e56bdeed2c4ec9",
+      "name": "โบสถ์วัดเขาล้อ",
+      "province_code": "TH-60",
+      "district": "ท่าตะโก",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-b9b222317918fd3f",
+      "name": "มัสยิดนูรู้ลอิสลาม",
+      "province_code": "TH-60",
+      "district": "ตาคลี",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-ba6fe0b45252ce98",
+      "name": "วัดสมศรีราษฎร์",
+      "province_code": "TH-25",
+      "district": "กบินทร์บุรี",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-bce27fa8f8b7e11b",
+      "name": "วัดโนนสะอาด",
+      "province_code": "TH-25",
+      "district": "ประจันตคาม",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-be1003a93f709815",
+      "name": "วัดหนองอ้อ",
+      "province_code": "TH-20",
+      "district": "พานทอง",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-c25f1f14b1369727",
+      "name": "วัดพรหมรังษี",
+      "province_code": "TH-25",
+      "district": "ประจันตคาม",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-c273cef1dc63726f",
+      "name": "วัดแก้วประสิทธิ์",
+      "province_code": "TH-86",
+      "district": "ท่าแซะ",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-c2c19ae46d4c9e24",
+      "name": "วัดประชาบำรุง",
+      "province_code": "TH-24",
+      "district": "บางน้ำเปรี้ยว",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-c378fc50a371cec2",
+      "name": "วัดวังหน่อไม้",
+      "province_code": "TH-72",
+      "district": "ด่านช้าง",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-c37d83ab11cb513d",
+      "name": "โบสถ์ วัดดอนคา",
+      "province_code": "TH-60",
+      "district": "ท่าตะโก",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-c3b550331d0b3b7d",
+      "name": "โบสถ์วัดหนองเนิน",
+      "province_code": "TH-60",
+      "district": "ท่าตะโก",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-c630bdc8a968379e",
+      "name": "วังมัจฉา วัดมงคลประชาราม",
+      "province_code": "TH-73",
+      "district": "พุทธมณฑล",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-c6953fd0b7091f8f",
+      "name": "วัดมะกอกแก้ว",
+      "province_code": "TH-25",
+      "district": "ประจันตคาม",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-c749e996a6b7f4de",
+      "name": "วัดทุมทอง",
+      "province_code": "TH-47",
+      "district": "พรรณานิคม",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-c77665878e77bc60",
+      "name": "วัดเจริญราษฎร์รังสรรค์",
+      "province_code": "TH-25",
+      "district": "กบินทร์บุรี",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-c789682f11be82a4",
+      "name": "วัดศรีมงคล",
+      "province_code": "TH-25",
+      "district": "ประจันตคาม",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-c898d492e5344fb2",
+      "name": "วัดบ้านไผ่",
+      "province_code": "TH-25",
+      "district": "ประจันตคาม",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-ca955018a7e3a0c8",
+      "name": "วัดดอนพลอง",
+      "province_code": "TH-60",
+      "district": "ลาดยาว",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-cb8715058e9a1aef",
+      "name": "วัดกำแพง",
+      "province_code": "TH-18",
+      "district": "สรรพยา",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-cb87b8862192cd87",
+      "name": "คริสต์จักรตาคลี ภาค 7 (คริสต์เตียน)",
+      "province_code": "TH-60",
+      "district": "ตาคลี",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-cc9f662874ad805c",
+      "name": "วัดทุ่งแฝก",
+      "province_code": "TH-25",
+      "district": "กบินทร์บุรี",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-cd0276fb8432ccb4",
+      "name": "วัดโพธาวาส",
+      "province_code": "TH-93",
+      "district": "เมืองพัทลุง",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-cd75b233d95a8d5f",
+      "name": "พระอุโบสถวัดชินวรารามวรวิหาร",
+      "province_code": "TH-13",
+      "district": "เมืองปทุมธานี",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-ce75f73ab78cb03c",
+      "name": "วัดมุ่งประสิทธิ์",
+      "province_code": "TH-25",
+      "district": "กบินทร์บุรี",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-ce8c075f74079c1f",
+      "name": "วัดหนองคุ้ม",
+      "province_code": "TH-25",
+      "district": "ประจันตคาม",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-cecde2f192f07c42",
+      "name": "ประวัติวัดธาตุวิไล",
+      "province_code": "TH-47",
+      "district": "พังโคน",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-d0a9d6bbbe82c80b",
+      "name": "หอระฆังวัดชินวรารามวรวิหาร",
+      "province_code": "TH-13",
+      "district": "เมืองปทุมธานี",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-d22d535f961be706",
+      "name": "หอระฆังวัดใหม่คูมอญ",
+      "province_code": "TH-24",
+      "district": "บางคล้า",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-d28f6bdb4c4ca7e6",
+      "name": "เจดีย์ศรีเวียงชัย",
+      "province_code": "TH-51",
+      "district": "ป่าซาง",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-d2e83f1faee9a89c",
+      "name": "วัดสว่างอารมณ์",
+      "province_code": "TH-25",
+      "district": "กบินทร์บุรี",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-d3203c18f6d19c60",
+      "name": "วัดลาดกระทิง อำเภอสนามชัยเขต จังหวัดฉะเชิงเทรา",
+      "province_code": "TH-24",
+      "district": "สนามชัยเขต",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-d330b2b1b271a6d5",
+      "name": "วัดควนมณี",
+      "province_code": "TH-86",
+      "district": "ท่าแซะ",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-d4151de7af99891b",
+      "name": "วัดร้อง",
+      "province_code": "TH-55",
+      "district": "นาน้อย",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-d56a167124eb068e",
+      "name": "มัสยิดดารุ้ลอิบาดะห์",
+      "province_code": "TH-24",
+      "district": "บางน้ำเปรี้ยว",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-d65fe30951f89a26",
+      "name": "อุโบสถวัดรัตนรังษี",
+      "province_code": "TH-25",
+      "district": "เมืองปราจีนบุรี",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-d6abb24b10ba38c5",
+      "name": "วัดไชยมงคล",
+      "province_code": "TH-25",
+      "district": "ประจันตคาม",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-d6b73faa4901feab",
+      "name": "บ้านวังรอ",
+      "province_code": "TH-60",
+      "district": "ท่าตะโก",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-d78523ea998eb355",
+      "name": "วัดเกาะหวาย",
+      "province_code": "TH-26",
+      "district": "ปากพลี",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-d975399c6649b9cb",
+      "name": "ศาลาวัดหัวถนนเหนือ",
+      "province_code": "TH-60",
+      "district": "ท่าตะโก",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-d980e09c2b30c732",
+      "name": "ศาลเจ้าแม่แก้ววัดเสม็ดเหนือ",
+      "province_code": "TH-24",
+      "district": "บางคล้า",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-d9aaa0d80949bc90",
+      "name": "วัดบ้านหว้าน",
+      "province_code": "TH-25",
+      "district": "ประจันตคาม",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-da660d78f4563046",
+      "name": "วัดลาดทิพรส",
+      "province_code": "TH-60",
+      "district": "ตาคลี",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-dc062b472d70be26",
+      "name": "สำนักสงฆ์กองเงินเวฬุวัน (สวนไผ่)",
+      "province_code": "TH-25",
+      "district": "กบินทร์บุรี",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-dcd7f8dbbb111895",
+      "name": "วัดหนองเจดีย์",
+      "province_code": "TH-51",
+      "district": "ป่าซาง",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-de9765f94514ba9f",
+      "name": "วัดหนองกอก",
+      "province_code": "TH-52",
+      "district": "แจ้ห่ม",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-df418520be5fd3f4",
+      "name": "วัดพุทธอุดมวิหาร",
+      "province_code": "TH-24",
+      "district": "บางน้ำเปรี้ยว",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-e025e0a710e891c3",
+      "name": "พระพุทธกาญจนาภิเษก",
+      "province_code": "TH-60",
+      "district": "ท่าตะโก",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-e0962c283dee5ff8",
+      "name": "วัดทำนบ",
+      "province_code": "TH-60",
+      "district": "ท่าตะโก",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-e15b3b51e9864063",
+      "name": "หอไตรวัดศรีเตี้ย",
+      "province_code": "TH-51",
+      "district": "บ้านโฮ่ง",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-e15fe3c0b10e38b2",
+      "name": "วัดรางเข็มทอง",
+      "province_code": "TH-72",
+      "district": "สองพี่น้อง",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-e2d78472466aea4d",
+      "name": "วัดคลองวังอ้ายเนื้อ (วัดวังอ้าย)",
+      "province_code": "TH-24",
+      "district": "เมืองฉะเชิงเทรา",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-e37e44a21635d4b2",
+      "name": "วัดม่วงน้อย",
+      "province_code": "TH-51",
+      "district": "ป่าซาง",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-e45e2ae4174f86eb",
+      "name": "วิหารหลวงปู่อ่ำ หลวงปู่ลัด",
+      "province_code": "TH-21",
+      "district": "บ้านค่าย",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-e575f41896a6d8aa",
+      "name": "วัดตุ๊กแก",
+      "province_code": "TH-60",
+      "district": "ท่าตะโก",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-e5fdd72a7a1d95cc",
+      "name": "วัดแครายวงศ์มณี",
+      "province_code": "TH-24",
+      "district": "บางน้ำเปรี้ยว",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-e680fcbe682963fb",
+      "name": "วัดชุมยางสามัคคีธรรม",
+      "province_code": "TH-61",
+      "district": "ทัพทัน",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-e76273fb1910b377",
+      "name": "กุฎิวัดโพนทอง",
+      "province_code": "TH-60",
+      "district": "ตาคลี",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-e7e5dd77e6e51311",
+      "name": "วัดบ้านคุ้ม",
+      "province_code": "TH-25",
+      "district": "ประจันตคาม",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-e80a7b30c799fe8a",
+      "name": "วัดประดู่วีระธรรม",
+      "province_code": "TH-48",
+      "district": "ปลาปาก",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-e862b92e72a94ddd",
+      "name": "วัดวังรอ",
+      "province_code": "TH-60",
+      "district": "ท่าตะโก",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-e8eaa74e6b112954",
+      "name": "วัดศรีบัวบาน",
+      "province_code": "TH-48",
+      "district": "ปลาปาก",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-ebc626615211c050",
+      "name": "วัดพระบาทนาหงส์(รอยพระพุทธบาท)",
+      "province_code": "TH-43",
+      "district": "รัตนวาปี",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-ec0b4dabb3855aca",
+      "name": "ศาลาตระกูลแก่นจันทร์",
+      "province_code": "TH-26",
+      "district": "เมืองนครนายก",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-edc298d1027669a6",
+      "name": "วัดหนองเรือโกลน",
+      "province_code": "TH-61",
+      "district": "ทัพทัน",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-ef52a09742eedce7",
+      "name": "วัดศรีกัลยานิคม",
+      "province_code": "TH-60",
+      "district": "แม่วงก์",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-ef6ca48b059aa9ed",
+      "name": "วัดเชตะวันคีรี",
+      "province_code": "TH-63",
+      "district": "แม่สอด",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-f0d7942d85c09853",
+      "name": "วัดศรีประจันตคาม",
+      "province_code": "TH-25",
+      "district": "ประจันตคาม",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-f27012d5e360adb7",
+      "name": "วัดวรนาถบรรพต (พระอารามหลวง)",
+      "province_code": "TH-60",
+      "district": "เมืองนครสวรรค์",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-f31e98d46fbf3e46",
+      "name": "วัดม่อนมะหินศิลาราม",
+      "province_code": "TH-51",
+      "district": "ป่าซาง",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-f40c6536ca0a5972",
+      "name": "วัดบัวลิ้มราษฏร์บำรุง",
+      "province_code": "TH-24",
+      "district": "บางน้ำเปรี้ยว",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-f4e1959648225f48",
+      "name": "วัดบึงตาหอม",
+      "province_code": "TH-24",
+      "district": "บางน้ำเปรี้ยว",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-f55533b20f5962db",
+      "name": "วัดอุดมวราราม",
+      "province_code": "TH-93",
+      "district": "เขาชัยสน",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-f68ef1e3aad63a8d",
+      "name": "วัดลาดโพธิ์",
+      "province_code": "TH-76",
+      "district": "เมืองเพชรบุรี",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-f7b03ad7836eb30c",
+      "name": "วัดศรีบุญเรือง อำเภอนาน้อย",
+      "province_code": "TH-55",
+      "district": "นาน้อย",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-f7d09ac604d71707",
+      "name": "วัดช่องรอ",
+      "province_code": "TH-86",
+      "district": "สวี",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-f801728e6a38aeb0",
+      "name": "วัดสัปปโคน",
+      "province_code": "TH-25",
+      "district": "ประจันตคาม",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-f862325139f09180",
+      "name": "วัดท่าสุ่ม",
+      "province_code": "TH-60",
+      "district": "ท่าตะโก",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-fa2dd095ea8dbc0e",
+      "name": "วัดโป่งเก้ง",
+      "province_code": "TH-61",
+      "district": "ทัพทัน",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-faf009d48635ae70",
+      "name": "วัดก้อนแก้ว",
+      "province_code": "TH-24",
+      "district": "คลองเขื่อน",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-fb8f9bb507c63dc1",
+      "name": "วัดหนองสังข์",
+      "province_code": "TH-25",
+      "district": "กบินทร์บุรี",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-fba302bb20dfb205",
+      "name": "วัดวังคูทอง",
+      "province_code": "TH-24",
+      "district": "สนามชัยเขต",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-fbe9f8570bb0f6ca",
+      "name": "วัดคอดยาง",
+      "province_code": "TH-61",
+      "district": "ทัพทัน",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-fd556ce156ba618a",
+      "name": "วัดบุสูง",
+      "province_code": "TH-33",
+      "district": "วังหิน",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-fde1e62970fbb80a",
+      "name": "โบสถ์วัดสามัคยาราม",
+      "province_code": "TH-60",
+      "district": "ท่าตะโก",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-fe49b56ce97333f8",
+      "name": "โบสถ์แสตนเลส",
+      "province_code": "TH-71",
+      "district": "ศรีสวัสดิ์",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-fe67476998a42cb0",
+      "name": "บ้านโบราณเหล่ามะเหยือง",
+      "province_code": "TH-51",
+      "district": "บ้านโฮ่ง",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "m-culture-religious-ff9aa3d4e3161ef4",
+      "name": "พระอุโบสถ วัดสระลงเรือ",
+      "province_code": "TH-71",
+      "district": "ห้วยกระเจา",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "tat-2454-วัดพยัคฆอินทาราม-วัดเจดีย์",
+      "name": "วัดพยัคฆอินทาราม (วัดเจดีย์)",
+      "province_code": "TH-24",
+      "district": "เมืองฉะเชิงเทรา",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "tat-attraction-2015120421550717204",
+      "name": "วัดคลองเจ้า",
+      "province_code": "TH-24",
+      "district": "บางน้ำเปรี้ยว",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "tat-attraction-2015120421550717422",
+      "name": "วัดบ้านโพธิ์",
+      "province_code": "TH-24",
+      "district": "บ้านโพธิ์",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "tat-attraction-2015120421550718713",
+      "name": "วัดท่าคก",
+      "province_code": "TH-42",
+      "district": "เชียงคาน",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "tat-attraction-2015120914285620000",
+      "name": "พีทีที สปีดเวย์",
+      "province_code": "TH-10",
+      "district": "ห้วยขวาง",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "tat-attraction-2015121416493820099",
+      "name": "วัดสันป่ายางหลวง",
+      "province_code": "TH-51",
+      "district": "เมืองลำพูน",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "tat-attraction-2015121504394420119",
+      "name": "วัดแจ้ง",
+      "province_code": "TH-25",
+      "district": "ประจันตคาม",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "tat-attraction-2015121504472320121",
+      "name": "วัดใหม่กรงทอง",
+      "province_code": "TH-25",
+      "district": "ศรีมหาโพธิ",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "tat-attraction-2015121504514920122",
+      "name": "วัดใหม่ดงกระทงยาม",
+      "province_code": "TH-25",
+      "district": "ศรีมหาโพธิ",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "tat-attraction-2015121505143020130",
+      "name": "วัดนครกบินทร์",
+      "province_code": "TH-25",
+      "district": "กบินทร์บุรี",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "tat-attraction-2015121505273120135",
+      "name": "วัดป่าประดู่",
+      "province_code": "TH-25",
+      "district": "กบินทร์บุรี",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "tat-attraction-2015121505573520146",
+      "name": "วัดอินทรแบก",
+      "province_code": "TH-25",
+      "district": "ศรีมหาโพธิ",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "tat-attraction-20180622104117369498",
+      "name": "วัดเขาถ้ำแรต",
+      "province_code": "TH-24",
+      "district": "ท่าตะเกียบ",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "tat-attraction-20180622142904369572",
+      "name": "วัดสามกอ",
+      "province_code": "TH-24",
+      "district": "บ้านโพธิ์",
+      "status": "unconfirmed_location"
+    },
+    {
+      "id": "tat-attraction-20220418145603738352",
+      "name": "วัดจุกเฌอ",
+      "province_code": "TH-24",
+      "district": "เมืองฉะเชิงเทรา",
+      "status": "unconfirmed_location"
+    }
+  ]
+}

@@ -1,8 +1,7 @@
 import { NextResponse } from 'next/server';
 
-import { getCultureCategoryKeyByTitle } from 'src/lib/culture-categories';
-
 import { getSupabaseAdmin } from 'src/server/supabase-admin';
+import { getCultureCategoryKeyByTitle } from 'src/lib/culture-categories';
 
 const TABLE_NAME = process.env.HOME_CONTENT_SECTIONS_TABLE ?? 'home_content_sections';
 
@@ -23,7 +22,9 @@ export async function GET() {
 
   const { data, error } = await supabase.client
     .from(TABLE_NAME)
-    .select('section_key, content, updated_at');
+    .select('section_key, content, updated_at')
+    .neq('section_key', 'ethnic-community-supplements-v1')
+    .neq('section_key', 'province-artists-v1');
 
   if (error) {
     return NextResponse.json({ data: {}, message: error.message }, { status: 200 });

@@ -1,3 +1,6 @@
+import communityCrafts from '../../data/cultural-heritage/community-crafts.json';
+import communityWeaving from '../../data/cultural-heritage/community-weaving.json';
+
 export const HERITAGE_RESOURCE_ID = '6400e87c-e5b2-4335-a4b2-6c6e21539f48';
 export const HERITAGE_SOURCE_URL = 'https://data.go.th/dataset/ich_51_02';
 const CATEGORY_FIELDS = {
@@ -19,6 +22,12 @@ function coordinate(value: unknown, max: number) {
 export function mapHeritageRecord(row: Record<string, unknown>) {
   return {
     id: text(row._id ?? row.id),
+    description: text(row.description),
+    technique: text(row.technique),
+    lifestyle: text(row.lifestyle),
+    sourceUrl: text(row.sourceUrl) || HERITAGE_SOURCE_URL,
+    organization: text(row.organization),
+    checkedAt: text(row.checkedAt),
     name: text(row.Name),
     province: text(row.Province),
     region: text(row.Region),
@@ -41,12 +50,84 @@ export async function getCulturalHeritage({
   province = '',
   page = 0,
   limit = 20,
+  collection = 'registry',
+  category = '',
 }: {
+  collection?: 'registry' | 'community';
+  category?: string;
   query?: string;
   province?: string;
   page?: number;
   limit?: number;
-}) {
+}): Promise<{
+  data: HeritageRecord[];
+  total: number;
+  page: number;
+  limit: number;
+  sourceUrl: string | null;
+  collectionTotal?: number;
+  collectionProvinces?: number;
+  categories?: string[];
+}> {
+  if (collection === 'community') {
+    const q = query.trim().toLocaleLowerCase('th');
+    const community = [...communityWeaving, ...communityCrafts];
+    const matches = community.filter(
+      (item) =>
+        (!province || item.province === province) &&
+        (!category || item.categories.includes(category)) &&
+        (!q ||
+          [
+            item.name,
+            item.province,
+            item.practice,
+            item.description,
+            item.technique,
+            item.lifestyle,
+            ...item.categories,
+          ]
+            .join(' ')
+            .toLocaleLowerCase('th')
+            .includes(q))
+    );
+    return {
+      data: matches.slice(page * limit, (page + 1) * limit).map((item) => ({
+        ...mapHeritageRecord({
+          _id: item.id,
+          Name: item.name,
+          Province: item.province,
+          Region: item.region,
+          Practice: item.practice,
+          ...item,
+        }),
+        categories: item.categories,
+      })),
+      total: matches.length,
+      page,
+      limit,
+      sourceUrl: null,
+      collectionTotal: community.length,
+      collectionProvinces: new Set(community.map((item) => item.province)).size,
+      categories: [...new Set(community.flatMap((item) => item.categories))].sort((a, b) =>
+        a.localeCompare(b, 'th')
+      ),
+    };
+  }
+  if (category) {
+    const matches = (await getAllHeritageRecords()).filter(
+      (item) =>
+        item.categories.includes(category) &&
+        (!province || item.province === province) &&
+        (!query || [item.name, item.practice, item.note].join(' ').includes(query))
+    );
+    return {
+      data: matches.slice(page * limit, (page + 1) * limit),
+      total: matches.length,
+      page,
+      limit,
+      sourceUrl: HERITAGE_SOURCE_URL,
+    };
+  }
   const url = new URL('https://data.go.th/api/3/action/datastore_search');
   url.searchParams.set('resource_id', HERITAGE_RESOURCE_ID);
   url.searchParams.set('limit', String(limit));
@@ -73,4 +154,24 @@ export async function getCulturalHeritage({
     limit,
     sourceUrl: HERITAGE_SOURCE_URL,
   };
+}
+
+/** Read all pages before computing category totals; fail instead of reporting partial counts. */
+export async function getAllHeritageRecords(): Promise<HeritageRecord[]> {
+  const first = await getCulturalHeritage({ limit: 1000 });
+  const size = first.data.length;
+  if (first.total > 100000 || (first.total && !size))
+    throw new Error('ไม่สามารถอ่านทะเบียนครบชุดได้');
+  const pages = await Promise.all(
+    Array.from({ length: size ? Math.ceil(first.total / size) - 1 : 0 }, (_, i) =>
+      getCulturalHeritage({ limit: size, page: i + 1 })
+    )
+  );
+  const records = [...first.data, ...pages.flatMap((page) => page.data)];
+  if (
+    records.length !== first.total ||
+    new Set(records.map((record) => record.id)).size !== first.total
+  )
+    throw new Error('ทะเบียนต้นทางเปลี่ยนหรืออ่านได้ไม่ครบชุด');
+  return records;
 }

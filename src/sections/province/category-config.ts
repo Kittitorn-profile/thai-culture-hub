@@ -1,11 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 
-import {
-  getCultureCategoryLabel,
-  getCultureCategoryHashColor,
-} from 'src/lib/culture-categories';
+import { getCultureCategoryLabel, getCultureCategoryHashColor } from 'src/lib/culture-categories';
 
 export type CategoryConfigItem = {
   key: string;
@@ -39,38 +36,34 @@ export function getCategoryColor(config: CategoryConfigMap, categoryKey?: string
   return getCategoryConfigItem(config, categoryKey).color;
 }
 
+const EMPTY_CATEGORY_CONFIG: CategoryConfigMap = {};
+
+export function useCategoryConfigQuery() {
+  return useQuery<CategoryConfigMap>({
+    queryKey: ['culture', 'category-config'],
+    queryFn: async ({ signal }) => {
+      const response = await fetch('/api/culture/category-config/', { signal });
+      if (!response.ok) throw new Error('Unable to load category configuration');
+      const json: { data?: CategoryConfigItem[] } = await response.json();
+      if (!Array.isArray(json.data)) throw new Error('Invalid category configuration');
+      return Object.fromEntries(
+        json.data.map((item) => [
+          item.key,
+          {
+            ...item,
+            label: item.label || item.key,
+            color: item.color || getCultureCategoryHashColor(item.key),
+          },
+        ])
+      );
+    },
+    staleTime: 300_000,
+    gcTime: 86_400_000,
+    retry: 1,
+    refetchOnWindowFocus: false,
+  });
+}
+
 export function useCategoryConfig() {
-  const [categoryConfig, setCategoryConfig] = useState<CategoryConfigMap>({});
-
-  useEffect(() => {
-    const controller = new AbortController();
-
-    fetch('/api/culture/category-config', { signal: controller.signal })
-      .then((response) => (response.ok ? response.json() : { data: [] }))
-      .then((json: { data?: CategoryConfigItem[] }) => {
-        const items = Array.isArray(json.data) ? json.data : [];
-
-        setCategoryConfig(
-          Object.fromEntries(
-            items.map((item) => [
-              item.key,
-              {
-                ...item,
-                label: item.label || item.key,
-                color: item.color || getCultureCategoryHashColor(item.key),
-              },
-            ])
-          )
-        );
-      })
-      .catch((error) => {
-        if (!(error instanceof Error && error.name === 'AbortError')) {
-          setCategoryConfig({});
-        }
-      });
-
-    return () => controller.abort();
-  }, []);
-
-  return categoryConfig;
+  return useCategoryConfigQuery().data ?? EMPTY_CATEGORY_CONFIG;
 }

@@ -2,25 +2,30 @@
 
 import type { CulturalPlace } from '../province-data';
 
-import { useParams, useSearchParams } from 'next/navigation';
-import { useMemo, useState, useEffect, useCallback } from 'react';
+import { useMemo, useState, useEffect } from 'react';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 
 import Box from '@mui/material/Box';
-import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
-import { alpha, useTheme } from '@mui/material/styles';
+import Typography from '@mui/material/Typography';
+
+import { RouterLink } from 'src/routes/components';
 
 import { Logo } from 'src/components/logo';
 import { Iconify } from 'src/components/iconify';
 import { trackAnalyticsEvent } from 'src/components/analytics';
 
+import { HOME_SECTION_PX } from 'src/sections/home/components/home-constants';
+
+import { ProvinceIdentity } from './province-identity';
 import { ProvinceShapeMap } from './province-shape-map';
-import { getPlaceImages } from './province-detail-utils';
-import { ProvincePlaceDialog } from './province-place-dialog';
+import { ProvincePlacesList } from './province-places-list';
+import { resolvePlaceDistricts } from '../province-districts';
 import { ProvinceFilterDrawer } from './province-filter-drawer';
-import { ProvincePlacesDrawer } from './province-places-drawer';
 import { ProvinceDetailHeader } from './province-detail-header';
 import { useThailandDistrictCenters } from '../thailand-geojson';
+import { ProvinceHighlightPlaces } from './province-highlight-places';
+import { ProvinceCulturalSections } from './province-cultural-sections';
 import { getCategoryLabel, useCategoryConfig } from '../category-config';
 import {
   getCultureMetrics,
@@ -42,26 +47,6 @@ type RemoteSourceCounts = Partial<
   >
 >;
 
-type DistrictCenter = {
-  name: string;
-  lat: number;
-  lng: number;
-};
-
-type PlaceLikeState = {
-  liked: boolean;
-  likeCount: number;
-  loading?: boolean;
-};
-
-type PlaceLikeResponse = {
-  data?: {
-    placeId: string;
-    liked: boolean;
-    likeCount: number;
-  };
-};
-
 const PROVINCE_BG_MIDDLE = '#f7f7f5';
 const PROVINCE_PAGE_BACKGROUND = 'none';
 const PROVINCE_POSTER_PATTERN = 'none';
@@ -69,61 +54,9 @@ const PROVINCE_POSTER_PATTERN = 'none';
 
 // ----------------------------------------------------------------------
 
-function normalizeDistrictName(value?: string | null) {
-  return (value ?? '')
-    .replace(/^อำเภอ/, '')
-    .replace(/^เขต/, '')
-    .replace(/\s+District$/i, '')
-    .replace(/\s+/g, '')
-    .trim()
-    .toLowerCase();
-}
-
-function getNearestDistrictName(place: CulturalPlace, districtCenters: DistrictCenter[]) {
-  const placeLat = Number(place.lat);
-  const placeLng = Number(place.lng);
-
-  if (!Number.isFinite(placeLat) || !Number.isFinite(placeLng) || !districtCenters.length) {
-    return place.district;
-  }
-
-  let nearestDistrict = '';
-  let nearestDistance = Infinity;
-
-  districtCenters.forEach((district) => {
-    const distance = Math.hypot(placeLat - district.lat, placeLng - district.lng);
-
-    if (distance < nearestDistance) {
-      nearestDistance = distance;
-      nearestDistrict = district.name;
-    }
-  });
-
-  return nearestDistrict || place.district;
-}
-
-function resolvePlaceDistricts(places: CulturalPlace[], districtCenters: DistrictCenter[]) {
-  if (!districtCenters.length) {
-    return places;
-  }
-
-  const districtNameMap = new Map(
-    districtCenters.map((district) => [normalizeDistrictName(district.name), district.name])
-  );
-
-  return places.map((place) => {
-    const districtName = districtNameMap.get(normalizeDistrictName(place.district));
-    const resolvedDistrict = districtName ?? getNearestDistrictName(place, districtCenters);
-
-    return resolvedDistrict && resolvedDistrict !== place.district
-      ? { ...place, district: resolvedDistrict }
-      : place;
-  });
-}
-
 export function ProvinceDetailView() {
-  const theme = useTheme();
   const categoryConfig = useCategoryConfig();
+  const router = useRouter();
   const params = useParams<{ provinceId?: string | string[] }>();
   const searchParams = useSearchParams();
   const rawProvinceId = params.provinceId;
@@ -143,10 +76,6 @@ export function ProvinceDetailView() {
   const [selectedSources, setSelectedSources] = useState<string[]>([]);
   const [selectedDistricts, setSelectedDistricts] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [isPlacesDrawerOpen, setIsPlacesDrawerOpen] = useState(false);
-  const [selectedDistrictDetail, setSelectedDistrictDetail] = useState<string | null>(null);
-  const [selectedPlace, setSelectedPlace] = useState<CulturalPlace | null>(null);
-  const [placeLikes, setPlaceLikes] = useState<Record<string, PlaceLikeState>>({});
   const filterEventKey = [
     selectedSources.join('|'),
     selectedCategories.join('|'),
@@ -213,31 +142,6 @@ export function ProvinceDetailView() {
   const activeFilterCount =
     selectedCategories.length + selectedSources.length + selectedDistricts.length;
   const cultureMetrics = useMemo(() => getCultureMetrics(culturalPlaces), [culturalPlaces]);
-  const selectedDistrictPlaces = useMemo(
-    () =>
-      selectedDistrictDetail
-        ? culturalPlaces.filter(
-            (place) => (place.district || 'ไม่ระบุอำเภอ') === selectedDistrictDetail
-          )
-        : [],
-    [culturalPlaces, selectedDistrictDetail]
-  );
-  const drawerPlaces = selectedDistrictDetail ? selectedDistrictPlaces : culturalPlaces;
-  const selectedPlaceIndex = selectedPlace
-    ? Math.max(
-        culturalPlaces.findIndex((place) => place.id === selectedPlace.id),
-        0
-      )
-    : 0;
-  const selectedPlaceImages = selectedPlace
-    ? getPlaceImages(selectedPlace, selectedPlaceIndex)
-    : [];
-  const selectedPlaceLat = Number(selectedPlace?.lat);
-  const selectedPlaceLng = Number(selectedPlace?.lng);
-  const selectedPlaceCoordinates =
-    Number.isFinite(selectedPlaceLat) && Number.isFinite(selectedPlaceLng)
-      ? `${selectedPlaceLat}, ${selectedPlaceLng}`
-      : 'ไม่พบพิกัด';
   const dataSourceLabel = [
     remoteSourceCounts.tat?.count ? 'ททท.' : null,
     remoteSourceCounts.finearts_monument?.count ||
@@ -251,20 +155,16 @@ export function ProvinceDetailView() {
     .filter(Boolean)
     .join(' + ');
 
-  const closePlacesDrawer = () => {
-    setSelectedDistrictDetail(null);
-    setIsPlacesDrawerOpen(false);
-  };
-
-  const openAllPlacesDrawer = () => {
+  const openAllPlaces = () => {
     trackAnalyticsEvent('province_places_open', provinceDisplayName, {
       provinceId,
       provinceName: provinceDisplayName,
       totalCount: allCulturalPlaces.length,
       filteredCount: culturalPlaces.length,
     });
-    setSelectedDistrictDetail(null);
-    setIsPlacesDrawerOpen(true);
+    router.push(
+      `/province/${encodeURIComponent(provinceId)}/places/?${new URLSearchParams({ name: provinceDisplayName }).toString()}`
+    );
   };
 
   useEffect(() => {
@@ -278,7 +178,7 @@ export function ProvinceDetailView() {
     setRemoteCulturalPlaces([]);
     setRemoteSourceCounts({});
 
-    fetch(`/api/culture/province-places?provinceCode=${provinceId}`, {
+    fetch(`/api/culture/province-places?provinceCode=${provinceId}&view=map`, {
       signal: controller.signal,
     })
       .then((response) => (response.ok ? response.json() : { data: [], sources: {} }))
@@ -361,106 +261,10 @@ export function ProvinceDetailView() {
       provinceId,
       provinceName: provinceDisplayName,
     });
-    setSelectedDistrictDetail(district);
+    router.push(
+      `/province/${encodeURIComponent(provinceId)}/places/?${new URLSearchParams({ name: provinceDisplayName, district }).toString()}`
+    );
   };
-
-  const handlePlaceSelect = (place: CulturalPlace | null) => {
-    if (place) {
-      trackAnalyticsEvent('place_select', place.name, {
-        placeId: place.id,
-        placeName: place.name,
-        district: place.district,
-        category: place.category,
-        provinceId,
-        provinceName: provinceDisplayName,
-      });
-    }
-
-    setSelectedPlace(place);
-  };
-
-  const handlePlaceLike = useCallback(
-    async (place: CulturalPlace) => {
-      const previousState = placeLikes[place.id] ?? { liked: false, likeCount: 0 };
-      const nextLiked = !previousState.liked;
-
-      setPlaceLikes((currentLikes) => ({
-        ...currentLikes,
-        [place.id]: {
-          liked: nextLiked,
-          likeCount: Math.max(0, previousState.likeCount + (nextLiked ? 1 : -1)),
-          loading: true,
-        },
-      }));
-
-      try {
-        const response = await fetch('/api/culture/place-likes', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ placeId: place.id }),
-        });
-        const result = (await response.json().catch(() => ({}))) as PlaceLikeResponse;
-
-        if (!response.ok || !result.data) {
-          throw new Error('Unable to update place like');
-        }
-
-        setPlaceLikes((currentLikes) => ({
-          ...currentLikes,
-          [place.id]: {
-            liked: result.data?.liked ?? nextLiked,
-            likeCount: result.data?.likeCount ?? previousState.likeCount,
-            loading: false,
-          },
-        }));
-      } catch {
-        setPlaceLikes((currentLikes) => ({
-          ...currentLikes,
-          [place.id]: {
-            ...previousState,
-            loading: false,
-          },
-        }));
-      }
-    },
-    [placeLikes]
-  );
-
-  useEffect(() => {
-    if (!selectedPlace || placeLikes[selectedPlace.id]) {
-      return undefined;
-    }
-
-    const controller = new AbortController();
-
-    fetch(`/api/culture/place-likes?placeIds=${encodeURIComponent(selectedPlace.id)}`, {
-      signal: controller.signal,
-    })
-      .then(async (response) => {
-        const result = (await response.json().catch(() => ({}))) as {
-          data?: Record<string, PlaceLikeState>;
-        };
-
-        if (response.ok && result.data?.[selectedPlace.id]) {
-          setPlaceLikes((currentLikes) => ({
-            ...currentLikes,
-            [selectedPlace.id]: result.data?.[selectedPlace.id] ?? { liked: false, likeCount: 0 },
-          }));
-        }
-      })
-      .catch((error) => {
-        if (error?.name !== 'AbortError') {
-          setPlaceLikes((currentLikes) => ({
-            ...currentLikes,
-            [selectedPlace.id]: currentLikes[selectedPlace.id] ?? { liked: false, likeCount: 0 },
-          }));
-        }
-      });
-
-    return () => {
-      controller.abort();
-    };
-  }, [placeLikes, selectedPlace]);
 
   return (
     <Box
@@ -472,8 +276,8 @@ export function ProvinceDetailView() {
         backgroundImage: PROVINCE_PAGE_BACKGROUND,
         color: 'text.primary',
         minHeight: '100vh',
-        py: { xs: 4, sm: 5, md: 6 },
-        px: { xs: 1.5, sm: 3, md: 5, lg: 8 },
+        pt: { xs: 4, md: 6 },
+        pb: { xs: 5, md: 7 },
         fontFamily: "'LINE Seed Sans TH', sans-serif",
         '&::before': {
           content: '""',
@@ -501,57 +305,108 @@ export function ProvinceDetailView() {
           mx: 'auto',
           width: 1,
           zIndex: 1,
-          maxWidth: 1320,
+          maxWidth: 1408,
+          px: HOME_SECTION_PX,
           position: 'relative',
         }}
       >
-        <Box sx={{ mx: 'auto', maxWidth: 1040, position: 'relative' }}>
-          <ProvinceDetailHeader
-            provinceDisplayName={provinceDisplayName}
-            cultureMetrics={cultureMetrics}
-            filteredCount={culturalPlaces.length}
-            totalCount={allCulturalPlaces.length}
-            dataSourceLabel={dataSourceLabel}
-            isRemoteLoading={isRemoteLoading}
-            activeFilterCount={activeFilterCount}
-            searchQuery={searchQuery}
-            onFilterOpen={() => setIsFilterOpen(true)}
-            onPlacesOpen={openAllPlacesDrawer}
-            onSearchQueryChange={setSearchQuery}
-          />
+        <Button
+          component={RouterLink}
+          href="/#explore-map"
+          color="inherit"
+          startIcon={<Iconify icon="eva:arrow-ios-back-fill" width={16} />}
+          sx={{ mb: 2.5, fontSize: 13 }}
+        >
+          กลับแผนที่ประเทศไทย
+        </Button>
+        <Button
+          component="a"
+          href="#province-all-data"
+          variant="outlined"
+          size="small"
+          sx={{ mb: 2.5, ml: 1 }}
+        >
+          สำรวจทุกชุดข้อมูลของจังหวัด
+        </Button>
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: 'minmax(0, 1fr)', lg: '360px minmax(0, 1fr)' },
+            gap: { xs: 3, lg: 4 },
+            alignItems: 'start',
+          }}
+        >
+          <Box sx={{ position: { lg: 'sticky' }, top: { lg: 96 }, minWidth: 0 }}>
+            <ProvinceDetailHeader
+              provinceDisplayName={provinceDisplayName}
+              cultureMetrics={cultureMetrics}
+              filteredCount={culturalPlaces.length}
+              totalCount={allCulturalPlaces.length}
+              dataSourceLabel={dataSourceLabel}
+              isRemoteLoading={isRemoteLoading}
+              activeFilterCount={activeFilterCount}
+              searchQuery={searchQuery}
+              onFilterOpen={() => setIsFilterOpen(true)}
+              onPlacesOpen={openAllPlaces}
+              onSearchQueryChange={setSearchQuery}
+            />
+            <ProvinceIdentity provinceCode={provinceId} />
+          </Box>
+
+          <Box
+            sx={{
+              minWidth: 0,
+              borderRadius: 3,
+              overflow: 'hidden',
+              bgcolor: '#f0f2eb',
+              p: { xs: 1, md: 2 },
+            }}
+          >
+            {!!provinceId && (
+              <ProvinceShapeMap
+                places={culturalPlaces}
+                provinceId={provinceId}
+                provinceName={provinceDisplayName}
+                categoryConfig={categoryConfig}
+                onDistrictSelect={handleDistrictSelect}
+              />
+            )}
+          </Box>
         </Box>
 
-        <Box sx={{ mt: { xs: 3, md: 5 } }}>
-          {!!provinceId && (
-            <ProvinceShapeMap
+        <Box sx={{ mt: { xs: 4, md: 6 } }}>
+          <ProvinceHighlightPlaces
+            provinceCode={provinceId}
+            provinceName={provinceDisplayName}
+            places={allCulturalPlaces}
+            loading={isRemoteLoading}
+          />
+        </Box>
+        <ProvinceCulturalSections
+          key={provinceId}
+          provinceCode={provinceId}
+          provinceName={provinceDisplayName}
+        />
+        <Box component="section" id="province-all-places" sx={{ mt: 5, scrollMarginTop: 100 }}>
+          <Typography component="h2" variant="h4" sx={{ mb: 1 }}>
+            สถานที่และเรื่องวัฒนธรรม{provinceDisplayName}
+          </Typography>
+          <Typography sx={{ color: 'text.secondary', mb: 3 }}>
+            รายการสถานที่ที่ใช้แสดงบนแผนที่ สามารถค้นหาและเลือกหมวดได้
+          </Typography>
+          {isRemoteLoading ? (
+            <Typography>กำลังโหลดสถานที่…</Typography>
+          ) : (
+            <ProvincePlacesList
+              selectedDistrictDetail={null}
               places={culturalPlaces}
-              provinceId={provinceId}
-              provinceName={provinceDisplayName}
               categoryConfig={categoryConfig}
-              onDistrictSelect={handleDistrictSelect}
+              onPlaceSelect={(place) =>
+                router.push(`/culture-place/${encodeURIComponent(place.id)}/`)
+              }
             />
           )}
         </Box>
-
-        <Stack direction="row" justifyContent="center" sx={{ mt: 4 }}>
-          <Button
-            variant="contained"
-            size="large"
-            startIcon={<Iconify icon="solar:list-bold" />}
-            onClick={openAllPlacesDrawer}
-            sx={{
-              px: 3,
-              borderRadius: 99,
-              fontWeight: 600,
-              color: '#11343a',
-              bgcolor: '#f8f8f2',
-              boxShadow: `0 14px 30px ${alpha(theme.palette.grey[900], 0.18)}`,
-              '&:hover': { bgcolor: '#fff' },
-            }}
-          >
-            ดูสถานที่และวัฒนธรรมทั้งหมด
-          </Button>
-        </Stack>
 
         <ProvinceFilterDrawer
           open={isFilterOpen}
@@ -568,28 +423,6 @@ export function ProvinceDetailView() {
           onSelectedSourcesChange={setSelectedSources}
           onSelectedCategoriesChange={setSelectedCategories}
           onSelectedDistrictsChange={setSelectedDistricts}
-        />
-
-        <ProvincePlacesDrawer
-          open={Boolean(selectedDistrictDetail) || isPlacesDrawerOpen}
-          selectedDistrictDetail={selectedDistrictDetail}
-          places={drawerPlaces}
-          allPlacesCount={allCulturalPlaces.length}
-          categoryConfig={categoryConfig}
-          onClose={closePlacesDrawer}
-          onPlaceSelect={handlePlaceSelect}
-        />
-
-        <ProvincePlaceDialog
-          place={selectedPlace}
-          placeIndex={selectedPlaceIndex}
-          placeImages={selectedPlaceImages}
-          provinceDisplayName={provinceDisplayName}
-          coordinates={selectedPlaceCoordinates}
-          categoryConfig={categoryConfig}
-          likeState={selectedPlace ? placeLikes[selectedPlace.id] : undefined}
-          onPlaceLike={handlePlaceLike}
-          onClose={() => setSelectedPlace(null)}
         />
       </Box>
 

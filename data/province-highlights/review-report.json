@@ -1,0 +1,162 @@
+{
+  "checkedAt": "2026-11-08",
+  "provinces": 77,
+  "attractions": 208,
+  "minimumPerProvince": 2,
+  "maximumPerProvince": 4,
+  "officialCatalogRows": 8634,
+  "skippedCandidates": [
+    {
+      "provinceCode": "TH-12",
+      "candidate": "วัดปรมัยยิกาวาส",
+      "reason": "no exact official/stored name match"
+    },
+    {
+      "provinceCode": "TH-13",
+      "candidate": "พิพิธภัณฑ์การเกษตร",
+      "reason": "no exact official/stored name match"
+    },
+    {
+      "provinceCode": "TH-15",
+      "candidate": "วัดขุนอินทประมูล",
+      "reason": "no exact official/stored name match"
+    },
+    {
+      "provinceCode": "TH-24",
+      "candidate": "วัดโสธร",
+      "reason": "no exact official/stored name match"
+    },
+    {
+      "provinceCode": "TH-30",
+      "candidate": "วัดบ้านไร่",
+      "reason": "no exact official/stored name match"
+    },
+    {
+      "provinceCode": "TH-31",
+      "candidate": "เขากระโดง",
+      "reason": "no exact official/stored name match"
+    },
+    {
+      "provinceCode": "TH-33",
+      "candidate": "ผามออีแดง",
+      "reason": "no exact official/stored name match"
+    },
+    {
+      "provinceCode": "TH-35",
+      "candidate": "วิมานพญาแถน",
+      "reason": "no exact official/stored name match"
+    },
+    {
+      "provinceCode": "TH-35",
+      "candidate": "พระธาตุก่องข้าวน้อย",
+      "reason": "no exact official/stored name match"
+    },
+    {
+      "provinceCode": "TH-37",
+      "candidate": "ภูสิงห์ภูผาผึ้ง",
+      "reason": "no exact official/stored name match"
+    },
+    {
+      "provinceCode": "TH-38",
+      "candidate": "ถ้ำนาคา",
+      "reason": "no exact official/stored name match"
+    },
+    {
+      "provinceCode": "TH-39",
+      "candidate": "วัดถ้ำกลองเพล",
+      "reason": "no exact official/stored name match"
+    },
+    {
+      "provinceCode": "TH-40",
+      "candidate": "วัดหนองแวง",
+      "reason": "no exact official/stored name match"
+    },
+    {
+      "provinceCode": "TH-41",
+      "candidate": "แหล่งโบราณคดีบ้านเชียง",
+      "reason": "no exact official/stored name match"
+    },
+    {
+      "provinceCode": "TH-42",
+      "candidate": "ถนนคนเดินเชียงคาน",
+      "reason": "no exact official/stored name match"
+    },
+    {
+      "provinceCode": "TH-43",
+      "candidate": "วัดโพธิ์ชัย",
+      "reason": "no exact official/stored name match"
+    },
+    {
+      "provinceCode": "TH-47",
+      "candidate": "วัดถ้ำผาแด่น",
+      "reason": "no exact official/stored name match"
+    },
+    {
+      "provinceCode": "TH-50",
+      "candidate": "วัดเจดีย์หลวง",
+      "reason": "no exact official/stored name match"
+    },
+    {
+      "provinceCode": "TH-50",
+      "candidate": "ประตูท่าแพ",
+      "reason": "no exact official/stored name match"
+    },
+    {
+      "provinceCode": "TH-52",
+      "candidate": "ศูนย์อนุรักษ์ช้างไทย",
+      "reason": "no exact official/stored name match"
+    },
+    {
+      "provinceCode": "TH-54",
+      "candidate": "คุ้มวงศ์บุรี",
+      "reason": "no exact official/stored name match"
+    },
+    {
+      "provinceCode": "TH-58",
+      "candidate": "วัดพระธาตุดอยกองมู",
+      "reason": "no exact official/stored name match"
+    },
+    {
+      "provinceCode": "TH-60",
+      "candidate": "วัดคีรีวงศ์",
+      "reason": "no exact official/stored name match"
+    },
+    {
+      "provinceCode": "TH-62",
+      "candidate": "น้ำตกคลองลาน",
+      "reason": "no exact official/stored name match"
+    },
+    {
+      "provinceCode": "TH-64",
+      "candidate": "วัดศรีชุม",
+      "reason": "no exact official/stored name match"
+    },
+    {
+      "provinceCode": "TH-72",
+      "candidate": "ตลาดสามชุก",
+      "reason": "no exact official/stored name match"
+    },
+    {
+      "provinceCode": "TH-74",
+      "candidate": "ศาลพันท้ายนรสิงห์",
+      "reason": "no exact official/stored name match"
+    },
+    {
+      "provinceCode": "TH-84",
+      "candidate": "เกาะเต่า",
+      "reason": "no exact official/stored name match"
+    },
+    {
+      "provinceCode": "TH-95",
+      "candidate": "วัดคูหาภิมุข",
+      "reason": "no exact official/stored name match"
+    },
+    {
+      "provinceCode": "TH-96",
+      "candidate": "ป่าพรุโต๊ะแดง",
+      "reason": "no exact official/stored name match"
+    }
+  ],
+  "source": "https://datacatalog.tat.or.th/dataset/87442079-88ec-42eb-b507-dcf135fc4301/resource/9348705e-18b4-4815-8d2c-0fd2f649e88e",
+  "method": "Editorial candidate list; verify province and exact official/stored names, with one explicitly reviewed spelling alias. Not a popularity ranking."
+}

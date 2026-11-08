@@ -1,9 +1,12 @@
+import { preload } from 'react-dom';
+
 import { Box } from '@mui/material';
 
 import ThailandMap from '../view/thailand-map';
 import { HOME_SECTION_PX, HOME_SECTION_MAX_WIDTH } from './home-constants';
 
 export function HomeMapSection() {
+  preload('/assets/maps/thailand-home-paths.json', { as: 'fetch', crossOrigin: 'anonymous' });
   return (
     <Box
       component="section"

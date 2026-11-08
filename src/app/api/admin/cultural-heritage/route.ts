@@ -13,21 +13,35 @@ export async function GET(request: Request) {
   const params = new URL(request.url).searchParams;
   const page = Number(params.get('page') ?? 0);
   const limit = Number(params.get('limit') ?? 20);
+  const collection = params.get('collection') ?? 'registry';
+  const category = (params.get('category') ?? '').trim();
   const query = (params.get('q') ?? '').trim();
   const province = (params.get('province') ?? '').trim();
   if (
+    !['registry', 'community'].includes(collection) ||
     !Number.isInteger(page) ||
     page < 0 ||
     page > 10000 ||
     ![20, 50, 100].includes(limit) ||
+    category.length > 100 ||
     query.length > 200 ||
     province.length > 100
   )
     return NextResponse.json({ message: 'กรุณาตรวจสอบคำค้นหาและหน้าที่เลือก' }, { status: 400 });
   try {
-    return NextResponse.json(await getCulturalHeritage({ query, province, page, limit }), {
-      headers: { 'Cache-Control': 'private, no-store' },
-    });
+    return NextResponse.json(
+      await getCulturalHeritage({
+        query,
+        province,
+        page,
+        limit,
+        collection: collection as 'registry' | 'community',
+        category,
+      }),
+      {
+        headers: { 'Cache-Control': 'private, no-store' },
+      }
+    );
   } catch (error) {
     return NextResponse.json(
       { message: error instanceof Error ? error.message : 'โหลดข้อมูลไม่สำเร็จ' },

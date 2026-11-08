@@ -1,0 +1,870 @@
+[
+  {
+    "id": "artist-66444a2c061c4f66b33f",
+    "name": "หญิงลี ศรีจุมพล",
+    "aliases": [],
+    "types": [
+      "performing_artist"
+    ],
+    "fields": [
+      "ศิลปะการแสดง",
+      "การขับร้อง"
+    ],
+    "genres": [
+      "ลูกทุ่ง"
+    ],
+    "recognitions": [],
+    "provinceAssociations": [],
+    "provinceStatus": "pending_verification",
+    "sources": [
+      {
+        "datasetKey": "performer_biography",
+        "url": "https://www.gmmgrammy.com/newsroom/news-single.php?id=4381"
+      }
+    ]
+  },
+  {
+    "id": "artist-84c2e76578b1a6d34f70",
+    "name": "ฝน ธนสุนธร",
+    "aliases": [],
+    "types": [
+      "performing_artist"
+    ],
+    "fields": [
+      "ศิลปะการแสดง",
+      "การขับร้อง"
+    ],
+    "genres": [
+      "ลูกทุ่ง"
+    ],
+    "recognitions": [],
+    "provinceAssociations": [],
+    "provinceStatus": "pending_verification",
+    "sources": [
+      {
+        "datasetKey": "performer_biography",
+        "url": "https://www.gmmgrammy.com/newsroom/news-single.php?id=4381"
+      }
+    ]
+  },
+  {
+    "id": "artist-8850ca18eb7e83c89876",
+    "name": "ต่าย อรทัย",
+    "aliases": [],
+    "types": [
+      "performing_artist"
+    ],
+    "fields": [
+      "ศิลปะการแสดง",
+      "การขับร้อง"
+    ],
+    "genres": [
+      "ลูกทุ่ง"
+    ],
+    "recognitions": [],
+    "provinceAssociations": [],
+    "provinceStatus": "pending_verification",
+    "sources": [
+      {
+        "datasetKey": "performer_biography",
+        "url": "https://www.gmmgrammy.com/newsroom/news-single.php?id=4381"
+      }
+    ]
+  },
+  {
+    "id": "artist-f0111693cdb82b263340",
+    "name": "ตั๊กแตน ชลดา",
+    "aliases": [],
+    "types": [
+      "performing_artist"
+    ],
+    "fields": [
+      "ศิลปะการแสดง",
+      "การขับร้อง"
+    ],
+    "genres": [
+      "ลูกทุ่ง"
+    ],
+    "recognitions": [],
+    "provinceAssociations": [],
+    "provinceStatus": "pending_verification",
+    "sources": [
+      {
+        "datasetKey": "performer_biography",
+        "url": "https://www.gmmgrammy.com/newsroom/news-single.php?id=4381"
+      }
+    ]
+  },
+  {
+    "id": "artist-75c0881946178d857def",
+    "name": "หลิว อาจารียา",
+    "aliases": [],
+    "types": [
+      "performing_artist"
+    ],
+    "fields": [
+      "ศิลปะการแสดง",
+      "การขับร้อง"
+    ],
+    "genres": [
+      "ลูกทุ่ง"
+    ],
+    "recognitions": [],
+    "provinceAssociations": [],
+    "provinceStatus": "pending_verification",
+    "sources": [
+      {
+        "datasetKey": "performer_biography",
+        "url": "https://www.gmmgrammy.com/newsroom/news-single.php?id=4381"
+      }
+    ]
+  },
+  {
+    "id": "artist-f86bea253ed4334f4f1f",
+    "name": "เปาวลี พรพิมล",
+    "aliases": [],
+    "types": [
+      "performing_artist"
+    ],
+    "fields": [
+      "ศิลปะการแสดง",
+      "การขับร้อง"
+    ],
+    "genres": [
+      "ลูกทุ่ง"
+    ],
+    "recognitions": [],
+    "provinceAssociations": [],
+    "provinceStatus": "pending_verification",
+    "sources": [
+      {
+        "datasetKey": "performer_biography",
+        "url": "https://www.gmmgrammy.com/newsroom/news-single.php?id=4381"
+      }
+    ]
+  },
+  {
+    "id": "artist-17b2fea53638b42f9145",
+    "name": "ไผ่ พงศธร",
+    "aliases": [],
+    "types": [
+      "performing_artist"
+    ],
+    "fields": [
+      "ศิลปะการแสดง",
+      "การขับร้อง"
+    ],
+    "genres": [
+      "ลูกทุ่ง"
+    ],
+    "recognitions": [],
+    "provinceAssociations": [],
+    "provinceStatus": "pending_verification",
+    "sources": [
+      {
+        "datasetKey": "performer_biography",
+        "url": "https://www.gmmgrammy.com/newsroom/news-single.php?id=4381"
+      }
+    ]
+  },
+  {
+    "id": "artist-c16c1afe77c32052d89f",
+    "name": "ข้าวทิพย์ ธิดาดิน",
+    "aliases": [],
+    "types": [
+      "performing_artist"
+    ],
+    "fields": [
+      "ศิลปะการแสดง",
+      "การขับร้อง"
+    ],
+    "genres": [
+      "ลูกทุ่ง"
+    ],
+    "recognitions": [],
+    "provinceAssociations": [],
+    "provinceStatus": "pending_verification",
+    "sources": [
+      {
+        "datasetKey": "performer_biography",
+        "url": "https://www.gmmgrammy.com/newsroom/news-single.php?id=4381"
+      }
+    ]
+  },
+  {
+    "id": "artist-2663c5ab78a49d133edc",
+    "name": "พี สะเดิด",
+    "aliases": [],
+    "types": [
+      "performing_artist"
+    ],
+    "fields": [
+      "ศิลปะการแสดง",
+      "การขับร้อง"
+    ],
+    "genres": [
+      "ลูกทุ่ง"
+    ],
+    "recognitions": [],
+    "provinceAssociations": [],
+    "provinceStatus": "pending_verification",
+    "sources": [
+      {
+        "datasetKey": "performer_biography",
+        "url": "https://www.gmmgrammy.com/newsroom/news-single.php?id=4381"
+      }
+    ]
+  },
+  {
+    "id": "artist-a5541d0a5fd086a07670",
+    "name": "เน็ค นฤพล",
+    "aliases": [],
+    "types": [
+      "performing_artist"
+    ],
+    "fields": [
+      "ศิลปะการแสดง",
+      "การขับร้อง"
+    ],
+    "genres": [
+      "ลูกทุ่ง"
+    ],
+    "recognitions": [],
+    "provinceAssociations": [],
+    "provinceStatus": "pending_verification",
+    "sources": [
+      {
+        "datasetKey": "performer_biography",
+        "url": "https://www.gmmgrammy.com/newsroom/news-single.php?id=4381"
+      }
+    ]
+  },
+  {
+    "id": "artist-88dce6c7dd70b5d50728",
+    "name": "ลำยอง หนองหินห่าว",
+    "aliases": [],
+    "types": [
+      "performing_artist"
+    ],
+    "fields": [
+      "ศิลปะการแสดง",
+      "การขับร้อง"
+    ],
+    "genres": [
+      "ลูกทุ่ง"
+    ],
+    "recognitions": [],
+    "provinceAssociations": [],
+    "provinceStatus": "pending_verification",
+    "sources": [
+      {
+        "datasetKey": "performer_biography",
+        "url": "https://www.gmmgrammy.com/newsroom/news-single.php?id=4381"
+      }
+    ]
+  },
+  {
+    "id": "artist-eb59c09fccb3565490ff",
+    "name": "เอิร์น สุรัตน์ติกานต์",
+    "aliases": [],
+    "types": [
+      "performing_artist"
+    ],
+    "fields": [
+      "ศิลปะการแสดง",
+      "การขับร้อง"
+    ],
+    "genres": [
+      "ลูกทุ่ง"
+    ],
+    "recognitions": [],
+    "provinceAssociations": [],
+    "provinceStatus": "pending_verification",
+    "sources": [
+      {
+        "datasetKey": "performer_biography",
+        "url": "https://www.gmmgrammy.com/newsroom/news-single.php?id=4381"
+      }
+    ]
+  },
+  {
+    "id": "artist-4ec84ba26aface2f938e",
+    "name": "ตรี ชัยณรงค์",
+    "aliases": [],
+    "types": [
+      "performing_artist"
+    ],
+    "fields": [
+      "ศิลปะการแสดง",
+      "การขับร้อง"
+    ],
+    "genres": [
+      "ลูกทุ่ง"
+    ],
+    "recognitions": [],
+    "provinceAssociations": [],
+    "provinceStatus": "pending_verification",
+    "sources": [
+      {
+        "datasetKey": "performer_biography",
+        "url": "https://www.gmmgrammy.com/newsroom/news-single.php?id=4381"
+      }
+    ]
+  },
+  {
+    "id": "artist-4d19225470db22e2cbd1",
+    "name": "ลำเพลิน วงศกร",
+    "aliases": [],
+    "types": [
+      "performing_artist"
+    ],
+    "fields": [
+      "ศิลปะการแสดง",
+      "การขับร้อง"
+    ],
+    "genres": [
+      "ลูกทุ่ง"
+    ],
+    "recognitions": [],
+    "provinceAssociations": [],
+    "provinceStatus": "pending_verification",
+    "sources": [
+      {
+        "datasetKey": "performer_biography",
+        "url": "https://www.gmmgrammy.com/newsroom/news-single.php?id=4381"
+      }
+    ]
+  },
+  {
+    "id": "artist-5d55763d6671141e9656",
+    "name": "เจมส์ จตุรงค์",
+    "aliases": [],
+    "types": [
+      "performing_artist"
+    ],
+    "fields": [
+      "ศิลปะการแสดง",
+      "การขับร้อง"
+    ],
+    "genres": [
+      "ลูกทุ่ง"
+    ],
+    "recognitions": [],
+    "provinceAssociations": [],
+    "provinceStatus": "pending_verification",
+    "sources": [
+      {
+        "datasetKey": "performer_biography",
+        "url": "https://www.gmmgrammy.com/newsroom/news-single.php?id=4381"
+      }
+    ]
+  },
+  {
+    "id": "artist-a05ccca85f9da2a16e04",
+    "name": "ส้ม พฤกษา",
+    "aliases": [],
+    "types": [
+      "performing_artist"
+    ],
+    "fields": [
+      "ศิลปะการแสดง",
+      "การขับร้อง"
+    ],
+    "genres": [
+      "ลูกทุ่ง"
+    ],
+    "recognitions": [],
+    "provinceAssociations": [],
+    "provinceStatus": "pending_verification",
+    "sources": [
+      {
+        "datasetKey": "performer_biography",
+        "url": "https://www.gmmgrammy.com/newsroom/news-single.php?id=4381"
+      }
+    ]
+  },
+  {
+    "id": "artist-3e8591d68000ff63ed06",
+    "name": "เวียง นฤมล",
+    "aliases": [],
+    "types": [
+      "performing_artist"
+    ],
+    "fields": [
+      "ศิลปะการแสดง",
+      "การขับร้อง"
+    ],
+    "genres": [
+      "ลูกทุ่ง",
+      "หมอลำ"
+    ],
+    "recognitions": [],
+    "provinceAssociations": [
+      {
+        "provinceCode": "TH-45",
+        "provinceName": "ร้อยเอ็ด",
+        "relationship": "origin",
+        "sourceUrl": "https://www.gmmgrammy.com/newsroom/news-single.php?id=9388"
+      }
+    ],
+    "provinceStatus": "verified",
+    "sources": [
+      {
+        "datasetKey": "performer_biography",
+        "url": "https://www.gmmgrammy.com/newsroom/news-single.php?id=4381"
+      },
+      {
+        "datasetKey": "performer_biography",
+        "url": "https://www.gmmgrammy.com/newsroom/news-single.php?id=9388"
+      }
+    ]
+  },
+  {
+    "id": "artist-7f07ab3d6fe0b8df6b06",
+    "name": "ปิ่น พรชนก",
+    "aliases": [],
+    "types": [
+      "performing_artist"
+    ],
+    "fields": [
+      "ศิลปะการแสดง",
+      "การขับร้อง"
+    ],
+    "genres": [
+      "ลูกทุ่ง"
+    ],
+    "recognitions": [],
+    "provinceAssociations": [],
+    "provinceStatus": "pending_verification",
+    "sources": [
+      {
+        "datasetKey": "performer_biography",
+        "url": "https://www.gmmgrammy.com/newsroom/news-single.php?id=4381"
+      }
+    ]
+  },
+  {
+    "id": "artist-43c12adb78263feee8f2",
+    "name": "อิสร์ อิสรพงศ์",
+    "aliases": [],
+    "types": [
+      "performing_artist"
+    ],
+    "fields": [
+      "ศิลปะการแสดง",
+      "การขับร้อง"
+    ],
+    "genres": [
+      "ลูกทุ่ง"
+    ],
+    "recognitions": [],
+    "provinceAssociations": [],
+    "provinceStatus": "pending_verification",
+    "sources": [
+      {
+        "datasetKey": "performer_biography",
+        "url": "https://www.gmmgrammy.com/newsroom/news-single.php?id=4381"
+      }
+    ]
+  },
+  {
+    "id": "artist-bc34ccc3c6d349d8d81b",
+    "name": "มนต์แคน แก่นคูน",
+    "aliases": [],
+    "types": [
+      "performing_artist"
+    ],
+    "fields": [
+      "ศิลปะการแสดง",
+      "การขับร้อง"
+    ],
+    "genres": [
+      "ลูกทุ่ง"
+    ],
+    "recognitions": [],
+    "provinceAssociations": [],
+    "provinceStatus": "pending_verification",
+    "sources": [
+      {
+        "datasetKey": "performer_biography",
+        "url": "https://www.gmmgrammy.com/newsroom/news-single.php?id=4381"
+      }
+    ]
+  },
+  {
+    "id": "artist-e39b05fffac9fb5c85b2",
+    "name": "เต๋า ภูศิลป์",
+    "aliases": [],
+    "types": [
+      "performing_artist"
+    ],
+    "fields": [
+      "ศิลปะการแสดง",
+      "การขับร้อง"
+    ],
+    "genres": [
+      "หมอลำ"
+    ],
+    "recognitions": [],
+    "provinceAssociations": [
+      {
+        "provinceCode": "TH-34",
+        "provinceName": "อุบลราชธานี",
+        "relationship": "origin",
+        "sourceUrl": "https://www.banmuang.co.th/news/entertain/412809"
+      }
+    ],
+    "provinceStatus": "verified",
+    "sources": [
+      {
+        "datasetKey": "performer_biography",
+        "url": "https://www.workpoint.co.th/th/newsroom/press-releases/1421/%E0%B8%AB%E0%B8%A1%E0%B8%AD%E0%B8%A5%E0%B8%B3%E0%B9%84%E0%B8%AD%E0%B8%94%E0%B8%AD%E0%B8%A5-%E0%B8%A3%E0%B8%AD%E0%B8%9A%E0%B8%A8%E0%B8%B4%E0%B8%A5%E0%B8%9B%E0%B8%B0%E0%B8%A7%E0%B8%B1%E0%B8%92%E0%B8%99%E0%B8%98%E0%B8%A3%E0%B8%A3%E0%B8%A1%E0%B8%AD%E0%B8%B5%E0%B8%AA%E0%B8%B2%E0%B8%99-%E0%B8%AA%E0%B8%B8%E0%B8%94%E0%B8%AD%E0%B8%A5%E0%B8%B1%E0%B8%87%E0%B8%81%E0%B8%B2%E0%B8%A3-%E0%B8%84%E0%B8%AD%E0%B8%AB%E0%B8%A1%E0%B8%AD%E0%B8%A5%E0%B8%B3%E0%B9%84%E0%B8%A1%E0%B9%88%E0%B8%84%E0%B8%A7%E0%B8%A3%E0%B8%9E%E0%B8%A5%E0%B8%B2%E0%B8%94-%E0%B8%A7%E0%B8%B1%E0%B8%99%E0%B8%A8%E0%B8%B8%E0%B8%81%E0%B8%A3%E0%B9%8C%E0%B8%97%E0%B8%B5%E0%B9%88-27-%E0%B8%95%E0%B8%84%E0%B8%99%E0%B8%B5%E0%B9%89-6-%E0%B9%82%E0%B8%A1%E0%B8%87%E0%B9%80%E0%B8%A2%E0%B9%87%E0%B8%99"
+      },
+      {
+        "datasetKey": "performer_biography",
+        "url": "https://www.banmuang.co.th/news/entertain/412809"
+      }
+    ]
+  },
+  {
+    "id": "artist-af95fb69a76721b39762",
+    "name": "ท็อป นรากร",
+    "aliases": [],
+    "types": [
+      "performing_artist"
+    ],
+    "fields": [
+      "ศิลปะการแสดง",
+      "การขับร้อง"
+    ],
+    "genres": [
+      "หมอลำ"
+    ],
+    "recognitions": [],
+    "provinceAssociations": [],
+    "provinceStatus": "pending_verification",
+    "sources": [
+      {
+        "datasetKey": "performer_biography",
+        "url": "https://www.workpoint.co.th/th/newsroom/press-releases/1421/%E0%B8%AB%E0%B8%A1%E0%B8%AD%E0%B8%A5%E0%B8%B3%E0%B9%84%E0%B8%AD%E0%B8%94%E0%B8%AD%E0%B8%A5-%E0%B8%A3%E0%B8%AD%E0%B8%9A%E0%B8%A8%E0%B8%B4%E0%B8%A5%E0%B8%9B%E0%B8%B0%E0%B8%A7%E0%B8%B1%E0%B8%92%E0%B8%99%E0%B8%98%E0%B8%A3%E0%B8%A3%E0%B8%A1%E0%B8%AD%E0%B8%B5%E0%B8%AA%E0%B8%B2%E0%B8%99-%E0%B8%AA%E0%B8%B8%E0%B8%94%E0%B8%AD%E0%B8%A5%E0%B8%B1%E0%B8%87%E0%B8%81%E0%B8%B2%E0%B8%A3-%E0%B8%84%E0%B8%AD%E0%B8%AB%E0%B8%A1%E0%B8%AD%E0%B8%A5%E0%B8%B3%E0%B9%84%E0%B8%A1%E0%B9%88%E0%B8%84%E0%B8%A7%E0%B8%A3%E0%B8%9E%E0%B8%A5%E0%B8%B2%E0%B8%94-%E0%B8%A7%E0%B8%B1%E0%B8%99%E0%B8%A8%E0%B8%B8%E0%B8%81%E0%B8%A3%E0%B9%8C%E0%B8%97%E0%B8%B5%E0%B9%88-27-%E0%B8%95%E0%B8%84%E0%B8%99%E0%B8%B5%E0%B9%89-6-%E0%B9%82%E0%B8%A1%E0%B8%87%E0%B9%80%E0%B8%A2%E0%B9%87%E0%B8%99"
+      }
+    ]
+  },
+  {
+    "id": "artist-6db4f77a2e23292d5e96",
+    "name": "บอย ศิริชัย",
+    "aliases": [],
+    "types": [
+      "performing_artist"
+    ],
+    "fields": [
+      "ศิลปะการแสดง",
+      "การขับร้อง"
+    ],
+    "genres": [
+      "หมอลำ"
+    ],
+    "recognitions": [],
+    "provinceAssociations": [
+      {
+        "provinceCode": "TH-44",
+        "provinceName": "มหาสารคาม",
+        "relationship": "work_area",
+        "sourceUrl": "https://culturalmapthailand.info/CD-2857"
+      }
+    ],
+    "provinceStatus": "verified",
+    "sources": [
+      {
+        "datasetKey": "performer_biography",
+        "url": "https://www.workpoint.co.th/th/newsroom/press-releases/1421/%E0%B8%AB%E0%B8%A1%E0%B8%AD%E0%B8%A5%E0%B8%B3%E0%B9%84%E0%B8%AD%E0%B8%94%E0%B8%AD%E0%B8%A5-%E0%B8%A3%E0%B8%AD%E0%B8%9A%E0%B8%A8%E0%B8%B4%E0%B8%A5%E0%B8%9B%E0%B8%B0%E0%B8%A7%E0%B8%B1%E0%B8%92%E0%B8%99%E0%B8%98%E0%B8%A3%E0%B8%A3%E0%B8%A1%E0%B8%AD%E0%B8%B5%E0%B8%AA%E0%B8%B2%E0%B8%99-%E0%B8%AA%E0%B8%B8%E0%B8%94%E0%B8%AD%E0%B8%A5%E0%B8%B1%E0%B8%87%E0%B8%81%E0%B8%B2%E0%B8%A3-%E0%B8%84%E0%B8%AD%E0%B8%AB%E0%B8%A1%E0%B8%AD%E0%B8%A5%E0%B8%B3%E0%B9%84%E0%B8%A1%E0%B9%88%E0%B8%84%E0%B8%A7%E0%B8%A3%E0%B8%9E%E0%B8%A5%E0%B8%B2%E0%B8%94-%E0%B8%A7%E0%B8%B1%E0%B8%99%E0%B8%A8%E0%B8%B8%E0%B8%81%E0%B8%A3%E0%B9%8C%E0%B8%97%E0%B8%B5%E0%B9%88-27-%E0%B8%95%E0%B8%84%E0%B8%99%E0%B8%B5%E0%B9%89-6-%E0%B9%82%E0%B8%A1%E0%B8%87%E0%B9%80%E0%B8%A2%E0%B9%87%E0%B8%99"
+      },
+      {
+        "datasetKey": "performer_biography",
+        "url": "https://culturalmapthailand.info/CD-2857"
+      }
+    ]
+  },
+  {
+    "id": "artist-2ad5bc8468355e6d6997",
+    "name": "แอน อรดี",
+    "aliases": [],
+    "types": [
+      "performing_artist"
+    ],
+    "fields": [
+      "ศิลปะการแสดง",
+      "การขับร้อง"
+    ],
+    "genres": [
+      "หมอลำ"
+    ],
+    "recognitions": [],
+    "provinceAssociations": [
+      {
+        "provinceCode": "TH-40",
+        "provinceName": "ขอนแก่น",
+        "relationship": "birthplace",
+        "sourceUrl": "https://www.sanook.com/music/2377357/"
+      }
+    ],
+    "provinceStatus": "verified",
+    "sources": [
+      {
+        "datasetKey": "performer_biography",
+        "url": "https://www.workpoint.co.th/th/newsroom/press-releases/1421/%E0%B8%AB%E0%B8%A1%E0%B8%AD%E0%B8%A5%E0%B8%B3%E0%B9%84%E0%B8%AD%E0%B8%94%E0%B8%AD%E0%B8%A5-%E0%B8%A3%E0%B8%AD%E0%B8%9A%E0%B8%A8%E0%B8%B4%E0%B8%A5%E0%B8%9B%E0%B8%B0%E0%B8%A7%E0%B8%B1%E0%B8%92%E0%B8%99%E0%B8%98%E0%B8%A3%E0%B8%A3%E0%B8%A1%E0%B8%AD%E0%B8%B5%E0%B8%AA%E0%B8%B2%E0%B8%99-%E0%B8%AA%E0%B8%B8%E0%B8%94%E0%B8%AD%E0%B8%A5%E0%B8%B1%E0%B8%87%E0%B8%81%E0%B8%B2%E0%B8%A3-%E0%B8%84%E0%B8%AD%E0%B8%AB%E0%B8%A1%E0%B8%AD%E0%B8%A5%E0%B8%B3%E0%B9%84%E0%B8%A1%E0%B9%88%E0%B8%84%E0%B8%A7%E0%B8%A3%E0%B8%9E%E0%B8%A5%E0%B8%B2%E0%B8%94-%E0%B8%A7%E0%B8%B1%E0%B8%99%E0%B8%A8%E0%B8%B8%E0%B8%81%E0%B8%A3%E0%B9%8C%E0%B8%97%E0%B8%B5%E0%B9%88-27-%E0%B8%95%E0%B8%84%E0%B8%99%E0%B8%B5%E0%B9%89-6-%E0%B9%82%E0%B8%A1%E0%B8%87%E0%B9%80%E0%B8%A2%E0%B9%87%E0%B8%99"
+      },
+      {
+        "datasetKey": "performer_biography",
+        "url": "https://www.sanook.com/music/2377357/"
+      }
+    ]
+  },
+  {
+    "id": "artist-257c96b673c8b34a71e3",
+    "name": "ต่าย สุวนันท์",
+    "aliases": [],
+    "types": [
+      "performing_artist"
+    ],
+    "fields": [
+      "ศิลปะการแสดง",
+      "การขับร้อง"
+    ],
+    "genres": [
+      "หมอลำ"
+    ],
+    "recognitions": [],
+    "provinceAssociations": [],
+    "provinceStatus": "pending_verification",
+    "sources": [
+      {
+        "datasetKey": "performer_biography",
+        "url": "https://www.workpoint.co.th/th/newsroom/press-releases/1421/%E0%B8%AB%E0%B8%A1%E0%B8%AD%E0%B8%A5%E0%B8%B3%E0%B9%84%E0%B8%AD%E0%B8%94%E0%B8%AD%E0%B8%A5-%E0%B8%A3%E0%B8%AD%E0%B8%9A%E0%B8%A8%E0%B8%B4%E0%B8%A5%E0%B8%9B%E0%B8%B0%E0%B8%A7%E0%B8%B1%E0%B8%92%E0%B8%99%E0%B8%98%E0%B8%A3%E0%B8%A3%E0%B8%A1%E0%B8%AD%E0%B8%B5%E0%B8%AA%E0%B8%B2%E0%B8%99-%E0%B8%AA%E0%B8%B8%E0%B8%94%E0%B8%AD%E0%B8%A5%E0%B8%B1%E0%B8%87%E0%B8%81%E0%B8%B2%E0%B8%A3-%E0%B8%84%E0%B8%AD%E0%B8%AB%E0%B8%A1%E0%B8%AD%E0%B8%A5%E0%B8%B3%E0%B9%84%E0%B8%A1%E0%B9%88%E0%B8%84%E0%B8%A7%E0%B8%A3%E0%B8%9E%E0%B8%A5%E0%B8%B2%E0%B8%94-%E0%B8%A7%E0%B8%B1%E0%B8%99%E0%B8%A8%E0%B8%B8%E0%B8%81%E0%B8%A3%E0%B9%8C%E0%B8%97%E0%B8%B5%E0%B9%88-27-%E0%B8%95%E0%B8%84%E0%B8%99%E0%B8%B5%E0%B9%89-6-%E0%B9%82%E0%B8%A1%E0%B8%87%E0%B9%80%E0%B8%A2%E0%B9%87%E0%B8%99"
+      }
+    ]
+  },
+  {
+    "id": "artist-39810b901aa62a48a73d",
+    "name": "บิว จิตรฉรีญา",
+    "aliases": [],
+    "types": [
+      "performing_artist"
+    ],
+    "fields": [
+      "ศิลปะการแสดง",
+      "การขับร้อง"
+    ],
+    "genres": [
+      "หมอลำ"
+    ],
+    "recognitions": [],
+    "provinceAssociations": [
+      {
+        "provinceCode": "TH-34",
+        "provinceName": "อุบลราชธานี",
+        "relationship": "origin",
+        "sourceUrl": "https://www.banmuang.co.th/news/entertain/412809"
+      }
+    ],
+    "provinceStatus": "verified",
+    "sources": [
+      {
+        "datasetKey": "performer_biography",
+        "url": "https://www.workpoint.co.th/th/newsroom/press-releases/1421/%E0%B8%AB%E0%B8%A1%E0%B8%AD%E0%B8%A5%E0%B8%B3%E0%B9%84%E0%B8%AD%E0%B8%94%E0%B8%AD%E0%B8%A5-%E0%B8%A3%E0%B8%AD%E0%B8%9A%E0%B8%A8%E0%B8%B4%E0%B8%A5%E0%B8%9B%E0%B8%B0%E0%B8%A7%E0%B8%B1%E0%B8%92%E0%B8%99%E0%B8%98%E0%B8%A3%E0%B8%A3%E0%B8%A1%E0%B8%AD%E0%B8%B5%E0%B8%AA%E0%B8%B2%E0%B8%99-%E0%B8%AA%E0%B8%B8%E0%B8%94%E0%B8%AD%E0%B8%A5%E0%B8%B1%E0%B8%87%E0%B8%81%E0%B8%B2%E0%B8%A3-%E0%B8%84%E0%B8%AD%E0%B8%AB%E0%B8%A1%E0%B8%AD%E0%B8%A5%E0%B8%B3%E0%B9%84%E0%B8%A1%E0%B9%88%E0%B8%84%E0%B8%A7%E0%B8%A3%E0%B8%9E%E0%B8%A5%E0%B8%B2%E0%B8%94-%E0%B8%A7%E0%B8%B1%E0%B8%99%E0%B8%A8%E0%B8%B8%E0%B8%81%E0%B8%A3%E0%B9%8C%E0%B8%97%E0%B8%B5%E0%B9%88-27-%E0%B8%95%E0%B8%84%E0%B8%99%E0%B8%B5%E0%B9%89-6-%E0%B9%82%E0%B8%A1%E0%B8%87%E0%B9%80%E0%B8%A2%E0%B9%87%E0%B8%99"
+      },
+      {
+        "datasetKey": "performer_biography",
+        "url": "https://www.banmuang.co.th/news/entertain/412809"
+      }
+    ]
+  },
+  {
+    "id": "artist-5000cc8d16df6babe0ac",
+    "name": "อุ๋งอิ๋ง รัตนาภรณ์",
+    "aliases": [
+      "อุ๋งอิ๋ง เพชรบ้านแพง"
+    ],
+    "types": [
+      "performing_artist"
+    ],
+    "fields": [
+      "ศิลปะการแสดง",
+      "การขับร้อง"
+    ],
+    "genres": [
+      "หมอลำ"
+    ],
+    "recognitions": [],
+    "provinceAssociations": [
+      {
+        "provinceCode": "TH-33",
+        "provinceName": "ศรีสะเกษ",
+        "relationship": "origin",
+        "sourceUrl": "https://entertainment.trueid.net/detail/wp91O1j2Vgwp"
+      }
+    ],
+    "provinceStatus": "verified",
+    "sources": [
+      {
+        "datasetKey": "performer_biography",
+        "url": "https://www.workpoint.co.th/th/newsroom/press-releases/1421/%E0%B8%AB%E0%B8%A1%E0%B8%AD%E0%B8%A5%E0%B8%B3%E0%B9%84%E0%B8%AD%E0%B8%94%E0%B8%AD%E0%B8%A5-%E0%B8%A3%E0%B8%AD%E0%B8%9A%E0%B8%A8%E0%B8%B4%E0%B8%A5%E0%B8%9B%E0%B8%B0%E0%B8%A7%E0%B8%B1%E0%B8%92%E0%B8%99%E0%B8%98%E0%B8%A3%E0%B8%A3%E0%B8%A1%E0%B8%AD%E0%B8%B5%E0%B8%AA%E0%B8%B2%E0%B8%99-%E0%B8%AA%E0%B8%B8%E0%B8%94%E0%B8%AD%E0%B8%A5%E0%B8%B1%E0%B8%87%E0%B8%81%E0%B8%B2%E0%B8%A3-%E0%B8%84%E0%B8%AD%E0%B8%AB%E0%B8%A1%E0%B8%AD%E0%B8%A5%E0%B8%B3%E0%B9%84%E0%B8%A1%E0%B9%88%E0%B8%84%E0%B8%A7%E0%B8%A3%E0%B8%9E%E0%B8%A5%E0%B8%B2%E0%B8%94-%E0%B8%A7%E0%B8%B1%E0%B8%99%E0%B8%A8%E0%B8%B8%E0%B8%81%E0%B8%A3%E0%B9%8C%E0%B8%97%E0%B8%B5%E0%B9%88-27-%E0%B8%95%E0%B8%84%E0%B8%99%E0%B8%B5%E0%B9%89-6-%E0%B9%82%E0%B8%A1%E0%B8%87%E0%B9%80%E0%B8%A2%E0%B9%87%E0%B8%99"
+      },
+      {
+        "datasetKey": "performer_biography",
+        "url": "https://entertainment.trueid.net/detail/wp91O1j2Vgwp"
+      }
+    ]
+  },
+  {
+    "id": "artist-cd2332d7769270017c06",
+    "name": "เบิ้ล ปทุมราช",
+    "aliases": [],
+    "types": [
+      "performing_artist"
+    ],
+    "fields": [
+      "ศิลปะการแสดง",
+      "การขับร้อง"
+    ],
+    "genres": [
+      "ลูกทุ่ง"
+    ],
+    "recognitions": [],
+    "provinceAssociations": [],
+    "provinceStatus": "pending_verification",
+    "sources": [
+      {
+        "datasetKey": "performer_biography",
+        "url": "https://www.workpoint.co.th/th/newsroom/press-releases/1421/%E0%B8%AB%E0%B8%A1%E0%B8%AD%E0%B8%A5%E0%B8%B3%E0%B9%84%E0%B8%AD%E0%B8%94%E0%B8%AD%E0%B8%A5-%E0%B8%A3%E0%B8%AD%E0%B8%9A%E0%B8%A8%E0%B8%B4%E0%B8%A5%E0%B8%9B%E0%B8%B0%E0%B8%A7%E0%B8%B1%E0%B8%92%E0%B8%99%E0%B8%98%E0%B8%A3%E0%B8%A3%E0%B8%A1%E0%B8%AD%E0%B8%B5%E0%B8%AA%E0%B8%B2%E0%B8%99-%E0%B8%AA%E0%B8%B8%E0%B8%94%E0%B8%AD%E0%B8%A5%E0%B8%B1%E0%B8%87%E0%B8%81%E0%B8%B2%E0%B8%A3-%E0%B8%84%E0%B8%AD%E0%B8%AB%E0%B8%A1%E0%B8%AD%E0%B8%A5%E0%B8%B3%E0%B9%84%E0%B8%A1%E0%B9%88%E0%B8%84%E0%B8%A7%E0%B8%A3%E0%B8%9E%E0%B8%A5%E0%B8%B2%E0%B8%94-%E0%B8%A7%E0%B8%B1%E0%B8%99%E0%B8%A8%E0%B8%B8%E0%B8%81%E0%B8%A3%E0%B9%8C%E0%B8%97%E0%B8%B5%E0%B9%88-27-%E0%B8%95%E0%B8%84%E0%B8%99%E0%B8%B5%E0%B9%89-6-%E0%B9%82%E0%B8%A1%E0%B8%87%E0%B9%80%E0%B8%A2%E0%B9%87%E0%B8%99"
+      }
+    ]
+  },
+  {
+    "id": "artist-8cb14a4fc64d564a9d49",
+    "name": "นนท์ อชิระ",
+    "aliases": [],
+    "types": [
+      "performing_artist"
+    ],
+    "fields": [
+      "ศิลปะการแสดง",
+      "การขับร้อง"
+    ],
+    "genres": [
+      "หมอลำ"
+    ],
+    "recognitions": [],
+    "provinceAssociations": [],
+    "provinceStatus": "pending_verification",
+    "sources": [
+      {
+        "datasetKey": "performer_biography",
+        "url": "https://www.workpoint.co.th/en/newsroom/press-releases/1467/%E0%B8%AD%E0%B9%8A%E0%B8%AD%E0%B8%9F-%E0%B8%AA%E0%B8%B8%E0%B8%A3%E0%B8%9E%E0%B8%A5-%E0%B8%AB%E0%B8%99%E0%B8%B8%E0%B9%88%E0%B8%A1%E0%B8%AB%E0%B8%99%E0%B8%AD%E0%B8%87%E0%B8%84%E0%B8%B2%E0%B8%A2-%E0%B8%88%E0%B8%B2%E0%B8%81%E0%B8%97%E0%B8%B5%E0%B8%A1%E0%B8%AA%E0%B8%B2%E0%B8%A7%E0%B8%99%E0%B9%89%E0%B8%AD%E0%B8%A2%E0%B9%80%E0%B8%9E%E0%B8%8A%E0%B8%A3%E0%B8%9A%E0%B9%89%E0%B8%B2%E0%B8%99%E0%B9%81%E0%B8%9E%E0%B8%87-%E0%B8%84%E0%B8%A7%E0%B9%89%E0%B8%B2-%E0%B9%81%E0%B8%8A%E0%B8%A1%E0%B8%9B%E0%B9%8C-%E0%B8%AB%E0%B8%A1%E0%B8%AD%E0%B8%A5%E0%B8%B3%E0%B9%84%E0%B8%AD%E0%B8%94%E0%B8%AD%E0%B8%A5-%E0%B8%84%E0%B8%99%E0%B9%81%E0%B8%A3%E0%B8%81"
+      }
+    ]
+  },
+  {
+    "id": "artist-83e5c99af6ff0dc0576f",
+    "name": "อาย ปาลิตา",
+    "aliases": [],
+    "types": [
+      "performing_artist"
+    ],
+    "fields": [
+      "ศิลปะการแสดง",
+      "การขับร้อง"
+    ],
+    "genres": [
+      "หมอลำ"
+    ],
+    "recognitions": [],
+    "provinceAssociations": [],
+    "provinceStatus": "pending_verification",
+    "sources": [
+      {
+        "datasetKey": "performer_biography",
+        "url": "https://www.workpoint.co.th/en/newsroom/press-releases/1467/%E0%B8%AD%E0%B9%8A%E0%B8%AD%E0%B8%9F-%E0%B8%AA%E0%B8%B8%E0%B8%A3%E0%B8%9E%E0%B8%A5-%E0%B8%AB%E0%B8%99%E0%B8%B8%E0%B9%88%E0%B8%A1%E0%B8%AB%E0%B8%99%E0%B8%AD%E0%B8%87%E0%B8%84%E0%B8%B2%E0%B8%A2-%E0%B8%88%E0%B8%B2%E0%B8%81%E0%B8%97%E0%B8%B5%E0%B8%A1%E0%B8%AA%E0%B8%B2%E0%B8%A7%E0%B8%99%E0%B9%89%E0%B8%AD%E0%B8%A2%E0%B9%80%E0%B8%9E%E0%B8%8A%E0%B8%A3%E0%B8%9A%E0%B9%89%E0%B8%B2%E0%B8%99%E0%B9%81%E0%B8%9E%E0%B8%87-%E0%B8%84%E0%B8%A7%E0%B9%89%E0%B8%B2-%E0%B9%81%E0%B8%8A%E0%B8%A1%E0%B8%9B%E0%B9%8C-%E0%B8%AB%E0%B8%A1%E0%B8%AD%E0%B8%A5%E0%B8%B3%E0%B9%84%E0%B8%AD%E0%B8%94%E0%B8%AD%E0%B8%A5-%E0%B8%84%E0%B8%99%E0%B9%81%E0%B8%A3%E0%B8%81"
+      }
+    ]
+  },
+  {
+    "id": "artist-8629a110287f79fdd512",
+    "name": "พิ้ง ปรางทิพย์",
+    "aliases": [],
+    "types": [
+      "performing_artist"
+    ],
+    "fields": [
+      "ศิลปะการแสดง",
+      "การขับร้อง"
+    ],
+    "genres": [
+      "หมอลำ"
+    ],
+    "recognitions": [],
+    "provinceAssociations": [],
+    "provinceStatus": "pending_verification",
+    "sources": [
+      {
+        "datasetKey": "performer_biography",
+        "url": "https://www.workpoint.co.th/en/newsroom/press-releases/1467/%E0%B8%AD%E0%B9%8A%E0%B8%AD%E0%B8%9F-%E0%B8%AA%E0%B8%B8%E0%B8%A3%E0%B8%9E%E0%B8%A5-%E0%B8%AB%E0%B8%99%E0%B8%B8%E0%B9%88%E0%B8%A1%E0%B8%AB%E0%B8%99%E0%B8%AD%E0%B8%87%E0%B8%84%E0%B8%B2%E0%B8%A2-%E0%B8%88%E0%B8%B2%E0%B8%81%E0%B8%97%E0%B8%B5%E0%B8%A1%E0%B8%AA%E0%B8%B2%E0%B8%A7%E0%B8%99%E0%B9%89%E0%B8%AD%E0%B8%A2%E0%B9%80%E0%B8%9E%E0%B8%8A%E0%B8%A3%E0%B8%9A%E0%B9%89%E0%B8%B2%E0%B8%99%E0%B9%81%E0%B8%9E%E0%B8%87-%E0%B8%84%E0%B8%A7%E0%B9%89%E0%B8%B2-%E0%B9%81%E0%B8%8A%E0%B8%A1%E0%B8%9B%E0%B9%8C-%E0%B8%AB%E0%B8%A1%E0%B8%AD%E0%B8%A5%E0%B8%B3%E0%B9%84%E0%B8%AD%E0%B8%94%E0%B8%AD%E0%B8%A5-%E0%B8%84%E0%B8%99%E0%B9%81%E0%B8%A3%E0%B8%81"
+      }
+    ]
+  },
+  {
+    "id": "artist-58615fafa6f30af6459e",
+    "name": "เบียร์ พร้อมพงษ์",
+    "aliases": [],
+    "types": [
+      "performing_artist"
+    ],
+    "fields": [
+      "ศิลปะการแสดง",
+      "การขับร้อง"
+    ],
+    "genres": [
+      "ลูกทุ่ง"
+    ],
+    "recognitions": [],
+    "provinceAssociations": [
+      {
+        "provinceCode": "TH-36",
+        "provinceName": "ชัยภูมิ",
+        "relationship": "origin",
+        "sourceUrl": "https://www.thaipost.net/main/detail/118448"
+      }
+    ],
+    "provinceStatus": "verified",
+    "sources": [
+      {
+        "datasetKey": "performer_biography",
+        "url": "https://www.thaipost.net/main/detail/118448"
+      }
+    ]
+  },
+  {
+    "id": "artist-d05ab0e93ae448f9d89d",
+    "name": "ก้อง ห้วยไร่",
+    "aliases": [],
+    "types": [
+      "performing_artist"
+    ],
+    "fields": [
+      "ศิลปะการแสดง",
+      "การขับร้อง"
+    ],
+    "genres": [
+      "ลูกทุ่ง"
+    ],
+    "recognitions": [],
+    "provinceAssociations": [],
+    "provinceStatus": "pending_verification",
+    "sources": [
+      {
+        "datasetKey": "performer_biography",
+        "url": "https://blog.google/intl/th-th/products/consumer-products/2021_12_2564/"
+      }
+    ]
+  }
+]

@@ -1,0 +1,42 @@
+[
+  {
+    "id": "thai-fabric-10",
+    "title": "หมี่คั่นขอนารี",
+    "province": "ชัยภูมิ",
+    "imageUrl": "https://www.qsds.go.th/silkcotton/images/knowledge/k_16_3.jpg",
+    "imageCredit": "กรมหม่อนไหม — ระบบสารสนเทศศูนย์อนุรักษ์ผ้าไหม",
+    "sourceUrl": "https://www.qsds.go.th/silkcotton/k_18.php",
+    "checkedAt": "2026-11-08",
+    "match": "exact title and image alt"
+  },
+  {
+    "id": "thai-fabric-68",
+    "title": "ผ้าโฮล",
+    "province": "สุรินทร์",
+    "imageUrl": "https://www.qsds.go.th/silkcotton/images/knowledge/hole1.jpg",
+    "imageCredit": "กรมหม่อนไหม — ระบบสารสนเทศศูนย์อนุรักษ์ผ้าไหม",
+    "sourceUrl": "https://www.qsds.go.th/silkcotton/k_1.php",
+    "checkedAt": "2026-11-08",
+    "match": "exact source page title; manually reviewed textile or weaving photograph"
+  },
+  {
+    "id": "thai-fabric-76",
+    "title": "ผ้ากาบบัว",
+    "province": "อุบลราชธานี",
+    "imageUrl": "https://www.qsds.go.th/silkcotton/images/knowledge/k_6_1.jpg",
+    "imageCredit": "กรมหม่อนไหม — ระบบสารสนเทศศูนย์อนุรักษ์ผ้าไหม",
+    "sourceUrl": "https://www.qsds.go.th/silkcotton/k_7.php",
+    "checkedAt": "2026-11-08",
+    "match": "exact source page title; manually reviewed textile or weaving photograph"
+  },
+  {
+    "id": "thai-fabric-42",
+    "title": "ลายสร้อยดอกหมาก",
+    "province": "มหาสารคาม",
+    "imageUrl": "https://www.qsds.go.th/silkcotton/images/knowledge/k_20_9.jpg",
+    "imageCredit": "กรมหม่อนไหม — ระบบสารสนเทศศูนย์อนุรักษ์ผ้าไหม",
+    "sourceUrl": "https://www.qsds.go.th/silkcotton/k_22.php",
+    "checkedAt": "2026-11-08",
+    "match": "exact source page title; manually reviewed textile or weaving photograph"
+  }
+]

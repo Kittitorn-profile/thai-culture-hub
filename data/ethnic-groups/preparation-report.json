@@ -1,0 +1,19 @@
+{
+  "checkedAt": "2026-11-08",
+  "reviewed": 29,
+  "accepted": 26,
+  "skipped": [
+    {
+      "id": 1556,
+      "reason": "missing community/ethnicity evidence"
+    },
+    {
+      "id": 478,
+      "reason": "same-community coordinates conflict with SAC 1521; defer both"
+    },
+    {
+      "id": 1521,
+      "reason": "same-community coordinates conflict with SAC 478; defer both"
+    }
+  ]
+}

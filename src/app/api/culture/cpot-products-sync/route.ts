@@ -1,8 +1,9 @@
 import type { NextRequest } from 'next/server';
 
 import crypto from 'node:crypto';
-
 import { NextResponse } from 'next/server';
+
+import { parseCoordinate } from 'src/utils/coordinates';
 
 import provinces from 'src/data/thailand-culture/provinces';
 import { getSupabaseAdmin } from 'src/server/supabase-admin';
@@ -34,7 +35,9 @@ function cleanText(value: unknown) {
     return null;
   }
 
-  const text = String(value).replace(/^\uFEFF/, '').trim();
+  const text = String(value)
+    .replace(/^\uFEFF/, '')
+    .trim();
 
   return text && text !== '-' ? text : null;
 }
@@ -106,9 +109,7 @@ function getField(record: CpotRecord, keys: string[]) {
 }
 
 function toCoordinate(value: unknown) {
-  const numberValue = Number(value);
-
-  return Number.isFinite(numberValue) ? numberValue : null;
+  return parseCoordinate(value);
 }
 
 function joinText(values: Array<string | null>) {
@@ -140,7 +141,11 @@ function getStableId(record: CpotRecord) {
   ]
     .map((value) => normalizeText(value))
     .join('|');
-  const hash = crypto.createHash('sha1').update(signature || JSON.stringify(record)).digest('hex').slice(0, 16);
+  const hash = crypto
+    .createHash('sha1')
+    .update(signature || JSON.stringify(record))
+    .digest('hex')
+    .slice(0, 16);
 
   return `cpot-${hash}`;
 }
@@ -195,7 +200,13 @@ function mapRecord(record: CpotRecord, now: string) {
     cpot_id: getField(record, ['id', '_id', 'cpot_id', 'product_id', 'รหัส', 'รหัสผลิตภัณฑ์']),
     product_name: getField(record, ['product_name', 'name', 'title', 'ชื่อผลิตภัณฑ์', 'ผลิตภัณฑ์']),
     category: getField(record, ['category', 'main_category', 'ประเภท', 'หมวดหมู่']),
-    product_type: getField(record, ['product_type', 'type', 'sub_category', 'ชนิด', 'ประเภทผลิตภัณฑ์']),
+    product_type: getField(record, [
+      'product_type',
+      'type',
+      'sub_category',
+      'ชนิด',
+      'ประเภทผลิตภัณฑ์',
+    ]),
     description: getField(record, ['description', 'detail', 'รายละเอียด', 'รายละเอียดผลิตภัณฑ์']),
     producer: getField(record, ['producer', 'creator', 'owner', 'ผู้ผลิต', 'ผู้ประกอบการ']),
     community: getField(record, ['community', 'ชุมชน']),
@@ -269,8 +280,11 @@ function mapCpotRowToCulturalPlaceRow(
 
   const usedProvinceCenter = row.latitude == null || row.longitude == null;
   const description =
-    joinText([row.description, row.producer && `ผู้ผลิต: ${row.producer}`, row.community && `ชุมชน: ${row.community}`]) ??
-    'ข้อมูลผลิตภัณฑ์วัฒนธรรมไทย (CPOT) จากกระทรวงวัฒนธรรม';
+    joinText([
+      row.description,
+      row.producer && `ผู้ผลิต: ${row.producer}`,
+      row.community && `ชุมชน: ${row.community}`,
+    ]) ?? 'ข้อมูลผลิตภัณฑ์วัฒนธรรมไทย (CPOT) จากกระทรวงวัฒนธรรม';
   const imageUrls = row.image_url ? [row.image_url] : [];
 
   return {
@@ -343,11 +357,13 @@ async function handleSync(request: NextRequest, options?: { defaultDryRun?: bool
     return !provinceFilter.size || (provinceCode ? provinceFilter.has(provinceCode) : false);
   });
   const rows = Array.from(
-    new Map(filteredRecords.map((record) => {
-      const row = mapRecord(record, now);
+    new Map(
+      filteredRecords.map((record) => {
+        const row = mapRecord(record, now);
 
-      return [row.id, row];
-    })).values()
+        return [row.id, row];
+      })
+    ).values()
   );
   const provinceCenters = await getProvinceCenters(provinceCodes);
   const culturalPlaceRows = rows

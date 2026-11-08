@@ -5,30 +5,27 @@ import type { CulturalPlace } from '../province-data';
 import type { CategoryConfigMap } from '../category-config';
 import type { PlaceLikeState } from './province-place-card';
 
+import { RiSearchLine } from '@remixicon/react';
 import { useMemo, useState, useEffect, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import Stack from '@mui/material/Stack';
-import Drawer from '@mui/material/Drawer';
+import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
-import IconButton from '@mui/material/IconButton';
+import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { alpha, useTheme } from '@mui/material/styles';
-
-import { Iconify } from 'src/components/iconify';
+import InputAdornment from '@mui/material/InputAdornment';
 
 import { ProvincePlaceCard } from './province-place-card';
 import { getCategoryColor, getCategoryLabel } from '../category-config';
 
-type ProvincePlacesDrawerProps = {
-  open: boolean;
+type ProvincePlacesListProps = {
   selectedDistrictDetail: string | null;
   places: CulturalPlace[];
-  allPlacesCount: number;
   categoryConfig: CategoryConfigMap;
-  onClose: () => void;
   onPlaceSelect: (place: CulturalPlace) => void;
 };
 
@@ -46,19 +43,18 @@ type PlaceLikeResponse = {
   };
 };
 
-export function ProvincePlacesDrawer({
-  open,
+export function ProvincePlacesList({
   selectedDistrictDetail,
   places,
-  allPlacesCount,
   categoryConfig,
-  onClose,
   onPlaceSelect,
-}: ProvincePlacesDrawerProps) {
+}: ProvincePlacesListProps) {
   const theme = useTheme();
+  const [search, setSearch] = useState('');
+  const [visibleCount, setVisibleCount] = useState(12);
   const [selectedCategoryTab, setSelectedCategoryTab] = useState<string>(CATEGORY_TAB_ALL);
   const [placeLikes, setPlaceLikes] = useState<Record<string, PlaceLikeState>>({});
-  const drawerCategoryOptions = useMemo(
+  const categoryOptions = useMemo(
     () => Array.from(new Set(places.map((place) => place.category))),
     [places]
   );
@@ -71,13 +67,32 @@ export function ProvincePlacesDrawer({
     [places, selectedCategoryTab]
   );
 
+  const searchedPlaces = useMemo(
+    () =>
+      visiblePlaces.filter(
+        (place) =>
+          !search.trim() ||
+          [place.name, place.district, place.description]
+            .join(' ')
+            .toLocaleLowerCase('th')
+            .includes(search.trim().toLocaleLowerCase('th'))
+      ),
+    [visiblePlaces, search]
+  );
+  const displayedPlaces = searchedPlaces.slice(0, visibleCount);
+
   const visiblePlaceIds = useMemo(
-    () => visiblePlaces.map((place) => place.id).filter(Boolean),
-    [visiblePlaces]
+    () =>
+      searchedPlaces
+        .slice(0, visibleCount)
+        .map((place) => place.id)
+        .filter(Boolean),
+    [searchedPlaces, visibleCount]
   );
 
   const handleCategoryTabChange = (_event: SyntheticEvent, value: string) => {
     setSelectedCategoryTab(value);
+    setVisibleCount(12);
   };
 
   const handlePlaceLike = useCallback(
@@ -130,14 +145,14 @@ export function ProvincePlacesDrawer({
   useEffect(() => {
     if (
       selectedCategoryTab !== CATEGORY_TAB_ALL &&
-      !drawerCategoryOptions.includes(selectedCategoryTab)
+      !categoryOptions.includes(selectedCategoryTab)
     ) {
       setSelectedCategoryTab(CATEGORY_TAB_ALL);
     }
-  }, [drawerCategoryOptions, selectedCategoryTab]);
+  }, [categoryOptions, selectedCategoryTab]);
 
   useEffect(() => {
-    if (!open || !visiblePlaceIds.length) {
+    if (!visiblePlaceIds.length) {
       return undefined;
     }
 
@@ -162,74 +177,138 @@ export function ProvincePlacesDrawer({
     return () => {
       controller.abort();
     };
-  }, [open, visiblePlaceIds]);
+  }, [visiblePlaceIds]);
 
-  return (
-    <Drawer
-      anchor="right"
-      open={open}
-      onClose={onClose}
-      PaperProps={{
-        sx: {
-          width: { xs: 340, sm: 460 },
-          p: 2.5,
-          bgcolor: '#f8f8f2',
-        },
-      }}
-    >
-      <Stack direction="row" alignItems="center" justifyContent="space-between">
+  const content = (
+    <>
+      <Stack
+        direction={{ xs: 'column', sm: 'row' }}
+        alignItems={{ xs: 'stretch', sm: 'center' }}
+        justifyContent="space-between"
+        gap={2.5}
+      >
         <Box>
-          <Typography sx={{ fontSize: 20, fontWeight: 600 }}>
+          <Typography sx={{ fontSize: { xs: 28, md: 36 }, fontWeight: 700 }}>
             {selectedDistrictDetail ?? 'สถานที่และวัฒนธรรม'}
           </Typography>
           <Typography sx={{ color: 'text.secondary', fontSize: 13 }}>
-            {selectedDistrictDetail
-              ? `${visiblePlaces.length} รายการในอำเภอนี้`
-              : `แสดง ${visiblePlaces.length} จาก ${allPlacesCount} รายการ`}
+            {places.length} สถานที่และข้อมูลวัฒนธรรม
           </Typography>
         </Box>
-        <IconButton onClick={onClose}>
-          <Iconify icon="mingcute:close-line" />
-        </IconButton>
+        <TextField
+          fullWidth
+          size="small"
+          placeholder="ค้นหาชื่อสถานที่หรือคำที่สนใจ"
+          slotProps={{
+            input: {
+              startAdornment: (
+                <InputAdornment position="start">
+                  <RiSearchLine size={18} />
+                </InputAdornment>
+              ),
+            },
+            htmlInput: { 'aria-label': 'ค้นหาสถานที่' },
+          }}
+          value={search}
+          onChange={(event) => {
+            setSearch(event.target.value);
+            setVisibleCount(12);
+          }}
+          sx={{
+            width: { xs: 1, sm: 340 },
+            flexShrink: 0,
+            '& .MuiOutlinedInput-root': { borderRadius: 99, bgcolor: 'background.paper' },
+          }}
+        />
       </Stack>
 
       <Divider sx={{ my: 2.2 }} />
 
       <Tabs
+        aria-label="เลือกหมวดสถานที่"
         value={selectedCategoryTab}
         onChange={handleCategoryTabChange}
         variant="scrollable"
         scrollButtons="auto"
         allowScrollButtonsMobile
         sx={{
-          mx: -0.5,
-          mb: 2,
-          minHeight: 40,
+          mb: 2.5,
+          minHeight: 38,
+          '& .MuiTabs-indicator': { display: 'none' },
+          '& .MuiTabs-list, & .MuiTabs-flexContainer': { gap: 1 },
+          '& .MuiTabs-scrollButtons': {
+            width: 30,
+            borderRadius: 99,
+            '&.Mui-disabled': { display: 'none' },
+          },
           '& .MuiTab-root': {
-            minHeight: 40,
-            px: 1.5,
+            minHeight: 38,
+            minWidth: 'auto',
+            px: 2,
+            py: 0.75,
+            borderRadius: 99,
+            border: '1px solid',
+            borderColor: 'divider',
+            bgcolor: 'background.paper',
+            color: 'text.secondary',
             fontSize: 13,
-            fontWeight: 600,
+            fontWeight: 500,
+            transition: 'background-color 150ms, border-color 150ms, color 150ms',
+            '&:hover': { bgcolor: '#edf1e9', borderColor: '#a5b4a0' },
+            '&.Mui-selected': {
+              bgcolor: '#293c34',
+              color: '#fff',
+              borderColor: '#293c34',
+              fontWeight: 600,
+            },
+            '&:focus-visible': { outline: '2px solid #839b7c', outlineOffset: 2 },
           },
         }}
       >
         <Tab value={CATEGORY_TAB_ALL} label="ทั้งหมด" />
-        {drawerCategoryOptions.map((category) => (
+        {categoryOptions.map((category) => (
           <Tab
             key={category}
             value={category}
-            label={getCategoryLabel(categoryConfig, category)}
-            sx={{
-              color: getCategoryColor(categoryConfig, category),
-              '&.Mui-selected': { color: getCategoryColor(categoryConfig, category) },
-            }}
+            label={
+              <Box
+                component="span"
+                sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}
+              >
+                <Box
+                  component="span"
+                  aria-hidden="true"
+                  sx={{
+                    width: 6,
+                    height: 6,
+                    borderRadius: '50%',
+                    bgcolor: getCategoryColor(categoryConfig, category),
+                    flexShrink: 0,
+                  }}
+                />
+                {getCategoryLabel(categoryConfig, category)}
+              </Box>
+            }
           />
         ))}
       </Tabs>
 
-      <Stack spacing={2}>
-        {visiblePlaces.length ? (
-          visiblePlaces.map((place) => (
+      <Typography sx={{ mb: 2, color: 'text.secondary', fontSize: 13 }}>
+        แสดง {Math.min(visibleCount, searchedPlaces.length)} จาก {searchedPlaces.length} รายการ
+      </Typography>
+      <Box
+        sx={{
+          display: 'grid',
+          gap: 2.5,
+          gridTemplateColumns: {
+            xs: '1fr',
+            sm: 'repeat(2, minmax(0, 1fr))',
+            lg: 'repeat(3, minmax(0, 1fr))',
+          },
+        }}
+      >
+        {searchedPlaces.length ? (
+          displayedPlaces.map((place) => (
             <ProvincePlaceCard
               key={place.id}
               place={place}
@@ -255,7 +334,15 @@ export function ProvincePlacesDrawer({
             </Typography>
           </Box>
         )}
-      </Stack>
-    </Drawer>
+      </Box>
+      {visibleCount < searchedPlaces.length && (
+        <Box sx={{ mt: 4, textAlign: 'center' }}>
+          <Button variant="outlined" onClick={() => setVisibleCount((count) => count + 12)}>
+            ดูเพิ่มอีก {Math.min(12, searchedPlaces.length - visibleCount)} รายการ
+          </Button>
+        </Box>
+      )}
+    </>
   );
+  return <Box>{content}</Box>;
 }

@@ -3,6 +3,7 @@
 import type { FeatureCollection } from 'geojson';
 import type { UseQueryOptions } from '@tanstack/react-query';
 
+import { geoCentroid } from 'd3-geo';
 import { useQuery } from '@tanstack/react-query';
 
 // ----------------------------------------------------------------------
@@ -106,12 +107,36 @@ export function useThailandProvincesGeoJson<TData = FeatureCollection>(
 }
 
 export function useThailandDistrictCenters(provinceId?: string) {
-  return useQuery<ThailandDistrictCentersResponse, Error>({
+  return useQuery<FeatureCollection | ThailandDistrictCentersResponse, Error, ThailandDistrictCentersResponse>({
+    queryKey: provinceId
+      ? ['thailand', 'district-boundaries', 'local-v1', provinceId]
+      : ['thailand', 'district-centers', provinceId],
+    queryFn: ({ signal }) => provinceId
+      ? fetchGeoJsonApi(`/assets/maps/districts/${encodeURIComponent(provinceId)}.geojson`, signal)
+      : fetchDistrictCentersApi(THAILAND_DISTRICTS_CENTERS_API, signal),
+    select: (data) => {
+      if ('districts' in data) return data;
+      return {
+        provinceId,
+        districts: data.features.map((feature) => {
+          const [lng, lat] = geoCentroid({ ...feature, geometry: rewindGeometry(feature.geometry) });
+          return { name: String(feature.properties?.nameTh ?? feature.properties?.shapeName ?? ''), lat, lng };
+        }).filter((district) => district.name && Number.isFinite(district.lat) && Number.isFinite(district.lng)),
+      };
+    },
+    retry: false,
+    staleTime: ONE_DAY_MS,
+    gcTime: ONE_DAY_MS,
+  });
+}
+
+export function useThailandDistrictBoundaries(provinceId: string) {
+  return useQuery<FeatureCollection, Error>({
     enabled: Boolean(provinceId),
-    queryKey: ['thailand', 'district-centers', provinceId],
+    queryKey: ['thailand', 'district-boundaries', 'local-v1', provinceId],
     queryFn: ({ signal }) =>
-      fetchDistrictCentersApi(
-        `${THAILAND_DISTRICTS_CENTERS_API}?provinceId=${encodeURIComponent(provinceId ?? '')}`,
+      fetchGeoJsonApi(
+        `/assets/maps/districts/${encodeURIComponent(provinceId)}.geojson`,
         signal
       ),
     retry: false,

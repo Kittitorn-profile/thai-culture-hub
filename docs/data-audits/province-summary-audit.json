@@ -1,0 +1,2898 @@
+{
+  "checkedAt": "2026-11-08T06:51:29.018Z",
+  "provinces": 77,
+  "mismatches": 77,
+  "oldTotal": 13651,
+  "actualTotal": 23019,
+  "results": [
+    {
+      "code": "TH-10",
+      "before": {
+        "counts": {
+          "museum": 49,
+          "ritual": 1,
+          "temple": 56,
+          "folk_art": 7,
+          "local_food": 34,
+          "craftsmanship": 11,
+          "performing_art": 8,
+          "learning_center": 2,
+          "local_tradition": 3,
+          "community_wisdom": 36,
+          "tourist_attraction": 141,
+          "cultural_attraction": 20
+        },
+        "dominantCategory": "tourist_attraction",
+        "total": 368
+      },
+      "actual": {
+        "total": 704,
+        "counts": {
+          "tourist_attraction": 193,
+          "museum": 139,
+          "temple": 160,
+          "community_wisdom": 74,
+          "craftsmanship": 11,
+          "folk_art": 7,
+          "performing_art": 8,
+          "local_tradition": 3,
+          "ritual": 1,
+          "local_food": 63,
+          "cultural_attraction": 42,
+          "learning_center": 3
+        },
+        "dominantCategory": "tourist_attraction"
+      },
+      "milliseconds": 1091
+    },
+    {
+      "code": "TH-11",
+      "before": {
+        "counts": {
+          "museum": 3,
+          "ritual": 5,
+          "temple": 84,
+          "costume": 1,
+          "folk_art": 9,
+          "local_food": 34,
+          "craftsmanship": 2,
+          "performing_art": 6,
+          "learning_center": 2,
+          "local_tradition": 6,
+          "community_wisdom": 19,
+          "tourist_attraction": 28
+        },
+        "dominantCategory": "temple",
+        "total": 199
+      },
+      "actual": {
+        "total": 222,
+        "counts": {
+          "tourist_attraction": 32,
+          "temple": 97,
+          "folk_art": 9,
+          "ritual": 5,
+          "costume": 1,
+          "local_tradition": 6,
+          "local_food": 36,
+          "performing_art": 6,
+          "community_wisdom": 20,
+          "craftsmanship": 2,
+          "museum": 6,
+          "learning_center": 2
+        },
+        "dominantCategory": "temple"
+      },
+      "milliseconds": 337
+    },
+    {
+      "code": "TH-12",
+      "before": {
+        "counts": {
+          "museum": 2,
+          "ritual": 4,
+          "temple": 27,
+          "folk_art": 6,
+          "local_food": 25,
+          "craftsmanship": 8,
+          "performing_art": 3,
+          "local_tradition": 5,
+          "community_wisdom": 16,
+          "tourist_attraction": 73,
+          "cultural_attraction": 2
+        },
+        "dominantCategory": "tourist_attraction",
+        "total": 171
+      },
+      "actual": {
+        "total": 201,
+        "counts": {
+          "tourist_attraction": 78,
+          "temple": 40,
+          "craftsmanship": 8,
+          "folk_art": 6,
+          "performing_art": 3,
+          "local_tradition": 5,
+          "community_wisdom": 19,
+          "ritual": 4,
+          "local_food": 29,
+          "cultural_attraction": 3,
+          "museum": 6
+        },
+        "dominantCategory": "tourist_attraction"
+      },
+      "milliseconds": 317
+    },
+    {
+      "code": "TH-13",
+      "before": {
+        "counts": {
+          "museum": 6,
+          "ritual": 4,
+          "temple": 80,
+          "folk_art": 6,
+          "local_food": 11,
+          "craftsmanship": 2,
+          "performing_art": 18,
+          "local_tradition": 8,
+          "community_wisdom": 8,
+          "tourist_attraction": 67,
+          "cultural_attraction": 3
+        },
+        "dominantCategory": "temple",
+        "total": 213
+      },
+      "actual": {
+        "total": 244,
+        "counts": {
+          "tourist_attraction": 72,
+          "local_food": 15,
+          "museum": 10,
+          "community_wisdom": 9,
+          "temple": 96,
+          "folk_art": 6,
+          "local_tradition": 8,
+          "craftsmanship": 2,
+          "ritual": 4,
+          "performing_art": 18,
+          "cultural_attraction": 3,
+          "learning_center": 1
+        },
+        "dominantCategory": "temple"
+      },
+      "milliseconds": 308
+    },
+    {
+      "code": "TH-14",
+      "before": {
+        "counts": {
+          "museum": 4,
+          "ritual": 2,
+          "temple": 184,
+          "costume": 1,
+          "folk_art": 7,
+          "local_food": 32,
+          "craftsmanship": 11,
+          "performing_art": 1,
+          "local_tradition": 2,
+          "community_wisdom": 20,
+          "tourist_attraction": 74,
+          "cultural_attraction": 7
+        },
+        "dominantCategory": "temple",
+        "total": 345
+      },
+      "actual": {
+        "total": 416,
+        "counts": {
+          "tourist_attraction": 75,
+          "local_food": 34,
+          "community_wisdom": 26,
+          "temple": 235,
+          "craftsmanship": 15,
+          "folk_art": 7,
+          "ritual": 2,
+          "local_tradition": 2,
+          "costume": 1,
+          "performing_art": 1,
+          "cultural_attraction": 11,
+          "museum": 7
+        },
+        "dominantCategory": "temple"
+      },
+      "milliseconds": 608
+    },
+    {
+      "code": "TH-15",
+      "before": {
+        "counts": {
+          "museum": 2,
+          "ritual": 4,
+          "temple": 73,
+          "folk_art": 8,
+          "local_food": 13,
+          "craftsmanship": 4,
+          "performing_art": 2,
+          "local_tradition": 1,
+          "community_wisdom": 6,
+          "tourist_attraction": 23,
+          "cultural_attraction": 8
+        },
+        "dominantCategory": "temple",
+        "total": 144
+      },
+      "actual": {
+        "total": 168,
+        "counts": {
+          "tourist_attraction": 24,
+          "temple": 87,
+          "craftsmanship": 4,
+          "folk_art": 8,
+          "local_food": 13,
+          "ritual": 4,
+          "local_tradition": 1,
+          "performing_art": 2,
+          "community_wisdom": 8,
+          "cultural_attraction": 13,
+          "museum": 4
+        },
+        "dominantCategory": "temple"
+      },
+      "milliseconds": 339
+    },
+    {
+      "code": "TH-16",
+      "before": {
+        "counts": {
+          "museum": 3,
+          "ritual": 4,
+          "temple": 82,
+          "costume": 8,
+          "folk_art": 12,
+          "local_food": 15,
+          "craftsmanship": 2,
+          "performing_art": 3,
+          "local_tradition": 1,
+          "community_wisdom": 14,
+          "tourist_attraction": 46,
+          "cultural_attraction": 1
+        },
+        "dominantCategory": "temple",
+        "total": 191
+      },
+      "actual": {
+        "total": 218,
+        "counts": {
+          "tourist_attraction": 49,
+          "community_wisdom": 15,
+          "temple": 103,
+          "folk_art": 12,
+          "craftsmanship": 2,
+          "local_food": 15,
+          "ritual": 4,
+          "costume": 8,
+          "local_tradition": 1,
+          "performing_art": 3,
+          "museum": 5,
+          "cultural_attraction": 1
+        },
+        "dominantCategory": "temple"
+      },
+      "milliseconds": 331
+    },
+    {
+      "code": "TH-17",
+      "before": {
+        "counts": {
+          "museum": 3,
+          "ritual": 5,
+          "temple": 91,
+          "folk_art": 9,
+          "local_food": 13,
+          "craftsmanship": 3,
+          "performing_art": 1,
+          "learning_center": 1,
+          "local_tradition": 3,
+          "community_wisdom": 8,
+          "tourist_attraction": 29,
+          "cultural_attraction": 3
+        },
+        "dominantCategory": "temple",
+        "total": 169
+      },
+      "actual": {
+        "total": 194,
+        "counts": {
+          "tourist_attraction": 29,
+          "museum": 3,
+          "temple": 112,
+          "craftsmanship": 2,
+          "folk_art": 9,
+          "community_wisdom": 11,
+          "local_food": 13,
+          "ritual": 5,
+          "local_tradition": 3,
+          "performing_art": 2,
+          "cultural_attraction": 4,
+          "learning_center": 1
+        },
+        "dominantCategory": "temple"
+      },
+      "milliseconds": 319
+    },
+    {
+      "code": "TH-18",
+      "before": {
+        "counts": {
+          "museum": 2,
+          "ritual": 7,
+          "temple": 22,
+          "costume": 3,
+          "folk_art": 10,
+          "local_food": 12,
+          "craftsmanship": 3,
+          "performing_art": 7,
+          "local_tradition": 1,
+          "community_wisdom": 8,
+          "tourist_attraction": 22,
+          "cultural_attraction": 1
+        },
+        "dominantCategory": "temple",
+        "total": 98
+      },
+      "actual": {
+        "total": 132,
+        "counts": {
+          "tourist_attraction": 27,
+          "cultural_attraction": 2,
+          "museum": 7,
+          "temple": 39,
+          "craftsmanship": 3,
+          "folk_art": 10,
+          "local_food": 13,
+          "ritual": 7,
+          "performing_art": 7,
+          "local_tradition": 1,
+          "costume": 3,
+          "community_wisdom": 13
+        },
+        "dominantCategory": "temple"
+      },
+      "milliseconds": 354
+    },
+    {
+      "code": "TH-19",
+      "before": {
+        "counts": {
+          "museum": 1,
+          "ritual": 5,
+          "temple": 99,
+          "folk_art": 9,
+          "local_food": 23,
+          "craftsmanship": 3,
+          "performing_art": 1,
+          "local_tradition": 2,
+          "community_wisdom": 7,
+          "tourist_attraction": 72,
+          "cultural_attraction": 5
+        },
+        "dominantCategory": "temple",
+        "total": 227
+      },
+      "actual": {
+        "total": 257,
+        "counts": {
+          "tourist_attraction": 76,
+          "temple": 121,
+          "folk_art": 9,
+          "craftsmanship": 3,
+          "local_food": 23,
+          "ritual": 5,
+          "local_tradition": 2,
+          "performing_art": 1,
+          "community_wisdom": 7,
+          "cultural_attraction": 7,
+          "museum": 3
+        },
+        "dominantCategory": "temple"
+      },
+      "milliseconds": 962
+    },
+    {
+      "code": "TH-20",
+      "before": {
+        "counts": {
+          "museum": 7,
+          "ritual": 4,
+          "temple": 156,
+          "folk_art": 16,
+          "local_food": 34,
+          "craftsmanship": 1,
+          "performing_art": 1,
+          "learning_center": 4,
+          "local_tradition": 4,
+          "community_wisdom": 15,
+          "tourist_attraction": 118,
+          "cultural_attraction": 7
+        },
+        "dominantCategory": "temple",
+        "total": 367
+      },
+      "actual": {
+        "total": 432,
+        "counts": {
+          "tourist_attraction": 142,
+          "cultural_attraction": 13,
+          "museum": 18,
+          "temple": 171,
+          "folk_art": 16,
+          "ritual": 4,
+          "local_food": 40,
+          "local_tradition": 4,
+          "community_wisdom": 18,
+          "performing_art": 1,
+          "craftsmanship": 1,
+          "learning_center": 4
+        },
+        "dominantCategory": "temple"
+      },
+      "milliseconds": 375
+    },
+    {
+      "code": "TH-21",
+      "before": {
+        "counts": {
+          "museum": 5,
+          "ritual": 5,
+          "temple": 143,
+          "costume": 2,
+          "folk_art": 4,
+          "local_food": 44,
+          "craftsmanship": 1,
+          "performing_art": 4,
+          "learning_center": 2,
+          "local_tradition": 1,
+          "community_wisdom": 8,
+          "tourist_attraction": 80,
+          "cultural_attraction": 2
+        },
+        "dominantCategory": "temple",
+        "total": 301
+      },
+      "actual": {
+        "total": 377,
+        "counts": {
+          "tourist_attraction": 120,
+          "temple": 168,
+          "costume": 2,
+          "folk_art": 4,
+          "community_wisdom": 9,
+          "ritual": 5,
+          "local_food": 49,
+          "local_tradition": 1,
+          "performing_art": 4,
+          "craftsmanship": 1,
+          "museum": 7,
+          "cultural_attraction": 5,
+          "learning_center": 2
+        },
+        "dominantCategory": "temple"
+      },
+      "milliseconds": 382
+    },
+    {
+      "code": "TH-22",
+      "before": {
+        "counts": {
+          "ethnic_group": 1
+        },
+        "dominantCategory": "ethnic_group",
+        "total": 1
+      },
+      "actual": {
+        "total": 242,
+        "counts": {
+          "community_wisdom": 14,
+          "tourist_attraction": 96,
+          "temple": 68,
+          "cultural_attraction": 12,
+          "folk_art": 6,
+          "ritual": 4,
+          "local_tradition": 2,
+          "costume": 1,
+          "performing_art": 1,
+          "craftsmanship": 6,
+          "local_food": 24,
+          "museum": 4,
+          "learning_center": 3,
+          "ethnic_group": 1
+        },
+        "dominantCategory": "tourist_attraction"
+      },
+      "milliseconds": 297
+    },
+    {
+      "code": "TH-23",
+      "before": {
+        "counts": {
+          "museum": 3,
+          "ritual": 4,
+          "temple": 36,
+          "folk_art": 10,
+          "local_food": 12,
+          "craftsmanship": 2,
+          "performing_art": 3,
+          "local_tradition": 6,
+          "community_wisdom": 13,
+          "tourist_attraction": 66,
+          "cultural_attraction": 4
+        },
+        "dominantCategory": "tourist_attraction",
+        "total": 159
+      },
+      "actual": {
+        "total": 261,
+        "counts": {
+          "tourist_attraction": 102,
+          "temple": 88,
+          "craftsmanship": 2,
+          "local_tradition": 6,
+          "community_wisdom": 23,
+          "folk_art": 10,
+          "ritual": 4,
+          "performing_art": 3,
+          "local_food": 12,
+          "cultural_attraction": 6,
+          "museum": 5
+        },
+        "dominantCategory": "tourist_attraction"
+      },
+      "milliseconds": 396
+    },
+    {
+      "code": "TH-24",
+      "before": {
+        "counts": {
+          "museum": 3,
+          "ritual": 4,
+          "temple": 265,
+          "costume": 2,
+          "folk_art": 12,
+          "local_food": 51,
+          "craftsmanship": 3,
+          "performing_art": 3,
+          "learning_center": 2,
+          "local_tradition": 6,
+          "community_wisdom": 20,
+          "tourist_attraction": 57,
+          "cultural_attraction": 9
+        },
+        "dominantCategory": "temple",
+        "total": 437
+      },
+      "actual": {
+        "total": 544,
+        "counts": {
+          "temple": 350,
+          "local_food": 53,
+          "tourist_attraction": 66,
+          "cultural_attraction": 15,
+          "craftsmanship": 3,
+          "performing_art": 3,
+          "folk_art": 12,
+          "ritual": 4,
+          "local_tradition": 6,
+          "costume": 2,
+          "community_wisdom": 24,
+          "museum": 4,
+          "learning_center": 2
+        },
+        "dominantCategory": "temple"
+      },
+      "milliseconds": 1034
+    },
+    {
+      "code": "TH-25",
+      "before": {
+        "counts": {
+          "ritual": 5,
+          "temple": 119,
+          "folk_art": 11,
+          "local_food": 19,
+          "craftsmanship": 3,
+          "performing_art": 1,
+          "local_tradition": 5,
+          "community_wisdom": 9,
+          "tourist_attraction": 43,
+          "cultural_attraction": 2
+        },
+        "dominantCategory": "temple",
+        "total": 217
+      },
+      "actual": {
+        "total": 280,
+        "counts": {
+          "community_wisdom": 9,
+          "tourist_attraction": 51,
+          "temple": 173,
+          "local_tradition": 5,
+          "folk_art": 11,
+          "local_food": 19,
+          "ritual": 5,
+          "craftsmanship": 3,
+          "performing_art": 1,
+          "cultural_attraction": 2,
+          "museum": 1
+        },
+        "dominantCategory": "temple"
+      },
+      "milliseconds": 324
+    },
+    {
+      "code": "TH-26",
+      "before": {
+        "counts": {
+          "museum": 3,
+          "ritual": 6,
+          "temple": 70,
+          "costume": 2,
+          "folk_art": 10,
+          "local_food": 32,
+          "craftsmanship": 3,
+          "performing_art": 6,
+          "local_tradition": 3,
+          "community_wisdom": 6,
+          "tourist_attraction": 54,
+          "cultural_attraction": 7
+        },
+        "dominantCategory": "temple",
+        "total": 202
+      },
+      "actual": {
+        "total": 245,
+        "counts": {
+          "temple": 90,
+          "tourist_attraction": 64,
+          "performing_art": 6,
+          "folk_art": 10,
+          "local_food": 33,
+          "craftsmanship": 3,
+          "ritual": 6,
+          "local_tradition": 3,
+          "costume": 2,
+          "community_wisdom": 9,
+          "cultural_attraction": 13,
+          "museum": 6
+        },
+        "dominantCategory": "temple"
+      },
+      "milliseconds": 310
+    },
+    {
+      "code": "TH-27",
+      "before": {
+        "counts": {
+          "ritual": 7,
+          "temple": 142,
+          "folk_art": 8,
+          "local_food": 25,
+          "craftsmanship": 3,
+          "performing_art": 2,
+          "local_tradition": 5,
+          "community_wisdom": 14,
+          "tourist_attraction": 47,
+          "cultural_attraction": 2
+        },
+        "dominantCategory": "temple",
+        "total": 255
+      },
+      "actual": {
+        "total": 308,
+        "counts": {
+          "tourist_attraction": 53,
+          "community_wisdom": 16,
+          "temple": 185,
+          "craftsmanship": 3,
+          "folk_art": 8,
+          "local_food": 25,
+          "ritual": 7,
+          "local_tradition": 5,
+          "performing_art": 2,
+          "cultural_attraction": 4
+        },
+        "dominantCategory": "temple"
+      },
+      "milliseconds": 420
+    },
+    {
+      "code": "TH-30",
+      "before": {
+        "counts": {
+          "ethnic_group": 1
+        },
+        "dominantCategory": "ethnic_group",
+        "total": 1
+      },
+      "actual": {
+        "total": 609,
+        "counts": {
+          "tourist_attraction": 146,
+          "cultural_attraction": 16,
+          "temple": 276,
+          "performing_art": 3,
+          "folk_art": 5,
+          "local_food": 115,
+          "ritual": 2,
+          "local_tradition": 2,
+          "costume": 11,
+          "craftsmanship": 2,
+          "community_wisdom": 18,
+          "museum": 9,
+          "learning_center": 3,
+          "ethnic_group": 1
+        },
+        "dominantCategory": "temple"
+      },
+      "milliseconds": 1153
+    },
+    {
+      "code": "TH-31",
+      "before": {
+        "counts": {
+          "museum": 1,
+          "ritual": 1,
+          "temple": 172,
+          "folk_art": 3,
+          "local_food": 12,
+          "craftsmanship": 2,
+          "performing_art": 16,
+          "learning_center": 1,
+          "local_tradition": 2,
+          "community_wisdom": 8,
+          "tourist_attraction": 29,
+          "cultural_attraction": 1
+        },
+        "dominantCategory": "temple",
+        "total": 248
+      },
+      "actual": {
+        "total": 283,
+        "counts": {
+          "tourist_attraction": 33,
+          "temple": 193,
+          "craftsmanship": 2,
+          "performing_art": 16,
+          "folk_art": 3,
+          "ritual": 1,
+          "local_tradition": 2,
+          "community_wisdom": 14,
+          "local_food": 13,
+          "museum": 1,
+          "cultural_attraction": 4,
+          "learning_center": 1
+        },
+        "dominantCategory": "temple"
+      },
+      "milliseconds": 405
+    },
+    {
+      "code": "TH-32",
+      "before": {
+        "counts": {
+          "ritual": 7,
+          "temple": 55,
+          "costume": 4,
+          "folk_art": 11,
+          "local_food": 14,
+          "craftsmanship": 3,
+          "performing_art": 8,
+          "learning_center": 1,
+          "local_tradition": 4,
+          "community_wisdom": 21,
+          "tourist_attraction": 24,
+          "cultural_attraction": 2
+        },
+        "dominantCategory": "temple",
+        "total": 154
+      },
+      "actual": {
+        "total": 198,
+        "counts": {
+          "tourist_attraction": 32,
+          "temple": 72,
+          "performing_art": 8,
+          "folk_art": 11,
+          "ritual": 7,
+          "craftsmanship": 3,
+          "local_tradition": 4,
+          "costume": 4,
+          "community_wisdom": 37,
+          "local_food": 16,
+          "cultural_attraction": 3,
+          "learning_center": 1
+        },
+        "dominantCategory": "temple"
+      },
+      "milliseconds": 437
+    },
+    {
+      "code": "TH-33",
+      "before": {
+        "counts": {
+          "museum": 1,
+          "ritual": 5,
+          "temple": 125,
+          "costume": 1,
+          "folk_art": 7,
+          "local_food": 5,
+          "performing_art": 6,
+          "local_tradition": 4,
+          "community_wisdom": 16,
+          "tourist_attraction": 22,
+          "cultural_attraction": 1
+        },
+        "dominantCategory": "temple",
+        "total": 193
+      },
+      "actual": {
+        "total": 284,
+        "counts": {
+          "tourist_attraction": 37,
+          "community_wisdom": 19,
+          "temple": 196,
+          "folk_art": 7,
+          "local_tradition": 4,
+          "ritual": 5,
+          "costume": 1,
+          "performing_art": 6,
+          "local_food": 5,
+          "museum": 1,
+          "cultural_attraction": 2,
+          "learning_center": 1
+        },
+        "dominantCategory": "temple"
+      },
+      "milliseconds": 1129
+    },
+    {
+      "code": "TH-34",
+      "before": {
+        "counts": {
+          "museum": 3,
+          "ritual": 6,
+          "temple": 170,
+          "costume": 1,
+          "folk_art": 9,
+          "local_food": 13,
+          "craftsmanship": 3,
+          "performing_art": 4,
+          "learning_center": 2,
+          "local_tradition": 4,
+          "community_wisdom": 29,
+          "tourist_attraction": 99,
+          "cultural_attraction": 5
+        },
+        "dominantCategory": "temple",
+        "total": 348
+      },
+      "actual": {
+        "total": 419,
+        "counts": {
+          "tourist_attraction": 111,
+          "museum": 5,
+          "temple": 216,
+          "community_wisdom": 34,
+          "craftsmanship": 3,
+          "folk_art": 9,
+          "ritual": 6,
+          "local_tradition": 4,
+          "costume": 1,
+          "performing_art": 4,
+          "local_food": 13,
+          "cultural_attraction": 11,
+          "learning_center": 2
+        },
+        "dominantCategory": "temple"
+      },
+      "milliseconds": 419
+    },
+    {
+      "code": "TH-35",
+      "before": {
+        "counts": {
+          "museum": 2,
+          "ritual": 1,
+          "temple": 40,
+          "folk_art": 21,
+          "local_food": 7,
+          "craftsmanship": 13,
+          "local_tradition": 2,
+          "community_wisdom": 4,
+          "tourist_attraction": 13,
+          "cultural_attraction": 3
+        },
+        "dominantCategory": "temple",
+        "total": 106
+      },
+      "actual": {
+        "total": 124,
+        "counts": {
+          "tourist_attraction": 17,
+          "cultural_attraction": 4,
+          "temple": 52,
+          "craftsmanship": 13,
+          "folk_art": 21,
+          "local_food": 7,
+          "ritual": 1,
+          "local_tradition": 2,
+          "community_wisdom": 5,
+          "museum": 2
+        },
+        "dominantCategory": "temple"
+      },
+      "milliseconds": 322
+    },
+    {
+      "code": "TH-36",
+      "before": {
+        "counts": {
+          "ethnic_group": 3
+        },
+        "dominantCategory": "ethnic_group",
+        "total": 3
+      },
+      "actual": {
+        "total": 634,
+        "counts": {
+          "tourist_attraction": 58,
+          "temple": 514,
+          "craftsmanship": 5,
+          "folk_art": 2,
+          "ritual": 2,
+          "local_tradition": 2,
+          "performing_art": 16,
+          "local_food": 18,
+          "community_wisdom": 8,
+          "cultural_attraction": 2,
+          "museum": 3,
+          "learning_center": 1,
+          "ethnic_group": 3
+        },
+        "dominantCategory": "temple"
+      },
+      "milliseconds": 1135
+    },
+    {
+      "code": "TH-37",
+      "before": {
+        "counts": {
+          "museum": 1,
+          "ritual": 8,
+          "temple": 78,
+          "costume": 4,
+          "folk_art": 10,
+          "local_food": 2,
+          "craftsmanship": 3,
+          "performing_art": 4,
+          "local_tradition": 5,
+          "community_wisdom": 10,
+          "tourist_attraction": 17,
+          "cultural_attraction": 2
+        },
+        "dominantCategory": "temple",
+        "total": 144
+      },
+      "actual": {
+        "total": 190,
+        "counts": {
+          "temple": 105,
+          "tourist_attraction": 29,
+          "folk_art": 10,
+          "ritual": 8,
+          "community_wisdom": 16,
+          "local_tradition": 5,
+          "costume": 4,
+          "performing_art": 4,
+          "craftsmanship": 3,
+          "local_food": 2,
+          "cultural_attraction": 3,
+          "museum": 1
+        },
+        "dominantCategory": "temple"
+      },
+      "milliseconds": 235
+    },
+    {
+      "code": "TH-38",
+      "before": {
+        "counts": {
+          "ritual": 5,
+          "temple": 5,
+          "folk_art": 8,
+          "local_food": 4,
+          "craftsmanship": 2,
+          "performing_art": 1,
+          "local_tradition": 9,
+          "community_wisdom": 5,
+          "tourist_attraction": 21,
+          "cultural_attraction": 1
+        },
+        "dominantCategory": "tourist_attraction",
+        "total": 61
+      },
+      "actual": {
+        "total": 88,
+        "counts": {
+          "tourist_attraction": 24,
+          "temple": 29,
+          "folk_art": 8,
+          "local_tradition": 11,
+          "ritual": 5,
+          "craftsmanship": 2,
+          "performing_art": 1,
+          "community_wisdom": 3,
+          "local_food": 4,
+          "cultural_attraction": 1
+        },
+        "dominantCategory": "temple"
+      },
+      "milliseconds": 189
+    },
+    {
+      "code": "TH-39",
+      "before": {
+        "counts": {
+          "museum": 1,
+          "ritual": 5,
+          "temple": 28,
+          "costume": 2,
+          "folk_art": 5,
+          "local_food": 5,
+          "performing_art": 8,
+          "local_tradition": 2,
+          "community_wisdom": 18,
+          "tourist_attraction": 19,
+          "cultural_attraction": 1
+        },
+        "dominantCategory": "temple",
+        "total": 94
+      },
+      "actual": {
+        "total": 144,
+        "counts": {
+          "tourist_attraction": 34,
+          "temple": 50,
+          "community_wisdom": 25,
+          "folk_art": 5,
+          "local_food": 5,
+          "ritual": 5,
+          "local_tradition": 2,
+          "costume": 2,
+          "performing_art": 8,
+          "cultural_attraction": 6,
+          "museum": 2
+        },
+        "dominantCategory": "temple"
+      },
+      "milliseconds": 1124
+    },
+    {
+      "code": "TH-40",
+      "before": {
+        "counts": {
+          "museum": 6,
+          "ritual": 6,
+          "temple": 212,
+          "folk_art": 16,
+          "local_food": 44,
+          "craftsmanship": 3,
+          "performing_art": 7,
+          "learning_center": 1,
+          "local_tradition": 7,
+          "community_wisdom": 13,
+          "tourist_attraction": 58,
+          "cultural_attraction": 1
+        },
+        "dominantCategory": "temple",
+        "total": 374
+      },
+      "actual": {
+        "total": 470,
+        "counts": {
+          "local_food": 44,
+          "tourist_attraction": 71,
+          "temple": 291,
+          "folk_art": 15,
+          "ritual": 6,
+          "local_tradition": 7,
+          "performing_art": 8,
+          "community_wisdom": 15,
+          "craftsmanship": 3,
+          "museum": 7,
+          "learning_center": 1,
+          "cultural_attraction": 2
+        },
+        "dominantCategory": "temple"
+      },
+      "milliseconds": 855
+    },
+    {
+      "code": "TH-41",
+      "before": {
+        "counts": {
+          "museum": 4,
+          "ritual": 6,
+          "temple": 20,
+          "costume": 1,
+          "folk_art": 11,
+          "local_food": 18,
+          "performing_art": 5,
+          "local_tradition": 4,
+          "community_wisdom": 10,
+          "tourist_attraction": 22,
+          "cultural_attraction": 1
+        },
+        "dominantCategory": "tourist_attraction",
+        "total": 102
+      },
+      "actual": {
+        "total": 128,
+        "counts": {
+          "tourist_attraction": 27,
+          "museum": 4,
+          "temple": 40,
+          "folk_art": 11,
+          "ritual": 6,
+          "local_tradition": 4,
+          "costume": 1,
+          "performing_art": 5,
+          "community_wisdom": 11,
+          "local_food": 18,
+          "cultural_attraction": 1
+        },
+        "dominantCategory": "temple"
+      },
+      "milliseconds": 361
+    },
+    {
+      "code": "TH-42",
+      "before": {
+        "counts": {
+          "museum": 1,
+          "ritual": 5,
+          "temple": 46,
+          "costume": 2,
+          "folk_art": 5,
+          "local_food": 37,
+          "performing_art": 1,
+          "learning_center": 1,
+          "local_tradition": 8,
+          "community_wisdom": 11,
+          "tourist_attraction": 65
+        },
+        "dominantCategory": "tourist_attraction",
+        "total": 182
+      },
+      "actual": {
+        "total": 245,
+        "counts": {
+          "community_wisdom": 24,
+          "tourist_attraction": 87,
+          "temple": 64,
+          "museum": 5,
+          "local_food": 41,
+          "folk_art": 5,
+          "ritual": 5,
+          "local_tradition": 8,
+          "costume": 2,
+          "performing_art": 1,
+          "learning_center": 2,
+          "cultural_attraction": 1
+        },
+        "dominantCategory": "tourist_attraction"
+      },
+      "milliseconds": 706
+    },
+    {
+      "code": "TH-43",
+      "before": {
+        "counts": {
+          "museum": 1,
+          "ritual": 5,
+          "temple": 135,
+          "costume": 2,
+          "folk_art": 9,
+          "local_food": 11,
+          "craftsmanship": 2,
+          "performing_art": 2,
+          "local_tradition": 12,
+          "community_wisdom": 8,
+          "tourist_attraction": 21,
+          "cultural_attraction": 1
+        },
+        "dominantCategory": "temple",
+        "total": 209
+      },
+      "actual": {
+        "total": 237,
+        "counts": {
+          "community_wisdom": 11,
+          "tourist_attraction": 24,
+          "temple": 153,
+          "local_tradition": 12,
+          "folk_art": 9,
+          "ritual": 5,
+          "costume": 2,
+          "performing_art": 2,
+          "local_food": 12,
+          "craftsmanship": 2,
+          "museum": 3,
+          "cultural_attraction": 2
+        },
+        "dominantCategory": "temple"
+      },
+      "milliseconds": 566
+    },
+    {
+      "code": "TH-44",
+      "before": {
+        "counts": {
+          "community_wisdom": 1,
+          "cultural_attraction": 1
+        },
+        "dominantCategory": "community_wisdom",
+        "total": 2
+      },
+      "actual": {
+        "total": 145,
+        "counts": {
+          "cultural_attraction": 4,
+          "temple": 65,
+          "tourist_attraction": 25,
+          "folk_art": 8,
+          "local_food": 3,
+          "ritual": 5,
+          "local_tradition": 2,
+          "costume": 3,
+          "performing_art": 12,
+          "community_wisdom": 14,
+          "craftsmanship": 1,
+          "museum": 3
+        },
+        "dominantCategory": "temple"
+      },
+      "milliseconds": 255
+    },
+    {
+      "code": "TH-45",
+      "before": {
+        "counts": {
+          "museum": 1,
+          "ritual": 5,
+          "temple": 118,
+          "costume": 1,
+          "folk_art": 12,
+          "local_food": 4,
+          "craftsmanship": 1,
+          "performing_art": 5,
+          "local_tradition": 3,
+          "community_wisdom": 5,
+          "tourist_attraction": 24
+        },
+        "dominantCategory": "temple",
+        "total": 179
+      },
+      "actual": {
+        "total": 229,
+        "counts": {
+          "tourist_attraction": 28,
+          "temple": 161,
+          "folk_art": 12,
+          "craftsmanship": 1,
+          "ritual": 5,
+          "local_tradition": 3,
+          "costume": 1,
+          "performing_art": 5,
+          "community_wisdom": 6,
+          "local_food": 4,
+          "museum": 2,
+          "cultural_attraction": 1
+        },
+        "dominantCategory": "temple"
+      },
+      "milliseconds": 1287
+    },
+    {
+      "code": "TH-46",
+      "before": {
+        "counts": {
+          "museum": 2,
+          "ritual": 5,
+          "temple": 66,
+          "costume": 5,
+          "folk_art": 7,
+          "local_food": 5,
+          "performing_art": 5,
+          "learning_center": 1,
+          "local_tradition": 4,
+          "community_wisdom": 8,
+          "tourist_attraction": 23,
+          "cultural_attraction": 2
+        },
+        "dominantCategory": "temple",
+        "total": 133
+      },
+      "actual": {
+        "total": 169,
+        "counts": {
+          "tourist_attraction": 31,
+          "temple": 91,
+          "folk_art": 7,
+          "local_tradition": 4,
+          "ritual": 5,
+          "performing_art": 5,
+          "costume": 5,
+          "community_wisdom": 11,
+          "local_food": 5,
+          "learning_center": 1,
+          "museum": 2,
+          "cultural_attraction": 2
+        },
+        "dominantCategory": "temple"
+      },
+      "milliseconds": 524
+    },
+    {
+      "code": "TH-47",
+      "before": {
+        "counts": {
+          "ethnic_group": 2
+        },
+        "dominantCategory": "ethnic_group",
+        "total": 2
+      },
+      "actual": {
+        "total": 452,
+        "counts": {
+          "temple": 354,
+          "tourist_attraction": 43,
+          "folk_art": 5,
+          "ritual": 5,
+          "local_tradition": 7,
+          "craftsmanship": 2,
+          "costume": 6,
+          "performing_art": 3,
+          "community_wisdom": 10,
+          "local_food": 10,
+          "museum": 2,
+          "cultural_attraction": 2,
+          "learning_center": 1,
+          "ethnic_group": 2
+        },
+        "dominantCategory": "temple"
+      },
+      "milliseconds": 638
+    },
+    {
+      "code": "TH-48",
+      "before": {
+        "counts": {
+          "ethnic_group": 1
+        },
+        "dominantCategory": "ethnic_group",
+        "total": 1
+      },
+      "actual": {
+        "total": 301,
+        "counts": {
+          "tourist_attraction": 47,
+          "temple": 172,
+          "local_tradition": 4,
+          "folk_art": 4,
+          "local_food": 14,
+          "ritual": 8,
+          "costume": 5,
+          "performing_art": 1,
+          "craftsmanship": 2,
+          "community_wisdom": 21,
+          "cultural_attraction": 12,
+          "museum": 5,
+          "learning_center": 5,
+          "ethnic_group": 1
+        },
+        "dominantCategory": "temple"
+      },
+      "milliseconds": 281
+    },
+    {
+      "code": "TH-49",
+      "before": {
+        "counts": {
+          "museum": 1,
+          "ritual": 7,
+          "temple": 79,
+          "costume": 2,
+          "folk_art": 8,
+          "local_food": 11,
+          "craftsmanship": 3,
+          "performing_art": 5,
+          "learning_center": 1,
+          "local_tradition": 2,
+          "community_wisdom": 10,
+          "tourist_attraction": 43,
+          "cultural_attraction": 2
+        },
+        "dominantCategory": "temple",
+        "total": 174
+      },
+      "actual": {
+        "total": 196,
+        "counts": {
+          "tourist_attraction": 49,
+          "temple": 93,
+          "performing_art": 5,
+          "folk_art": 8,
+          "ritual": 7,
+          "local_food": 11,
+          "local_tradition": 2,
+          "costume": 2,
+          "community_wisdom": 12,
+          "craftsmanship": 3,
+          "cultural_attraction": 2,
+          "museum": 1,
+          "learning_center": 1
+        },
+        "dominantCategory": "temple"
+      },
+      "milliseconds": 235
+    },
+    {
+      "code": "TH-50",
+      "before": {
+        "counts": {
+          "museum": 17,
+          "ritual": 1,
+          "temple": 202,
+          "folk_art": 10,
+          "local_food": 109,
+          "craftsmanship": 29,
+          "learning_center": 6,
+          "local_tradition": 3,
+          "community_wisdom": 25,
+          "tourist_attraction": 274,
+          "cultural_attraction": 15
+        },
+        "dominantCategory": "tourist_attraction",
+        "total": 691
+      },
+      "actual": {
+        "total": 823,
+        "counts": {
+          "tourist_attraction": 322,
+          "temple": 251,
+          "folk_art": 10,
+          "ritual": 1,
+          "craftsmanship": 29,
+          "local_tradition": 3,
+          "local_food": 110,
+          "learning_center": 8,
+          "community_wisdom": 34,
+          "cultural_attraction": 21,
+          "museum": 34
+        },
+        "dominantCategory": "tourist_attraction"
+      },
+      "milliseconds": 703
+    },
+    {
+      "code": "TH-51",
+      "before": {
+        "counts": {
+          "museum": 2,
+          "ritual": 4,
+          "temple": 61,
+          "costume": 2,
+          "folk_art": 9,
+          "local_food": 14,
+          "craftsmanship": 2,
+          "performing_art": 3,
+          "learning_center": 1,
+          "local_tradition": 3,
+          "community_wisdom": 15,
+          "tourist_attraction": 61,
+          "cultural_attraction": 1
+        },
+        "dominantCategory": "temple",
+        "total": 178
+      },
+      "actual": {
+        "total": 222,
+        "counts": {
+          "tourist_attraction": 62,
+          "local_food": 15,
+          "temple": 99,
+          "folk_art": 9,
+          "performing_art": 3,
+          "ritual": 4,
+          "local_tradition": 3,
+          "costume": 2,
+          "community_wisdom": 18,
+          "craftsmanship": 2,
+          "cultural_attraction": 2,
+          "museum": 2,
+          "learning_center": 1
+        },
+        "dominantCategory": "temple"
+      },
+      "milliseconds": 411
+    },
+    {
+      "code": "TH-52",
+      "before": {
+        "counts": {
+          "museum": 11,
+          "ritual": 4,
+          "temple": 91,
+          "costume": 4,
+          "folk_art": 16,
+          "local_food": 19,
+          "craftsmanship": 8,
+          "performing_art": 2,
+          "learning_center": 1,
+          "local_tradition": 4,
+          "community_wisdom": 22,
+          "tourist_attraction": 54,
+          "cultural_attraction": 10
+        },
+        "dominantCategory": "temple",
+        "total": 246
+      },
+      "actual": {
+        "total": 287,
+        "counts": {
+          "tourist_attraction": 71,
+          "temple": 108,
+          "craftsmanship": 8,
+          "local_food": 19,
+          "folk_art": 16,
+          "local_tradition": 4,
+          "ritual": 4,
+          "costume": 4,
+          "community_wisdom": 26,
+          "performing_art": 2,
+          "cultural_attraction": 12,
+          "museum": 12,
+          "learning_center": 1
+        },
+        "dominantCategory": "temple"
+      },
+      "milliseconds": 359
+    },
+    {
+      "code": "TH-53",
+      "before": {
+        "counts": {
+          "museum": 4,
+          "ritual": 6,
+          "temple": 60,
+          "costume": 7,
+          "folk_art": 7,
+          "local_food": 13,
+          "craftsmanship": 5,
+          "performing_art": 5,
+          "local_tradition": 6,
+          "community_wisdom": 3,
+          "tourist_attraction": 34,
+          "cultural_attraction": 7
+        },
+        "dominantCategory": "temple",
+        "total": 157
+      },
+      "actual": {
+        "total": 179,
+        "counts": {
+          "museum": 5,
+          "tourist_attraction": 39,
+          "cultural_attraction": 8,
+          "community_wisdom": 8,
+          "temple": 70,
+          "folk_art": 7,
+          "performing_art": 5,
+          "craftsmanship": 5,
+          "local_food": 13,
+          "ritual": 6,
+          "local_tradition": 6,
+          "costume": 7
+        },
+        "dominantCategory": "temple"
+      },
+      "milliseconds": 276
+    },
+    {
+      "code": "TH-54",
+      "before": {
+        "counts": {
+          "ethnic_group": 3
+        },
+        "dominantCategory": "ethnic_group",
+        "total": 3
+      },
+      "actual": {
+        "total": 231,
+        "counts": {
+          "tourist_attraction": 37,
+          "temple": 107,
+          "local_food": 21,
+          "performing_art": 3,
+          "folk_art": 15,
+          "ritual": 4,
+          "costume": 1,
+          "local_tradition": 1,
+          "community_wisdom": 22,
+          "craftsmanship": 6,
+          "museum": 5,
+          "cultural_attraction": 6,
+          "ethnic_group": 3
+        },
+        "dominantCategory": "temple"
+      },
+      "milliseconds": 374
+    },
+    {
+      "code": "TH-55",
+      "before": {
+        "counts": {
+          "ethnic_group": 4
+        },
+        "dominantCategory": "ethnic_group",
+        "total": 4
+      },
+      "actual": {
+        "total": 321,
+        "counts": {
+          "tourist_attraction": 62,
+          "cultural_attraction": 18,
+          "community_wisdom": 37,
+          "temple": 147,
+          "folk_art": 11,
+          "performing_art": 8,
+          "costume": 1,
+          "ritual": 4,
+          "local_tradition": 1,
+          "local_food": 21,
+          "craftsmanship": 1,
+          "museum": 5,
+          "learning_center": 1,
+          "ethnic_group": 4
+        },
+        "dominantCategory": "temple"
+      },
+      "milliseconds": 317
+    },
+    {
+      "code": "TH-56",
+      "before": {
+        "counts": {
+          "museum": 1,
+          "ritual": 4,
+          "temple": 206,
+          "costume": 5,
+          "folk_art": 9,
+          "local_food": 12,
+          "performing_art": 14,
+          "learning_center": 1,
+          "local_tradition": 2,
+          "community_wisdom": 4,
+          "tourist_attraction": 54,
+          "cultural_attraction": 1
+        },
+        "dominantCategory": "temple",
+        "total": 313
+      },
+      "actual": {
+        "total": 337,
+        "counts": {
+          "tourist_attraction": 60,
+          "cultural_attraction": 2,
+          "temple": 219,
+          "folk_art": 9,
+          "performing_art": 14,
+          "ritual": 4,
+          "costume": 5,
+          "local_tradition": 2,
+          "community_wisdom": 7,
+          "local_food": 12,
+          "museum": 2,
+          "learning_center": 1
+        },
+        "dominantCategory": "temple"
+      },
+      "milliseconds": 1574
+    },
+    {
+      "code": "TH-57",
+      "before": {
+        "counts": {
+          "ethnic_group": 3
+        },
+        "dominantCategory": "ethnic_group",
+        "total": 3
+      },
+      "actual": {
+        "total": 876,
+        "counts": {
+          "temple": 563,
+          "tourist_attraction": 159,
+          "folk_art": 23,
+          "performing_art": 8,
+          "craftsmanship": 4,
+          "ritual": 2,
+          "local_tradition": 4,
+          "costume": 3,
+          "community_wisdom": 35,
+          "local_food": 38,
+          "cultural_attraction": 15,
+          "museum": 18,
+          "learning_center": 1,
+          "ethnic_group": 3
+        },
+        "dominantCategory": "temple"
+      },
+      "milliseconds": 685
+    },
+    {
+      "code": "TH-58",
+      "before": {
+        "counts": {
+          "museum": 3,
+          "ritual": 4,
+          "temple": 81,
+          "costume": 2,
+          "folk_art": 10,
+          "local_food": 13,
+          "performing_art": 6,
+          "local_tradition": 8,
+          "community_wisdom": 17,
+          "tourist_attraction": 98,
+          "cultural_attraction": 2
+        },
+        "dominantCategory": "tourist_attraction",
+        "total": 244
+      },
+      "actual": {
+        "total": 261,
+        "counts": {
+          "tourist_attraction": 102,
+          "temple": 89,
+          "local_tradition": 8,
+          "folk_art": 10,
+          "performing_art": 6,
+          "ritual": 4,
+          "costume": 2,
+          "local_food": 14,
+          "community_wisdom": 21,
+          "museum": 3,
+          "cultural_attraction": 2
+        },
+        "dominantCategory": "tourist_attraction"
+      },
+      "milliseconds": 471
+    },
+    {
+      "code": "TH-60",
+      "before": {
+        "counts": {
+          "museum": 2,
+          "ritual": 4,
+          "temple": 79,
+          "folk_art": 7,
+          "local_food": 55,
+          "craftsmanship": 4,
+          "performing_art": 8,
+          "local_tradition": 2,
+          "community_wisdom": 4,
+          "tourist_attraction": 51,
+          "cultural_attraction": 2
+        },
+        "dominantCategory": "temple",
+        "total": 218
+      },
+      "actual": {
+        "total": 227,
+        "counts": {
+          "tourist_attraction": 52,
+          "temple": 86,
+          "craftsmanship": 4,
+          "folk_art": 7,
+          "local_food": 55,
+          "ritual": 4,
+          "local_tradition": 2,
+          "performing_art": 8,
+          "community_wisdom": 4,
+          "museum": 2,
+          "cultural_attraction": 3
+        },
+        "dominantCategory": "temple"
+      },
+      "milliseconds": 1303
+    },
+    {
+      "code": "TH-61",
+      "before": {
+        "counts": {
+          "ritual": 4,
+          "temple": 19,
+          "costume": 1,
+          "folk_art": 8,
+          "local_food": 18,
+          "craftsmanship": 2,
+          "performing_art": 1,
+          "local_tradition": 3,
+          "community_wisdom": 10,
+          "tourist_attraction": 38,
+          "cultural_attraction": 2
+        },
+        "dominantCategory": "tourist_attraction",
+        "total": 106
+      },
+      "actual": {
+        "total": 158,
+        "counts": {
+          "tourist_attraction": 42,
+          "temple": 62,
+          "cultural_attraction": 3,
+          "community_wisdom": 13,
+          "folk_art": 8,
+          "local_food": 18,
+          "craftsmanship": 2,
+          "ritual": 4,
+          "local_tradition": 3,
+          "costume": 1,
+          "performing_art": 1,
+          "museum": 1
+        },
+        "dominantCategory": "temple"
+      },
+      "milliseconds": 509
+    },
+    {
+      "code": "TH-62",
+      "before": {
+        "counts": {
+          "museum": 3,
+          "ritual": 5,
+          "temple": 62,
+          "costume": 9,
+          "folk_art": 13,
+          "local_food": 17,
+          "craftsmanship": 1,
+          "performing_art": 3,
+          "local_tradition": 5,
+          "community_wisdom": 5,
+          "tourist_attraction": 24,
+          "cultural_attraction": 1
+        },
+        "dominantCategory": "temple",
+        "total": 148
+      },
+      "actual": {
+        "total": 159,
+        "counts": {
+          "temple": 68,
+          "community_wisdom": 7,
+          "tourist_attraction": 27,
+          "craftsmanship": 1,
+          "performing_art": 3,
+          "folk_art": 13,
+          "local_food": 17,
+          "ritual": 5,
+          "local_tradition": 5,
+          "costume": 9,
+          "cultural_attraction": 1,
+          "museum": 3
+        },
+        "dominantCategory": "temple"
+      },
+      "milliseconds": 351
+    },
+    {
+      "code": "TH-63",
+      "before": {
+        "counts": {
+          "museum": 1,
+          "ritual": 1,
+          "temple": 94,
+          "folk_art": 6,
+          "local_food": 23,
+          "craftsmanship": 5,
+          "performing_art": 10,
+          "local_tradition": 18,
+          "community_wisdom": 12,
+          "tourist_attraction": 79,
+          "cultural_attraction": 1
+        },
+        "dominantCategory": "temple",
+        "total": 250
+      },
+      "actual": {
+        "total": 264,
+        "counts": {
+          "tourist_attraction": 89,
+          "temple": 95,
+          "craftsmanship": 5,
+          "local_tradition": 18,
+          "folk_art": 6,
+          "ritual": 1,
+          "performing_art": 10,
+          "local_food": 24,
+          "community_wisdom": 13,
+          "cultural_attraction": 2,
+          "museum": 1
+        },
+        "dominantCategory": "temple"
+      },
+      "milliseconds": 464
+    },
+    {
+      "code": "TH-64",
+      "before": {
+        "counts": {
+          "museum": 2,
+          "ritual": 4,
+          "temple": 63,
+          "costume": 1,
+          "folk_art": 12,
+          "local_food": 41,
+          "craftsmanship": 4,
+          "performing_art": 3,
+          "local_tradition": 2,
+          "community_wisdom": 12,
+          "tourist_attraction": 40,
+          "cultural_attraction": 1
+        },
+        "dominantCategory": "temple",
+        "total": 185
+      },
+      "actual": {
+        "total": 217,
+        "counts": {
+          "tourist_attraction": 42,
+          "cultural_attraction": 2,
+          "temple": 86,
+          "performing_art": 3,
+          "folk_art": 12,
+          "local_food": 41,
+          "ritual": 4,
+          "costume": 1,
+          "local_tradition": 2,
+          "craftsmanship": 4,
+          "community_wisdom": 16,
+          "museum": 3,
+          "learning_center": 1
+        },
+        "dominantCategory": "temple"
+      },
+      "milliseconds": 843
+    },
+    {
+      "code": "TH-65",
+      "before": {
+        "counts": {
+          "museum": 5,
+          "ritual": 5,
+          "temple": 34,
+          "folk_art": 10,
+          "local_food": 19,
+          "craftsmanship": 2,
+          "performing_art": 11,
+          "local_tradition": 4,
+          "community_wisdom": 12,
+          "tourist_attraction": 63,
+          "cultural_attraction": 3
+        },
+        "dominantCategory": "tourist_attraction",
+        "total": 168
+      },
+      "actual": {
+        "total": 183,
+        "counts": {
+          "tourist_attraction": 67,
+          "community_wisdom": 14,
+          "temple": 42,
+          "performing_art": 11,
+          "folk_art": 10,
+          "local_food": 19,
+          "local_tradition": 4,
+          "ritual": 5,
+          "craftsmanship": 2,
+          "museum": 5,
+          "cultural_attraction": 4
+        },
+        "dominantCategory": "tourist_attraction"
+      },
+      "milliseconds": 320
+    },
+    {
+      "code": "TH-66",
+      "before": {
+        "counts": {
+          "museum": 3,
+          "ritual": 5,
+          "temple": 56,
+          "costume": 3,
+          "folk_art": 12,
+          "local_food": 12,
+          "craftsmanship": 1,
+          "performing_art": 8,
+          "local_tradition": 10,
+          "community_wisdom": 5,
+          "tourist_attraction": 19,
+          "cultural_attraction": 2
+        },
+        "dominantCategory": "temple",
+        "total": 136
+      },
+      "actual": {
+        "total": 156,
+        "counts": {
+          "museum": 3,
+          "tourist_attraction": 20,
+          "temple": 74,
+          "ritual": 5,
+          "craftsmanship": 1,
+          "folk_art": 12,
+          "local_tradition": 10,
+          "local_food": 13,
+          "costume": 3,
+          "performing_art": 8,
+          "community_wisdom": 5,
+          "cultural_attraction": 2
+        },
+        "dominantCategory": "temple"
+      },
+      "milliseconds": 397
+    },
+    {
+      "code": "TH-67",
+      "before": {
+        "counts": {
+          "ethnic_group": 2
+        },
+        "dominantCategory": "ethnic_group",
+        "total": 2
+      },
+      "actual": {
+        "total": 185,
+        "counts": {
+          "museum": 4,
+          "tourist_attraction": 79,
+          "temple": 33,
+          "cultural_attraction": 7,
+          "community_wisdom": 9,
+          "craftsmanship": 2,
+          "local_tradition": 4,
+          "costume": 2,
+          "performing_art": 3,
+          "folk_art": 12,
+          "local_food": 23,
+          "ritual": 4,
+          "learning_center": 1,
+          "ethnic_group": 2
+        },
+        "dominantCategory": "tourist_attraction"
+      },
+      "milliseconds": 941
+    },
+    {
+      "code": "TH-70",
+      "before": {
+        "counts": {
+          "museum": 7,
+          "ritual": 7,
+          "temple": 150,
+          "costume": 1,
+          "folk_art": 3,
+          "local_food": 39,
+          "craftsmanship": 3,
+          "performing_art": 5,
+          "learning_center": 2,
+          "local_tradition": 7,
+          "community_wisdom": 7,
+          "tourist_attraction": 72,
+          "cultural_attraction": 3
+        },
+        "dominantCategory": "temple",
+        "total": 306
+      },
+      "actual": {
+        "total": 409,
+        "counts": {
+          "tourist_attraction": 98,
+          "museum": 16,
+          "temple": 207,
+          "craftsmanship": 3,
+          "folk_art": 3,
+          "performing_art": 5,
+          "ritual": 7,
+          "local_tradition": 7,
+          "costume": 1,
+          "local_food": 46,
+          "community_wisdom": 10,
+          "cultural_attraction": 4,
+          "learning_center": 2
+        },
+        "dominantCategory": "temple"
+      },
+      "milliseconds": 458
+    },
+    {
+      "code": "TH-71",
+      "before": {
+        "counts": {
+          "museum": 6,
+          "ritual": 3,
+          "temple": 47,
+          "costume": 3,
+          "folk_art": 5,
+          "local_food": 106,
+          "craftsmanship": 1,
+          "performing_art": 5,
+          "learning_center": 3,
+          "local_tradition": 16,
+          "community_wisdom": 4,
+          "tourist_attraction": 132,
+          "cultural_attraction": 6
+        },
+        "dominantCategory": "tourist_attraction",
+        "total": 337
+      },
+      "actual": {
+        "total": 430,
+        "counts": {
+          "tourist_attraction": 171,
+          "temple": 75,
+          "cultural_attraction": 15,
+          "folk_art": 5,
+          "local_tradition": 16,
+          "local_food": 107,
+          "performing_art": 5,
+          "ritual": 3,
+          "costume": 3,
+          "craftsmanship": 1,
+          "community_wisdom": 16,
+          "learning_center": 4,
+          "museum": 9
+        },
+        "dominantCategory": "tourist_attraction"
+      },
+      "milliseconds": 336
+    },
+    {
+      "code": "TH-72",
+      "before": {
+        "counts": {
+          "museum": 5,
+          "ritual": 4,
+          "temple": 188,
+          "costume": 5,
+          "folk_art": 9,
+          "local_food": 32,
+          "performing_art": 5,
+          "learning_center": 1,
+          "local_tradition": 2,
+          "community_wisdom": 18,
+          "tourist_attraction": 61,
+          "cultural_attraction": 7
+        },
+        "dominantCategory": "temple",
+        "total": 337
+      },
+      "actual": {
+        "total": 612,
+        "counts": {
+          "tourist_attraction": 65,
+          "temple": 448,
+          "folk_art": 9,
+          "local_food": 35,
+          "ritual": 4,
+          "local_tradition": 2,
+          "costume": 5,
+          "performing_art": 5,
+          "community_wisdom": 22,
+          "museum": 6,
+          "cultural_attraction": 10,
+          "learning_center": 1
+        },
+        "dominantCategory": "temple"
+      },
+      "milliseconds": 532
+    },
+    {
+      "code": "TH-73",
+      "before": {
+        "counts": {
+          "museum": 8,
+          "ritual": 5,
+          "temple": 124,
+          "costume": 4,
+          "folk_art": 5,
+          "local_food": 26,
+          "craftsmanship": 1,
+          "performing_art": 10,
+          "learning_center": 1,
+          "local_tradition": 12,
+          "community_wisdom": 13,
+          "tourist_attraction": 51,
+          "cultural_attraction": 9
+        },
+        "dominantCategory": "temple",
+        "total": 269
+      },
+      "actual": {
+        "total": 326,
+        "counts": {
+          "tourist_attraction": 62,
+          "museum": 13,
+          "temple": 137,
+          "costume": 4,
+          "local_tradition": 12,
+          "craftsmanship": 1,
+          "folk_art": 5,
+          "ritual": 5,
+          "community_wisdom": 26,
+          "performing_art": 10,
+          "local_food": 34,
+          "cultural_attraction": 16,
+          "learning_center": 1
+        },
+        "dominantCategory": "temple"
+      },
+      "milliseconds": 444
+    },
+    {
+      "code": "TH-74",
+      "before": {
+        "counts": {
+          "museum": 2,
+          "ritual": 5,
+          "temple": 30,
+          "folk_art": 9,
+          "local_food": 21,
+          "craftsmanship": 3,
+          "performing_art": 6,
+          "learning_center": 2,
+          "local_tradition": 5,
+          "community_wisdom": 10,
+          "tourist_attraction": 25,
+          "cultural_attraction": 5
+        },
+        "dominantCategory": "temple",
+        "total": 123
+      },
+      "actual": {
+        "total": 147,
+        "counts": {
+          "learning_center": 3,
+          "tourist_attraction": 36,
+          "temple": 40,
+          "community_wisdom": 10,
+          "cultural_attraction": 6,
+          "folk_art": 9,
+          "craftsmanship": 3,
+          "performing_art": 6,
+          "ritual": 5,
+          "local_tradition": 5,
+          "local_food": 22,
+          "museum": 2
+        },
+        "dominantCategory": "temple"
+      },
+      "milliseconds": 238
+    },
+    {
+      "code": "TH-75",
+      "before": {
+        "counts": {
+          "museum": 4,
+          "ritual": 4,
+          "temple": 148,
+          "folk_art": 11,
+          "local_food": 19,
+          "craftsmanship": 2,
+          "performing_art": 7,
+          "local_tradition": 3,
+          "community_wisdom": 13,
+          "tourist_attraction": 26,
+          "cultural_attraction": 2
+        },
+        "dominantCategory": "temple",
+        "total": 239
+      },
+      "actual": {
+        "total": 285,
+        "counts": {
+          "temple": 176,
+          "cultural_attraction": 3,
+          "local_food": 21,
+          "museum": 5,
+          "community_wisdom": 21,
+          "tourist_attraction": 30,
+          "craftsmanship": 2,
+          "folk_art": 12,
+          "ritual": 4,
+          "performing_art": 7,
+          "local_tradition": 4
+        },
+        "dominantCategory": "temple"
+      },
+      "milliseconds": 438
+    },
+    {
+      "code": "TH-76",
+      "before": {
+        "counts": {
+          "museum": 4,
+          "temple": 135,
+          "local_food": 11,
+          "craftsmanship": 2,
+          "performing_art": 1,
+          "learning_center": 2,
+          "community_wisdom": 11,
+          "tourist_attraction": 45,
+          "cultural_attraction": 3
+        },
+        "dominantCategory": "temple",
+        "total": 214
+      },
+      "actual": {
+        "total": 301,
+        "counts": {
+          "learning_center": 3,
+          "community_wisdom": 17,
+          "cultural_attraction": 3,
+          "temple": 179,
+          "tourist_attraction": 55,
+          "craftsmanship": 6,
+          "local_tradition": 4,
+          "folk_art": 8,
+          "ritual": 4,
+          "performing_art": 3,
+          "local_food": 14,
+          "museum": 5
+        },
+        "dominantCategory": "temple"
+      },
+      "milliseconds": 871
+    },
+    {
+      "code": "TH-77",
+      "before": {
+        "counts": {
+          "museum": 3,
+          "ritual": 3,
+          "temple": 70,
+          "folk_art": 1,
+          "local_food": 66,
+          "performing_art": 5,
+          "learning_center": 1,
+          "local_tradition": 1,
+          "community_wisdom": 11,
+          "tourist_attraction": 112,
+          "cultural_attraction": 2
+        },
+        "dominantCategory": "tourist_attraction",
+        "total": 275
+      },
+      "actual": {
+        "total": 313,
+        "counts": {
+          "tourist_attraction": 125,
+          "local_food": 68,
+          "community_wisdom": 12,
+          "museum": 4,
+          "temple": 77,
+          "local_tradition": 3,
+          "folk_art": 7,
+          "performing_art": 6,
+          "ritual": 4,
+          "craftsmanship": 1,
+          "cultural_attraction": 5,
+          "learning_center": 1
+        },
+        "dominantCategory": "tourist_attraction"
+      },
+      "milliseconds": 451
+    },
+    {
+      "code": "TH-80",
+      "before": {
+        "counts": {
+          "museum": 2,
+          "temple": 174,
+          "costume": 3,
+          "folk_art": 5,
+          "local_food": 28,
+          "craftsmanship": 2,
+          "learning_center": 1,
+          "local_tradition": 1,
+          "community_wisdom": 8,
+          "tourist_attraction": 62,
+          "cultural_attraction": 3
+        },
+        "dominantCategory": "temple",
+        "total": 289
+      },
+      "actual": {
+        "total": 402,
+        "counts": {
+          "tourist_attraction": 80,
+          "temple": 228,
+          "museum": 2,
+          "community_wisdom": 15,
+          "local_tradition": 14,
+          "folk_art": 8,
+          "performing_art": 6,
+          "ritual": 2,
+          "local_food": 32,
+          "costume": 4,
+          "craftsmanship": 3,
+          "cultural_attraction": 7,
+          "learning_center": 1
+        },
+        "dominantCategory": "temple"
+      },
+      "milliseconds": 401
+    },
+    {
+      "code": "TH-81",
+      "before": {
+        "counts": {
+          "ethnic_group": 3
+        },
+        "dominantCategory": "ethnic_group",
+        "total": 3
+      },
+      "actual": {
+        "total": 326,
+        "counts": {
+          "tourist_attraction": 109,
+          "community_wisdom": 11,
+          "local_food": 28,
+          "temple": 148,
+          "craftsmanship": 4,
+          "costume": 1,
+          "folk_art": 6,
+          "ritual": 4,
+          "local_tradition": 3,
+          "performing_art": 5,
+          "museum": 2,
+          "learning_center": 1,
+          "cultural_attraction": 1,
+          "ethnic_group": 3
+        },
+        "dominantCategory": "temple"
+      },
+      "milliseconds": 349
+    },
+    {
+      "code": "TH-82",
+      "before": {
+        "counts": {
+          "ethnic_group": 6
+        },
+        "dominantCategory": "ethnic_group",
+        "total": 6
+      },
+      "actual": {
+        "total": 241,
+        "counts": {
+          "tourist_attraction": 123,
+          "cultural_attraction": 6,
+          "community_wisdom": 13,
+          "temple": 43,
+          "costume": 1,
+          "folk_art": 7,
+          "performing_art": 5,
+          "ritual": 4,
+          "local_tradition": 3,
+          "craftsmanship": 1,
+          "local_food": 26,
+          "museum": 2,
+          "learning_center": 1,
+          "ethnic_group": 6
+        },
+        "dominantCategory": "tourist_attraction"
+      },
+      "milliseconds": 440
+    },
+    {
+      "code": "TH-83",
+      "before": {
+        "counts": {
+          "ethnic_group": 4
+        },
+        "dominantCategory": "ethnic_group",
+        "total": 4
+      },
+      "actual": {
+        "total": 381,
+        "counts": {
+          "tourist_attraction": 166,
+          "museum": 17,
+          "community_wisdom": 18,
+          "temple": 28,
+          "cultural_attraction": 13,
+          "costume": 2,
+          "folk_art": 6,
+          "performing_art": 5,
+          "ritual": 5,
+          "local_tradition": 4,
+          "craftsmanship": 2,
+          "local_food": 110,
+          "learning_center": 1,
+          "ethnic_group": 4
+        },
+        "dominantCategory": "tourist_attraction"
+      },
+      "milliseconds": 410
+    },
+    {
+      "code": "TH-84",
+      "before": {
+        "counts": {
+          "museum": 7,
+          "ritual": 1,
+          "temple": 99,
+          "costume": 19,
+          "folk_art": 8,
+          "local_food": 64,
+          "craftsmanship": 1,
+          "performing_art": 2,
+          "community_wisdom": 8,
+          "tourist_attraction": 99,
+          "cultural_attraction": 6
+        },
+        "dominantCategory": "temple",
+        "total": 314
+      },
+      "actual": {
+        "total": 389,
+        "counts": {
+          "tourist_attraction": 125,
+          "cultural_attraction": 9,
+          "temple": 119,
+          "craftsmanship": 4,
+          "community_wisdom": 15,
+          "folk_art": 8,
+          "performing_art": 4,
+          "ritual": 1,
+          "costume": 19,
+          "local_tradition": 2,
+          "local_food": 68,
+          "museum": 12,
+          "learning_center": 3
+        },
+        "dominantCategory": "tourist_attraction"
+      },
+      "milliseconds": 1131
+    },
+    {
+      "code": "TH-85",
+      "before": {
+        "counts": {
+          "ethnic_group": 1
+        },
+        "dominantCategory": "ethnic_group",
+        "total": 1
+      },
+      "actual": {
+        "total": 174,
+        "counts": {
+          "tourist_attraction": 83,
+          "temple": 41,
+          "craftsmanship": 4,
+          "costume": 1,
+          "folk_art": 8,
+          "performing_art": 5,
+          "ritual": 4,
+          "local_tradition": 2,
+          "community_wisdom": 9,
+          "local_food": 9,
+          "cultural_attraction": 5,
+          "museum": 1,
+          "learning_center": 1,
+          "ethnic_group": 1
+        },
+        "dominantCategory": "tourist_attraction"
+      },
+      "milliseconds": 402
+    },
+    {
+      "code": "TH-86",
+      "before": {
+        "counts": {
+          "museum": 3,
+          "ritual": 5,
+          "temple": 195,
+          "costume": 2,
+          "folk_art": 7,
+          "local_food": 31,
+          "craftsmanship": 2,
+          "performing_art": 15,
+          "local_tradition": 6,
+          "community_wisdom": 13,
+          "tourist_attraction": 122,
+          "cultural_attraction": 4
+        },
+        "dominantCategory": "temple",
+        "total": 405
+      },
+      "actual": {
+        "total": 454,
+        "counts": {
+          "tourist_attraction": 152,
+          "museum": 3,
+          "temple": 207,
+          "community_wisdom": 15,
+          "performing_art": 15,
+          "folk_art": 7,
+          "ritual": 5,
+          "local_tradition": 6,
+          "costume": 2,
+          "local_food": 33,
+          "craftsmanship": 2,
+          "cultural_attraction": 6,
+          "learning_center": 1
+        },
+        "dominantCategory": "temple"
+      },
+      "milliseconds": 859
+    },
+    {
+      "code": "TH-90",
+      "before": {
+        "counts": {
+          "ethnic_group": 1
+        },
+        "dominantCategory": "ethnic_group",
+        "total": 1
+      },
+      "actual": {
+        "total": 307,
+        "counts": {
+          "tourist_attraction": 91,
+          "local_food": 19,
+          "cultural_attraction": 10,
+          "temple": 120,
+          "museum": 9,
+          "folk_art": 10,
+          "community_wisdom": 23,
+          "performing_art": 10,
+          "ritual": 5,
+          "local_tradition": 6,
+          "costume": 1,
+          "craftsmanship": 2,
+          "ethnic_group": 1
+        },
+        "dominantCategory": "temple"
+      },
+      "milliseconds": 411
+    },
+    {
+      "code": "TH-91",
+      "before": {
+        "counts": {
+          "ethnic_group": 6
+        },
+        "dominantCategory": "ethnic_group",
+        "total": 6
+      },
+      "actual": {
+        "total": 187,
+        "counts": {
+          "tourist_attraction": 75,
+          "museum": 4,
+          "temple": 56,
+          "costume": 4,
+          "folk_art": 5,
+          "ritual": 5,
+          "community_wisdom": 6,
+          "performing_art": 4,
+          "local_food": 13,
+          "local_tradition": 2,
+          "craftsmanship": 7,
+          "ethnic_group": 6
+        },
+        "dominantCategory": "tourist_attraction"
+      },
+      "milliseconds": 310
+    },
+    {
+      "code": "TH-92",
+      "before": {
+        "counts": {
+          "ethnic_group": 1
+        },
+        "dominantCategory": "ethnic_group",
+        "total": 1
+      },
+      "actual": {
+        "total": 224,
+        "counts": {
+          "tourist_attraction": 49,
+          "temple": 82,
+          "costume": 2,
+          "folk_art": 5,
+          "performing_art": 10,
+          "ritual": 4,
+          "local_tradition": 2,
+          "craftsmanship": 1,
+          "community_wisdom": 14,
+          "local_food": 50,
+          "museum": 2,
+          "cultural_attraction": 2,
+          "ethnic_group": 1
+        },
+        "dominantCategory": "temple"
+      },
+      "milliseconds": 324
+    },
+    {
+      "code": "TH-93",
+      "before": {
+        "counts": {
+          "ethnic_group": 2
+        },
+        "dominantCategory": "ethnic_group",
+        "total": 2
+      },
+      "actual": {
+        "total": 174,
+        "counts": {
+          "tourist_attraction": 47,
+          "temple": 77,
+          "folk_art": 12,
+          "performing_art": 7,
+          "ritual": 1,
+          "local_tradition": 3,
+          "local_food": 14,
+          "craftsmanship": 1,
+          "cultural_attraction": 1,
+          "community_wisdom": 6,
+          "museum": 2,
+          "learning_center": 1,
+          "ethnic_group": 2
+        },
+        "dominantCategory": "temple"
+      },
+      "milliseconds": 380
+    },
+    {
+      "code": "TH-94",
+      "before": {
+        "counts": {
+          "ritual": 5,
+          "temple": 86,
+          "costume": 1,
+          "folk_art": 14,
+          "local_food": 6,
+          "craftsmanship": 1,
+          "performing_art": 9,
+          "local_tradition": 13,
+          "community_wisdom": 13,
+          "tourist_attraction": 33,
+          "cultural_attraction": 2
+        },
+        "dominantCategory": "temple",
+        "total": 183
+      },
+      "actual": {
+        "total": 238,
+        "counts": {
+          "tourist_attraction": 36,
+          "community_wisdom": 18,
+          "temple": 130,
+          "performing_art": 9,
+          "folk_art": 14,
+          "ritual": 5,
+          "local_tradition": 13,
+          "costume": 1,
+          "local_food": 6,
+          "craftsmanship": 1,
+          "cultural_attraction": 5
+        },
+        "dominantCategory": "temple"
+      },
+      "milliseconds": 297
+    },
+    {
+      "code": "TH-95",
+      "before": {
+        "counts": {
+          "museum": 1,
+          "ritual": 4,
+          "temple": 305,
+          "costume": 1,
+          "folk_art": 6,
+          "local_food": 3,
+          "craftsmanship": 2,
+          "performing_art": 8,
+          "local_tradition": 4,
+          "community_wisdom": 4,
+          "tourist_attraction": 25,
+          "cultural_attraction": 1
+        },
+        "dominantCategory": "temple",
+        "total": 364
+      },
+      "actual": {
+        "total": 446,
+        "counts": {
+          "tourist_attraction": 31,
+          "temple": 377,
+          "performing_art": 8,
+          "folk_art": 6,
+          "ritual": 4,
+          "local_tradition": 4,
+          "costume": 1,
+          "community_wisdom": 4,
+          "craftsmanship": 2,
+          "local_food": 3,
+          "cultural_attraction": 1,
+          "museum": 5
+        },
+        "dominantCategory": "temple"
+      },
+      "milliseconds": 412
+    },
+    {
+      "code": "TH-96",
+      "before": {
+        "counts": {
+          "museum": 3,
+          "ritual": 5,
+          "temple": 67,
+          "costume": 1,
+          "folk_art": 12,
+          "local_food": 13,
+          "craftsmanship": 4,
+          "performing_art": 12,
+          "local_tradition": 4,
+          "community_wisdom": 2,
+          "tourist_attraction": 21,
+          "cultural_attraction": 2
+        },
+        "dominantCategory": "temple",
+        "total": 146
+      },
+      "actual": {
+        "total": 177,
+        "counts": {
+          "tourist_attraction": 34,
+          "temple": 83,
+          "performing_art": 12,
+          "folk_art": 12,
+          "ritual": 5,
+          "local_tradition": 4,
+          "craftsmanship": 4,
+          "costume": 1,
+          "community_wisdom": 3,
+          "local_food": 13,
+          "museum": 4,
+          "cultural_attraction": 2
+        },
+        "dominantCategory": "temple"
+      },
+      "milliseconds": 309
+    }
+  ],
+  "initialCachedTotal": 13651,
+  "afterVerification": {
+    "checkedAt": "2026-11-08T06:52:50.241Z",
+    "provinces": 77,
+    "mismatches": 0,
+    "total": 23019,
+    "fullRebuildMatches": true
+  },
+  "intermediateTotalBeforePaginationFix": 16820
+}

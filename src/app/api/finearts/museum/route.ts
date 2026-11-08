@@ -2,11 +2,7 @@ import type { NextRequest } from 'next/server';
 
 import { NextResponse } from 'next/server';
 
-import {
-  getFineArtsLimit,
-  getFineArtsApiKey,
-  fetchFineArtsPlaces,
-} from '../fetch-finearts-places';
+import { getFineArtsLimit, getFineArtsApiKey, fetchFineArtsPlaces } from '../fetch-finearts-places';
 
 // ----------------------------------------------------------------------
 
@@ -25,11 +21,14 @@ export async function GET(request: NextRequest) {
   }
 
   if (!apiKey) {
-    return NextResponse.json({
-      data: [],
-      source: 'api.finearts.go.th',
-      message: 'Missing FINE_ARTS_API_KEY',
-    });
+    return NextResponse.json(
+      {
+        data: [],
+        source: 'api.finearts.go.th',
+        message: 'ยังไม่ได้ตั้งค่า FINE_ARTS_API_KEY บนเซิร์ฟเวอร์',
+      },
+      { status: 503 }
+    );
   }
 
   const result = await fetchFineArtsPlaces({

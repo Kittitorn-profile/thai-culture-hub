@@ -5,6 +5,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
+import Alert from '@mui/material/Alert';
 import Table from '@mui/material/Table';
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
@@ -24,6 +25,8 @@ import provinces from 'src/data/thailand-culture/provinces';
 import { TableHeadCustom } from 'src/components/table';
 
 import { useAuthContext } from 'src/auth/hooks';
+
+import { DataInventory } from './data-inventory';
 
 type ProvinceOption = {
   code: string;
@@ -95,7 +98,7 @@ const TAT_SYNC_MAX_PAGES = 500;
 const SYNC_TABLE_HEAD = [
   { id: 'source', label: 'แหล่งข้อมูล' },
   { id: 'description', label: 'รายละเอียด' },
-  { id: 'total', label: 'จำนวน data ที่ได้มา', width: 180 },
+  { id: 'total', label: 'จำนวนจาก Sync ครั้งล่าสุด', width: 180 },
   { id: 'status', label: 'สถานะล่าสุด', width: 260 },
   { id: 'actions', label: '', width: 140, align: 'right' as const },
 ];
@@ -434,6 +437,7 @@ function formatSyncedAt(value?: string) {
   return new Intl.DateTimeFormat('th-TH', {
     dateStyle: 'medium',
     timeStyle: 'short',
+    timeZone: 'Asia/Bangkok',
   }).format(new Date(value));
 }
 
@@ -761,6 +765,7 @@ export default function CulturalPlacesSyncPage() {
         },
       }));
     } finally {
+      await queryClient.invalidateQueries({ queryKey: ['admin-cultural-data-inventory'] });
       setSyncStatuses((previous) => ({
         ...previous,
         [syncDatasetValue]: {
@@ -777,10 +782,10 @@ export default function CulturalPlacesSyncPage() {
         <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" spacing={2}>
           <Box>
             <Typography variant="h3" sx={{ fontWeight: 900 }}>
-              Cultural Places Sync
+              แหล่งข้อมูลและการนำเข้า
             </Typography>
             <Typography sx={{ mt: 0.5, color: 'text.secondary' }}>
-              แสดงแหล่งข้อมูลภายนอกและจำนวน data ล่าสุดที่ดึงเข้าระบบ
+              ตรวจจำนวนข้อมูลปัจจุบันทุกกลุ่ม และดูประวัติการนำเข้าข้อมูลสถานที่
             </Typography>
           </Box>
           <Button
@@ -792,12 +797,8 @@ export default function CulturalPlacesSyncPage() {
           </Button>
         </Stack>
 
-        {/* {error && <Alert severity="error">{error}</Alert>}
+        {error && <Alert severity="error">{error}</Alert>}
         {message && <Alert severity="success">{message}</Alert>}
-        <Alert severity="info">
-          Sync จาก ททท. ต้องมี <strong>TAT_DATA_API_KEY</strong> และกรมศิลป์ต้องมี{' '}
-          <strong>FINE_ARTS_API_KEY</strong> ใน env ของ server
-        </Alert> */}
 
         <Card sx={{ p: 2.5 }}>
           <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} alignItems={{ md: 'center' }}>
@@ -817,6 +818,12 @@ export default function CulturalPlacesSyncPage() {
           </Stack>
         </Card>
 
+        <DataInventory
+          accessToken={accessToken}
+          provinceCode={provinceCode}
+          provinceName={selectedProvince.name}
+        />
+
         <Card sx={{ p: 2.5 }}>
           <Stack
             direction={{ xs: 'column', md: 'row' }}
@@ -826,10 +833,10 @@ export default function CulturalPlacesSyncPage() {
           >
             <Box>
               <Typography variant="h5" sx={{ fontWeight: 900 }}>
-                แหล่งข้อมูล Sync
+                การนำเข้าและประวัติ Sync สถานที่
               </Typography>
               <Typography sx={{ mt: 0.5, color: 'text.secondary', fontSize: 13 }}>
-                ตารางนี้อ่านประวัติล่าสุดจาก cultural_place_sync_logs
+                ยอดในตารางนี้เป็นผลการ Sync ครั้งล่าสุด อาจต่างจากจำนวนที่มีอยู่จริงด้านบน
               </Typography>
             </Box>
             <Stack spacing={0.5} sx={{ color: 'text.secondary', fontSize: 13 }}>

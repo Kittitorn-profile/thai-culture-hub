@@ -29,6 +29,7 @@ import { HomeDataFlowSection } from '../components/home-data-flow-section';
 import { HomeAnalyticsSection } from '../components/home-analytics-section';
 import { HomeExploreAllSection } from '../components/home-explore-all-section';
 import { HomeStoryVideoSection } from '../components/home-story-video-section';
+import { HomeDataSummarySection } from '../components/home-data-summary-section';
 import { HomeLocalWisdomSection } from '../components/home-local-wisdom-section';
 import { HomeUpcomingEventsSection } from '../components/home-upcoming-events-section';
 import { HomeCreatorArticlesSection } from '../components/home-creator-articles-section';
@@ -316,6 +317,8 @@ export function HomeView() {
       <HomeHeroSection />
 
       <HomeMapSection />
+
+      <HomeDataSummarySection />
 
       <HomeAnalyticsSection summary={homeAnalytics} />
 

@@ -1,5 +1,7 @@
 import type { CulturalPlace, CulturalCategory } from 'src/sections/province/province-data';
 
+import { parseCoordinate } from 'src/utils/coordinates';
+
 import provinces from 'src/data/thailand-culture/provinces';
 
 // ----------------------------------------------------------------------
@@ -90,9 +92,7 @@ function getString(record: FineArtsRecord, keys: string[]) {
 }
 
 function toCoordinate(value: unknown) {
-  const coordinate = typeof value === 'number' ? value : Number(value);
-
-  return Number.isFinite(coordinate) ? coordinate : null;
+  return parseCoordinate(value);
 }
 
 function getCoordinate(record: FineArtsRecord, keys: string[]) {
@@ -128,7 +128,7 @@ function getRecords(json: unknown): FineArtsRecord[] {
     data && typeof data === 'object' ? (data as Record<string, unknown>).records : null,
   ];
 
-  return candidates.find(Array.isArray) as FineArtsRecord[] ?? [];
+  return (candidates.find(Array.isArray) as FineArtsRecord[]) ?? [];
 }
 
 function getImageUrls(record: FineArtsRecord) {
@@ -171,7 +171,15 @@ function mapFineArtsRecordToPlace(
     'name_th',
   ]);
   const lat = getCoordinate(record, ['latitude', 'lat', 'Latitude', 'LAT']);
-  const lng = getCoordinate(record, ['longitude', 'lng', 'lon', 'long', 'Longitude', 'LON', 'LONG']);
+  const lng = getCoordinate(record, [
+    'longitude',
+    'lng',
+    'lon',
+    'long',
+    'Longitude',
+    'LON',
+    'LONG',
+  ]);
 
   if (!name || lat == null || lng == null) {
     return null;
@@ -200,7 +208,8 @@ function mapFineArtsRecordToPlace(
   ]
     .filter(Boolean)
     .join(' ');
-  const sourceUrl = getString(record, ['url', 'link', 'sourceUrl', 'source_url']) || config.endpoint;
+  const sourceUrl =
+    getString(record, ['url', 'link', 'sourceUrl', 'source_url']) || config.endpoint;
   const mapUrl = getString(record, ['mapUrl', 'map_url', 'googleMapUrl']);
 
   return {
@@ -253,16 +262,26 @@ export async function fetchFineArtsPlaces({
     url.searchParams.set('limit', `${getFineArtsLimit(limit)}`);
   }
 
-  const response = await fetch(url, {
-    cache: revalidate == null ? 'no-store' : undefined,
-    next: revalidate == null ? undefined : { revalidate },
-    headers: {
-      'x-api-key': apiKey,
-      'X-API-KEY': apiKey,
-      'api-key': apiKey,
-      Authorization: `Bearer ${apiKey}`,
-    },
-  });
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      cache: revalidate == null ? 'no-store' : undefined,
+      next: revalidate == null ? undefined : { revalidate },
+      signal: AbortSignal.timeout(20000),
+      headers: {
+        'x-api-key': apiKey,
+        'api-key': apiKey,
+        Authorization: `Bearer ${apiKey}`,
+      },
+    });
+  } catch (error) {
+    return {
+      status: error instanceof Error && error.name === 'TimeoutError' ? 504 : 502,
+      data: [],
+      source: 'api.finearts.go.th',
+      message: 'เชื่อมต่อ API กรมศิลป์ไม่สำเร็จหรือใช้เวลานานเกินไป กรุณาลองใหม่',
+    };
+  }
   const json = await response.json().catch(() => ({}));
 
   if (!response.ok) {

@@ -3,6 +3,8 @@ import type { NextRequest } from 'next/server';
 import crypto from 'node:crypto';
 import { NextResponse } from 'next/server';
 
+import { parseCoordinate } from 'src/utils/coordinates';
+
 import provinces from 'src/data/thailand-culture/provinces';
 import { getSupabaseAdmin } from 'src/server/supabase-admin';
 import { verifyAdminAccessToken } from 'src/server/admin-api-auth';
@@ -12,8 +14,7 @@ import { ADMIN_PERMISSION } from 'src/auth/admin-permissions';
 const THAI_FABRIC_WISDOM_RESOURCE_ID = 'd12cb480-0071-4b12-a601-d323cb481593';
 const THAI_FABRIC_WISDOM_DATASET_URL =
   'https://gdcatalog.m-culture.go.th/api/3/action/datastore_search';
-const THAI_FABRIC_WISDOM_TABLE =
-  process.env.THAI_FABRIC_WISDOM_TABLE ?? 'thai_fabric_wisdom';
+const THAI_FABRIC_WISDOM_TABLE = process.env.THAI_FABRIC_WISDOM_TABLE ?? 'thai_fabric_wisdom';
 const CULTURAL_PLACES_TABLE = process.env.CULTURAL_PLACES_TABLE ?? 'cultural_places';
 const THAILAND_PROVINCES_TABLE = process.env.THAILAND_PROVINCES_TABLE ?? 'thailand_provinces';
 const UPSERT_CHUNK_SIZE = 500;
@@ -35,7 +36,9 @@ function cleanText(value: unknown) {
     return null;
   }
 
-  const text = String(value).replace(/^\uFEFF/, '').trim();
+  const text = String(value)
+    .replace(/^\uFEFF/, '')
+    .trim();
 
   return text && text !== '-' ? text : null;
 }
@@ -119,9 +122,7 @@ function joinInlineText(values: Array<string | null>) {
 }
 
 function toCoordinate(value: unknown) {
-  const numberValue = Number(value);
-
-  return Number.isFinite(numberValue) ? numberValue : null;
+  return parseCoordinate(value);
 }
 
 function getProvinceCode(record: ThaiFabricWisdomRecord) {
@@ -151,7 +152,11 @@ function getStableId(record: ThaiFabricWisdomRecord) {
   ]
     .map((value) => normalizeText(value))
     .join('|');
-  const hash = crypto.createHash('sha1').update(signature || JSON.stringify(record)).digest('hex').slice(0, 16);
+  const hash = crypto
+    .createHash('sha1')
+    .update(signature || JSON.stringify(record))
+    .digest('hex')
+    .slice(0, 16);
 
   return `thai-fabric-${hash}`;
 }
@@ -284,8 +289,11 @@ function mapThaiFabricRowToCulturalPlaceRow(
 
   const usedProvinceCenter = row.latitude == null || row.longitude == null;
   const description =
-    joinInlineText([row.description, row.wisdom && `ภูมิปัญญา: ${row.wisdom}`, row.pattern && `ลวดลาย: ${row.pattern}`]) ??
-    'ข้อมูลมรดกภูมิปัญญาผ้าไทยจากกระทรวงวัฒนธรรม';
+    joinInlineText([
+      row.description,
+      row.wisdom && `ภูมิปัญญา: ${row.wisdom}`,
+      row.pattern && `ลวดลาย: ${row.pattern}`,
+    ]) ?? 'ข้อมูลมรดกภูมิปัญญาผ้าไทยจากกระทรวงวัฒนธรรม';
   const imageUrls = row.image_url ? [row.image_url] : [];
 
   return {

@@ -1,7 +1,7 @@
 import type { NextRequest } from 'next/server';
 import type { CulturalPlace, CulturalPlaceDetails } from 'src/sections/province/province-data';
 
-import { NextResponse } from 'next/server';
+import { after, NextResponse } from 'next/server';
 
 import provinces from 'src/data/thailand-culture/provinces';
 import { getSupabaseAdmin } from 'src/server/supabase-admin';
@@ -172,7 +172,8 @@ const SUMMARY_TABLE = process.env.PROVINCE_PLACE_SUMMARIES_TABLE ?? 'province_pl
 const DETAILS_TABLE = process.env.CULTURAL_PLACE_DETAILS_TABLE ?? 'cultural_place_details';
 const ETHNIC_GROUPS_TABLE = process.env.ETHNIC_GROUPS_TABLE ?? 'ethnic_groups';
 const SUPABASE_PAGE_SIZE = 1000;
-const SUMMARY_CACHE_CONTROL = 'public, s-maxage=86400, stale-while-revalidate=604800';
+const SUMMARY_CACHE_CONTROL = 'public, s-maxage=300, stale-while-revalidate=900';
+const SUMMARY_REFRESH_MS = 15 * 60 * 1000;
 
 type CulturalPlaceRecord = CulturalPlace & {
   provinceCode?: string;
@@ -231,10 +232,11 @@ function mergeCulturalPlaces(...placeGroups: CulturalPlace[][]) {
   return Array.from(placeMap.values());
 }
 
-async function getPlaceOverrides(provinceCode?: string | null) {
+async function getPlaceOverrides(provinceCode?: string | null, strict = false) {
   const supabase = getSupabaseAdmin();
 
   if (!supabase.ok) {
+    if (strict) throw new Error('Database unavailable for summary refresh');
     return [];
   }
 
@@ -251,6 +253,7 @@ async function getPlaceOverrides(provinceCode?: string | null) {
   const { data, error } = await query;
 
   if (error) {
+    if (strict) throw new Error('Summary source could not be read');
     return [];
   }
 
@@ -403,8 +406,9 @@ function mapPlaceRow(row: CulturalPlaceRow): CulturalPlaceRecord | null {
 function getProvinceCodeFromName(provinceName?: string | null) {
   const normalizedProvinceName = normalizePlaceKeyText(provinceName);
 
-  return provinces.find((province) => normalizePlaceKeyText(province.name) === normalizedProvinceName)
-    ?.code;
+  return provinces.find(
+    (province) => normalizePlaceKeyText(province.name) === normalizedProvinceName
+  )?.code;
 }
 
 function getEthnicGroupPlaceId(row: EthnicGroupRow) {
@@ -452,10 +456,11 @@ function mapEthnicGroupRow(row: EthnicGroupRow): CulturalPlaceRecord | null {
   };
 }
 
-async function getEthnicGroupPlaces(provinceCode?: string | null) {
+async function getEthnicGroupPlaces(provinceCode?: string | null, strict = false) {
   const supabase = getSupabaseAdmin();
 
   if (!supabase.ok) {
+    if (strict) throw new Error('Database unavailable for summary refresh');
     return [];
   }
 
@@ -466,6 +471,7 @@ async function getEthnicGroupPlaces(provinceCode?: string | null) {
     );
 
   if (error) {
+    if (strict) throw new Error('Summary source could not be read');
     return [];
   }
 
@@ -475,10 +481,11 @@ async function getEthnicGroupPlaces(provinceCode?: string | null) {
     .filter((place) => !provinceCode || place.provinceCode === provinceCode);
 }
 
-async function getStoredPlaces(provinceCode?: string | null) {
+async function getStoredPlaces(provinceCode?: string | null, compact = false, strict = false) {
   const supabase = getSupabaseAdmin();
 
   if (!supabase.ok) {
+    if (strict) throw new Error('Database unavailable for summary refresh');
     return [];
   }
 
@@ -490,18 +497,22 @@ async function getStoredPlaces(provinceCode?: string | null) {
     let query = supabase.client
       .from(PLACES_TABLE)
       .select(
-        'id, province_code, name, district, category, lat, lng, description, highlight, image_urls, source_url, map_url, source, payload'
+        compact
+          ? 'id, province_code, name, district, category, lat, lng, description, highlight, image_urls, source_url, map_url, source'
+          : 'id, province_code, name, district, category, lat, lng, description, highlight, image_urls, source_url, map_url, source, payload'
       )
       .order('updated_at', { ascending: false })
+      .order('id', { ascending: true })
       .range(from, to);
 
     if (provinceCode) {
       query = query.eq('province_code', provinceCode);
     }
 
-    const { data, error } = await query;
+    const { data, error } = await query.returns<CulturalPlaceRow[]>();
 
     if (error) {
+      if (strict) throw new Error('Summary source could not be read');
       return [];
     }
 
@@ -514,9 +525,7 @@ async function getStoredPlaces(provinceCode?: string | null) {
     }
   }
 
-  return rows
-    .map(mapPlaceRow)
-    .filter((place): place is CulturalPlaceRecord => Boolean(place));
+  return rows.map(mapPlaceRow).filter((place): place is CulturalPlaceRecord => Boolean(place));
 }
 
 async function getStoredDistricts(provinceCode?: string | null) {
@@ -568,9 +577,7 @@ async function getStoredPlaceCount(provinceCode?: string | null) {
     return 0;
   }
 
-  let query = supabase.client
-    .from(PLACES_TABLE)
-    .select('id', { count: 'exact', head: true });
+  let query = supabase.client.from(PLACES_TABLE).select('id', { count: 'exact', head: true });
 
   if (provinceCode) {
     query = query.eq('province_code', provinceCode);
@@ -823,7 +830,11 @@ function mergeDuplicatePlace(
     imageUrls: hasImages(preferredPlace) ? preferredPlace.imageUrls : fallbackPlace.imageUrls,
     sourceUrl: preferredPlace.sourceUrl ?? fallbackPlace.sourceUrl,
     mapUrl: preferredPlace.mapUrl ?? fallbackPlace.mapUrl,
-    description: details?.detailTh || details?.detailEn || preferredPlace.description || fallbackPlace.description,
+    description:
+      details?.detailTh ||
+      details?.detailEn ||
+      preferredPlace.description ||
+      fallbackPlace.description,
     highlight:
       override?.note ||
       details?.highlight ||
@@ -903,9 +914,9 @@ function getProvincePlaceSummaries(places: CulturalPlaceRecord[]) {
 function isProvinceCategoryCounts(value: unknown): value is ProvinceCategoryCounts {
   return Boolean(
     value &&
-      typeof value === 'object' &&
-      !Array.isArray(value) &&
-      Object.values(value).every((count) => typeof count === 'number')
+    typeof value === 'object' &&
+    !Array.isArray(value) &&
+    Object.values(value).every((count) => typeof count === 'number')
   );
 }
 
@@ -918,8 +929,7 @@ function mapProvincePlaceSummaryRow(row: ProvincePlaceSummaryRow) {
     row.province_code,
     {
       counts: row.counts,
-      dominantCategory:
-        row.dominant_category || getDominantCategoryFromCounts(row.counts) || '',
+      dominantCategory: row.dominant_category || getDominantCategoryFromCounts(row.counts) || '',
       total: row.total ?? Object.values(row.counts).reduce((sum, count) => sum + count, 0),
     },
   ] as const;
@@ -941,11 +951,19 @@ async function getStoredProvincePlaceSummaries() {
     return null;
   }
 
-  return Object.fromEntries(
-    ((data ?? []) as ProvincePlaceSummaryRow[])
+  const rows = (data ?? []) as ProvincePlaceSummaryRow[];
+  const summaries = Object.fromEntries(
+    rows
       .map(mapProvincePlaceSummaryRow)
       .filter((entry): entry is readonly [string, ProvincePlaceSummary] => Boolean(entry))
   );
+  const stale =
+    provinces.some((province) => !summaries[province.code]) ||
+    rows.some((row) => {
+      const refreshed = Date.parse(row.refreshed_at ?? '');
+      return !Number.isFinite(refreshed) || Date.now() - refreshed > SUMMARY_REFRESH_MS;
+    });
+  return { summaries, stale };
 }
 
 async function upsertProvincePlaceSummaries(summaries: ProvincePlaceSummaryMap) {
@@ -958,7 +976,8 @@ async function upsertProvincePlaceSummaries(summaries: ProvincePlaceSummaryMap) 
   const refreshedAt = new Date().toISOString();
   const rows = Object.entries(summaries).map(([provinceCode, summary]) => ({
     province_code: provinceCode,
-    province_name: provinces.find((province) => province.code === provinceCode)?.name ?? provinceCode,
+    province_name:
+      provinces.find((province) => province.code === provinceCode)?.name ?? provinceCode,
     counts: summary.counts,
     dominant_category: summary.dominantCategory,
     total: summary.total,
@@ -970,18 +989,25 @@ async function upsertProvincePlaceSummaries(summaries: ProvincePlaceSummaryMap) 
     return;
   }
 
-  await supabase.client.from(SUMMARY_TABLE).upsert(rows, {
+  const { error } = await supabase.client.from(SUMMARY_TABLE).upsert(rows, {
     onConflict: 'province_code',
   });
+  if (error) throw new Error('Unable to save province summaries');
 }
 
 async function buildProvincePlaceSummaries() {
-  const ethnicGroupPlaces = await getEthnicGroupPlaces();
-  const storedPlaces = await getStoredPlaces();
+  const [ethnicGroupPlaces, storedPlaces, overrides] = await Promise.all([
+    getEthnicGroupPlaces(undefined, true),
+    getStoredPlaces(undefined, true, true),
+    getPlaceOverrides(undefined, true),
+  ]);
   const allData = dedupePlaces(
-    applyPlaceOverrides([...storedPlaces, ...ethnicGroupPlaces], await getPlaceOverrides())
+    applyPlaceOverrides([...storedPlaces, ...ethnicGroupPlaces], overrides)
   );
   const summaries = getProvincePlaceSummaries(allData);
+  provinces.forEach((province) => {
+    summaries[province.code] ??= { total: 0, counts: {}, dominantCategory: '' };
+  });
   const total = Object.values(summaries).reduce((sum, summary) => sum + summary.total, 0);
 
   await upsertProvincePlaceSummaries(summaries);
@@ -989,7 +1015,20 @@ async function buildProvincePlaceSummaries() {
   return { summaries, total };
 }
 
-function filterPlaces(places: CulturalPlaceRecord[], district: string, query: string, source: string) {
+let summaryRefresh: ReturnType<typeof buildProvincePlaceSummaries> | null = null;
+function refreshProvincePlaceSummaries() {
+  summaryRefresh ??= buildProvincePlaceSummaries().finally(() => {
+    summaryRefresh = null;
+  });
+  return summaryRefresh;
+}
+
+function filterPlaces(
+  places: CulturalPlaceRecord[],
+  district: string,
+  query: string,
+  source: string
+) {
   const normalizedDistrict = district.trim().toLowerCase();
   const normalizedQuery = query.trim().toLowerCase();
   const normalizedSource = source.trim().toLowerCase();
@@ -1071,10 +1110,10 @@ export const runtime = 'nodejs';
 export const revalidate = 3600;
 
 export async function GET(request: NextRequest) {
+  const compact = request.nextUrl.searchParams.get('view') === 'map';
   const placeId = request.nextUrl.searchParams.get('placeId')?.trim();
   const provinceCodeParam = request.nextUrl.searchParams.get('provinceCode');
-  const provinceCode =
-    provinceCodeParam && provinceCodeParam !== 'all' ? provinceCodeParam : '';
+  const provinceCode = provinceCodeParam && provinceCodeParam !== 'all' ? provinceCodeParam : '';
   const isSummary = request.nextUrl.searchParams.get('summary') === 'true';
   const limitParam = request.nextUrl.searchParams.get('limit');
   const requestedLimit = getLimit(request.nextUrl.searchParams.get('limit'));
@@ -1087,7 +1126,8 @@ export async function GET(request: NextRequest) {
   const shouldRefreshSummary = request.nextUrl.searchParams.get('refreshSummary') === 'true';
   const shouldReturnAllProvinceSummary =
     !provinceCode &&
-    (isSummary || (!provinceCodeParam && !limitParam && !pageSizeParam && !district && !query && !source));
+    (isSummary ||
+      (!provinceCodeParam && !limitParam && !pageSizeParam && !district && !query && !source));
 
   if (placeId) {
     const [storedPlace, override, details] = await Promise.all([
@@ -1096,9 +1136,15 @@ export async function GET(request: NextRequest) {
       getPlaceDetailsByPlaceIds([placeId]),
     ]);
     let place = storedPlace
-      ? applyPlaceDetails(applyPlaceOverrides([storedPlace], override ? [override] : []), details)[0]
+      ? applyPlaceDetails(
+          applyPlaceOverrides([storedPlace], override ? [override] : []),
+          details
+        )[0]
       : override
-        ? applyPlaceDetails([createPlaceFromOverride(override)].filter(Boolean) as CulturalPlaceRecord[], details)[0]
+        ? applyPlaceDetails(
+            [createPlaceFromOverride(override)].filter(Boolean) as CulturalPlaceRecord[],
+            details
+          )[0]
         : null;
 
     if (!place && provinceCode) {
@@ -1143,11 +1189,22 @@ export async function GET(request: NextRequest) {
 
   if (shouldReturnAllProvinceSummary) {
     const storedSummaries = shouldRefreshSummary ? null : await getStoredProvincePlaceSummaries();
-    const hasStoredSummaries = Boolean(storedSummaries && Object.keys(storedSummaries).length);
+    const hasStoredSummaries = Boolean(
+      storedSummaries && Object.keys(storedSummaries.summaries).length
+    );
+    if (hasStoredSummaries && storedSummaries?.stale) {
+      after(async () => {
+        try {
+          await refreshProvincePlaceSummaries();
+        } catch {
+          console.warn('Province summary refresh failed; cached totals retained');
+        }
+      });
+    }
     const summaries: ProvincePlaceSummaryMap =
       hasStoredSummaries && storedSummaries
-        ? storedSummaries
-        : (await buildProvincePlaceSummaries()).summaries;
+        ? storedSummaries.summaries
+        : (await refreshProvincePlaceSummaries()).summaries;
     const total = Object.values(summaries).reduce((sum, summary) => sum + summary.total, 0);
 
     return NextResponse.json(
@@ -1162,7 +1219,9 @@ export async function GET(request: NextRequest) {
           totalPages: 1,
         },
         sources: {},
-        source: hasStoredSummaries ? 'province-place-summaries' : 'generated-province-place-summaries',
+        source: hasStoredSummaries
+          ? 'province-place-summaries'
+          : 'generated-province-place-summaries',
       },
       {
         headers: {
@@ -1172,8 +1231,12 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const hasStoredPlaces = (await getStoredPlaceCount(provinceCode)) > 0;
-  const ethnicGroupPlaces = await getEthnicGroupPlaces(provinceCode);
+  const [hasStoredPlaces, ethnicGroupPlaces] = await Promise.all([
+    pageSize
+      ? getStoredPlaceCount(provinceCode).then((count) => count > 0)
+      : Promise.resolve(false),
+    getEthnicGroupPlaces(provinceCode),
+  ]);
 
   if (hasStoredPlaces && pageSize && !ethnicGroupPlaces.length) {
     const [{ data: storedPageData, total }, districts, overrides] = await Promise.all([
@@ -1190,7 +1253,9 @@ export async function GET(request: NextRequest) {
     ]);
     const placeIds = storedPageData.map((place) => place.id);
     const details = await getPlaceDetailsByPlaceIds(placeIds);
-    const allData = dedupePlaces(applyPlaceDetails(applyPlaceOverrides(storedPageData, overrides), details));
+    const allData = dedupePlaces(
+      applyPlaceDetails(applyPlaceOverrides(storedPageData, overrides), details)
+    );
     const totalPages = Math.max(Math.ceil(total / pageSize), 1);
     const normalizedPage = Math.min(page, totalPages);
 
@@ -1211,21 +1276,26 @@ export async function GET(request: NextRequest) {
     });
   }
 
-  const storedPlaces = await getStoredPlaces(provinceCode);
-  const sourceResults = storedPlaces.length || !provinceCode
-    ? []
-    : await Promise.all(
-        SOURCE_KEYS.map((key) =>
-          fetchSourcePlaces({
-            key,
-            summary: isSummary,
-            signal: request.signal,
-            origin: request.nextUrl.origin,
-            provinceCode,
-            limit: requestedLimit,
-          })
-        )
-      );
+  const [storedPlaces, overrides, details] = await Promise.all([
+    getStoredPlaces(provinceCode, compact),
+    getPlaceOverrides(provinceCode),
+    compact ? Promise.resolve([]) : getPlaceDetails(provinceCode),
+  ]);
+  const sourceResults =
+    storedPlaces.length || !provinceCode
+      ? []
+      : await Promise.all(
+          SOURCE_KEYS.map((key) =>
+            fetchSourcePlaces({
+              key,
+              summary: isSummary,
+              signal: request.signal,
+              origin: request.nextUrl.origin,
+              provinceCode,
+              limit: requestedLimit,
+            })
+          )
+        );
   const sources = Object.fromEntries(
     sourceResults.map((result) => [
       result.key,
@@ -1240,10 +1310,9 @@ export async function GET(request: NextRequest) {
   const mergedData = storedPlaces.length
     ? [...storedPlaces, ...ethnicGroupPlaces]
     : mergeCulturalPlaces(...sourceResults.map((result) => result.data), ethnicGroupPlaces);
-  const allData = dedupePlaces(applyPlaceDetails(
-    applyPlaceOverrides(mergedData, await getPlaceOverrides(provinceCode)),
-    await getPlaceDetails(provinceCode)
-  ));
+  const allData = dedupePlaces(
+    applyPlaceDetails(applyPlaceOverrides(mergedData, overrides), details)
+  );
   const districts = getDistricts(allData);
   const filteredData = filterPlaces(allData, district, query, source);
   const total = filteredData.length;

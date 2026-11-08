@@ -2,7 +2,8 @@
 
 import type { CulturalPlace } from 'src/sections/province/province-data';
 
-import { useMemo, useState, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { useMemo, useState, Suspense, useEffect, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 import Box from '@mui/material/Box';
@@ -248,6 +249,15 @@ async function refreshProvincePlaceSummaries() {
 }
 
 export default function CulturalPlacesCmsPage() {
+  return (
+    <Suspense fallback={<DashboardContent>กำลังโหลดรายการสถานที่…</DashboardContent>}>
+      <CulturalPlacesContent />
+    </Suspense>
+  );
+}
+function CulturalPlacesContent() {
+  const searchParams = useSearchParams();
+  const [categoryFilter, setCategoryFilter] = useState(searchParams.get('category') ?? '');
   const { user, checkUserSession } = useAuthContext();
   const queryClient = useQueryClient();
   const [provinceCode, setProvinceCode] = useState('');
@@ -288,7 +298,7 @@ export default function CulturalPlacesCmsPage() {
     []
   );
   const hasActiveFilters = Boolean(
-    provinceCode || districtFilter || sourceFilter || appliedQuery || query.trim()
+    provinceCode || districtFilter || sourceFilter || categoryFilter || appliedQuery || query.trim()
   );
   const handleUnauthorized = useCallback(async () => {
     setPlaces([]);
@@ -316,12 +326,14 @@ export default function CulturalPlacesCmsPage() {
       params.set('source', sourceFilter);
     }
 
+    if (categoryFilter) params.set('category', categoryFilter);
     if (appliedQuery) {
       params.set('q', appliedQuery);
     }
 
     return params.toString();
   }, [
+    categoryFilter,
     appliedQuery,
     districtFilter,
     page,
@@ -470,6 +482,7 @@ export default function CulturalPlacesCmsPage() {
   };
 
   const clearFilters = () => {
+    setCategoryFilter('');
     setProvinceCode('');
     setQuery('');
     setAppliedQuery('');
@@ -713,6 +726,26 @@ export default function CulturalPlacesCmsPage() {
 
         <>
           <Card sx={{ p: 2.5 }}>
+            <TextField
+              select
+              size="small"
+              label="หมวดสถานที่"
+              value={categoryFilter}
+              onChange={(event) => {
+                setCategoryFilter(event.target.value);
+                setPage(0);
+              }}
+              sx={{ mb: 2, minWidth: 240 }}
+            >
+              <MenuItem value="">ทั้งหมด</MenuItem>
+              {categoryOptions
+                .filter((option) => option.value)
+                .map((option) => (
+                  <MenuItem key={option.value} value={option.value}>
+                    {option.label}
+                  </MenuItem>
+                ))}
+            </TextField>
             <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
               <TextField
                 fullWidth
