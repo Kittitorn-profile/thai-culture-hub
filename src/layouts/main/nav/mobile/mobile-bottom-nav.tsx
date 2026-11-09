@@ -103,7 +103,6 @@ export function MobileBottomNav({ pathname, isCreator, layoutQuery }: Props) {
               width: 42,
               height: 28,
               borderRadius: 3,
-              bgcolor: active ? '#eaf0e6' : 'transparent',
             }}
           >
             <Icon size={22} />

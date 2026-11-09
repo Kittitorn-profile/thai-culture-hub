@@ -355,7 +355,10 @@ export function ProvincePlaceCard({
           </Typography>
         </Box>
 
-        <Stack spacing={1} sx={{ mt: { xs: 1.25, sm: 1.6 } }}>
+        <Stack
+          spacing={1}
+          sx={{ mt: { xs: 1.25, sm: 1.6 }, '& .MuiButton-root': { minHeight: 44 } }}
+        >
           <Button
             fullWidth
             component={RouterLink}
@@ -391,8 +394,7 @@ export function ProvincePlaceCard({
               display: 'grid',
               gap: 0.8,
               gridTemplateColumns: {
-                xs: 'auto auto',
-                sm: googleMapsUrl ? 'minmax(0, 1fr) minmax(0, 1fr)' : '1fr',
+                xs: googleMapsUrl ? 'repeat(2, minmax(0, 1fr))' : 'minmax(0, 1fr)',
               },
             }}
           >

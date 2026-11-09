@@ -90,8 +90,20 @@ export function HomeUpcomingEventsSection({ events, onPlayVideo }: Props) {
         </Stack>
 
         <Box
+          role="region"
+          aria-label="กิจกรรมวัฒนธรรม เลื่อนซ้ายขวาเพื่อดูกิจกรรม"
+          tabIndex={0}
           sx={{
-            display: 'grid',
+            display: { xs: 'flex', md: 'grid' },
+            mx: { xs: -2, sm: -4, md: 0 },
+            px: { xs: 2, sm: 4, md: 0 },
+            scrollPaddingInline: { xs: '16px', sm: '32px', md: 0 },
+            overflowX: { xs: 'auto', md: 'visible' },
+            scrollSnapType: { xs: 'x mandatory', md: 'none' },
+            overscrollBehaviorX: 'contain',
+            scrollbarWidth: 'none',
+            '&::-webkit-scrollbar': { display: 'none' },
+            pb: { xs: 1, md: 0 },
             gap: { xs: 2, md: 2.5 },
             gridTemplateColumns: { xs: '1fr', md: '1.6fr 0.8fr' },
             alignItems: 'stretch',
@@ -122,6 +134,8 @@ export function HomeUpcomingEventsSection({ events, onPlayVideo }: Props) {
                   router.push(paths.event.details(eventItem));
                 }}
                 sx={{
+                  flex: { xs: '0 0 88%', md: 'initial' },
+                  scrollSnapAlign: 'start',
                   minWidth: 0,
                   overflow: 'hidden',
                   borderRadius: 2.5,
@@ -155,7 +169,9 @@ export function HomeUpcomingEventsSection({ events, onPlayVideo }: Props) {
                     if (eventItem.mediaType === 'video') event.stopPropagation();
                   }}
                   sx={{
-                    height: isPast ? { xs: 180, md: 180 } : { xs: 320, sm: 380, lg: '100%' },
+                    height: isPast
+                      ? { xs: 180, md: 180 }
+                      : { xs: 200, sm: 280, md: 380, lg: '100%' },
                     minHeight: isFeatured && !isPast ? { lg: 510 } : undefined,
                     display: 'flex',
                     alignItems: 'center',
@@ -236,8 +252,8 @@ export function HomeUpcomingEventsSection({ events, onPlayVideo }: Props) {
                 </Box>
 
                 <Stack
-                  spacing={isPast ? 1.25 : 1.75}
-                  sx={{ p: isPast ? 2 : { xs: 2.5, md: 3 }, flex: 1, minWidth: 0 }}
+                  spacing={{ xs: 1, md: isPast ? 1.25 : 1.75 }}
+                  sx={{ p: { xs: 1.75, md: isPast ? 2 : 3 }, flex: 1, minWidth: 0 }}
                 >
                   <Typography
                     sx={{
@@ -254,9 +270,9 @@ export function HomeUpcomingEventsSection({ events, onPlayVideo }: Props) {
                   <Typography
                     sx={{
                       color: HOME_TEXT,
-                      fontSize: isPast ? { xs: 19, md: 20 } : { xs: 23, md: 25 },
+                      fontSize: { xs: 18, sm: 20, md: isPast ? 20 : 25 },
                       display: '-webkit-box',
-                      WebkitLineClamp: isFeatured && !isPast ? 5 : 3,
+                      WebkitLineClamp: { xs: 2, md: isFeatured && !isPast ? 5 : 3 },
                       WebkitBoxOrient: 'vertical',
                       overflow: 'hidden',
                       fontWeight: 600,
@@ -270,7 +286,7 @@ export function HomeUpcomingEventsSection({ events, onPlayVideo }: Props) {
                     <Typography
                       sx={{
                         color: 'rgba(32,33,36,0.74)',
-                        fontSize: isPast ? 13 : 14,
+                        fontSize: { xs: 12, md: isPast ? 13 : 14 },
                         lineHeight: 1.7,
                         display: '-webkit-box',
                         overflow: 'hidden',
@@ -282,7 +298,7 @@ export function HomeUpcomingEventsSection({ events, onPlayVideo }: Props) {
                     </Typography>
                   )}
 
-                  <Stack spacing={isPast ? 0.75 : 1.1} sx={{ pt: 0.5 }}>
+                  <Stack spacing={{ xs: 0.5, md: isPast ? 0.75 : 1.1 }} sx={{ pt: 0.5, pb: 1 }}>
                     {[
                       {
                         icon: 'solar:clock-circle-bold',
@@ -312,7 +328,7 @@ export function HomeUpcomingEventsSection({ events, onPlayVideo }: Props) {
                             fontSize: 13,
                             lineHeight: 1.6,
                             display: '-webkit-box',
-                            WebkitLineClamp: isPast ? 1 : 2,
+                            WebkitLineClamp: { xs: 1, md: isPast ? 1 : 2 },
                             WebkitBoxOrient: 'vertical',
                             overflow: 'hidden',
                           }}
@@ -329,9 +345,11 @@ export function HomeUpcomingEventsSection({ events, onPlayVideo }: Props) {
                     sx={{
                       flexWrap: 'wrap',
                       mt: 'auto !important',
-                      pt: isPast ? 1.5 : 2,
+                      pt: { xs: 1, md: isPast ? 1.5 : 2 },
                       borderTop: '1px solid #eceeeb',
                       '& .MuiButton-root': {
+                        minHeight: 44,
+                        fontSize: { xs: 12, md: 13 },
                         borderRadius: 1.25,
                         px: 1.5,
                         py: 0.8,

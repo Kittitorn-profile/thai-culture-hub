@@ -15,6 +15,8 @@ import { RouterLink } from 'src/routes/components';
 
 import { getCreatorAvatarUrl } from 'src/utils/creator-avatar';
 
+import { cultureUi } from 'src/theme/culture-ui';
+
 import { Logo } from 'src/components/logo';
 
 import { getCreatorProfile } from 'src/sections/creator/creator-api';
@@ -22,6 +24,7 @@ import { getCreatorProfile } from 'src/sections/creator/creator-api';
 import { useAuthContext } from 'src/auth/hooks';
 import { isCreatorUser } from 'src/auth/utils/role-redirect';
 
+import { CultureSearch } from './culture-search';
 import { AccountPopover } from '../components/account-popover';
 import { _account, _accountCreator } from '../nav-config-account';
 
@@ -107,7 +110,7 @@ export function CultureHeader({ pathname }: CultureHeaderProps) {
         display: 'grid',
         gridTemplateColumns: { xs: '1fr auto', md: 'auto 1fr auto' },
         alignItems: 'center',
-        gap: { xs: 2, md: 3 },
+        gap: { xs: 1, md: 3 },
         '& a:focus-visible': { outline: '2px solid #50585e', outlineOffset: 4 },
       }}
     >
@@ -144,7 +147,13 @@ export function CultureHeader({ pathname }: CultureHeaderProps) {
           );
         })}
       </Stack>
-      <Stack direction="row" alignItems="center" justifyContent="flex-end" spacing={2}>
+      <Stack
+        direction="row"
+        alignItems="center"
+        justifyContent="flex-end"
+        spacing={{ xs: 1, sm: 2 }}
+      >
+        <CultureSearch />
         {accountLoading ? (
           <Stack
             role="status"
@@ -186,7 +195,7 @@ export function CultureHeader({ pathname }: CultureHeaderProps) {
                 color: '#fff',
                 px: 2,
                 py: 1,
-                borderRadius: 1.5,
+                borderRadius: `${cultureUi.radius}px`,
                 fontSize: 13,
                 whiteSpace: 'nowrap',
                 '&:hover': { bgcolor: '#3c474d' },

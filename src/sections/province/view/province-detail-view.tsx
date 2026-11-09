@@ -319,7 +319,7 @@ export function ProvinceDetailView() {
         >
           กลับแผนที่ประเทศไทย
         </Button>
-        <Button
+        {/* <Button
           component="a"
           href="#province-all-data"
           variant="outlined"
@@ -327,7 +327,7 @@ export function ProvinceDetailView() {
           sx={{ mb: 2.5, ml: 1 }}
         >
           สำรวจทุกชุดข้อมูลของจังหวัด
-        </Button>
+        </Button> */}
         <Box
           sx={{
             display: 'grid',
@@ -338,6 +338,7 @@ export function ProvinceDetailView() {
         >
           <Box sx={{ position: { lg: 'sticky' }, top: { lg: 96 }, minWidth: 0 }}>
             <ProvinceDetailHeader
+              provinceCode={provinceId}
               provinceDisplayName={provinceDisplayName}
               cultureMetrics={cultureMetrics}
               filteredCount={culturalPlaces.length}
@@ -388,17 +389,11 @@ export function ProvinceDetailView() {
           provinceName={provinceDisplayName}
         />
         <Box component="section" id="province-all-places" sx={{ mt: 5, scrollMarginTop: 100 }}>
-          <Typography component="h2" variant="h4" sx={{ mb: 1 }}>
-            สถานที่และเรื่องวัฒนธรรม{provinceDisplayName}
-          </Typography>
-          <Typography sx={{ color: 'text.secondary', mb: 3 }}>
-            รายการสถานที่ที่ใช้แสดงบนแผนที่ สามารถค้นหาและเลือกหมวดได้
-          </Typography>
           {isRemoteLoading ? (
             <Typography>กำลังโหลดสถานที่…</Typography>
           ) : (
             <ProvincePlacesList
-              selectedDistrictDetail={null}
+              selectedDistrictDetail={`สถานที่และเรื่องวัฒนธรรม${provinceDisplayName}`}
               places={culturalPlaces}
               categoryConfig={categoryConfig}
               onPlaceSelect={(place) =>

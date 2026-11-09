@@ -10,9 +10,10 @@ import { geoPath, geoMercator } from 'd3-geo';
 
 import Box from '@mui/material/Box';
 import Tooltip from '@mui/material/Tooltip';
-import { useTheme } from '@mui/material/styles';
+import { alpha, useTheme } from '@mui/material/styles';
 
 import { mergeCulturalPlaces } from './province-detail-utils';
+import { getCategoryColor, getCategoryLabel } from '../category-config';
 import {
   rewindGeometry,
   useThailandDistrictCenters,
@@ -143,14 +144,17 @@ function getDistrictClusters(
 function DistrictTooltip({
   label,
   count,
+  categoryLabel,
   children,
 }: {
   label: string;
   count: number;
+  categoryLabel?: string;
   children: ReactElement;
 }) {
   return (
     <Tooltip
+      open={Boolean(label)}
       arrow
       placement="top"
       followCursor
@@ -165,6 +169,11 @@ function DistrictTooltip({
               ? `สถานที่และข้อมูลวัฒนธรรม ${count.toLocaleString('th-TH')} รายการ`
               : 'ยังไม่มีข้อมูลสถานที่ในหมวดที่เลือก'}
           </Box>
+          {categoryLabel && (
+            <Box sx={{ mt: 0.5, color: 'text.secondary', fontSize: 12 }}>
+              หมวดที่มีมากที่สุด: {categoryLabel}
+            </Box>
+          )}
           <Box sx={{ mt: 0.75, color: '#526c56', fontSize: 11 }}>กดเพื่อสำรวจอำเภอนี้ ↗</Box>
         </Box>
       }
@@ -291,6 +300,31 @@ export function ProvinceShapeMap({
     [mapData.clusters]
   );
 
+  const dominantCategories = useMemo(() => {
+    const counts = new Map<string, Map<string, number>>();
+    places.forEach((place) => {
+      const district = normalizeDistrictName(place.district || 'ไม่ระบุอำเภอ');
+      const categories = counts.get(district) ?? new Map<string, number>();
+      const category = place.category || 'unknown';
+      categories.set(category, (categories.get(category) ?? 0) + 1);
+      counts.set(district, categories);
+    });
+    return new Map(
+      Array.from(counts, ([district, categories]) => [
+        district,
+        [...categories].sort(([a, ac], [b, bc]) => bc - ac || a.localeCompare(b))[0][0],
+      ])
+    );
+  }, [places]);
+  const districtColor = (district: string) => {
+    const category = dominantCategories.get(normalizeDistrictName(district));
+    return category ? getCategoryColor(categoryConfig, category) : '#839b7c';
+  };
+  const districtCategoryLabel = (district: string) => {
+    const category = dominantCategories.get(normalizeDistrictName(district));
+    return category ? getCategoryLabel(categoryConfig, category) : undefined;
+  };
+
   return (
     <Box
       sx={{
@@ -319,7 +353,8 @@ export function ProvinceShapeMap({
         <Box>
           <Box sx={{ fontSize: 15, fontWeight: 700, color: '#293c34' }}>สำรวจรายอำเภอ</Box>
           <Box sx={{ mt: 0.5, fontSize: 12, color: 'text.secondary' }}>
-            {provinceName} · {mapData.clusters.length} อำเภอที่มีข้อมูล
+            {provinceName} · {mapData.clusters.length} อำเภอที่มีข้อมูล ·
+            สีตามหมวดที่มีสถานที่มากที่สุด
           </Box>
         </Box>
         <Box
@@ -338,141 +373,166 @@ export function ProvinceShapeMap({
           จำนวนสถานที่
         </Box>
       </Box>
-      <svg
-        style={{
-          display: 'block',
-          width: '100%',
-          height: 'auto',
-          maxHeight: 820,
-          margin: '8px auto',
-        }}
-        viewBox="0 0 620 720"
-        width="100%"
-        height="auto"
-        role="group"
-        aria-label={`แผนที่อำเภอจังหวัด${provinceName}`}
-      >
-        {mapData.pathData ? (
-          <>
-            <defs>
-              <clipPath id={`province-guide-clip-${provinceId.replace(/[^a-zA-Z0-9]/g, '-')}`}>
-                <path d={mapData.pathData} />
-              </clipPath>
-            </defs>
-
-            <path
-              d={mapData.pathData}
-              fill="#e4ebe1"
-              stroke="#839b7c"
-              strokeWidth={1.2}
-              strokeLinejoin="round"
-              vectorEffect="non-scaling-stroke"
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, px: { xs: 2, sm: 3 }, pt: 1.5 }}>
+        {[...new Set(dominantCategories.values())].sort().map((category) => (
+          <Box
+            key={category}
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 0.75,
+              fontSize: 11,
+              color: 'text.secondary',
+            }}
+          >
+            <Box
+              component="span"
+              sx={{
+                width: 10,
+                height: 10,
+                borderRadius: '50%',
+                bgcolor: getCategoryColor(categoryConfig, category),
+              }}
             />
-            <g
-              clipPath={`url(#province-guide-clip-${provinceId.replace(/[^a-zA-Z0-9]/g, '-')})`}
-              fill="none"
-              stroke="#4e694c"
-              strokeOpacity={0.65}
-              strokeWidth={0.8}
-              strokeLinejoin="round"
-            >
-              {mapData.districtPaths.map((district) => (
-                <DistrictTooltip
-                  key={district.name}
-                  label={district.name}
-                  count={districtCounts.get(normalizeDistrictName(district.name)) ?? 0}
+            {getCategoryLabel(categoryConfig, category)}
+          </Box>
+        ))}
+      </Box>
+      <DistrictTooltip
+        label={hoveredDistrict ?? ''}
+        count={districtCounts.get(normalizeDistrictName(hoveredDistrict)) ?? 0}
+        categoryLabel={districtCategoryLabel(hoveredDistrict ?? '')}
+      >
+        <Box onMouseLeave={() => setHoveredDistrict(null)}>
+          <svg
+            style={{
+              display: 'block',
+              width: '100%',
+              height: 'auto',
+              maxHeight: 820,
+              margin: '8px auto',
+            }}
+            viewBox="0 0 620 720"
+            width="100%"
+            height="auto"
+            role="group"
+            aria-label={`แผนที่อำเภอจังหวัด${provinceName}`}
+          >
+            {mapData.pathData ? (
+              <>
+                <defs>
+                  <clipPath id={`province-guide-clip-${provinceId.replace(/[^a-zA-Z0-9]/g, '-')}`}>
+                    <path d={mapData.pathData} />
+                  </clipPath>
+                </defs>
+
+                <path
+                  d={mapData.pathData}
+                  fill="#e4ebe1"
+                  stroke="#839b7c"
+                  strokeWidth={1.2}
+                  strokeLinejoin="round"
+                  vectorEffect="non-scaling-stroke"
+                />
+                <g
+                  clipPath={`url(#province-guide-clip-${provinceId.replace(/[^a-zA-Z0-9]/g, '-')})`}
+                  fill="none"
+                  stroke="#4e694c"
+                  strokeOpacity={0.65}
+                  strokeWidth={0.8}
+                  strokeLinejoin="round"
                 >
-                  <path
-                    d={district.path}
+                  {mapData.districtPaths.map((district) => (
+                    <path
+                      key={district.name}
+                      d={district.path}
+                      role="button"
+                      tabIndex={0}
+                      aria-label={`${district.name} ${districtCounts.get(normalizeDistrictName(district.name)) ?? 0} รายการ กดเพื่อสำรวจ`}
+                      fill={
+                        normalizeDistrictName(hoveredDistrict) ===
+                        normalizeDistrictName(district.name)
+                          ? alpha(districtColor(district.name), 0.42)
+                          : alpha(districtColor(district.name), 0.22)
+                      }
+                      pointerEvents="all"
+                      onMouseEnter={() => setHoveredDistrict(district.name)}
+                      onFocus={() => setHoveredDistrict(district.name)}
+                      onBlur={() => setHoveredDistrict(null)}
+                      onClick={() => onDistrictSelect?.(district.name)}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter' || event.key === ' ') {
+                          event.preventDefault();
+                          onDistrictSelect?.(district.name);
+                        }
+                      }}
+                      style={{ cursor: 'pointer', transition: 'fill 160ms ease' }}
+                      vectorEffect="non-scaling-stroke"
+                    />
+                  ))}
+                </g>
+                {mapData.clusters.map((cluster) => (
+                  <g
+                    key={cluster.id}
                     role="button"
                     tabIndex={0}
-                    aria-label={`${district.name} ${districtCounts.get(normalizeDistrictName(district.name)) ?? 0} รายการ กดเพื่อสำรวจ`}
-                    fill={
-                      normalizeDistrictName(hoveredDistrict) ===
-                      normalizeDistrictName(district.name)
-                        ? '#d3dfc8'
-                        : 'transparent'
-                    }
-                    pointerEvents="all"
-                    onMouseEnter={() => setHoveredDistrict(district.name)}
-                    onMouseLeave={() => setHoveredDistrict(null)}
-                    onFocus={() => setHoveredDistrict(district.name)}
+                    onMouseEnter={() => setHoveredDistrict(cluster.label)}
+                    onFocus={() => setHoveredDistrict(cluster.label)}
                     onBlur={() => setHoveredDistrict(null)}
-                    onClick={() => onDistrictSelect?.(district.name)}
+                    aria-label={`${cluster.title} กดเพื่อดูรายการ`}
+                    onClick={() => onDistrictSelect?.(cluster.label)}
                     onKeyDown={(event) => {
                       if (event.key === 'Enter' || event.key === ' ') {
                         event.preventDefault();
-                        onDistrictSelect?.(district.name);
+                        onDistrictSelect?.(cluster.label);
                       }
                     }}
-                    style={{ cursor: 'pointer', transition: 'fill 160ms ease' }}
-                    vectorEffect="non-scaling-stroke"
-                  />
-                </DistrictTooltip>
-              ))}
-            </g>
-            {mapData.clusters.map((cluster) => (
-              <DistrictTooltip key={cluster.id} label={cluster.label} count={cluster.count}>
-                <g
-                  role="button"
-                  tabIndex={0}
-                  onMouseEnter={() => setHoveredDistrict(cluster.label)}
-                  onMouseLeave={() => setHoveredDistrict(null)}
-                  onFocus={() => setHoveredDistrict(cluster.label)}
-                  onBlur={() => setHoveredDistrict(null)}
-                  aria-label={`${cluster.title} กดเพื่อดูรายการ`}
-                  onClick={() => onDistrictSelect?.(cluster.label)}
-                  onKeyDown={(event) => {
-                    if (event.key === 'Enter' || event.key === ' ') {
-                      event.preventDefault();
-                      onDistrictSelect?.(cluster.label);
-                    }
-                  }}
-                  style={{ cursor: 'pointer' }}
-                >
-                  <circle
-                    cx={cluster.x}
-                    cy={cluster.y}
-                    r={cluster.count > 99 ? 14 : 11.5}
-                    fill={
-                      normalizeDistrictName(hoveredDistrict) ===
-                      normalizeDistrictName(cluster.label)
-                        ? '#a67c38'
-                        : '#426452'
-                    }
-                    stroke="white"
-                    strokeWidth={1.8}
-                    style={{ transition: 'fill 150ms' }}
-                  />
-                  <text
-                    x={cluster.x}
-                    y={cluster.y}
-                    dy="0.35em"
-                    textAnchor="middle"
-                    fill="white"
-                    fontSize={10}
-                    fontWeight={700}
-                    pointerEvents="none"
+                    style={{ cursor: 'pointer' }}
                   >
-                    {cluster.count}
-                  </text>
-                </g>
-              </DistrictTooltip>
-            ))}
-          </>
-        ) : (
-          <text
-            x="310"
-            y="360"
-            fill={theme.palette.text.secondary}
-            fontSize={15}
-            fontWeight={700}
-            textAnchor="middle"
-          >
-            กำลังโหลดแผนที่
-          </text>
-        )}
-      </svg>
+                    <circle
+                      cx={cluster.x}
+                      cy={cluster.y}
+                      r={cluster.count > 99 ? 14 : 11.5}
+                      fill={
+                        normalizeDistrictName(hoveredDistrict) ===
+                        normalizeDistrictName(cluster.label)
+                          ? theme.palette.grey[800]
+                          : districtColor(cluster.label)
+                      }
+                      stroke="white"
+                      strokeWidth={1.8}
+                      style={{ transition: 'fill 150ms' }}
+                    />
+                    <text
+                      x={cluster.x}
+                      y={cluster.y}
+                      dy="0.35em"
+                      textAnchor="middle"
+                      fill="white"
+                      fontSize={10}
+                      fontWeight={700}
+                      pointerEvents="none"
+                    >
+                      {cluster.count}
+                    </text>
+                  </g>
+                ))}
+              </>
+            ) : (
+              <text
+                x="310"
+                y="360"
+                fill={theme.palette.text.secondary}
+                fontSize={15}
+                fontWeight={700}
+                textAnchor="middle"
+              >
+                กำลังโหลดแผนที่
+              </text>
+            )}
+          </svg>
+        </Box>
+      </DistrictTooltip>
       <Box
         sx={{
           width: 1,
@@ -528,10 +588,10 @@ export function ProvinceShapeMap({
               <Box
                 component="span"
                 sx={{
-                  color: '#526c56',
+                  color: districtColor(cluster.label),
                   fontWeight: 700,
                   fontSize: 11,
-                  bgcolor: '#e8eee4',
+                  bgcolor: alpha(districtColor(cluster.label), 0.12),
                   borderRadius: 1,
                   px: 0.75,
                   minWidth: 24,

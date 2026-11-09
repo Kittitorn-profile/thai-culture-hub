@@ -8,16 +8,15 @@ import type {
 
 import { useState } from 'react';
 import { useInfiniteQuery } from '@tanstack/react-query';
-import { RiCloseLine, RiArrowRightLine, RiArrowRightUpLine } from '@remixicon/react';
+import { RiCloseLine, RiArrowRightUpLine } from '@remixicon/react';
 
 import Box from '@mui/material/Box';
-import Alert from '@mui/material/Alert';
-import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import Drawer from '@mui/material/Drawer';
-import ButtonBase from '@mui/material/ButtonBase';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
+
+import { CulturalDataCardImage } from 'src/sections/cultural-data/cultural-data-card-image';
 
 const GROUPS: { key: ProvinceDataSection; label: string; description: string }[] = [
   {
@@ -87,22 +86,18 @@ export function ProvinceCulturalSections({
           สถานที่และเรื่องวัฒนธรรม
         </Button>
         {GROUPS.map((group) => (
-          <Button
-            component="a"
-            key={group.key}
-            href={`#province-${group.key}`}
-            variant="outlined"
-            size="small"
-            sx={{ borderRadius: 99 }}
-          >
-            {group.label}
-          </Button>
+          <ProvinceDataGroupLink
+            key={`${provinceCode}:${group.key}`}
+            provinceCode={provinceCode}
+            group={group}
+          />
         ))}
       </Box>
       {GROUPS.map((group) => (
         <ProvinceDataGroup
           key={`${provinceCode}:${group.key}`}
           provinceCode={provinceCode}
+          provinceName={provinceName}
           section={group.key}
           label={group.label}
           description={group.description}
@@ -111,19 +106,8 @@ export function ProvinceCulturalSections({
     </Box>
   );
 }
-function ProvinceDataGroup({
-  provinceCode,
-  section,
-  label,
-  description,
-}: {
-  provinceCode: string;
-  section: ProvinceDataSection;
-  label: string;
-  description: string;
-}) {
-  const [selected, setSelected] = useState<ProvinceDataItem | null>(null);
-  const query = useInfiniteQuery({
+function useProvinceDataQuery(provinceCode: string, section: ProvinceDataSection) {
+  return useInfiniteQuery({
     queryKey: ['public-province-data', provinceCode, section],
     initialPageParam: 0,
     queryFn: async ({ pageParam, signal }): Promise<ProvinceDataResult> => {
@@ -147,8 +131,50 @@ function ProvinceDataGroup({
     staleTime: 60_000,
     retry: 1,
   });
+}
+
+function ProvinceDataGroupLink({
+  provinceCode,
+  group,
+}: {
+  provinceCode: string;
+  group: (typeof GROUPS)[number];
+}) {
+  const query = useProvinceDataQuery(provinceCode, group.key);
+  if (!query.data?.pages.some((page) => page.data.length > 0)) return null;
+
+  return (
+    <Button
+      component="a"
+      href={`#province-${group.key}`}
+      variant="outlined"
+      size="small"
+      sx={{ borderRadius: 99 }}
+    >
+      {group.label}
+    </Button>
+  );
+}
+
+function ProvinceDataGroup({
+  provinceCode,
+  provinceName,
+  section,
+  label,
+  description,
+}: {
+  provinceCode: string;
+  provinceName: string;
+  section: ProvinceDataSection;
+  label: string;
+  description: string;
+}) {
+  const [selected, setSelected] = useState<ProvinceDataItem | null>(null);
+  const query = useProvinceDataQuery(provinceCode, section);
   const items = query.data?.pages.flatMap((page) => page.data) ?? [];
   const total = query.data?.pages[0]?.total;
+  if (query.isSuccess && items.length === 0) return null;
+
   return (
     <Box component="section" id={`province-${section}`} sx={{ mb: 5, scrollMarginTop: 100 }}>
       <Box
@@ -177,99 +203,32 @@ function ProvinceDataGroup({
       {query.isPending && (
         <Typography sx={{ py: 2, color: 'text.secondary' }}>กำลังโหลดข้อมูล…</Typography>
       )}
-      {query.isError && (
-        <Alert
-          severity="warning"
-          sx={{ mb: 2 }}
-          action={
-            <Button
-              size="small"
-              onClick={() => (query.isFetchNextPageError ? query.fetchNextPage() : query.refetch())}
-            >
-              ลองอีกครั้ง
-            </Button>
-          }
-        >
-          {query.error.message}
-        </Alert>
-      )}
-      {total === 0 && (
-        <Typography
-          sx={{ p: 2, borderRadius: 2, bgcolor: '#eef1eb', color: 'text.secondary', fontSize: 14 }}
-        >
-          ยังไม่มีรายการในชุดนี้ที่ยืนยันว่าเกี่ยวข้องกับจังหวัดนี้
-        </Typography>
-      )}
+
       <Box
         sx={{
           display: 'grid',
           gridTemplateColumns: {
             xs: '1fr',
             sm: 'repeat(2, 1fr)',
-            lg: section === 'artists' ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)',
+            lg: 'repeat(4, minmax(0, 1fr))',
           },
           gap: 2,
         }}
       >
-        {items.map((item, index) =>
-          section === 'artists' ? (
-            <ProvinceArtistCard
-              key={`${item.id}:${index}`}
-              item={item}
-              onSelect={() => setSelected(item)}
-            />
-          ) : (
-            <Box
-              key={`${item.id}:${index}`}
-              sx={{
-                p: 2.5,
-                bgcolor: 'background.paper',
-                border: '1px solid #e1e5dc',
-                borderRadius: 2.5,
-                display: 'flex',
-                flexDirection: 'column',
-                minWidth: 0,
-              }}
-            >
-              {item.imageUrl && (
-                <Box
-                  component="img"
-                  src={item.imageUrl}
-                  alt={item.title}
-                  loading="lazy"
-                  sx={{ width: 72, height: 72, objectFit: 'cover', borderRadius: 2, mb: 1.5 }}
-                />
-              )}
-              <Typography component="h4" sx={{ fontSize: 18, fontWeight: 700, mb: 1 }}>
-                {item.title}
-              </Typography>
-              <Typography sx={{ fontSize: 12, color: '#608d8c', mb: 1 }}>
-                {item.subtitle}
-              </Typography>
-              <Typography
-                sx={{
-                  fontSize: 13,
-                  color: 'text.secondary',
-                  display: '-webkit-box',
-                  WebkitLineClamp: 3,
-                  WebkitBoxOrient: 'vertical',
-                  overflow: 'hidden',
-                  mb: 2,
-                }}
-              >
-                {item.description || 'ดูรายละเอียดและแหล่งอ้างอิงเพิ่มเติม'}
-              </Typography>
-              <Button
-                size="small"
-                onClick={() => setSelected(item)}
-                endIcon={<RiArrowRightUpLine size={16} />}
-                sx={{ mt: 'auto', alignSelf: 'start' }}
-              >
-                ดูรายละเอียด
-              </Button>
-            </Box>
-          )
-        )}
+        {items.map((item, index) => (
+          <CulturalDataCardImage
+            key={`${item.id}:${index}`}
+            src={item.imageUrl}
+            title={item.title}
+            label={label}
+            subtitle={
+              item.details.find((detail) => detail.label === 'ประเภท')?.value || item.subtitle
+            }
+            description={item.description}
+            location={provinceName}
+            onClick={() => setSelected(item)}
+          />
+        ))}
       </Box>
       {!!items.length && (section !== 'artists' || query.hasNextPage) && (
         <Box
@@ -303,8 +262,10 @@ function ProvinceDataGroup({
           paper: {
             sx: {
               width: { xs: '100%', sm: 520 },
-              p: 3,
-              bgcolor: 'background.paper',
+              p: { xs: 2.5, sm: 3 },
+              bgcolor: '#fafbf8',
+              borderRadius: 0,
+              pb: 'max(32px, env(safe-area-inset-bottom))',
               backgroundImage: 'none',
               '& > *': { flexShrink: 0 },
             },
@@ -317,46 +278,94 @@ function ProvinceDataGroup({
               sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}
             >
               <Typography sx={{ color: 'text.secondary', fontSize: 12 }}>{label}</Typography>
-              <IconButton aria-label="ปิดรายละเอียด" onClick={() => setSelected(null)}>
+              <IconButton
+                aria-label="ปิดรายละเอียด"
+                onClick={() => setSelected(null)}
+                sx={{ bgcolor: '#e9ede5', color: '#2c4036' }}
+              >
                 <RiCloseLine size={20} />
               </IconButton>
             </Box>
-            <Typography component="h2" variant="h5">
+            <Box
+              sx={{
+                bgcolor: '#e9ede5',
+                borderRadius: 2.5,
+                overflow: 'hidden',
+                mb: 3,
+                display: 'grid',
+                placeItems: 'center',
+                minHeight: 200,
+              }}
+            >
+              <Box
+                component="img"
+                src={selected.imageUrl || '/logo/logo-full.svg'}
+                alt={selected.imageUrl ? selected.title : 'Thailand Cultural Hub'}
+                sx={
+                  selected.imageUrl
+                    ? { width: '100%', maxHeight: 300, objectFit: 'contain', display: 'block' }
+                    : { width: 160, maxWidth: '60%', py: 6 }
+                }
+              />
+            </Box>
+            {selected.imageUrl && selected.imageCredit && (
+              <Typography sx={{ fontSize: 11, color: 'text.secondary', mt: -2, mb: 2 }}>
+                ภาพ: {selected.imageCredit}
+              </Typography>
+            )}
+            <Typography
+              component="h2"
+              variant="h5"
+              sx={{ color: '#2c4036', lineHeight: 1.5, overflowWrap: 'anywhere' }}
+            >
               {selected.title}
             </Typography>
             <Typography sx={{ fontSize: 13, color: '#608d8c', mt: 1 }}>
               {selected.subtitle}
             </Typography>
-            {selected.imageUrl && (
-              <>
-                <Box
-                  component="img"
-                  src={selected.imageUrl}
-                  alt={selected.title}
-                  sx={{ width: 1, maxHeight: 320, objectFit: 'contain', borderRadius: 2, mt: 2 }}
-                />
-                {selected.imageCredit && (
-                  <Typography sx={{ fontSize: 12, color: 'text.secondary', mt: 1 }}>
-                    ภาพ: {selected.imageCredit}
-                  </Typography>
-                )}
-              </>
-            )}
             {selected.description && (
-              <Typography sx={{ mt: 3, fontSize: 14, whiteSpace: 'pre-line' }}>
+              <Typography sx={{ mt: 2, fontSize: 14, lineHeight: 1.85, whiteSpace: 'pre-line' }}>
                 {selected.description}
               </Typography>
             )}
-            {selected.details.map((detail) => (
-              <Box key={detail.label} sx={{ mt: 2.5 }}>
-                <Typography sx={{ fontSize: 12, color: 'text.secondary', mb: 0.5 }}>
-                  {detail.label}
-                </Typography>
-                <Typography sx={{ fontSize: 14, whiteSpace: 'pre-line' }}>
-                  {detail.value}
-                </Typography>
-              </Box>
-            ))}
+            <Box
+              component="dl"
+              sx={{
+                m: 0,
+                mt: 3,
+                p: 2.5,
+                bgcolor: '#fff',
+                border: '1px solid #e1e5dc',
+                borderRadius: 2.5,
+                display: 'grid',
+                gap: 2,
+              }}
+            >
+              {selected.details
+                .filter((detail) => detail.value)
+                .map((detail) => (
+                  <Box key={detail.label}>
+                    <Typography
+                      component="dt"
+                      sx={{ fontSize: 12, color: 'text.secondary', mb: 0.5 }}
+                    >
+                      {detail.label}
+                    </Typography>
+                    <Typography
+                      component="dd"
+                      sx={{
+                        m: 0,
+                        fontSize: 14,
+                        lineHeight: 1.7,
+                        whiteSpace: 'pre-line',
+                        overflowWrap: 'anywhere',
+                      }}
+                    >
+                      {detail.value}
+                    </Typography>
+                  </Box>
+                ))}
+            </Box>
             {selected.mapUrl && (
               <Button
                 component="a"
@@ -374,151 +383,60 @@ function ProvinceDataGroup({
                 ดูหน้ารายละเอียดทั้งหมด
               </Button>
             )}
-            {selected.sourceUrls?.map((url) => (
-              <Button
-                component="a"
-                key={url}
-                href={url}
-                target="_blank"
-                rel="noopener noreferrer"
-                sx={{ mt: 1 }}
-              >
-                แหล่งข้อมูล · {new URL(url).hostname}
-              </Button>
-            ))}
-            {selected.sourceUrl && !selected.sourceUrls?.length && (
-              <Button
-                component="a"
-                href={selected.sourceUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                endIcon={<RiArrowRightUpLine size={16} />}
-                sx={{ mt: 2 }}
-              >
-                แหล่งอ้างอิง
-              </Button>
-            )}
+            <Box
+              sx={{
+                mt: 3,
+                pt: 2.5,
+                borderTop: '1px solid #e1e5dc',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 1,
+              }}
+            >
+              <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>
+                แหล่งข้อมูลและอ้างอิง
+              </Typography>
+              {selected.sourceUrls?.map((url) => (
+                <Button
+                  component="a"
+                  key={url}
+                  href={url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  endIcon={<RiArrowRightUpLine size={16} />}
+                  sx={{
+                    justifyContent: 'space-between',
+                    textAlign: 'left',
+                    p: 1.5,
+                    bgcolor: '#e9ede5',
+                    borderRadius: 1.5,
+                    overflowWrap: 'anywhere',
+                  }}
+                >
+                  {new URL(url).hostname}
+                </Button>
+              ))}
+              {selected.sourceUrl && !selected.sourceUrls?.length && (
+                <Button
+                  component="a"
+                  href={selected.sourceUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  endIcon={<RiArrowRightUpLine size={16} />}
+                  sx={{
+                    justifyContent: 'space-between',
+                    p: 1.5,
+                    bgcolor: '#e9ede5',
+                    borderRadius: 1.5,
+                  }}
+                >
+                  แหล่งอ้างอิง
+                </Button>
+              )}
+            </Box>
           </>
         )}
       </Drawer>
     </Box>
-  );
-}
-
-function ProvinceArtistCard({ item, onSelect }: { item: ProvinceDataItem; onSelect: () => void }) {
-  const relationship = item.details.find(
-    (detail) => detail.label === 'ความเกี่ยวข้องกับจังหวัด'
-  )?.value;
-  const type = item.details.find((detail) => detail.label === 'ประเภท')?.value;
-  return (
-    <ButtonBase
-      component="button"
-      type="button"
-      onClick={onSelect}
-      aria-label={`ดูข้อมูล ${item.title}`}
-      sx={{
-        width: 1,
-        p: { xs: 2, md: 2.5 },
-        borderRadius: 2.5,
-        bgcolor: 'background.paper',
-        border: '1px solid #e1e5dc',
-        display: 'grid',
-        gridTemplateColumns: '56px minmax(0, 1fr) 28px',
-        alignItems: 'center',
-        gap: 2,
-        textAlign: 'left',
-        transition: 'border-color 160ms ease, background-color 160ms ease',
-        '&:hover': { borderColor: '#8caa9b', bgcolor: '#fafbf8' },
-        '&.Mui-focusVisible': { outline: '2px solid #608d8c', outlineOffset: 3 },
-      }}
-    >
-      <Avatar
-        src={item.imageUrl}
-        alt=""
-        slotProps={{ img: { loading: 'lazy' } }}
-        sx={{
-          width: 56,
-          height: 56,
-          bgcolor: '#edf0e7',
-          color: '#3d594a',
-          fontWeight: 700,
-          fontSize: 24,
-        }}
-      >
-        {item.title.slice(0, 1)}
-      </Avatar>
-      <Box sx={{ minWidth: 0 }}>
-        {type && (
-          <Typography
-            component="span"
-            sx={{ display: 'block', fontSize: 11, color: 'text.secondary', mb: 0.5 }}
-          >
-            {type}
-          </Typography>
-        )}
-        <Typography
-          component="span"
-          sx={{
-            display: '-webkit-box',
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: 'vertical',
-            overflow: 'hidden',
-            fontWeight: 700,
-            fontSize: { xs: 17, md: 19 },
-            lineHeight: 1.5,
-          }}
-        >
-          {item.title}
-        </Typography>
-        {item.subtitle && (
-          <Typography
-            component="span"
-            sx={{
-              display: 'block',
-              fontSize: 12,
-              color: 'text.secondary',
-              mt: 0.5,
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {item.subtitle}
-          </Typography>
-        )}
-        {relationship && (
-          <Typography
-            component="span"
-            sx={{
-              display: 'inline-block',
-              fontSize: 11,
-              color: '#4e6e5b',
-              mt: 1,
-              px: 1,
-              py: 0.25,
-              borderRadius: 1,
-              bgcolor: '#eef3ec',
-            }}
-          >
-            {relationship}
-          </Typography>
-        )}
-      </Box>
-      <Box
-        component="span"
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          width: 28,
-          height: 28,
-          borderRadius: '50%',
-          color: '#526b5d',
-          bgcolor: '#f2f4ef',
-        }}
-      >
-        <RiArrowRightLine size={16} />
-      </Box>
-    </ButtonBase>
   );
 }

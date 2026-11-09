@@ -21,13 +21,18 @@ export function HomeHeroSection({ images = [] }: { images?: HomeHeroImage[] }) {
     <Box
       component="section"
       aria-labelledby="home-heading"
-      sx={{ px: HOME_SECTION_PX, pt: { xs: 2, md: 3 }, position: 'relative', zIndex: 1 }}
+      sx={{
+        px: { ...HOME_SECTION_PX, xs: 2 },
+        pt: { xs: 2, md: 3 },
+        position: 'relative',
+        zIndex: 1,
+      }}
     >
       <Box
         sx={{
           maxWidth: HOME_SECTION_MAX_WIDTH,
           mx: 'auto',
-          minHeight: { xs: 440, sm: 500, md: 560 },
+          minHeight: { xs: 420, sm: 500, md: 560 },
           position: 'relative',
           overflow: 'hidden',
           borderRadius: { xs: 2.5, md: 4 },
@@ -58,14 +63,16 @@ export function HomeHeroSection({ images = [] }: { images?: HomeHeroImage[] }) {
           sx={{
             position: 'absolute',
             inset: 0,
-            background:
-              'linear-gradient(90deg, rgba(16,22,24,.88), rgba(16,22,24,.45) 55%, rgba(16,22,24,.08))',
+            background: {
+              xs: 'linear-gradient(180deg, rgba(16,22,24,.08) 0%, rgba(16,22,24,.6) 35%, rgba(16,22,24,.92) 100%)',
+              md: 'linear-gradient(90deg, rgba(16,22,24,.88), rgba(16,22,24,.45) 55%, rgba(16,22,24,.08))',
+            },
           }}
         />
         <Box
           sx={{
             position: 'relative',
-            p: { xs: 3, sm: 5, md: 7 },
+            p: { xs: 2.5, sm: 5, md: 7 },
             pb: visibleImages.length > 1 ? { xs: 10, sm: 10, md: 10 } : undefined,
             maxWidth: 740,
             color: '#fff',
@@ -73,7 +80,13 @@ export function HomeHeroSection({ images = [] }: { images?: HomeHeroImage[] }) {
           }}
         >
           <Typography
-            sx={{ mb: 2.5, fontSize: 11, fontWeight: 500, letterSpacing: 1.8, color: '#ffffffba' }}
+            sx={{
+              mb: { xs: 1.5, md: 2.5 },
+              fontSize: { xs: 10, sm: 11 },
+              fontWeight: 500,
+              letterSpacing: 1.8,
+              color: '#ffffffba',
+            }}
           >
             THAILAND CULTURAL HUB
           </Typography>
@@ -81,8 +94,8 @@ export function HomeHeroSection({ images = [] }: { images?: HomeHeroImage[] }) {
             id="home-heading"
             component="h1"
             sx={{
-              fontSize: { xs: 36, sm: 52, md: 64 },
-              lineHeight: 1.25,
+              fontSize: { xs: 28, sm: 52, md: 64 },
+              lineHeight: { xs: 1.4, sm: 1.25 },
               letterSpacing: '-0.035em',
               fontWeight: 600,
             }}
@@ -93,18 +106,27 @@ export function HomeHeroSection({ images = [] }: { images?: HomeHeroImage[] }) {
           </Typography>
           <Typography
             sx={{
-              mt: 2.5,
+              mt: { xs: 1.5, md: 2.5 },
               maxWidth: 450,
-              fontSize: { xs: 16, md: 18 },
+              fontSize: { xs: 13, sm: 16, md: 18 },
               lineHeight: 1.7,
               color: '#ffffffde',
             }}
           >
             ค้นหาสถานที่ ศิลปิน ชุมชน ผ้า และภูมิปัญญา
-            <br />
+            <Box component="br" sx={{ display: { xs: 'none', sm: 'block' } }} />
             จากข้อมูลหลายแหล่ง พร้อมที่มาให้ศึกษาเพิ่มเติม
           </Typography>
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 2, mt: 3.5 }}>
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: { xs: 'column', sm: 'row' },
+              alignItems: { xs: 'stretch', sm: 'center' },
+              gap: { xs: 1, sm: 2 },
+              mt: { xs: 2.5, md: 3.5 },
+              '& .MuiButton-root': { minHeight: 44, fontSize: { xs: 13, sm: 14 } },
+            }}
+          >
             <Button
               component="a"
               href="#explore-map"
@@ -187,19 +209,21 @@ export function HomeHeroSection({ images = [] }: { images?: HomeHeroImage[] }) {
           mx: 'auto',
           display: 'grid',
           gridTemplateColumns: { xs: '1fr', md: '1.1fr 1fr' },
-          gap: { xs: 4, md: 8 },
-          pt: { xs: 5, md: 7 },
+          gap: { xs: 3, md: 8 },
+          pt: { xs: 3.5, md: 7 },
           pb: { xs: 3, md: 4 },
         }}
       >
         <Box>
           <Typography
             component="h2"
-            sx={{ fontSize: { xs: 27, md: 36 }, fontWeight: 600, lineHeight: 1.3, mb: 2 }}
+            sx={{ fontSize: { xs: 23, md: 36 }, fontWeight: 600, lineHeight: 1.3, mb: 2 }}
           >
             พื้นที่เรียนรู้วัฒนธรรมไทย
           </Typography>
-          <Typography sx={{ maxWidth: 510, color: '#62666a', lineHeight: 1.85, fontSize: 15 }}>
+          <Typography
+            sx={{ maxWidth: 510, color: '#62666a', lineHeight: 1.85, fontSize: { xs: 13, sm: 15 } }}
+          >
             Thailand Cultural Hub รวบรวมข้อมูลสถานที่ ศิลปิน มรดกภูมิปัญญา ชุมชนชาติพันธุ์
             ผลิตภัณฑ์วัฒนธรรม และผ้ากับงานช่าง ให้ค้นหาตามจังหวัดหรือประเภทข้อมูล
             พร้อมแหล่งอ้างอิงและเรื่องเล่าจากสมาชิก
@@ -221,7 +245,7 @@ export function HomeHeroSection({ images = [] }: { images?: HomeHeroImage[] }) {
             ['ผลิตภัณฑ์และเรื่องเล่า', 'ผลงานชุมชนและบทความจากสมาชิก'],
           ].map(([title, detail]) => (
             <Box key={title} sx={{ borderTop: '1px solid #dfe3df', pt: 2 }}>
-              <Typography sx={{ fontWeight: 600, fontSize: { xs: 19, md: 23 }, mb: 0.5 }}>
+              <Typography sx={{ fontWeight: 600, fontSize: { xs: 16, md: 23 }, mb: 0.5 }}>
                 {title}
               </Typography>
               <Typography sx={{ color: '#74777a', fontSize: 13, lineHeight: 1.7 }}>

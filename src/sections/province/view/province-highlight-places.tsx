@@ -2,7 +2,7 @@
 
 import type { CulturalPlace } from '../province-data';
 
-import { RiImageLine, RiArrowRightUpLine } from '@remixicon/react';
+import { RiArrowRightUpLine } from '@remixicon/react';
 
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -82,6 +82,7 @@ export function ProvinceHighlightPlaces({
               <Box
                 key={title}
                 sx={{
+                  minWidth: 0,
                   bgcolor: 'background.paper',
                   border: '1px solid #e1e5dc',
                   borderRadius: 2.5,
@@ -95,6 +96,7 @@ export function ProvinceHighlightPlaces({
                   href={`/culture-place/${encodeURIComponent(place.id)}/`}
                   sx={{
                     display: 'block',
+                    minWidth: 0,
                     flex: 1,
                     textDecoration: 'none',
                     color: 'inherit',
@@ -104,8 +106,9 @@ export function ProvinceHighlightPlaces({
                 >
                   <Box
                     sx={{
-                      aspectRatio: '4 / 3',
-                      maxHeight: 220,
+                      width: '100%',
+                      aspectRatio: '16 / 10',
+                      position: 'relative',
                       bgcolor: '#eaf0e6',
                       overflow: 'hidden',
                     }}
@@ -117,8 +120,11 @@ export function ProvinceHighlightPlaces({
                         alt={title}
                         loading="lazy"
                         sx={{
-                          width: 1,
-                          height: 1,
+                          position: 'absolute',
+                          inset: 0,
+                          display: 'block',
+                          width: '100%',
+                          height: '100%',
                           objectFit: 'cover',
                           transition: 'transform 180ms ease',
                           '@media (prefers-reduced-motion: reduce)': { transition: 'none' },
@@ -127,25 +133,36 @@ export function ProvinceHighlightPlaces({
                     ) : (
                       <Box
                         sx={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          gap: 1,
-                          height: 1,
-                          color: '#758777',
-                          fontSize: 12,
+                          position: 'absolute',
+                          inset: 0,
+                          display: 'grid',
+                          placeItems: 'center',
+                          p: 3,
                         }}
                       >
-                        <RiImageLine size={20} />
-                        ยังไม่มีภาพสถานที่
+                        <Box
+                          component="img"
+                          src="/logo/logo-single.png"
+                          alt="Thailand Cultural Hub"
+                          sx={{
+                            width: 92,
+                            maxWidth: '46%',
+                            maxHeight: '100%',
+                            objectFit: 'contain',
+                            opacity: 0.8,
+                          }}
+                        />
                       </Box>
                     )}
                   </Box>
-                  <Box sx={{ p: 2, pb: 1 }}>
+                  <Box sx={{ p: { xs: 1.75, sm: 2 }, pb: 1 }}>
                     <Typography sx={{ fontSize: 11, color: '#608d8c', mb: 0.75 }}>
                       {theme}
                     </Typography>
-                    <Typography component="h3" sx={{ fontSize: 18, fontWeight: 700 }}>
+                    <Typography
+                      component="h3"
+                      sx={{ fontSize: 18, fontWeight: 700, overflowWrap: 'anywhere' }}
+                    >
                       {title}
                     </Typography>
                     <Typography sx={{ fontSize: 12, color: 'text.secondary', mt: 0.5 }}>
@@ -164,7 +181,7 @@ export function ProvinceHighlightPlaces({
                 </Box>
                 <Box
                   sx={{
-                    px: 2,
+                    px: { xs: 1.75, sm: 2 },
                     pb: 1.5,
                     display: 'flex',
                     alignItems: 'center',
@@ -177,6 +194,7 @@ export function ProvinceHighlightPlaces({
                     href={`/culture-place/${encodeURIComponent(place.id)}/`}
                     size="small"
                     endIcon={<RiArrowRightUpLine size={14} />}
+                    sx={{ px: 0, minHeight: 36 }}
                   >
                     สำรวจสถานที่
                   </Button>

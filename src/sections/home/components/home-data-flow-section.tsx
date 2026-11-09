@@ -68,7 +68,7 @@ export function HomeDataFlowSection() {
             <Typography
               id="home-data-heading"
               component="h2"
-              sx={{ fontSize: { xs: 26, md: 34 }, fontWeight: 600, lineHeight: 1.4 }}
+              sx={{ fontSize: { xs: 23, md: 34 }, fontWeight: 600, lineHeight: 1.4 }}
             >
               ค้นหา เรียนรู้ และร่วมเติมข้อมูล
             </Typography>
@@ -81,6 +81,8 @@ export function HomeDataFlowSection() {
             href="/culture-category"
             endIcon={<RiArrowRightLine size={17} />}
             sx={{
+              width: { xs: 1, sm: 'auto' },
+              minHeight: 44,
               flexShrink: 0,
               color: '#303b40',
               border: '1px solid #d8deda',

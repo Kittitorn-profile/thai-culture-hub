@@ -30,9 +30,10 @@ export function HomeCultureCategoriesSection({ content, cards }: Props) {
 
   return (
     <Box
+      component="section"
       sx={{
         px: HOME_SECTION_PX,
-        py: { xs: 6, md: 9 },
+        py: { xs: 4, md: 9 },
         position: 'relative',
         overflow: 'hidden',
         scrollMarginTop: 96,
@@ -52,7 +53,7 @@ export function HomeCultureCategoriesSection({ content, cards }: Props) {
           spacing={2.5}
           alignItems={{ xs: 'flex-start', md: 'flex-end' }}
           justifyContent="space-between"
-          sx={{ mb: { xs: 3.5, md: 4.5 } }}
+          sx={{ mb: { xs: 2.5, md: 4.5 } }}
         >
           <Box sx={{ maxWidth: 700 }}>
             <Typography
@@ -71,18 +72,25 @@ export function HomeCultureCategoriesSection({ content, cards }: Props) {
               หมวดสถานที่และแหล่งวัฒนธรรม
             </Typography>
             <Typography
-              variant="h3"
+              component="h2"
               sx={{
                 mt: 2,
                 color: HOME_TEXT,
-                fontSize: { xs: 28, md: 44 },
+                fontSize: { xs: 23, sm: 30, md: 44 },
                 fontWeight: 600,
-                lineHeight: 1.15,
+                lineHeight: 1.4,
               }}
             >
               {content.title}
             </Typography>
-            <Typography sx={{ mt: 1.3, color: 'rgba(32,33,36,0.76)', lineHeight: 1.75 }}>
+            <Typography
+              sx={{
+                mt: 1.3,
+                fontSize: { xs: 13, sm: 14 },
+                color: 'rgba(32,33,36,0.76)',
+                lineHeight: 1.8,
+              }}
+            >
               {content.description}
             </Typography>
           </Box>
@@ -92,6 +100,8 @@ export function HomeCultureCategoriesSection({ content, cards }: Props) {
             href="/culture-category"
             variant="outlined"
             sx={{
+              width: { xs: 1, sm: 'auto' },
+              minHeight: 44,
               flexShrink: 0,
               color: HOME_TEXT,
               borderColor: 'rgba(32,33,36,0.5)',
@@ -108,9 +118,9 @@ export function HomeCultureCategoriesSection({ content, cards }: Props) {
         <Box
           sx={{
             display: 'grid',
-            gap: { xs: 1.5, md: 2 },
+            gap: { xs: 1, md: 2 },
             gridTemplateColumns: {
-              xs: '1fr',
+              xs: 'minmax(0, 1fr)',
               sm: 'repeat(2, minmax(0, 1fr))',
               lg: 'repeat(3, minmax(0, 1fr))',
             },
@@ -128,8 +138,8 @@ export function HomeCultureCategoriesSection({ content, cards }: Props) {
                 display: 'flex',
                 flexDirection: 'row',
                 alignItems: 'center',
-                gap: 2,
-                p: 2,
+                gap: { xs: 1.25, sm: 2 },
+                p: { xs: 1, sm: 2 },
                 overflow: 'hidden',
                 textDecoration: 'none',
                 color: HOME_TEXT,
@@ -155,8 +165,8 @@ export function HomeCultureCategoriesSection({ content, cards }: Props) {
                 alt=""
                 loading="lazy"
                 sx={{
-                  width: { xs: 52, md: 60 },
-                  height: { xs: 52, md: 60 },
+                  width: { xs: 40, sm: 52, md: 60 },
+                  height: { xs: 40, sm: 52, md: 60 },
                   flexShrink: 0,
                   borderRadius: 1,
                   opacity: 0.8,
@@ -177,7 +187,7 @@ export function HomeCultureCategoriesSection({ content, cards }: Props) {
                 <Typography
                   sx={{
                     color: 'inherit',
-                    fontSize: { xs: 15, md: 16 },
+                    fontSize: { xs: 14, md: 16 },
                     fontWeight: 600,
                     lineHeight: 1.5,
                   }}
@@ -189,11 +199,11 @@ export function HomeCultureCategoriesSection({ content, cards }: Props) {
                   spacing={1}
                   alignItems="center"
                   justifyContent="space-between"
-                  sx={{ pt: 0.5, color: '#7a8285' }}
+                  sx={{ pt: { xs: 0.25, sm: 0.5 }, color: '#7a8285' }}
                 >
                   <Typography
                     className="culture-category-count"
-                    sx={{ fontSize: 12, fontWeight: 400 }}
+                    sx={{ fontSize: 12, fontWeight: 400, lineHeight: 1.6 }}
                   >
                     ดูสถานที่ในหมวดนี้
                   </Typography>

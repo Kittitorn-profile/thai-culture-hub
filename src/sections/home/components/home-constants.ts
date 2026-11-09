@@ -7,7 +7,7 @@ export const HOME_BG_BOTTOM = '#191f22';
 export const HOME_TEXT = '#202124';
 export const HOME_DEEP = '#202629';
 export const HOME_SECTION_MAX_WIDTH = 1280;
-export const HOME_SECTION_PX = { xs: 2.5, sm: 4, md: 6, lg: 8 };
+export const HOME_SECTION_PX = { xs: 2, sm: 4, md: 6, lg: 8 };
 export const HOME_SHARED_BACKGROUND = 'none';
 export const HOME_POSTER_PATTERN = `
   repeating-radial-gradient(circle at 78% 12%, transparent 0 44px, rgba(230,236,232,0.22) 46px 48px),

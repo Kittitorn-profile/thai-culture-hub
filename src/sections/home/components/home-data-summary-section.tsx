@@ -64,11 +64,13 @@ export function HomeDataSummarySection() {
             <Typography
               id="data-summary-heading"
               component="h2"
-              sx={{ fontSize: { xs: 26, md: 36 }, fontWeight: 700, lineHeight: 1.35 }}
+              sx={{ fontSize: { xs: 23, md: 36 }, fontWeight: 700, lineHeight: 1.35 }}
             >
               เลือกข้อมูลวัฒนธรรมที่คุณสนใจ
             </Typography>
-            <Typography sx={{ color: 'text.secondary', mt: 1 }}>
+            <Typography
+              sx={{ color: 'text.secondary', mt: 1, fontSize: { xs: 13, sm: 14 }, lineHeight: 1.8 }}
+            >
               เริ่มจากสถานที่ ผู้คน มรดกภูมิปัญญา ผลิตภัณฑ์ หรือผ้าและงานช่าง
             </Typography>
           </Box>
@@ -89,11 +91,31 @@ export function HomeDataSummarySection() {
         </Stack>
         <Box
           sx={{
-            display: 'grid',
-            gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' },
+            display: { xs: 'flex', md: 'grid' },
+            mx: { xs: -2, sm: -4, md: 0 },
+            px: { xs: 2, sm: 4, md: 0 },
+            pb: { xs: 1, md: 0 },
+            overflowX: { xs: 'auto', md: 'visible' },
+            scrollSnapType: { xs: 'x mandatory', md: 'none' },
+            scrollPaddingInline: { xs: '16px', sm: '32px', md: 0 },
+            overscrollBehaviorX: 'contain',
+            scrollbarWidth: 'none',
+            '&::-webkit-scrollbar': { display: 'none' },
+            '& > *': {
+              flex: { xs: '0 0 88%', md: 'initial' },
+              scrollSnapAlign: 'start',
+            },
+            gridTemplateColumns: {
+              xs: 'minmax(0, 1fr)',
+              sm: 'repeat(2, minmax(0, 1fr))',
+              md: 'repeat(3, minmax(0, 1fr))',
+            },
             gap: 1.5,
           }}
           aria-busy={isPending}
+          role="region"
+          aria-label="ประเภทข้อมูลวัฒนธรรม เลื่อนซ้ายขวาเพื่อดูเพิ่มเติม"
+          tabIndex={0}
         >
           {isPending &&
             Array.from({ length: PUBLIC_DATA_GROUPS.length }, (_, i) => (
@@ -105,11 +127,12 @@ export function HomeDataSummarySection() {
               component="a"
               href={PUBLIC_DATA_GROUPS.find((item) => item.key === group.key)?.href}
               sx={{
+                minWidth: 0,
                 textDecoration: 'none',
                 transition: 'box-shadow 150ms',
                 '&:hover': { boxShadow: '0 4px 18px rgba(44,64,54,0.12)' },
                 '&:focus-visible': { outline: '2px solid #608d8c', outlineOffset: 3 },
-                p: { xs: 2.5, md: 3 },
+                p: { xs: 2, md: 3 },
                 borderRadius: 2.5,
                 bgcolor: index === 0 ? '#2c4036' : '#eeefea',
                 color: index === 0 ? '#fff' : 'inherit',
@@ -166,8 +189,7 @@ export function HomeDataSummarySection() {
           </Stack>
         )}
         <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 2 }}>
-          เรื่องเดียวกันอาจเชื่อมโยงสถานที่ ผู้คน และสินค้า แต่แสดงแยกตามประเภทข้อมูล ·
-          อัปเดตจำนวนทุก 5 นาที
+          เรื่องเดียวกันอาจเชื่อมโยงสถานที่ ผู้คน และสินค้า แต่แสดงแยกตามประเภทข้อมูล
         </Typography>
       </Box>
     </Box>

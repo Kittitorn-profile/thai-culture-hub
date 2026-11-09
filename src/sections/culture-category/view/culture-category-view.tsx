@@ -452,16 +452,27 @@ export function CultureCategoryView({ allCategories = false }: Props) {
 
         <Card
           sx={{
-            p: { xs: 2, md: 2.5 },
+            p: { xs: 1.5, md: 2 },
             borderRadius: 2,
             bgcolor: '#fff',
             border: '1px solid #e2e5de',
             boxShadow: 'none',
           }}
         >
-          <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: 'minmax(0, 1fr) auto', md: 'minmax(0, 1fr) 240px auto' },
+              gap: 1.25,
+              alignItems: 'center',
+            }}
+          >
             <TextField
               fullWidth
+              sx={{
+                gridColumn: { xs: '1 / -1', md: 'auto' },
+                '& .MuiOutlinedInput-root': { minHeight: 44 },
+              }}
               label="ค้นหาชื่อสถานที่ อำเภอ หรือจังหวัด"
               size="small"
               slotProps={{
@@ -492,7 +503,7 @@ export function CultureCategoryView({ allCategories = false }: Props) {
               getOptionLabel={(option) => option.name}
               isOptionEqualToValue={(option, value) => option.code === value.code}
               onChange={(_event, value) => setProvinceCode(value?.code ?? '')}
-              sx={{ maxWidth: { md: 280 }, flexShrink: 0 }}
+              sx={{ minWidth: 0, '& .MuiOutlinedInput-root': { minHeight: 44 } }}
               renderInput={(inputParams) => (
                 <TextField
                   {...inputParams}
@@ -507,7 +518,7 @@ export function CultureCategoryView({ allCategories = false }: Props) {
               onClick={handleSearch}
               sx={{
                 minWidth: 88,
-                minHeight: 40,
+                minHeight: 44,
                 bgcolor: '#293c34',
                 color: '#fff',
                 '&:hover': { bgcolor: '#3c5147' },
@@ -515,7 +526,7 @@ export function CultureCategoryView({ allCategories = false }: Props) {
             >
               ค้นหา
             </LoadingButton>
-          </Stack>
+          </Box>
         </Card>
 
         {error && <Alert severity="error">{error}</Alert>}

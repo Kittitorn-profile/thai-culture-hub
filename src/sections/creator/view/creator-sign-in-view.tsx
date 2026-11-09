@@ -191,8 +191,8 @@ export function CreatorSignInView() {
         width: 1,
         maxWidth: 1408,
         mx: 'auto',
-        px: HOME_SECTION_PX,
-        pt: { xs: 4, md: 6 },
+        px: { ...HOME_SECTION_PX, xs: 2 },
+        pt: { xs: 2, md: 6 },
         pb: { xs: 5, md: 7 },
         bgcolor: cultureUi.background,
         color: cultureUi.text,
@@ -202,7 +202,7 @@ export function CreatorSignInView() {
         sx={{
           display: 'grid',
           gridTemplateColumns: { xs: '1fr', md: '0.8fr 1.2fr' },
-          gap: { xs: 4, md: 7 },
+          gap: { xs: 2.5, md: 7 },
           alignItems: 'start',
         }}
       >
@@ -212,19 +212,26 @@ export function CreatorSignInView() {
           </Typography>
           <Typography
             component="h1"
-            sx={{ fontSize: { xs: 32, md: 42 }, fontWeight: 600, lineHeight: 1.4 }}
+            sx={{ fontSize: { xs: 26, sm: 32, md: 42 }, fontWeight: 600, lineHeight: 1.4 }}
           >
             กลับมาเล่าเรื่อง
             <br />
             วัฒนธรรมไปด้วยกัน
           </Typography>
-          <Typography sx={{ mt: 2, color: cultureUi.muted, fontSize: 15, lineHeight: 1.85 }}>
+          <Typography
+            sx={{
+              mt: { xs: 1, md: 2 },
+              color: cultureUi.muted,
+              fontSize: { xs: 13, md: 15 },
+              lineHeight: 1.8,
+            }}
+          >
             เข้าสู่ระบบเพื่อเขียนบทความ จัดการโปรไฟล์ และติดตามเรื่องราวที่คุณแบ่งปัน
           </Typography>
           <Typography
             sx={{
-              mt: 3,
-              pt: 2,
+              mt: { xs: 1.5, md: 3 },
+              pt: { xs: 1.5, md: 2 },
               borderTop: `1px solid ${cultureUi.border}`,
               color: cultureUi.muted,
               fontSize: 13,
@@ -235,10 +242,10 @@ export function CreatorSignInView() {
           </Typography>
         </Box>
         <Stack
-          spacing={2.5}
+          spacing={{ xs: 2, md: 2.5 }}
           sx={{
             mx: 'auto',
-            p: { xs: 2.5, md: 3.5 },
+            p: { xs: 2, sm: 3, md: 3.5 },
             width: 1,
             maxWidth: 460,
             minWidth: 0,
@@ -256,7 +263,7 @@ export function CreatorSignInView() {
             href="/"
             aria-label="Thailand Cultural Hub — กลับหน้าแรก"
             sx={{
-              width: { xs: 160, sm: 184 },
+              width: { xs: 140, sm: 184 },
               height: 'auto',
               aspectRatio: '2941 / 1169',
               mx: 'auto',
@@ -267,7 +274,7 @@ export function CreatorSignInView() {
             <Typography
               component="h2"
               textAlign="center"
-              sx={{ fontSize: 24, fontWeight: 600, lineHeight: 1.4 }}
+              sx={{ fontSize: { xs: 22, sm: 24 }, fontWeight: 600, lineHeight: 1.4 }}
             >
               เข้าสู่ระบบ Creator
             </Typography>
@@ -281,8 +288,11 @@ export function CreatorSignInView() {
 
           <Form methods={methods} onSubmit={onSubmit}>
             <Stack
-              spacing={2.5}
-              sx={{ '& .MuiOutlinedInput-root': { bgcolor: 'rgba(255,255,255,0.6)' } }}
+              spacing={2}
+              sx={{
+                '& .MuiOutlinedInput-root': { bgcolor: '#fff', minHeight: 44 },
+                '& input': { fontSize: { xs: 16, sm: 14 } },
+              }}
             >
               <Field.Text
                 name="email"
@@ -320,7 +330,15 @@ export function CreatorSignInView() {
               <Field.Checkbox
                 name="acceptTerms"
                 label={
-                  <Typography component="span" sx={{ color: 'text.secondary', fontSize: 13 }}>
+                  <Typography
+                    component="span"
+                    sx={{
+                      color: 'text.secondary',
+                      fontSize: 13,
+                      lineHeight: 1.75,
+                      overflowWrap: 'anywhere',
+                    }}
+                  >
                     <Box component="span" sx={{ color: 'error.main' }}>
                       *{' '}
                     </Box>
@@ -352,6 +370,10 @@ export function CreatorSignInView() {
                       py: 1,
                       borderRadius: 1.2,
                       bgcolor: cultureUi.subtle,
+                      alignItems: 'flex-start',
+                      m: 0,
+                      '& .MuiCheckbox-root': { p: 0.75, mr: 0.5, flexShrink: 0 },
+                      '& .MuiFormControlLabel-label': { minWidth: 0 },
                     },
                   },
                 }}

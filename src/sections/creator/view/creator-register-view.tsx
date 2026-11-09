@@ -21,20 +21,21 @@ import InputAdornment from '@mui/material/InputAdornment';
 import { RouterLink } from 'src/routes/components';
 import { useRouter, useSearchParams } from 'src/routes/hooks';
 
-import { creatorGoogleClient } from 'src/lib/creator-google-auth';
+import { cultureUi } from 'src/theme/culture-ui';
 import provinces from 'src/data/thailand-culture/provinces';
+import { creatorGoogleClient } from 'src/lib/creator-google-auth';
 
 import { Iconify } from 'src/components/iconify';
 import { Form, Field } from 'src/components/hook-form';
 
+import { HOME_SECTION_PX } from 'src/sections/home/components/home-constants';
+
 import { useAuthContext } from 'src/auth/hooks';
-import { getRoleHomePath, getSafeRoleRedirectPath } from 'src/auth/utils/role-redirect';
 import { CREATOR_AUTH_TOKEN_KEY } from 'src/auth/context/supabase/auth-provider';
+import { getRoleHomePath, getSafeRoleRedirectPath } from 'src/auth/utils/role-redirect';
 
 import { registerCreator } from '../creator-api';
 import { GoogleIdentityButton } from '../components/google-identity-button';
-import { cultureUi } from 'src/theme/culture-ui';
-import { HOME_SECTION_PX } from 'src/sections/home/components/home-constants';
 
 const registerSteps = ['ข้อมูลส่วนตัว', 'ตั้งค่าบัญชี', 'ส่งคำขอสมัคร'];
 
@@ -374,8 +375,8 @@ export function CreatorRegisterView() {
         width: 1,
         maxWidth: 1408,
         mx: 'auto',
-        px: HOME_SECTION_PX,
-        pt: { xs: 4, md: 6 },
+        px: { ...HOME_SECTION_PX, xs: 2 },
+        pt: { xs: 2, md: 6 },
         pb: { xs: 5, md: 7 },
         bgcolor: cultureUi.background,
         color: cultureUi.text,
@@ -387,7 +388,7 @@ export function CreatorRegisterView() {
           width: 1,
           display: 'grid',
           gridTemplateColumns: { xs: '1fr', md: '0.8fr 1.2fr' },
-          gap: { xs: 4, md: 7 },
+          gap: { xs: 2.5, md: 7 },
           alignItems: 'start',
         }}
       >
@@ -397,13 +398,20 @@ export function CreatorRegisterView() {
           </Typography>
           <Typography
             component="h1"
-            sx={{ fontSize: { xs: 32, md: 42 }, fontWeight: 600, lineHeight: 1.4 }}
+            sx={{ fontSize: { xs: 26, sm: 32, md: 42 }, fontWeight: 600, lineHeight: 1.4 }}
           >
             ร่วมเล่าเรื่อง
             <br />
             วัฒนธรรมในมุมของคุณ
           </Typography>
-          <Typography sx={{ mt: 2, color: cultureUi.muted, fontSize: 15, lineHeight: 1.85 }}>
+          <Typography
+            sx={{
+              mt: { xs: 1, md: 2 },
+              color: cultureUi.muted,
+              fontSize: { xs: 13, md: 15 },
+              lineHeight: 1.8,
+            }}
+          >
             สมัครเพื่อเขียนบทความและเสนอแก้ไขข้อมูลวัฒนธรรม โดยมีทีมงานตรวจสอบก่อนเผยแพร่
           </Typography>
           <Stack spacing={1.5} sx={{ mt: 3, display: { xs: 'none', md: 'flex' } }}>
@@ -420,8 +428,8 @@ export function CreatorRegisterView() {
           </Stack>
           <Typography
             sx={{
-              mt: 3,
-              pt: 2,
+              mt: { xs: 1.5, md: 3 },
+              pt: { xs: 1.5, md: 2 },
               borderTop: `1px solid ${cultureUi.border}`,
               fontSize: 12,
               color: cultureUi.muted,
@@ -432,10 +440,10 @@ export function CreatorRegisterView() {
           </Typography>
         </Box>
         <Stack
-          spacing={2.5}
+          spacing={{ xs: 2, md: 2.5 }}
           sx={{
             mx: 'auto',
-            p: { xs: 2.5, md: 3.5 },
+            p: { xs: 2, sm: 3, md: 3.5 },
             width: 1,
             maxWidth: 520,
             minWidth: 0,
@@ -450,7 +458,10 @@ export function CreatorRegisterView() {
           }}
         >
           <Box>
-            <Typography component="h2" sx={{ fontSize: 24, fontWeight: 600, lineHeight: 1.4 }}>
+            <Typography
+              component="h2"
+              sx={{ fontSize: { xs: 22, sm: 24 }, fontWeight: 600, lineHeight: 1.4 }}
+            >
               สมัครเป็น Creator
             </Typography>
             <Typography sx={{ mt: 0.75, fontSize: 13, color: cultureUi.muted }}>
@@ -467,8 +478,13 @@ export function CreatorRegisterView() {
 
           <Form methods={methods} onSubmit={onSubmit}>
             <Stack
-              spacing={2.5}
-              sx={{ '& .MuiOutlinedInput-root': { bgcolor: 'rgba(255,255,255,0.6)' } }}
+              spacing={{ xs: 2, md: 2.5 }}
+              sx={{
+                minWidth: 0,
+                '& .MuiOutlinedInput-root': { bgcolor: '#fff', minHeight: 44 },
+                '& input, & textarea': { fontSize: { xs: 16, sm: 14 } },
+                '& .MuiButton-root': { minHeight: 44 },
+              }}
             >
               <Stepper
                 alternativeLabel
@@ -641,7 +657,15 @@ export function CreatorRegisterView() {
                   <Field.Checkbox
                     name="acceptTerms"
                     label={
-                      <Typography component="span" sx={{ color: 'text.secondary', fontSize: 13 }}>
+                      <Typography
+                        component="span"
+                        sx={{
+                          color: 'text.secondary',
+                          fontSize: 13,
+                          lineHeight: 1.75,
+                          overflowWrap: 'anywhere',
+                        }}
+                      >
                         ยอมรับเงื่อนไขการใช้บริการ และรับทราบว่าชื่อที่แสดง
                         รวมถึงรูปโปรไฟล์ของฉันอาจถูกนำไปแสดงบนเว็บไซต์ในบทความหรือพื้นที่ Creator{' '}
                         <Link
@@ -670,6 +694,10 @@ export function CreatorRegisterView() {
                           py: 1,
                           borderRadius: 1.2,
                           bgcolor: cultureUi.subtle,
+                          alignItems: 'flex-start',
+                          m: 0,
+                          '& .MuiCheckbox-root': { p: 0.75, mr: 0.5, flexShrink: 0 },
+                          '& .MuiFormControlLabel-label': { minWidth: 0 },
                         },
                       },
                     }}

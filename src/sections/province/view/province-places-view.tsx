@@ -74,7 +74,17 @@ export function ProvincePlacesView() {
     `/province/${encodeURIComponent(provinceId)}/places/?${new URLSearchParams({ name: provinceName, ...(name ? { district: name } : {}) }).toString()}`;
 
   return (
-    <Box sx={{ maxWidth: 1408, mx: 'auto', px: HOME_SECTION_PX, pt: { xs: 3, md: 5 }, pb: 8 }}>
+    <Box
+      sx={{
+        width: 1,
+        minWidth: 0,
+        maxWidth: 1408,
+        mx: 'auto',
+        px: { ...HOME_SECTION_PX, xs: 2 },
+        pt: { xs: 3, md: 5 },
+        pb: { xs: 'calc(96px + env(safe-area-inset-bottom, 0px))', md: 8 },
+      }}
+    >
       <Button
         component={RouterLink}
         href={backUrl}
@@ -86,10 +96,27 @@ export function ProvincePlacesView() {
       </Button>
       {isPending ? (
         <Box
-          sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, 1fr)' }, gap: 3 }}
+          aria-label="กำลังโหลดสถานที่"
+          aria-busy="true"
+          sx={{
+            width: 1,
+            display: 'grid',
+            gridTemplateColumns: {
+              xs: 'minmax(0, 1fr)',
+              sm: 'repeat(2, minmax(0, 1fr))',
+              lg: 'repeat(3, minmax(0, 1fr))',
+            },
+            gap: { xs: 2, sm: 2.5 },
+          }}
         >
           {Array.from({ length: 6 }, (_, index) => (
-            <Skeleton key={index} variant="rounded" height={360} />
+            <Skeleton
+              key={index}
+              variant="rounded"
+              width="100%"
+              height={360}
+              sx={{ minWidth: 0 }}
+            />
           ))}
         </Box>
       ) : error ? (

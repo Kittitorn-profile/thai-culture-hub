@@ -17,7 +17,7 @@ export function HomeMapSection() {
         overflow: 'hidden',
         scrollMarginTop: 96,
         pb: { xs: 3, md: 5 },
-        px: HOME_SECTION_PX,
+        px: { ...HOME_SECTION_PX, xs: 2.5 },
         zIndex: 1,
       }}
     >

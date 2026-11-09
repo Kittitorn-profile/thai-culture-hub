@@ -5,6 +5,7 @@ import { varAlpha } from 'minimal-shared/utils';
 import { buttonClasses } from '@mui/material/Button';
 
 import { colorKeys } from '../palette';
+import { cultureUi } from '../../culture-ui';
 
 // ----------------------------------------------------------------------
 
@@ -194,7 +195,7 @@ const MuiButton: Components<Theme>['MuiButton'] = {
   // ▼▼▼▼▼▼▼▼ 🎨 STYLE ▼▼▼▼▼▼▼▼
   styleOverrides: {
     root: {
-      borderRadius: 8,
+      borderRadius: cultureUi.radius,
       fontWeight: 500,
       textTransform: 'none',
       variants: [

@@ -25,12 +25,12 @@ const PERFORMANCE_GROUP_BATCH_SIZE = 9;
 
 type Props = {
   content: PerformanceGroupsContent;
+  showAll?: boolean;
 };
 
-export function HomePerformanceGroupsSection({ content }: Props) {
+export function HomePerformanceGroupsSection({ content, showAll = false }: Props) {
   const [selectedCategory, setSelectedCategory] = useState('ทั้งหมด');
   const [failedImages, setFailedImages] = useState<Record<string, string>>({});
-  const [visibleCount, setVisibleCount] = useState(PERFORMANCE_GROUP_BATCH_SIZE);
   const [shareMenu, setShareMenu] = useState<{ anchorEl: HTMLElement; groupId: string } | null>(
     null
   );
@@ -51,12 +51,9 @@ export function HomePerformanceGroupsSection({ content }: Props) {
     selectedCategory === 'ทั้งหมด'
       ? publishedGroups
       : publishedGroups.filter((group) => group.category?.trim() === selectedCategory);
-  const visibleGroups = filteredGroups.slice(0, visibleCount);
-  const hasMoreGroups = visibleCount < filteredGroups.length;
-
-  useEffect(() => {
-    setVisibleCount(PERFORMANCE_GROUP_BATCH_SIZE);
-  }, [content, selectedCategory]);
+  const visibleGroups = showAll
+    ? filteredGroups
+    : filteredGroups.slice(0, PERFORMANCE_GROUP_BATCH_SIZE);
 
   useEffect(() => {
     const categoryStillExists = (content?.groups ?? []).some(
@@ -254,11 +251,29 @@ export function HomePerformanceGroupsSection({ content }: Props) {
         )}
 
         <Box
+          role="region"
+          aria-label={
+            showAll
+              ? 'วงศิลปินและวงดนตรีทั้งหมด'
+              : 'วงศิลปินและวงดนตรี เลื่อนซ้ายขวาเพื่อดูเพิ่มเติม'
+          }
+          tabIndex={showAll ? undefined : 0}
           sx={{
-            width: '100%',
+            width: showAll
+              ? '100%'
+              : { xs: 'calc(100% + 32px)', sm: 'calc(100% + 64px)', md: '100%' },
             minWidth: 0,
+            mx: showAll ? 0 : { xs: -2, sm: -4, md: 0 },
+            px: showAll ? 0 : { xs: 2, sm: 4, md: 0 },
+            pb: { xs: 1, md: 0 },
+            overflowX: showAll ? 'visible' : { xs: 'auto', md: 'visible' },
+            scrollSnapType: showAll ? 'none' : { xs: 'x mandatory', md: 'none' },
+            scrollPaddingInline: { xs: '16px', sm: '32px', md: 0 },
+            overscrollBehaviorX: 'contain',
+            scrollbarWidth: 'none',
+            '&::-webkit-scrollbar': { display: 'none' },
             gap: { xs: 2, md: 3 },
-            display: 'grid',
+            display: showAll ? 'grid' : { xs: 'flex', md: 'grid' },
             gridTemplateColumns: {
               xs: 'minmax(0, 1fr)',
               sm: 'repeat(2, minmax(0, 1fr))',
@@ -280,6 +295,8 @@ export function HomePerformanceGroupsSection({ content }: Props) {
               <Box
                 key={groupId}
                 sx={{
+                  flex: showAll ? undefined : { xs: '0 0 88%', md: 'initial' },
+                  scrollSnapAlign: 'start',
                   minWidth: 0,
                   height: { xs: 340, md: 370 },
                   position: 'relative',
@@ -335,10 +352,12 @@ export function HomePerformanceGroupsSection({ content }: Props) {
                       pointerEvents: 'none',
                     }}
                   >
-                    <Iconify icon="solar:video-frame-play-horizontal-bold" width={48} />
-                    <Box component="span" sx={{ fontSize: 12, color: '#798b80' }}>
-                      ยังไม่มีภาพการแสดง
-                    </Box>
+                    <Box
+                      component="img"
+                      src="/logo/logo-full.svg"
+                      alt="Thailand Cultural Hub"
+                      sx={{ width: 140, maxWidth: '60%', maxHeight: 80, objectFit: 'contain' }}
+                    />
                   </Box>
                 )}
                 <Box
@@ -561,16 +580,12 @@ export function HomePerformanceGroupsSection({ content }: Props) {
           <Typography role="status" sx={{ color: '#727b7f', fontSize: 12 }}>
             แสดง {visibleGroups.length} จาก {filteredGroups.length} รายการ
           </Typography>
-          {hasMoreGroups && (
+          {!showAll && (
             <Button
-              type="button"
+              component={RouterLink}
+              href="/performance-groups/"
               variant="outlined"
-              onClick={() =>
-                setVisibleCount((currentCount) =>
-                  Math.min(currentCount + PERFORMANCE_GROUP_BATCH_SIZE, filteredGroups.length)
-                )
-              }
-              endIcon={<Iconify icon="eva:arrow-ios-downward-fill" width={18} />}
+              endIcon={<Iconify icon="eva:external-link-fill" width={18} />}
               sx={{
                 px: 3,
                 py: 1,
@@ -580,7 +595,7 @@ export function HomePerformanceGroupsSection({ content }: Props) {
                 '&:hover': { bgcolor: '#ecefeb', borderColor: '#aab5ae' },
               }}
             >
-              ดูเพิ่มเติม
+              ดูทั้งหมด
             </Button>
           )}
         </Stack>

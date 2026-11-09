@@ -187,8 +187,10 @@ export function ProvincePlacesList({
         justifyContent="space-between"
         gap={2.5}
       >
-        <Box>
-          <Typography sx={{ fontSize: { xs: 28, md: 36 }, fontWeight: 700 }}>
+        <Box sx={{ minWidth: 0 }}>
+          <Typography
+            sx={{ fontSize: { xs: 24, md: 36 }, fontWeight: 700, overflowWrap: 'anywhere' }}
+          >
             {selectedDistrictDetail ?? 'สถานที่และวัฒนธรรม'}
           </Typography>
           <Typography sx={{ color: 'text.secondary', fontSize: 13 }}>
@@ -215,7 +217,8 @@ export function ProvincePlacesList({
             setVisibleCount(12);
           }}
           sx={{
-            width: { xs: 1, sm: 340 },
+            width: { xs: 1, sm: 280, md: 340 },
+            maxWidth: '100%',
             flexShrink: 0,
             '& .MuiOutlinedInput-root': { borderRadius: 99, bgcolor: 'background.paper' },
           }}
@@ -233,7 +236,9 @@ export function ProvincePlacesList({
         allowScrollButtonsMobile
         sx={{
           mb: 2.5,
-          minHeight: 38,
+          minWidth: 0,
+          maxWidth: '100%',
+          minHeight: 44,
           '& .MuiTabs-indicator': { display: 'none' },
           '& .MuiTabs-list, & .MuiTabs-flexContainer': { gap: 1 },
           '& .MuiTabs-scrollButtons': {
@@ -242,7 +247,7 @@ export function ProvincePlacesList({
             '&.Mui-disabled': { display: 'none' },
           },
           '& .MuiTab-root': {
-            minHeight: 38,
+            minHeight: 44,
             minWidth: 'auto',
             px: 2,
             py: 0.75,
@@ -299,9 +304,9 @@ export function ProvincePlacesList({
       <Box
         sx={{
           display: 'grid',
-          gap: 2.5,
+          gap: { xs: 2, sm: 2.5 },
           gridTemplateColumns: {
-            xs: '1fr',
+            xs: 'minmax(0, 1fr)',
             sm: 'repeat(2, minmax(0, 1fr))',
             lg: 'repeat(3, minmax(0, 1fr))',
           },

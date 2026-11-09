@@ -71,7 +71,7 @@ export function HomeExploreAllSection() {
             sx={{
               mt: 1,
               color: HOME_TEXT,
-              fontSize: { xs: 27, md: 34 },
+              fontSize: { xs: 23, md: 34 },
               fontWeight: 600,
               lineHeight: 1.4,
             }}

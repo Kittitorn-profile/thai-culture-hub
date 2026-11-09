@@ -2,6 +2,7 @@
 
 import type { CultureMetric } from '../province-data';
 
+import { useQuery } from '@tanstack/react-query';
 import { RiListCheck, RiMapPinLine, RiSearchLine, RiEqualizerLine } from '@remixicon/react';
 
 import Box from '@mui/material/Box';
@@ -13,6 +14,7 @@ import Typography from '@mui/material/Typography';
 import InputAdornment from '@mui/material/InputAdornment';
 
 type ProvinceDetailHeaderProps = {
+  provinceCode: string;
   provinceDisplayName: string;
   cultureMetrics: CultureMetric[];
   filteredCount: number;
@@ -56,6 +58,7 @@ export function ProvinceCultureMetrics({ cultureMetrics }: { cultureMetrics: Cul
   );
 }
 export function ProvinceDetailHeader({
+  provinceCode,
   provinceDisplayName,
   cultureMetrics,
   filteredCount,
@@ -68,6 +71,19 @@ export function ProvinceDetailHeader({
   onPlacesOpen,
   onSearchQueryChange,
 }: ProvinceDetailHeaderProps) {
+  const viewsQuery = useQuery({
+    queryKey: ['province-views', provinceCode],
+    enabled: Boolean(provinceCode),
+    queryFn: async ({ signal }): Promise<{ views: number }> => {
+      const response = await fetch(
+        `/api/culture/province-views?provinceCode=${encodeURIComponent(provinceCode)}`,
+        { signal }
+      );
+      if (!response.ok) throw new Error('โหลดจำนวนเข้าชมไม่สำเร็จ');
+      return response.json();
+    },
+    staleTime: 30_000,
+  });
   return (
     <Box component="header">
       <Stack
@@ -120,7 +136,15 @@ export function ProvinceDetailHeader({
           }}
         />
       </Stack>
-      <ProvinceCultureMetrics cultureMetrics={cultureMetrics} />
+      <ProvinceCultureMetrics
+        cultureMetrics={[
+          ...cultureMetrics,
+          {
+            label: 'การเข้าชมจังหวัดนี้',
+            value: viewsQuery.data ? `${viewsQuery.data.views.toLocaleString('th-TH')} ครั้ง` : '—',
+          },
+        ]}
+      />
       <Box
         sx={{
           mt: 3,
