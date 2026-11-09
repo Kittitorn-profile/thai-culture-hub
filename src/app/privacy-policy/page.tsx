@@ -1,8 +1,12 @@
-import type { Metadata } from 'next';
+import { publicPageMetadata } from 'src/lib/page-metadata';
 
 import { LegalPage } from 'src/sections/legal/legal-page';
 
-export const metadata: Metadata = { title: 'นโยบายความเป็นส่วนตัว | Thailand Cultural Hub' };
+export const metadata = publicPageMetadata(
+  'นโยบายความเป็นส่วนตัว',
+  'การเก็บ ใช้ และดูแลข้อมูลส่วนบุคคลของผู้ใช้ Thailand Cultural Hub',
+  '/privacy-policy/'
+);
 export default function Page() {
   return (
     <LegalPage

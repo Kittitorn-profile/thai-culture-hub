@@ -33,7 +33,7 @@ const AuthProvider = (CONFIG.auth.method === 'supabase' && SupabaseAuthProvider)
 
 const OG_IMAGE_URL =
   'https://res.cloudinary.com/dkdbilwtj/image/upload/v1782029454/og-images_vvdlcu.jpg';
-const SITE_URL = 'https://thailandculturalhub.com';
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://thailandculturalhub.com';
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -43,6 +43,15 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
+  title: 'Thailand Cultural Hub | เรียนรู้วัฒนธรรมไทย',
+  description:
+    'สำรวจวัฒนธรรมไทยผ่านสถานที่ ศิลปิน ชุมชน มรดกภูมิปัญญา และเรื่องเล่าจากทุกจังหวัด พร้อมแหล่งอ้างอิง',
+
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true, 'max-image-preview': 'large' },
+  },
   icons: {
     icon: [
       { url: `${CONFIG.assetsDir}/favicon/favicon.ico?v=20261109`, type: 'image/x-icon' },
@@ -68,6 +77,9 @@ export const metadata: Metadata = {
   },
   manifest: `${CONFIG.assetsDir}/favicon/site.webmanifest?v=20261109`,
   openGraph: {
+    siteName: 'Thailand Cultural Hub',
+    locale: 'th_TH',
+    type: 'website',
     images: [OG_IMAGE_URL],
   },
   twitter: {
@@ -108,6 +120,19 @@ export default async function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang={appConfig.lang} dir={appConfig.dir} suppressHydrationWarning>
       <body>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'WebSite',
+              name: 'Thailand Cultural Hub',
+              alternateName: 'ไทยแลนด์ คัลเจอรัล ฮับ',
+              url: SITE_URL,
+              inLanguage: 'th-TH',
+            }).replace(/</g, '\\u003c'),
+          }}
+        />
         <InitColorSchemeScript
           modeStorageKey={themeConfig.modeStorageKey}
           attribute={themeConfig.cssVariables.colorSchemeSelector}

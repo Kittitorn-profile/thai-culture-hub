@@ -102,16 +102,24 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const article = await getArticle(decodeURIComponent(slug));
 
   if (!article) {
-    return { title: 'Creator story' };
+    return { title: 'ไม่พบบทความ', robots: { index: false } };
   }
 
   const shareUrl = `${SITE_URL}/creator-stories/${encodeURIComponent(article.slug || article.id)}`;
   const imageUrl = getAbsoluteUrl(article.cover_image_url) ?? OG_FALLBACK_IMAGE;
-  const description = article.excerpt ?? undefined;
+  const description =
+    article.excerpt ||
+    (article.content_html || '')
+      .replace(/<[^>]*>/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .slice(0, 180) ||
+    article.title;
 
   return {
     title: `${article.title} | Thailand Cultural Hub`,
     description,
+    alternates: { canonical: shareUrl },
     openGraph: {
       type: 'article',
       url: shareUrl,
@@ -171,6 +179,27 @@ export default async function Page({ params }: Props) {
         },
       }}
     >
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'Article',
+            headline: article.title,
+            description: article.excerpt || undefined,
+            image: getAbsoluteUrl(article.cover_image_url) || undefined,
+            datePublished: publishedAt,
+            dateModified: article.updated_at,
+            author: {
+              '@type': 'Person',
+              name: article.creator_profiles?.display_name || 'Creator',
+              url: `${SITE_URL}${creatorHref}`,
+            },
+            mainEntityOfPage: `${SITE_URL}${sharePath}/`,
+            publisher: { '@type': 'Organization', name: 'Thailand Cultural Hub', url: SITE_URL },
+          }).replace(/</g, '\\u003c'),
+        }}
+      />
       <Stack spacing={4} sx={{ mx: 'auto', maxWidth: 960, position: 'relative', zIndex: 1 }}>
         <Button
           href="/"

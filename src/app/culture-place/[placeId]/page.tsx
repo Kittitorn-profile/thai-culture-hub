@@ -320,5 +320,30 @@ export default async function Page({ params }: PageProps) {
     notFound();
   }
 
-  return <CulturePlaceDetailView place={place} />;
+  const structuredData = {
+    '@context': 'https://schema.org',
+    '@type': 'Place',
+    name: place.name,
+    description: cleanCulturalText(place.description),
+    url: getShareUrl(place.id),
+    image: place.imageUrls?.filter(Boolean),
+    address: {
+      '@type': 'PostalAddress',
+      addressRegion: place.provinceName,
+      addressLocality: place.district,
+      addressCountry: 'TH',
+    },
+    geo: { '@type': 'GeoCoordinates', latitude: place.lat, longitude: place.lng },
+  };
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(structuredData).replace(/</g, '\\u003c'),
+        }}
+      />
+      <CulturePlaceDetailView place={place} />
+    </>
+  );
 }

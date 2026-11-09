@@ -1,12 +1,14 @@
-import type { Metadata } from 'next';
-
-import { CONFIG } from 'src/global-config';
+import { publicPageMetadata } from 'src/lib/page-metadata';
 
 import { ContactView } from 'src/sections/contact/view';
 
 // ----------------------------------------------------------------------
 
-export const metadata: Metadata = { title: `ติดต่อเรา - ${CONFIG.appName}` };
+export const metadata = publicPageMetadata(
+  'ติดต่อเรา',
+  'ติดต่อทีมงาน Thailand Cultural Hub สอบถามข้อมูล เสนอแนะ และร่วมพัฒนาฐานข้อมูลวัฒนธรรมไทย',
+  '/contact-us/'
+);
 
 export default function Page() {
   return <ContactView />;
