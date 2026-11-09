@@ -25,7 +25,10 @@ export async function GET() {
     .from(TABLE_NAME)
     .select('section_key, content, updated_at')
     .neq('section_key', 'ethnic-community-supplements-v1')
-    .neq('section_key', 'province-artists-v1');
+    .neq('section_key', 'province-artists-v1')
+    .neq('section_key', 'community-heritage-edits-v1')
+    .neq('section_key', 'contact-developers')
+    .neq('section_key', 'public-dataset-visibility');
 
   if (error) {
     return NextResponse.json({ data: {}, message: error.message }, { status: 200 });

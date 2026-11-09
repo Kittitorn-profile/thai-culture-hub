@@ -26,6 +26,7 @@ import {
 } from '@mui/material';
 
 import provinces from 'src/data/thailand-culture/provinces';
+import { useDatasetVisibility } from 'src/lib/use-dataset-visibility';
 import {
   CRAFT_CATEGORIES,
   PUBLIC_DATA_GROUPS,
@@ -45,6 +46,8 @@ const number = new Intl.NumberFormat('th-TH');
 const safeUrl = (value?: string) => (value && /^https?:\/\//i.test(value) ? value : undefined);
 
 export function CulturalDataView({ group }: { group: PublicDataGroup }) {
+  const { isVisible, data: datasetVisibility } = useDatasetVisibility();
+  const visibilityKey = datasetVisibility?.hidden.join(',') ?? 'loading';
   const definition = PUBLIC_DATA_GROUPS.find((item) => item.key === group)!;
   const router = useRouter();
   const params = useSearchParams();
@@ -53,7 +56,7 @@ export function CulturalDataView({ group }: { group: PublicDataGroup }) {
   const category = group === 'crafts' ? normalizeCraftCategory(params.get('category') ?? '') : '';
   const [selected, setSelected] = useState<ProvinceDataItem | null>(null);
   const categoryCounts = useQuery<{ counts: Record<string, number | null> }>({
-    queryKey: ['craft-category-counts', 2, query, province],
+    queryKey: ['craft-category-counts', 2, query, province, visibilityKey],
     enabled: group === 'crafts',
     queryFn: async ({ signal }) => {
       const search = new URLSearchParams({
@@ -73,7 +76,7 @@ export function CulturalDataView({ group }: { group: PublicDataGroup }) {
   });
   const { data, error, isPending, fetchNextPage, hasNextPage, isFetchingNextPage, refetch } =
     useInfiniteQuery<ProvinceDataResult>({
-      queryKey: ['public-data-group', 2, group, query, province, category],
+      queryKey: ['public-data-group', 2, group, query, province, category, visibilityKey],
       initialPageParam: 0,
       queryFn: async ({ pageParam, signal }) => {
         const search = new URLSearchParams({
@@ -102,6 +105,8 @@ export function CulturalDataView({ group }: { group: PublicDataGroup }) {
     group === 'crafts' && item.craftCategory
       ? (CRAFT_CATEGORIES.find((craft) => craft.key === item.craftCategory)?.label ?? item.subtitle)
       : item.subtitle;
+  if (!isVisible(group)) return null;
+
   return (
     <Box component="main" sx={{ px: HOME_SECTION_PX, py: { xs: 3, md: 5 } }}>
       <Box sx={{ maxWidth: HOME_SECTION_MAX_WIDTH, mx: 'auto' }}>
@@ -134,7 +139,7 @@ export function CulturalDataView({ group }: { group: PublicDataGroup }) {
             overflowX: 'auto',
           }}
         >
-          {PUBLIC_DATA_GROUPS.map((item) => (
+          {PUBLIC_DATA_GROUPS.filter((item) => isVisible(item.key)).map((item) => (
             <Link
               key={item.key}
               href={item.href}

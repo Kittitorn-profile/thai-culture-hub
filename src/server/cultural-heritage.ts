@@ -1,3 +1,5 @@
+import { getDatasetVisibility } from './dataset-visibility';
+import { getCommunityHeritageEdits } from './community-heritage-edits';
 import qsdsTextiles from '../../data/cultural-heritage/qsds-textiles.json';
 import communityCrafts from '../../data/cultural-heritage/community-crafts.json';
 import communityWeaving from '../../data/cultural-heritage/community-weaving.json';
@@ -23,6 +25,21 @@ function coordinate(value: unknown, max: number) {
 export function mapHeritageRecord(row: Record<string, unknown>) {
   return {
     id: text(row._id ?? row.id),
+    image:
+      row.image &&
+      typeof row.image === 'object' &&
+      'url' in row.image &&
+      typeof row.image.url === 'string'
+        ? {
+            url: row.image.url,
+            credit: 'credit' in row.image ? String(row.image.credit ?? '') : '',
+            ...('sourceUrl' in row.image &&
+            typeof row.image.sourceUrl === 'string' &&
+            /^https?:\/\//.test(row.image.sourceUrl)
+              ? { sourceUrl: row.image.sourceUrl }
+              : {}),
+          }
+        : undefined,
     description: text(row.description),
     technique: text(row.technique),
     lifestyle: text(row.lifestyle),
@@ -55,10 +72,12 @@ export async function getCulturalHeritage({
   page = 0,
   limit = 20,
   collection = 'registry',
+  publicOnly = false,
   category = '',
   recordId = '',
 }: {
   collection?: 'registry' | 'community';
+  publicOnly?: boolean;
   category?: string;
   recordId?: string;
   query?: string;
@@ -77,9 +96,25 @@ export async function getCulturalHeritage({
 }> {
   if (collection === 'community') {
     const q = query.trim().toLocaleLowerCase('th');
-    const community = [...communityWeaving, ...communityCrafts];
+    const hidden = publicOnly ? (await getDatasetVisibility()).hidden : [];
+    const baseCommunity = [
+      ...(hidden.includes('community_weaving') ? [] : communityWeaving),
+      ...(hidden.includes('community_crafts') ? [] : communityCrafts),
+    ];
+    const edits = await getCommunityHeritageEdits();
+    const merged = new Map(baseCommunity.map((item) => [item.id, item]));
+    for (const item of edits) {
+      if (item.deleted) {
+        merged.delete(item.id);
+        continue;
+      }
+      const source = item.group === 'weaving' ? 'community_weaving' : 'community_crafts';
+      if (!hidden.includes(source)) merged.set(item.id, item as (typeof baseCommunity)[number]);
+    }
+    const community = [...merged.values()];
     const matches = community.filter(
       (item) =>
+        (!recordId || item.id === recordId) &&
         (!province || item.province === province) &&
         (!category || item.categories.includes(category)) &&
         (!q ||

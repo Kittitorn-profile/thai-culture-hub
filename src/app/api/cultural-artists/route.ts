@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { NextResponse } from 'next/server';
 
 import provinces from 'src/data/thailand-culture/provinces';
+import { isDatasetVisible } from 'src/server/dataset-visibility';
 import {
   ARTIST_TYPES,
   filterCulturalArtists,
@@ -23,10 +24,31 @@ const filtersSchema = z.object({
   pageSize: z.coerce.number().int().min(1).max(100).default(24),
 });
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   const parsed = filtersSchema.safeParse(Object.fromEntries(request.nextUrl.searchParams));
   if (!parsed.success) return NextResponse.json({ message: 'ตัวกรองไม่ถูกต้อง' }, { status: 400 });
   try {
+    if (!(await isDatasetVisible('artists')))
+      return NextResponse.json(
+        {
+          data: [],
+          total: 0,
+          pagination: { page: parsed.data.page, pageSize: parsed.data.pageSize, totalPages: 0 },
+          coverage: {
+            totalArtists: 0,
+            withVerifiedProvince: 0,
+            provinces: 0,
+            provinceCounts: {},
+            nationalRegistryYears: [],
+          },
+          genres: [],
+          notes: [],
+          sources: [],
+        },
+        { headers: { 'Cache-Control': 'no-store' } }
+      );
     const directory = await getCulturalArtistDirectory();
     const artists = filterCulturalArtists(directory.artists, parsed.data);
     const provinceCounts: Record<string, number> = {};
@@ -59,7 +81,7 @@ export async function GET(request: NextRequest) {
         notes: directory.notes,
         sources: directory.sources,
       },
-      { headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=900' } }
+      { headers: { 'Cache-Control': 'no-store' } }
     );
   } catch {
     return NextResponse.json(

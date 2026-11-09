@@ -16,6 +16,8 @@ const querySchema = z.object({
   page: z.coerce.number().int().min(0).max(10000).default(0),
   pageSize: z.coerce.number().int().min(1).max(30).default(9),
 });
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   const parsed = querySchema.safeParse(Object.fromEntries(request.nextUrl.searchParams));
   if (!parsed.success) return NextResponse.json({ message: 'ตัวกรองไม่ถูกต้อง' }, { status: 400 });
@@ -53,7 +55,7 @@ export async function GET(request: NextRequest) {
     {
       status: complete || !section ? 200 : 503,
       headers: {
-        'Cache-Control': complete ? 'public, s-maxage=300, stale-while-revalidate=300' : 'no-store',
+        'Cache-Control': 'no-store',
       },
     }
   );

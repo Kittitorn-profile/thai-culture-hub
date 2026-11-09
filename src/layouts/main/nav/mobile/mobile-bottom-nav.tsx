@@ -15,6 +15,7 @@ import { Box, ButtonBase, Typography } from '@mui/material';
 import { RouterLink } from 'src/routes/components';
 
 import { PUBLIC_DATA_GROUPS } from 'src/lib/public-cultural-data';
+import { useDatasetVisibility } from 'src/lib/use-dataset-visibility';
 
 type Props = {
   pathname: string;
@@ -23,6 +24,7 @@ type Props = {
 };
 
 export function MobileBottomNav({ pathname, isCreator, layoutQuery }: Props) {
+  const { isVisible } = useDatasetVisibility();
   const current = pathname.replace(/\/$/, '') || '/';
   const dataActive =
     current.startsWith('/cultural-data') ||
@@ -86,32 +88,34 @@ export function MobileBottomNav({ pathname, isCreator, layoutQuery }: Props) {
         [theme.breakpoints.up(layoutQuery)]: { display: 'none' },
       })}
     >
-      {items.map(({ label, href, Icon, active }) => (
-        <ButtonBase
-          key={href}
-          component={RouterLink}
-          href={href}
-          aria-current={active ? 'page' : undefined}
-          sx={{ ...itemSx, color: active ? '#2c4036' : itemSx.color }}
-        >
-          <Box
-            component="span"
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: 42,
-              height: 28,
-              borderRadius: 3,
-            }}
+      {items
+        .filter((item) => item.href !== '/culture-category/' || isVisible('places'))
+        .map(({ label, href, Icon, active }) => (
+          <ButtonBase
+            key={href}
+            component={RouterLink}
+            href={href}
+            aria-current={active ? 'page' : undefined}
+            sx={{ ...itemSx, color: active ? '#2c4036' : itemSx.color }}
           >
-            <Icon size={22} />
-          </Box>
-          <Typography component="span" sx={{ fontSize: 11, fontWeight: active ? 700 : 400 }}>
-            {label}
-          </Typography>
-        </ButtonBase>
-      ))}
+            <Box
+              component="span"
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: 42,
+                height: 28,
+                borderRadius: 3,
+              }}
+            >
+              <Icon size={22} />
+            </Box>
+            <Typography component="span" sx={{ fontSize: 11, fontWeight: active ? 700 : 400 }}>
+              {label}
+            </Typography>
+          </ButtonBase>
+        ))}
     </Box>
   );
 }

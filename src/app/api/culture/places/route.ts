@@ -6,6 +6,7 @@ import { NextResponse } from 'next/server';
 import { parseCoordinate, isValidCoordinatePair } from 'src/utils/coordinates';
 
 import provinces from 'src/data/thailand-culture/provinces';
+import { getDatasetVisibility } from 'src/server/dataset-visibility';
 
 // ----------------------------------------------------------------------
 
@@ -189,9 +190,13 @@ function mapCultureRecordToPlace(
 }
 
 export const runtime = 'nodejs';
-export const revalidate = 86400;
+
+export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
+  const { hidden } = await getDatasetVisibility();
+  if (hidden.includes('culture_catalog'))
+    return NextResponse.json({ data: [], total: 0 }, { headers: { 'Cache-Control': 'no-store' } });
   const provinceCode = request.nextUrl.searchParams.get('provinceCode');
   const limitParam = request.nextUrl.searchParams.get('limit');
   const limit = limitParam == null ? null : Number(limitParam);

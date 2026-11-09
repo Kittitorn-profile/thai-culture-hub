@@ -21,6 +21,7 @@ import { useRef, useState, useEffect, useCallback } from 'react';
 import { Box } from '@mui/material';
 
 import { HomeFooter } from 'src/layouts/main/footer';
+import { PublicDatasetGate } from 'src/lib/use-dataset-visibility';
 
 import { HomeMapSection } from '../components/home-map-section';
 import { HomeHeroSection } from '../components/home-hero-section';
@@ -317,7 +318,9 @@ export function HomeView({ heroImages = [] }: { heroImages?: HomeHeroImage[] }) 
     >
       <HomeHeroSection images={heroImages} />
 
-      <HomeMapSection />
+      <PublicDatasetGate dataset="places">
+        <HomeMapSection />
+      </PublicDatasetGate>
 
       <HomeDataSummarySection />
 
@@ -326,20 +329,26 @@ export function HomeView({ heroImages = [] }: { heroImages?: HomeHeroImage[] }) 
       <HomeUpcomingEventsSection events={homeEvents} onPlayVideo={setSelectedVideo} />
 
       {cultureCategoriesContent && cultureCategoryCards.length > 0 && (
-        <HomeCultureCategoriesSection
-          content={cultureCategoriesContent}
-          cards={cultureCategoryCards}
-        />
+        <PublicDatasetGate dataset="places">
+          <HomeCultureCategoriesSection
+            content={cultureCategoriesContent}
+            cards={cultureCategoryCards}
+          />
+        </PublicDatasetGate>
       )}
 
       {performanceGroupsContent && (
         <HomePerformanceGroupsSection content={performanceGroupsContent} />
       )}
 
-      <HomeExploreAllSection />
+      <PublicDatasetGate dataset="places">
+        <HomeExploreAllSection />
+      </PublicDatasetGate>
 
       {localWisdomContent && (
-        <HomeLocalWisdomSection content={localWisdomContent} onPlayVideo={setSelectedVideo} />
+        <PublicDatasetGate dataset="community">
+          <HomeLocalWisdomSection content={localWisdomContent} onPlayVideo={setSelectedVideo} />
+        </PublicDatasetGate>
       )}
 
       {shouldShowExpandedPerformanceGroups && performanceGroupsContent && (

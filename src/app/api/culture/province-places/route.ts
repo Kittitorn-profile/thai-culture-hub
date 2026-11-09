@@ -5,6 +5,8 @@ import { after, NextResponse } from 'next/server';
 
 import provinces from 'src/data/thailand-culture/provinces';
 import { getSupabaseAdmin } from 'src/server/supabase-admin';
+import { getDatasetVisibility } from 'src/server/dataset-visibility';
+import { isDatasetEnabled, isPublicPlaceVisible } from 'src/lib/dataset-visibility';
 
 // ----------------------------------------------------------------------
 
@@ -172,7 +174,6 @@ const SUMMARY_TABLE = process.env.PROVINCE_PLACE_SUMMARIES_TABLE ?? 'province_pl
 const DETAILS_TABLE = process.env.CULTURAL_PLACE_DETAILS_TABLE ?? 'cultural_place_details';
 const ETHNIC_GROUPS_TABLE = process.env.ETHNIC_GROUPS_TABLE ?? 'ethnic_groups';
 const SUPABASE_PAGE_SIZE = 1000;
-const SUMMARY_CACHE_CONTROL = 'public, s-maxage=300, stale-while-revalidate=900';
 const SUMMARY_REFRESH_MS = 15 * 60 * 1000;
 
 type CulturalPlaceRecord = CulturalPlace & {
@@ -1109,7 +1110,15 @@ async function fetchSourcePlaces({
 export const runtime = 'nodejs';
 export const revalidate = 3600;
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
+  const { hidden } = await getDatasetVisibility();
+  if (!isDatasetEnabled('places', hidden))
+    return NextResponse.json(
+      { data: [], summaries: {}, total: 0, districts: [], sources: {} },
+      { headers: { 'Cache-Control': 'no-store' } }
+    );
   const compact = request.nextUrl.searchParams.get('view') === 'map';
   const placeId = request.nextUrl.searchParams.get('placeId')?.trim();
   const provinceCodeParam = request.nextUrl.searchParams.get('provinceCode');
@@ -1177,7 +1186,7 @@ export async function GET(request: NextRequest) {
       place = allData.find((item) => item.id === placeId) ?? null;
     }
 
-    if (!place) {
+    if (!place || !isPublicPlaceVisible(place.source, hidden)) {
       return NextResponse.json({ data: null, message: 'Place not found' }, { status: 404 });
     }
 
@@ -1187,7 +1196,7 @@ export async function GET(request: NextRequest) {
     });
   }
 
-  if (shouldReturnAllProvinceSummary) {
+  if (shouldReturnAllProvinceSummary && !hidden.length) {
     const storedSummaries = shouldRefreshSummary ? null : await getStoredProvincePlaceSummaries();
     const hasStoredSummaries = Boolean(
       storedSummaries && Object.keys(storedSummaries.summaries).length
@@ -1225,7 +1234,7 @@ export async function GET(request: NextRequest) {
       },
       {
         headers: {
-          'Cache-Control': SUMMARY_CACHE_CONTROL,
+          'Cache-Control': 'no-store',
         },
       }
     );
@@ -1238,7 +1247,7 @@ export async function GET(request: NextRequest) {
     getEthnicGroupPlaces(provinceCode),
   ]);
 
-  if (hasStoredPlaces && pageSize && !ethnicGroupPlaces.length) {
+  if (hasStoredPlaces && pageSize && !ethnicGroupPlaces.length && !hidden.length) {
     const [{ data: storedPageData, total }, districts, overrides] = await Promise.all([
       getStoredPlacesPage({
         provinceCode,
@@ -1312,7 +1321,7 @@ export async function GET(request: NextRequest) {
     : mergeCulturalPlaces(...sourceResults.map((result) => result.data), ethnicGroupPlaces);
   const allData = dedupePlaces(
     applyPlaceDetails(applyPlaceOverrides(mergedData, overrides), details)
-  );
+  ).filter((place) => isPublicPlaceVisible(place.source, hidden));
   const districts = getDistricts(allData);
   const filteredData = filterPlaces(allData, district, query, source);
   const total = filteredData.length;

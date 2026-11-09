@@ -6,6 +6,7 @@ import { RiDatabase2Line, RiArrowRightUpLine } from '@remixicon/react';
 import { Box, Link, Stack, Button, Skeleton, Typography } from '@mui/material';
 
 import { PUBLIC_DATA_GROUPS } from 'src/lib/public-cultural-data';
+import { useDatasetVisibility } from 'src/lib/use-dataset-visibility';
 
 import { HOME_TEXT, HOME_SECTION_PX, HOME_SECTION_MAX_WIDTH } from './home-constants';
 
@@ -23,6 +24,7 @@ type Summary = {
 const number = new Intl.NumberFormat('th-TH');
 
 export function HomeDataSummarySection() {
+  const { isVisible } = useDatasetVisibility();
   const { data, isPending, isError, refetch, isFetching } = useQuery<Summary>({
     queryKey: ['public-cultural-data-summary', 3],
     queryFn: async ({ signal }) => {
@@ -121,62 +123,65 @@ export function HomeDataSummarySection() {
             Array.from({ length: PUBLIC_DATA_GROUPS.length }, (_, i) => (
               <Skeleton key={i} variant="rounded" height={188} />
             ))}
-          {data?.groups.map((group, index) => (
-            <Box
-              key={group.key}
-              component="a"
-              href={PUBLIC_DATA_GROUPS.find((item) => item.key === group.key)?.href}
-              sx={{
-                minWidth: 0,
-                textDecoration: 'none',
-                transition: 'box-shadow 150ms',
-                '&:hover': { boxShadow: '0 4px 18px rgba(44,64,54,0.12)' },
-                '&:focus-visible': { outline: '2px solid #608d8c', outlineOffset: 3 },
-                p: { xs: 2, md: 3 },
-                borderRadius: 2.5,
-                bgcolor: index === 0 ? '#2c4036' : '#eeefea',
-                color: index === 0 ? '#fff' : 'inherit',
-                display: 'flex',
-                flexDirection: 'column',
-              }}
-            >
-              <Typography sx={{ fontWeight: 600, fontSize: 15 }}>
-                {PUBLIC_DATA_GROUPS.find((item) => item.key === group.key)?.label ?? group.label} ↗
-              </Typography>
-              <Stack direction="row" alignItems="baseline" spacing={1} sx={{ my: 1.5 }}>
-                <Typography
-                  sx={{
-                    fontSize: { xs: 34, md: 40 },
-                    lineHeight: 1.1,
-                    fontWeight: 700,
-                    letterSpacing: '-0.04em',
-                    fontVariantNumeric: 'tabular-nums',
-                  }}
-                >
-                  {group.count === null ? '—' : number.format(group.count)}
-                </Typography>
-                <Typography variant="body2" sx={{ opacity: 0.75 }}>
-                  {group.unit}
-                </Typography>
-              </Stack>
-              <Typography variant="caption" sx={{ opacity: 0.8 }}>
-                {PUBLIC_DATA_GROUPS.find((item) => item.key === group.key)?.description ??
-                  group.note}
-              </Typography>
-              <Typography
-                variant="caption"
+          {data?.groups
+            .filter((group) => isVisible(group.key))
+            .map((group, index) => (
+              <Box
+                key={group.key}
+                component="a"
+                href={PUBLIC_DATA_GROUPS.find((item) => item.key === group.key)?.href}
                 sx={{
-                  mt: 1.5,
-                  pt: 1.5,
-                  borderTop: '1px solid',
-                  borderColor: index === 0 ? 'rgba(255,255,255,0.18)' : 'divider',
-                  opacity: 0.7,
+                  minWidth: 0,
+                  textDecoration: 'none',
+                  transition: 'box-shadow 150ms',
+                  '&:hover': { boxShadow: '0 4px 18px rgba(44,64,54,0.12)' },
+                  '&:focus-visible': { outline: '2px solid #608d8c', outlineOffset: 3 },
+                  p: { xs: 2, md: 3 },
+                  borderRadius: 2.5,
+                  bgcolor: index === 0 ? '#2c4036' : '#eeefea',
+                  color: index === 0 ? '#fff' : 'inherit',
+                  display: 'flex',
+                  flexDirection: 'column',
                 }}
               >
-                ที่มา: {group.source}
-              </Typography>
-            </Box>
-          ))}
+                <Typography sx={{ fontWeight: 600, fontSize: 15 }}>
+                  {PUBLIC_DATA_GROUPS.find((item) => item.key === group.key)?.label ?? group.label}{' '}
+                  ↗
+                </Typography>
+                <Stack direction="row" alignItems="baseline" spacing={1} sx={{ my: 1.5 }}>
+                  <Typography
+                    sx={{
+                      fontSize: { xs: 34, md: 40 },
+                      lineHeight: 1.1,
+                      fontWeight: 700,
+                      letterSpacing: '-0.04em',
+                      fontVariantNumeric: 'tabular-nums',
+                    }}
+                  >
+                    {group.count === null ? '—' : number.format(group.count)}
+                  </Typography>
+                  <Typography variant="body2" sx={{ opacity: 0.75 }}>
+                    {group.unit}
+                  </Typography>
+                </Stack>
+                <Typography variant="caption" sx={{ opacity: 0.8 }}>
+                  {PUBLIC_DATA_GROUPS.find((item) => item.key === group.key)?.description ??
+                    group.note}
+                </Typography>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    mt: 1.5,
+                    pt: 1.5,
+                    borderTop: '1px solid',
+                    borderColor: index === 0 ? 'rgba(255,255,255,0.18)' : 'divider',
+                    opacity: 0.7,
+                  }}
+                >
+                  ที่มา: {group.source}
+                </Typography>
+              </Box>
+            ))}
         </Box>
         {(isError || data?.complete === false) && (
           <Stack direction="row" alignItems="center" spacing={1} sx={{ mt: 2 }}>

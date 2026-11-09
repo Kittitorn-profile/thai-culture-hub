@@ -301,3 +301,137 @@ test('national coverage audit retains source evidence for each of the 77 provinc
     }
   }
 });
+
+test('community edits merge before filtering and preserve group and record lookup', async () => {
+  const record = { id: 'community-praewa', group: 'weaving', name: 'ชื่อแก้ไข', province: 'กาฬสินธุ์', region: 'ภาคตะวันออกเฉียงเหนือ', categories: ['การทอผ้า'], description: 'เรื่องราว', sourceUrl: 'https://example.com', practice: '', technique: '', lifestyle: '', organization: 'ชุมชน', checkedAt: '' };
+  const service = load('src/server/cultural-heritage.ts', {
+    'src/server/community-heritage-edits': { getCommunityHeritageEdits: async () => [record, { ...record, id: 'new-mat', group: 'mats', categories: ['ทอเสื่อ/สาด'] }] },
+  });
+  const result = await service.getCulturalHeritage({ collection: 'community', recordId: record.id, category: 'การทอผ้า' });
+  assert.equal(result.total, 1);
+  assert.equal(result.data[0].name, 'ชื่อแก้ไข');
+  const mats = await service.getCulturalHeritage({ collection: 'community', recordId: 'new-mat', category: 'ทอเสื่อ/สาด' });
+  assert.equal(mats.total, 1);
+});
+
+test('community create and edit validate group, check permission and detect concurrent changes', async () => {
+  let allowed = false;
+  let conflict = false;
+  let row = null;
+  const client = { from: () => ({
+    select() { return this; }, eq() { return this; },
+    async maybeSingle() { return { data: row, error: null }; },
+    insert(payload) { return { async select() { row = payload; return { data: [{}], error: null }; } }; },
+    update(payload) { return { eq() { return this; }, async select() { if (!conflict) row = payload; return { data: conflict ? [] : [{}], error: null }; } }; },
+  }) };
+  const api = load('src/app/api/admin/cultural-heritage/route.ts', {
+    'src/server/admin-api-auth': { verifyAdminAccessToken: async () => allowed ? { ok: true } : { ok: false, status: 403, message: 'Forbidden' } },
+    'src/server/supabase-admin': { getSupabaseAdmin: () => ({ ok: true, client }) },
+  });
+  const input = { group: 'weaving', name: 'รายการทดสอบ', province: 'เชียงใหม่', practice: 'ชุมชน', description: 'เรื่องราว', technique: '', lifestyle: '', organization: 'ชุมชน', sourceUrl: 'https://example.com' };
+  const request = (data) => new Request('https://local.test/api/admin/cultural-heritage', { method: 'POST', body: JSON.stringify(data), headers: { 'Content-Type': 'application/json' } });
+  assert.equal((await api.POST(request(input))).status, 403);
+  allowed = true;
+  assert.equal((await api.POST(request({ ...input, group: 'other' }))).status, 400);
+  assert.equal((await api.POST(request({ ...input, province: 'invalid' }))).status, 400);
+  const response = await api.POST(request(input));
+  assert.equal(response.status, 201);
+  const record = (await response.json()).data;
+  assert.equal(record.region, 'ภาคเหนือ');
+  assert.deepEqual(record.categories, ['การทอผ้า', 'งานช่างฝีมือดั้งเดิม']);
+  assert.equal((await api.PATCH(request({ ...input, id: record.id, name: 'แก้ไขแล้ว' }))).status, 200);
+  assert.equal(row.content.items.length, 1);
+  assert.equal(row.content.items[0].name, 'แก้ไขแล้ว');
+  assert.equal((await api.PATCH(request({ ...input, id: record.id, group: 'mats' }))).status, 404);
+  conflict = true;
+  assert.equal((await api.PATCH(request({ ...input, id: record.id }))).status, 409);
+});
+
+test('community photos validate signature and credit, persist previews and clean up conflicts', async () => {
+  let row = null;
+  let conflict = false;
+  let uploads = 0;
+  let removed = 0;
+  const client = {
+    storage: { from: () => ({
+      async upload() { uploads++; return { error: null }; },
+      getPublicUrl() { return { data: { publicUrl: 'https://example.com/craft.jpg' } }; },
+      async remove() { removed++; return { error: null }; },
+    }) },
+    from: () => ({
+      select() { return this; }, eq() { return this; },
+      async maybeSingle() { return { data: row, error: null }; },
+      insert(payload) { return { async select() { row = payload; return { data: [{}], error: null }; } }; },
+      update(payload) { return { eq() { return this; }, async select() { if (!conflict) row = payload; return { data: conflict ? [] : [{}], error: null }; } }; },
+    }),
+  };
+  const api = load('src/app/api/admin/cultural-heritage/route.ts', {
+    'src/server/admin-api-auth': { verifyAdminAccessToken: async () => ({ ok: true }) },
+    'src/server/supabase-admin': { getSupabaseAdmin: () => ({ ok: true, client }) },
+  });
+  const input = { group: 'mats', name: 'เสื่อทดสอบภาพ', province: 'เชียงใหม่', practice: '', description: 'เรื่องราว', technique: '', lifestyle: '', organization: 'ชุมชน', sourceUrl: 'https://example.com', imageCredit: 'ช่างภาพ', imageSourceUrl: 'https://example.com/original' };
+  const request = (data, bytes) => {
+    const form = new FormData();
+    form.set('data', JSON.stringify(data));
+    if (bytes) form.set('file', new File([bytes], 'image.jpg', { type: 'image/jpeg' }));
+    return new Request('https://local.test/api/admin/cultural-heritage', { method: 'POST', body: form });
+  };
+  const jpeg = new Uint8Array([255, 216, 255, 0]);
+  assert.equal((await api.POST(request(input, 'invalid'))).status, 400);
+  assert.equal((await api.POST(request({ ...input, imageCredit: '' }, jpeg))).status, 400);
+  assert.equal((await api.POST(request({ ...input, imageSourceUrl: 'javascript:alert(1)' }, jpeg))).status, 400);
+  assert.equal(uploads, 0);
+  const created = await api.POST(request(input, jpeg));
+  assert.equal(created.status, 201);
+  const record = (await created.json()).data;
+  assert.deepEqual(record.image, { url: 'https://example.com/craft.jpg', credit: 'ช่างภาพ', sourceUrl: 'https://example.com/original' });
+  const { mapHeritageRecord } = load('src/server/cultural-heritage.ts');
+  assert.deepEqual(mapHeritageRecord({ ...record, Name: record.name }).image, record.image);
+  assert.equal((await api.PATCH(request({ ...input, id: record.id, imageSourceUrl: '' }))).status, 200);
+  assert.equal(row.content.items[0].image.sourceUrl, undefined);
+  conflict = true;
+  assert.equal((await api.PATCH(request({ ...input, id: record.id }, jpeg))).status, 409);
+  assert.equal(removed, 1);
+  conflict = false;
+  assert.equal((await api.PATCH(request({ ...input, id: record.id, removeImage: true }))).status, 200);
+  assert.equal(row.content.items[0].image, undefined);
+});
+
+test('all seven community groups support create, update and delete with permission and conflict checks', async () => {
+  const { COMMUNITY_GROUPS } = load('src/lib/cultural-data-groups.ts');
+  let allowed = true;
+  let conflict = false;
+  let row = null;
+  const api = load('src/app/api/admin/cultural-heritage/route.ts', {
+    'src/server/admin-api-auth': { verifyAdminAccessToken: async () => allowed ? { ok: true } : { ok: false, status: 403, message: 'Forbidden' } },
+    'src/server/supabase-admin': { getSupabaseAdmin: () => ({ ok: true, client: { from: () => ({
+      select() { return this; }, eq() { return this; },
+      async maybeSingle() { return { data: row, error: null }; },
+      insert(payload) { return { async select() { if (!conflict) row = payload; return { data: conflict ? [] : [{}], error: null }; } }; },
+      update(payload) { return { eq() { return this; }, async select() { if (!conflict) row = payload; return { data: conflict ? [] : [{}], error: null }; } }; },
+    }) } }) },
+  });
+  const request = (data) => new Request('https://local.test/api/admin/cultural-heritage', { method: 'POST', body: JSON.stringify(data), headers: { 'Content-Type': 'application/json' } });
+  for (const group of COMMUNITY_GROUPS) {
+    const input = { group: group.key, name: `ทดสอบ ${group.key}`, province: 'เชียงใหม่', practice: '', description: 'เรื่องราว', technique: '', lifestyle: '', organization: 'ชุมชน', sourceUrl: 'https://example.com' };
+    const created = await api.POST(request(input));
+    assert.equal(created.status, 201);
+    const record = (await created.json()).data;
+    assert.ok(record.categories.includes(group.category));
+    assert.equal((await api.PATCH(request({ ...input, id: record.id, name: `แก้ไข ${group.key}` }))).status, 200);
+    allowed = false;
+    assert.equal((await api.DELETE(request({ id: record.id, group: group.key }))).status, 403);
+    allowed = true;
+    conflict = true;
+    assert.equal((await api.DELETE(request({ id: record.id, group: group.key }))).status, 409);
+    conflict = false;
+    assert.equal((await api.DELETE(request({ id: record.id, group: group.key }))).status, 200);
+    assert.equal((await api.PATCH(request({ ...input, id: record.id }))).status, 404);
+  }
+  assert.equal(row.content.items.filter((item) => item.deleted).length, 7);
+  const service = load('src/server/cultural-heritage.ts', {
+    'src/server/community-heritage-edits': { getCommunityHeritageEdits: async () => [...row.content.items, { id: 'community-praewa', deleted: true, group: 'weaving' }] },
+  });
+  for (const item of row.content.items) assert.equal((await service.getCulturalHeritage({ collection: 'community', recordId: item.id })).total, 0);
+  assert.equal((await service.getCulturalHeritage({ collection: 'community', recordId: 'community-praewa' })).total, 0);
+});

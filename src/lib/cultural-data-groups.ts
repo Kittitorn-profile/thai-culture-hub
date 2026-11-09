@@ -45,3 +45,5 @@ export const COMMUNITY_GROUPS = [
   { key: 'otop', label: 'OTOP ตามแหล่งอ้างอิง', category: 'OTOP ตามแหล่งอ้างอิง' },
   { key: 'support-centers', label: 'ศูนย์ศิลปาชีพ', category: 'ศูนย์ศิลปาชีพ' },
 ] as const;
+
+export type CommunityGroupKey = (typeof COMMUNITY_GROUPS)[number]['key'];

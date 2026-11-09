@@ -1,4 +1,5 @@
 import { publicPageMetadata } from 'src/lib/page-metadata';
+import { requireDatasetVisible } from 'src/server/dataset-visibility';
 
 import { ThaiFabricView } from 'src/sections/thai-fabric/view';
 
@@ -8,6 +9,9 @@ export const metadata = publicPageMetadata(
   '/crafts/'
 );
 
-export default function Page() {
+export const dynamic = 'force-dynamic';
+
+export default async function Page() {
+  await requireDatasetVisible('crafts');
   return <ThaiFabricView />;
 }

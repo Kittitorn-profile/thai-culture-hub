@@ -11,6 +11,9 @@ import Typography from '@mui/material/Typography';
 
 import { RouterLink } from 'src/routes/components';
 
+import { isPublicPlaceVisible } from 'src/lib/dataset-visibility';
+import { PublicDatasetGate, useDatasetVisibility } from 'src/lib/use-dataset-visibility';
+
 import { Logo } from 'src/components/logo';
 import { Iconify } from 'src/components/iconify';
 import { trackAnalyticsEvent } from 'src/components/analytics';
@@ -57,6 +60,7 @@ const PROVINCE_POSTER_PATTERN = 'none';
 export function ProvinceDetailView() {
   const categoryConfig = useCategoryConfig();
   const router = useRouter();
+  const visibility = useDatasetVisibility();
   const params = useParams<{ provinceId?: string | string[] }>();
   const searchParams = useSearchParams();
   const rawProvinceId = params.provinceId;
@@ -85,10 +89,14 @@ export function ProvinceDetailView() {
   const allCulturalPlaces = useMemo(
     () =>
       resolvePlaceDistricts(
-        remoteCulturalPlaces.length ? remoteCulturalPlaces : localCulturalPlaces,
+        (remoteCulturalPlaces.length ? remoteCulturalPlaces : localCulturalPlaces).filter(
+          (place) =>
+            Boolean(visibility.data) &&
+            isPublicPlaceVisible(place.source, visibility.data?.hidden ?? [])
+        ),
         districtCentersData?.districts ?? []
       ),
-    [districtCentersData?.districts, localCulturalPlaces, remoteCulturalPlaces]
+    [districtCentersData?.districts, localCulturalPlaces, remoteCulturalPlaces, visibility.data]
   );
 
   const categoryOptions = useMemo(
@@ -363,7 +371,7 @@ export function ProvinceDetailView() {
               p: { xs: 1, md: 2 },
             }}
           >
-            {!!provinceId && (
+            {visibility.isVisible('places') && !!provinceId && (
               <ProvinceShapeMap
                 places={culturalPlaces}
                 provinceId={provinceId}
@@ -375,34 +383,37 @@ export function ProvinceDetailView() {
           </Box>
         </Box>
 
-        <Box sx={{ mt: { xs: 4, md: 6 } }}>
-          <ProvinceHighlightPlaces
-            provinceCode={provinceId}
-            provinceName={provinceDisplayName}
-            places={allCulturalPlaces}
-            loading={isRemoteLoading}
-          />
-        </Box>
+        <PublicDatasetGate dataset="places">
+          <Box sx={{ mt: { xs: 4, md: 6 } }}>
+            <ProvinceHighlightPlaces
+              provinceCode={provinceId}
+              provinceName={provinceDisplayName}
+              places={allCulturalPlaces}
+              loading={isRemoteLoading}
+            />
+          </Box>
+        </PublicDatasetGate>
         <ProvinceCulturalSections
           key={provinceId}
           provinceCode={provinceId}
           provinceName={provinceDisplayName}
         />
-        <Box component="section" id="province-all-places" sx={{ mt: 5, scrollMarginTop: 100 }}>
-          {isRemoteLoading ? (
-            <Typography>กำลังโหลดสถานที่…</Typography>
-          ) : (
-            <ProvincePlacesList
-              selectedDistrictDetail={`สถานที่และเรื่องวัฒนธรรม${provinceDisplayName}`}
-              places={culturalPlaces}
-              categoryConfig={categoryConfig}
-              onPlaceSelect={(place) =>
-                router.push(`/culture-place/${encodeURIComponent(place.id)}/`)
-              }
-            />
-          )}
-        </Box>
-
+        <PublicDatasetGate dataset="places">
+          <Box component="section" id="province-all-places" sx={{ mt: 5, scrollMarginTop: 100 }}>
+            {isRemoteLoading ? (
+              <Typography>กำลังโหลดสถานที่…</Typography>
+            ) : (
+              <ProvincePlacesList
+                selectedDistrictDetail={`สถานที่และเรื่องวัฒนธรรม${provinceDisplayName}`}
+                places={culturalPlaces}
+                categoryConfig={categoryConfig}
+                onPlaceSelect={(place) =>
+                  router.push(`/culture-place/${encodeURIComponent(place.id)}/`)
+                }
+              />
+            )}
+          </Box>
+        </PublicDatasetGate>
         <ProvinceFilterDrawer
           open={isFilterOpen}
           totalCount={allCulturalPlaces.length}

@@ -113,6 +113,7 @@ test('local musicians are not labelled as national artists', () => {
 test('artist API validates province filters and paginates without dropping provenance', async () => {
   const route = load('src/app/api/cultural-artists/route.ts', {
     'src/server/cultural-artists': service,
+    'src/server/dataset-visibility': { isDatasetVisible: async () => true },
   });
   const invalid = await route.GET({
     nextUrl: new URL('https://local.test/api/cultural-artists?provinceCode=TH-99'),
@@ -333,4 +334,138 @@ test('culture exploration links carry queries and valid provinces across both ad
   assert.deepEqual(links.culturalInitialFilters({ q: ['ignored'], provinceCode: 'TH-99' }, 'artists'), { query: '', province: null });
   assert.deepEqual(links.culturalTopics('การแสดงหมอลำพื้นบ้าน'), ['หมอลำ']);
   assert.deepEqual(links.culturalTopics('พิธีกรรมชุมชน'), []);
+});
+
+test('artist creation enforces permission, validates evidence, prevents duplicates and detects conflicts', async () => {
+  let authorized = false;
+  let conflict = false;
+  let saved;
+  const route = load('src/app/api/admin/cultural-artists/route.ts', {
+    'src/server/admin-api-auth': { verifyAdminRequest: async (_request, permission) => {
+      assert.equal(permission, 'cultural_artists');
+      return authorized;
+    } },
+    'src/server/supabase-admin': { getSupabaseAdmin: () => ({ ok: true, client: {
+      from: () => ({
+        select() { return this; }, eq() { return this; },
+        async single() { return { data: { content: structuredClone(snapshot), updated_at: 'old' }, error: null }; },
+        update(payload) { saved = payload; return {
+          eq() { return this; },
+          async select() { return { data: conflict ? [] : [{ section_key: 'province-artists-v1' }], error: null }; },
+        }; },
+      }),
+    } }) },
+  });
+  assert.equal((await route.POST({ json() { throw new Error('Must not read body'); } })).status, 401);
+  authorized = true;
+  const input = { name: 'ศิลปินทดสอบใหม่', aliases: [], types: ['local_artist'], fields: ['ดนตรี'], genres: [], sourceUrl: 'https://example.com/artist', provinceCode: '', relationship: 'origin', provinceSourceUrl: '' };
+  const request = (body) => ({ json: async () => body });
+  assert.equal((await route.POST(request({ ...input, name: ' ' }))).status, 400);
+  assert.equal((await route.POST(request({ ...input, provinceCode: 'TH-40' }))).status, 400);
+  assert.equal((await route.POST(request({ ...input, sourceUrl: 'javascript:alert(1)' }))).status, 400);
+  assert.equal((await route.POST(request({ ...input, name: snapshot.artists[0].name }))).status, 409);
+  const response = await route.POST(request(input));
+  assert.equal(response.status, 201);
+  const artist = (await response.json()).data;
+  assert.equal(artist.provinceStatus, 'pending_verification');
+  assert.equal(saved.content.artists.length, snapshot.artists.length + 1);
+  assert.deepEqual(saved.content.artists[0], snapshot.artists[0]);
+  const verified = await route.POST(request({ ...input, provinceCode: 'TH-40', provinceSourceUrl: 'https://example.com/province' }));
+  assert.equal((await verified.json()).data.provinceAssociations[0].provinceName, 'ขอนแก่น');
+  conflict = true;
+  assert.equal((await route.POST(request(input))).status, 409);
+});
+
+test('artist creation with a photo validates bytes and credit and cleans uploads on conflict', async () => {
+  let conflict = false;
+  let uploadError = false;
+  let uploads = 0;
+  let removed = 0;
+  let saved;
+  const route = load('src/app/api/admin/cultural-artists/route.ts', {
+    'src/server/admin-api-auth': { verifyAdminRequest: async () => true },
+    'src/server/supabase-admin': { getSupabaseAdmin: () => ({ ok: true, client: {
+      storage: { from: () => ({
+        async upload() { uploads++; return { error: uploadError ? new Error('upload failed') : null }; },
+        getPublicUrl() { return { data: { publicUrl: 'https://example.com/photo.jpg' } }; },
+        async remove() { removed++; return { error: null }; },
+      }) },
+      from: () => ({
+        select() { return this; }, eq() { return this; },
+        async single() { return { data: { content: structuredClone(snapshot), updated_at: 'old' }, error: null }; },
+        update(payload) { saved = payload; return {
+          eq() { return this; },
+          async select() { return { data: conflict ? [] : [{ section_key: 'province-artists-v1' }], error: null }; },
+        }; },
+      }),
+    } }) },
+  });
+  const input = { name: 'ศิลปินพร้อมรูปทดสอบ', aliases: [], types: ['local_artist'], fields: ['ดนตรี'], genres: [], sourceUrl: 'https://example.com/artist', provinceCode: '', relationship: 'origin', provinceSourceUrl: '' };
+  const request = (bytes, credit = 'Photographer') => ({
+    headers: new Headers({ 'content-type': 'multipart/form-data; boundary=test' }),
+    async formData() {
+      const form = new FormData();
+      form.set('data', JSON.stringify(input));
+      form.set('credit', credit);
+      form.set('file', new File([bytes], 'photo.jpg', { type: 'image/jpeg' }));
+      return form;
+    },
+  });
+  const jpeg = new Uint8Array([255, 216, 255, 0]);
+  assert.equal((await route.POST(request('invalid'))).status, 400);
+  assert.equal((await route.POST(request(jpeg, ''))).status, 400);
+  assert.equal((await route.POST(request(new Uint8Array(2 * 1024 * 1024 + 1)))).status, 400);
+  assert.equal(uploads, 0);
+  const response = await route.POST(request(jpeg));
+  assert.equal(response.status, 201);
+  assert.equal((await response.json()).data.image.credit, 'Photographer');
+  assert.equal(saved.content.artists.at(-1).image.url, 'https://example.com/photo.jpg');
+  conflict = true;
+  assert.equal((await route.POST(request(jpeg))).status, 409);
+  assert.equal(removed, 1);
+  uploadError = true;
+  saved = undefined;
+  assert.equal((await route.POST(request(jpeg))).status, 500);
+  assert.equal(saved, undefined);
+});
+
+test('editing an artist preserves other records, honours and additional evidence', async () => {
+  const directory = structuredClone(snapshot);
+  const artist = directory.artists.find((item) => item.provinceAssociations.length);
+  artist.image = { url: 'https://example.com/photo.jpg', credit: 'Original' };
+  let saved;
+  const route = load('src/app/api/admin/cultural-artists/route.ts', {
+    'src/server/admin-api-auth': { verifyAdminRequest: async () => true },
+    'src/server/supabase-admin': { getSupabaseAdmin: () => ({ ok: true, client: {
+      from: () => ({
+        select() { return this; }, eq() { return this; },
+        async single() { return { data: { content: structuredClone(directory), updated_at: 'old' }, error: null }; },
+        update(payload) { saved = payload; return { eq() { return this; }, async select() { return { data: [{}], error: null }; } }; },
+      }),
+    } }) },
+  });
+  const province = artist.provinceAssociations[0];
+  const input = { id: artist.id, name: artist.name, aliases: artist.aliases, types: artist.types, fields: artist.fields.length ? artist.fields : ['ดนตรี'], genres: artist.genres, sourceUrl: artist.sources[0].url, provinceCode: province.provinceCode, relationship: province.relationship, provinceSourceUrl: province.sourceUrl };
+  const request = (body) => ({ json: async () => body });
+  assert.equal((await route.PATCH(request(input))).status, 200);
+  const updated = saved.content.artists.find((item) => item.id === artist.id);
+  assert.deepEqual(updated.recognitions, artist.recognitions);
+  assert.deepEqual(updated.awards, artist.awards);
+  assert.deepEqual(updated.image, artist.image);
+  assert.deepEqual(updated.provinceAssociations, artist.provinceAssociations);
+  assert.deepEqual(updated.sources, artist.sources);
+  assert.equal(saved.content.artists.length, directory.artists.length);
+  assert.equal((await route.PATCH(request({ ...input, id: 'missing' }))).status, 404);
+  assert.equal((await route.PATCH(request({ ...input, id: undefined }))).status, 400);
+  assert.equal((await route.PATCH(request({ ...input, removeImage: true }))).status, 200);
+  assert.equal(saved.content.artists.find((item) => item.id === artist.id).image, undefined);
+});
+
+test('artist form validates required fields, image credit, province evidence and birth dates', () => {
+  const { culturalArtistFormSchema, artistBirthDateSchema } = load('src/lib/cultural-artist-form.ts');
+  const input = { name: 'ศิลปิน', aliases: '', types: ['local_artist'], fields: 'ดนตรี', genres: '', birthDate: null, sourceUrl: 'https://example.com', provinceCode: '', relationship: 'origin', provinceSourceUrl: '', image: null, credit: '', imageSourceUrl: '' };
+  assert.equal(culturalArtistFormSchema.safeParse(input).success, true);
+  for (const value of ['2024-02-29', '']) assert.equal(artistBirthDateSchema.safeParse(value).success, true);
+  for (const value of ['2023-02-29', '2100-01-01', 'not-a-date']) assert.equal(artistBirthDateSchema.safeParse(value).success, false);
+  for (const change of [{ name: ' ' }, { types: [] }, { sourceUrl: 'invalid' }, { provinceCode: 'TH-40' }, { image: 'https://example.com/photo.jpg' }]) assert.equal(culturalArtistFormSchema.safeParse({ ...input, ...change }).success, false);
 });

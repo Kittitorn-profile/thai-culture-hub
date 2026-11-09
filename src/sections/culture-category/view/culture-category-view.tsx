@@ -21,6 +21,7 @@ import { useParams } from 'src/routes/hooks';
 import { RouterLink } from 'src/routes/components';
 
 import provinces from 'src/data/thailand-culture/provinces';
+import { useDatasetVisibility } from 'src/lib/use-dataset-visibility';
 
 import { Logo } from 'src/components/logo';
 import { Iconify } from 'src/components/iconify';
@@ -81,6 +82,7 @@ const LIKE_BATCH_SIZE = 80;
 const PLACES_PAGE_SIZE = 16;
 
 export function CultureCategoryView({ allCategories = false }: Props) {
+  const { isVisible } = useDatasetVisibility();
   const { user } = useAuthContext();
   const categoryConfig = useCategoryConfig();
   const params = useParams<{ categoryKey: string }>();
@@ -367,6 +369,8 @@ export function CultureCategoryView({ allCategories = false }: Props) {
       controller.abort();
     };
   }, [places]);
+
+  if (!isVisible('places')) return null;
 
   return (
     <Box

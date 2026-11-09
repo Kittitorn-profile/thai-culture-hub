@@ -12,14 +12,17 @@ import { useRouter } from 'src/routes/hooks';
 import { cultureUi } from 'src/theme/culture-ui';
 import provinces from 'src/data/thailand-culture/provinces';
 import { PUBLIC_DATA_GROUPS } from 'src/lib/public-cultural-data';
+import { useDatasetVisibility } from 'src/lib/use-dataset-visibility';
 
 const options = [
   ...PUBLIC_DATA_GROUPS.map((group) => ({
+    dataset: group.key,
     label: group.label,
     group: 'หมวดข้อมูลวัฒนธรรม',
     href: group.href as string,
   })),
   ...provinces.map((province) => ({
+    dataset: '',
     label: province.name,
     group: 'จังหวัด',
     href: `/province/${province.code}/?${new URLSearchParams({ name: province.name })}`,
@@ -28,12 +31,13 @@ const options = [
 
 export function CultureSearch() {
   const router = useRouter();
+  const { isVisible } = useDatasetVisibility();
 
   return (
     <Autocomplete
       openOnFocus
       autoHighlight
-      options={options}
+      options={options.filter((option) => isVisible(option.dataset))}
       groupBy={(option) => option.group}
       getOptionLabel={(option) => option.label}
       isOptionEqualToValue={(option, value) => option.href === value.href}

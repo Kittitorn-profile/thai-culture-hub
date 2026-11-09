@@ -1,14 +1,13 @@
 'use client';
 
-import { RiMapPinLine, RiChat3Line, RiDatabase2Line } from '@remixicon/react';
+import { RiChat3Line, RiMapPinLine, RiDatabase2Line } from '@remixicon/react';
 
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
-import { HomeFooter } from 'src/layouts/main/footer';
-
 import { cultureUi } from 'src/theme/culture-ui';
+import { HomeFooter } from 'src/layouts/main/footer';
 
 import { HOME_SECTION_PX } from 'src/sections/home/components/home-constants';
 

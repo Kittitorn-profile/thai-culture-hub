@@ -1,8 +1,10 @@
 import { getSupabaseAdmin } from './supabase-admin';
+import { isDatasetVisible } from './dataset-visibility';
 
 export const PLACE_SITEMAP_SIZE = 10000;
 
 export async function getPlaceSitemapIds() {
+  if (!(await isDatasetVisible('places'))) return [];
   const supabase = getSupabaseAdmin();
   if (!supabase.ok) throw new Error('Sitemap database unavailable');
   const { count, error } = await supabase.client

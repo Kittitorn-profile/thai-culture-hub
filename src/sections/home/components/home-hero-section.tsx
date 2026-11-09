@@ -10,9 +10,12 @@ import Typography from '@mui/material/Typography';
 
 import { RouterLink } from 'src/routes/components';
 
+import { useDatasetVisibility } from 'src/lib/use-dataset-visibility';
+
 import { HOME_SECTION_PX, HOME_SECTION_MAX_WIDTH } from './home-constants';
 
 export function HomeHeroSection({ images = [] }: { images?: HomeHeroImage[] }) {
+  const { isVisible } = useDatasetVisibility();
   const [activeIndex, setActiveIndex] = useState(0);
   const visibleImages = images.filter((image) => image.isActive);
   const index = Math.min(activeIndex, Math.max(0, visibleImages.length - 1));
@@ -117,43 +120,50 @@ export function HomeHeroSection({ images = [] }: { images?: HomeHeroImage[] }) {
             <Box component="br" sx={{ display: { xs: 'none', sm: 'block' } }} />
             จากข้อมูลหลายแหล่ง พร้อมที่มาให้ศึกษาเพิ่มเติม
           </Typography>
-          <Box
-            sx={{
-              display: 'flex',
-              flexDirection: { xs: 'column', sm: 'row' },
-              alignItems: { xs: 'stretch', sm: 'center' },
-              gap: { xs: 1, sm: 2 },
-              mt: { xs: 2.5, md: 3.5 },
-              '& .MuiButton-root': { minHeight: 44, fontSize: { xs: 13, sm: 14 } },
-            }}
-          >
-            <Button
-              component="a"
-              href="#explore-map"
-              variant="contained"
+          {isVisible('places') && (
+            <Box
               sx={{
-                px: 3,
-                py: 1.4,
-                borderRadius: 1.5,
-                bgcolor: '#fff',
-                color: '#202124',
-                boxShadow: 'none',
-                '&:hover': { bgcolor: '#e9e9e7' },
+                display: 'flex',
+                flexDirection: { xs: 'column', sm: 'row' },
+                alignItems: { xs: 'stretch', sm: 'center' },
+                gap: { xs: 1, sm: 2 },
+                mt: { xs: 2.5, md: 3.5 },
+                '& .MuiButton-root': { minHeight: 44, fontSize: { xs: 13, sm: 14 } },
               }}
             >
-              สำรวจตามจังหวัด
-            </Button>
-            <Button
-              component={RouterLink}
-              href="/culture-category"
-              sx={{ color: '#fff', fontWeight: 500, px: 1.5, '&:hover': { bgcolor: '#ffffff14' } }}
-            >
-              ค้นหาสถานที่ตามหมวด{' '}
-              <Box component="span" aria-hidden="true" sx={{ ml: 1 }}>
-                →
-              </Box>
-            </Button>
-          </Box>
+              <Button
+                component="a"
+                href="#explore-map"
+                variant="contained"
+                sx={{
+                  px: 3,
+                  py: 1.4,
+                  borderRadius: 1.5,
+                  bgcolor: '#fff',
+                  color: '#202124',
+                  boxShadow: 'none',
+                  '&:hover': { bgcolor: '#e9e9e7' },
+                }}
+              >
+                สำรวจตามจังหวัด
+              </Button>
+              <Button
+                component={RouterLink}
+                href="/culture-category"
+                sx={{
+                  color: '#fff',
+                  fontWeight: 500,
+                  px: 1.5,
+                  '&:hover': { bgcolor: '#ffffff14' },
+                }}
+              >
+                ค้นหาสถานที่ตามหมวด{' '}
+                <Box component="span" aria-hidden="true" sx={{ ml: 1 }}>
+                  →
+                </Box>
+              </Button>
+            </Box>
+          )}
         </Box>
         {visibleImages.length > 1 && (
           <Box

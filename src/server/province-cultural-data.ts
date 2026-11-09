@@ -7,6 +7,7 @@ import {
   getPrimaryCraftCategory,
 } from 'src/lib/public-cultural-data';
 
+import { isDatasetVisible } from './dataset-visibility';
 import { applyCraftOverrides } from './craft-overrides';
 import { getCulturalHeritage } from './cultural-heritage';
 import fabricImages from '../../data/cultural-images/fabric-images.json';
@@ -57,6 +58,8 @@ export async function getProvinceCulturalSection(
   query = '',
   options: { category?: string; offset?: number; recordId?: string } = {}
 ): Promise<ProvinceDataResult> {
+  if (!(await isDatasetVisible(section)))
+    return { key: section, total: 0, data: [], page, pageSize };
   const result = async (rows: ProvinceDataItem[], total: number) => {
     const data = options.recordId ? rows.filter((item) => item.id === options.recordId) : rows;
     const kind = section === 'cpot' ? 'products' : section;
@@ -326,7 +329,7 @@ export async function getProvinceCulturalSection(
     );
   }
   if (section === 'ethnic') {
-    const records = filterEthnicGroups(await getEthnicGroupDirectory(db), {
+    const records = filterEthnicGroups(await getEthnicGroupDirectory(db, true), {
       province: name,
       q: query,
     });
@@ -362,6 +365,7 @@ export async function getProvinceCulturalSection(
     );
   }
   const records = await getCulturalHeritage({
+    publicOnly: true,
     collection: section === 'community' ? 'community' : 'registry',
     category: options.category,
     recordId: options.recordId,

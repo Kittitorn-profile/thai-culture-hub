@@ -2,23 +2,26 @@
 
 import type { OverviewSection } from 'src/server/cultural-data-overview';
 
-import { useQuery } from '@tanstack/react-query';
 import { RiDatabase2Line, RiArrowRightUpLine } from '@remixicon/react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Alert from '@mui/material/Alert';
 import Table from '@mui/material/Table';
 import Button from '@mui/material/Button';
+import Switch from '@mui/material/Switch';
 import TableRow from '@mui/material/TableRow';
 import TableBody from '@mui/material/TableBody';
 import TableHead from '@mui/material/TableHead';
 import TableCell from '@mui/material/TableCell';
 import Typography from '@mui/material/Typography';
 import TableContainer from '@mui/material/TableContainer';
+import FormControlLabel from '@mui/material/FormControlLabel';
 
 import { adminApiRequest } from 'src/lib/admin-api';
 import { DashboardContent } from 'src/layouts/dashboard';
+import { DATASET_SOURCES, type DatasetKey } from 'src/lib/dataset-visibility';
 
 import { useAuthContext } from 'src/auth/hooks';
 import { type AdminPermission, canAccessAdminPermission } from 'src/auth/admin-permissions';
@@ -27,6 +30,7 @@ const countText = (count: number | null) =>
   count === null ? 'ตรวจไม่ได้' : count.toLocaleString('th-TH');
 export default function CulturalDataOverviewPage() {
   const { user } = useAuthContext();
+  const queryClient = useQueryClient();
   const token = user?.accessToken ?? user?.access_token ?? '';
   const overview = useQuery({
     queryKey: ['admin-cultural-data-overview', token],
@@ -34,11 +38,40 @@ export default function CulturalDataOverviewPage() {
     queryFn: ({ signal }) =>
       adminApiRequest<{
         sections: OverviewSection[];
+        sourceDatasets: Array<{
+          key: DatasetKey;
+          label: string;
+          origin: string;
+          count: number | null;
+        }>;
+        visibility: { hidden: DatasetKey[] };
         categorySettingsCount: number | null;
         checkedAt: string;
       }>('/api/admin/cultural-data-overview', { accessToken: token, signal }),
     staleTime: 60_000,
     retry: 1,
+  });
+  const visibility = useMutation({
+    mutationFn: ({ key, visible }: { key: DatasetKey; visible: boolean }) => {
+      const hidden = overview.data?.visibility.hidden ?? [];
+      return adminApiRequest<{ hidden: DatasetKey[] }>('/api/admin/cultural-data-overview', {
+        accessToken: token,
+        method: 'PUT',
+        body: {
+          hidden: visible ? hidden.filter((item) => item !== key) : [...new Set([...hidden, key])],
+        },
+      });
+    },
+    onSuccess: async (result) => {
+      queryClient.setQueryData(
+        ['admin-cultural-data-overview', token],
+        (current: typeof overview.data) => (current ? { ...current, visibility: result } : current)
+      );
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['public-dataset-visibility'] }),
+        queryClient.invalidateQueries({ queryKey: ['public-cultural-data-summary'] }),
+      ]);
+    },
   });
   return (
     <DashboardContent maxWidth="xl">
@@ -61,10 +94,60 @@ export default function CulturalDataOverviewPage() {
           {overview.isFetching ? 'กำลังตรวจ…' : 'ตรวจจำนวนใหม่'}
         </Button>
       </Box>
-      {overview.isPending && <Alert severity="info">กำลังนับข้อมูลและตรวจหมวดจากต้นทาง…</Alert>}
-      {overview.isError && <Alert severity="error">{overview.error.message}</Alert>}
+
       {!!overview.data && (
         <>
+          <Card sx={{ p: { xs: 2, md: 3 }, mb: 3 }}>
+            <Typography variant="h5" component="h2" sx={{ mb: 1 }}>
+              การแสดงผลตามชุดข้อมูลต้นทาง
+            </Typography>
+            <Typography sx={{ color: 'text.secondary', fontSize: 13, mb: 2 }}>
+              ตัวอย่าง: ปิดข้อมูล ททท. จะซ่อนเฉพาะรายการจาก ททท.
+              ข้อมูลศาสนสถานหรือกรมศิลปากรในหมวดเดียวกันยังแสดงตามปกติ
+            </Typography>
+            <TableContainer>
+              <Table sx={{ minWidth: 650 }} aria-label="เปิดปิดชุดข้อมูลต้นทาง">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>ชุดข้อมูลต้นทาง</TableCell>
+                    <TableCell>แหล่งที่มา</TableCell>
+                    <TableCell align="right">จำนวน</TableCell>
+                    <TableCell align="right">แสดงบนเว็บ</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {(
+                    overview.data.sourceDatasets ??
+                    DATASET_SOURCES.map((source) => ({ ...source, count: null }))
+                  ).map((source) => (
+                    <TableRow key={source.key}>
+                      <TableCell sx={{ fontWeight: 600 }}>{source.label}</TableCell>
+                      <TableCell sx={{ color: 'text.secondary', fontSize: 12 }}>
+                        {source.origin}
+                      </TableCell>
+                      <TableCell align="right">{countText(source.count)}</TableCell>
+                      <TableCell align="right">
+                        <FormControlLabel
+                          label={
+                            overview.data.visibility.hidden.includes(source.key) ? 'ซ่อน' : 'แสดง'
+                          }
+                          control={
+                            <Switch
+                              checked={!overview.data.visibility.hidden.includes(source.key)}
+                              disabled={visibility.isPending || overview.isFetching}
+                              onChange={(_, visible) =>
+                                visibility.mutate({ key: source.key, visible })
+                              }
+                            />
+                          }
+                        />
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Card>
           <Box
             sx={{
               display: 'grid',

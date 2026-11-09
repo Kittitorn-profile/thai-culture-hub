@@ -1,6 +1,7 @@
 import { Suspense } from 'react';
 
 import { publicPageMetadata } from 'src/lib/page-metadata';
+import { requireDatasetVisible } from 'src/server/dataset-visibility';
 
 import { CulturalDataView } from 'src/sections/cultural-data/cultural-data-view';
 
@@ -10,7 +11,10 @@ export const metadata = publicPageMetadata(
   '/crafts/'
 );
 
-export default function Page() {
+export const dynamic = 'force-dynamic';
+
+export default async function Page() {
+  await requireDatasetVisible('crafts');
   return (
     <Suspense fallback={<p>กำลังโหลดผ้าและทักษะงานช่าง…</p>}>
       <CulturalDataView group="crafts" />

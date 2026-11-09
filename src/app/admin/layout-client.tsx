@@ -69,6 +69,7 @@ const navData: AdminNavGroup[] = [
           },
           { title: 'กิจกรรม', path: '/admin/home-content/events', deepMatch: true },
           { title: 'ป๊อปอัปแบนเนอร์', path: '/admin/home-content/popup-banner' },
+          { title: 'ข้อมูลนักพัฒนา', path: '/admin/home-content/developers' },
         ],
       },
     ],

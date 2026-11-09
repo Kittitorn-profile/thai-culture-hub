@@ -4,6 +4,7 @@ import { createHash } from 'node:crypto';
 
 import { parseCoordinate, isValidCoordinatePair } from 'src/utils/coordinates';
 
+import { getDatasetVisibility } from './dataset-visibility';
 import { ETHNIC_SUPPLEMENTS_KEY, ethnicSupplementDirectorySchema } from './ethnic-supplements';
 
 export const ETHNIC_GROUPS_SOURCE_URL =
@@ -49,7 +50,7 @@ export function mapEthnicGroup(row: Record<string, unknown>) {
   };
 }
 export type EthnicGroupRecord = ReturnType<typeof mapEthnicGroup>;
-export async function getEthnicGroupDirectory(db: SupabaseClient) {
+export async function getEthnicGroupDirectory(db: SupabaseClient, publicOnly = false) {
   const records: EthnicGroupRecord[] = [];
   const table = process.env.ETHNIC_GROUPS_TABLE ?? 'ethnic_groups';
   for (let offset = 0; offset < 100000; offset += 1000) {
@@ -71,6 +72,7 @@ export async function getEthnicGroupDirectory(db: SupabaseClient) {
     if (error || !data) throw new Error('อ่านข้อมูลกลุ่มชาติพันธุ์ไม่ได้');
     records.push(...data.map(mapEthnicGroup));
     if (data.length < 1000) {
+      const originalIds = new Set(records.map((item) => item.id));
       const supplemental = await db
         .from(process.env.HOME_CONTENT_SECTIONS_TABLE ?? 'home_content_sections')
         .select('content')
@@ -87,7 +89,12 @@ export async function getEthnicGroupDirectory(db: SupabaseClient) {
           records.push(item);
         }
       }
-      return records;
+      if (!publicOnly) return records;
+      const { hidden } = await getDatasetVisibility();
+      return records.filter(
+        (item) =>
+          !hidden.includes(originalIds.has(item.id) ? 'ethnic_groups' : 'ethnic_supplements')
+      );
     }
   }
   throw new Error('ข้อมูลเกินขอบเขตที่รองรับ');

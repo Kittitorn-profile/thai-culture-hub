@@ -26,6 +26,8 @@ const schema = z.object({
   countsOnly: z.enum(['true', 'false']).default('false'),
   page: z.coerce.number().int().min(0).max(10000).default(0),
 });
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   const parsed = schema.safeParse(Object.fromEntries(request.nextUrl.searchParams));
   if (!parsed.success) return NextResponse.json({ message: 'ตัวกรองไม่ถูกต้อง' }, { status: 400 });
@@ -43,9 +45,7 @@ export async function GET(request: NextRequest) {
       );
       return NextResponse.json(counts, {
         headers: {
-          'Cache-Control': counts.complete
-            ? 'public, s-maxage=300, stale-while-revalidate=300'
-            : 'no-store',
+          'Cache-Control': 'no-store',
         },
       });
     }
@@ -60,7 +60,7 @@ export async function GET(request: NextRequest) {
       ...(group === 'crafts' ? [{ category }] : [])
     );
     return NextResponse.json(result, {
-      headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=300' },
+      headers: { 'Cache-Control': 'no-store' },
     });
   } catch {
     return NextResponse.json(

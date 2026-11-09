@@ -1,9 +1,11 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 
+import { isDatasetEnabled } from 'src/lib/dataset-visibility';
 import { PUBLIC_DATA_GROUPS } from 'src/lib/public-cultural-data';
 
 import { getCulturalHeritage } from './cultural-heritage';
 import { getCulturalArtistDirectory } from './cultural-artists';
+import { isDatasetVisible, getDatasetVisibility } from './dataset-visibility';
 import { ETHNIC_SUPPLEMENTS_KEY, ethnicSupplementDirectorySchema } from './ethnic-supplements';
 
 // Keep successful counts independently so a failing source does not invalidate the others.
@@ -34,11 +36,31 @@ function readCachedCount(db: SupabaseClient, key: string, read: () => Promise<nu
 }
 
 export async function getCulturalDataSummary(db: SupabaseClient) {
+  const { hidden } = await getDatasetVisibility();
   async function countTable(table: string) {
-    const result = await db
-      .from(table)
-      .select('*', { count: 'exact', head: true })
-      .abortSignal(AbortSignal.timeout(10000));
+    let request = db.from(table).select('*', { count: 'exact', head: true });
+    if (table === (process.env.CULTURAL_PLACES_TABLE ?? 'cultural_places')) {
+      const sources = hidden.filter((key) =>
+        [
+          'tat',
+          'culture_catalog',
+          'religious_places',
+          'finearts_monument',
+          'finearts_archeology',
+          'finearts_buddha',
+          'finearts_museum',
+          'cpot_products',
+          'thai_fabric_wisdom',
+          'ethnic_groups',
+          'local',
+        ].includes(key)
+      );
+      if (sources.length)
+        request = hidden.includes('local')
+          ? request.not('source', 'is', null).not('source', 'in', `(${sources.join(',')})`)
+          : request.or(`source.is.null,source.not.in.(${sources.join(',')})`);
+    }
+    const result = await request.abortSignal(AbortSignal.timeout(10000));
     if (result.error || result.count === null) throw new Error('Count unavailable');
     return result.count;
   }
@@ -75,7 +97,9 @@ export async function getCulturalDataSummary(db: SupabaseClient) {
       note: 'นับรายการชุมชน ไม่ใช่จำนวนชาติพันธุ์',
       read: async () => {
         const [total, supplemental] = await Promise.all([
-          countTable(process.env.ETHNIC_GROUPS_TABLE ?? 'ethnic_groups'),
+          hidden.includes('ethnic_groups')
+            ? Promise.resolve(0)
+            : countTable(process.env.ETHNIC_GROUPS_TABLE ?? 'ethnic_groups'),
           db
             .from(process.env.HOME_CONTENT_SECTIONS_TABLE ?? 'home_content_sections')
             .select('content')
@@ -86,7 +110,7 @@ export async function getCulturalDataSummary(db: SupabaseClient) {
         if (supplemental.error) throw new Error('Supplement count unavailable');
         return (
           total +
-          (supplemental.data
+          (!hidden.includes('ethnic_supplements') && supplemental.data
             ? ethnicSupplementDirectorySchema.parse(supplemental.data.content).items.length
             : 0)
         );
@@ -108,21 +132,35 @@ export async function getCulturalDataSummary(db: SupabaseClient) {
       note: 'ผ้าและการทอผ้า ทอเสื่อ จักสาน และวิถีชีวิตชุมชน',
       read: async () => {
         const [fabric, community] = await Promise.all([
-          countTable(process.env.THAI_FABRIC_WISDOM_TABLE ?? 'thai_fabric_wisdom'),
-          getCulturalHeritage({ collection: 'community', limit: 1 }),
+          hidden.includes('thai_fabric_wisdom')
+            ? Promise.resolve(0)
+            : countTable(process.env.THAI_FABRIC_WISDOM_TABLE ?? 'thai_fabric_wisdom'),
+          !isDatasetEnabled('community', hidden)
+            ? Promise.resolve({ total: 0 })
+            : getCulturalHeritage({ collection: 'community', limit: 1, publicOnly: true }),
         ]);
         return fabric + community.total;
       },
     },
   ];
+  const visible = await Promise.all(
+    definitions.map(async (definition) =>
+      (await isDatasetVisible(definition.key)) ? definition : null
+    )
+  );
   const groups = await Promise.all(
-    definitions.map(async ({ read, ...definition }) => {
-      try {
-        return { ...definition, count: await readCachedCount(db, definition.key, read) };
-      } catch {
-        return { ...definition, count: null };
-      }
-    })
+    visible
+      .filter((definition) => definition !== null)
+      .map(async ({ read, ...definition }) => {
+        try {
+          return {
+            ...definition,
+            count: await readCachedCount(db, `${definition.key}:${hidden.join(',')}`, read),
+          };
+        } catch {
+          return { ...definition, count: null };
+        }
+      })
   );
   return {
     groups: groups.map((group) => ({

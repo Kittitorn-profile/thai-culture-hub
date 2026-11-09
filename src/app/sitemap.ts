@@ -4,14 +4,17 @@ import { getEventSlug } from 'src/utils/event-slug';
 
 import provinces from 'src/data/thailand-culture/provinces';
 import { getSupabaseAdmin } from 'src/server/supabase-admin';
+import { isDatasetEnabled } from 'src/lib/dataset-visibility';
+import { getDatasetVisibility } from 'src/server/dataset-visibility';
 import { SYSTEM_CULTURE_CATEGORIES } from 'src/lib/culture-categories';
 import { getPublishedPerformanceGroups } from 'src/server/performance-groups';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://thailandculturalhub.com';
 
-export const revalidate = 3600;
+export const dynamic = 'force-dynamic';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const { hidden } = await getDatasetVisibility();
   const { groups, updatedAt } = await getPublishedPerformanceGroups();
   const lastModified = updatedAt ? new Date(updatedAt) : undefined;
   const staticPages: MetadataRoute.Sitemap = [
@@ -104,10 +107,26 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
   }
   return [
-    ...staticPages.map(({ lastModified: _date, ...entry }) => entry),
-    ...directoryPages,
-    ...provincePages,
-    ...categoryPages,
+    ...staticPages
+      .filter(
+        (entry) => !!isDatasetEnabled('places', hidden) || !entry.url.endsWith('/culture-category/')
+      )
+      .map(({ lastModified: _date, ...entry }) => entry),
+    ...directoryPages.filter((entry) => {
+      const routes: Record<string, string> = {
+        'cultural-artists': 'artists',
+        'cultural-heritage': 'heritage',
+        'ethnic-groups': 'ethnic',
+        'cultural-products': 'products',
+        crafts: 'crafts',
+      };
+      const group = Object.entries(routes).find(([route]) => entry.url.endsWith(`/${route}/`))?.[1];
+      return !group || isDatasetEnabled(group, hidden);
+    }),
+    ...provincePages.filter(
+      (entry) => !!isDatasetEnabled('places', hidden) || !entry.url.endsWith('/places/')
+    ),
+    ...(!isDatasetEnabled('places', hidden) ? [] : categoryPages),
     ...performanceGroupPages,
     ...contentPages,
   ];

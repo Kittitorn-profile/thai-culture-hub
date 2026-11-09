@@ -13,6 +13,8 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import InputAdornment from '@mui/material/InputAdornment';
 
+import { useDatasetVisibility } from 'src/lib/use-dataset-visibility';
+
 type ProvinceDetailHeaderProps = {
   provinceCode: string;
   provinceDisplayName: string;
@@ -71,6 +73,7 @@ export function ProvinceDetailHeader({
   onPlacesOpen,
   onSearchQueryChange,
 }: ProvinceDetailHeaderProps) {
+  const { isVisible } = useDatasetVisibility();
   const viewsQuery = useQuery({
     queryKey: ['province-views', provinceCode],
     enabled: Boolean(provinceCode),
@@ -136,79 +139,85 @@ export function ProvinceDetailHeader({
           }}
         />
       </Stack>
-      <ProvinceCultureMetrics
-        cultureMetrics={[
-          ...cultureMetrics,
-          {
-            label: 'การเข้าชมจังหวัดนี้',
-            value: viewsQuery.data ? `${viewsQuery.data.views.toLocaleString('th-TH')} ครั้ง` : '—',
-          },
-        ]}
-      />
-      <Box
-        sx={{
-          mt: 3,
-          p: { xs: 2, md: 2.5, lg: 2 },
-          bgcolor: '#fff',
-          border: '1px solid #e2e5de',
-          borderRadius: 2,
-        }}
-      >
-        <Stack direction={{ xs: 'column', sm: 'row', lg: 'column' }} spacing={1.5}>
-          <TextField
-            fullWidth
-            size="small"
-            label="ค้นหาสถานที่หรือเรื่องราว"
-            placeholder="ชื่อสถานที่ อำเภอ หรือคำที่สนใจ"
-            value={searchQuery}
-            onChange={(event) => onSearchQueryChange(event.target.value)}
-            slotProps={{
-              input: {
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <RiSearchLine size={19} />
-                  </InputAdornment>
-                ),
-              },
-            }}
-          />
-          <Button
-            variant="outlined"
-            startIcon={<RiEqualizerLine size={18} />}
-            onClick={onFilterOpen}
-            sx={{
-              minHeight: 40,
-              minWidth: 120,
-              flexShrink: 0,
-              color: '#293c34',
-              borderColor: '#d7ded2',
-            }}
-          >
-            ตัวกรอง{activeFilterCount ? ` (${activeFilterCount})` : ''}
-          </Button>
-          <Button
-            variant="contained"
-            startIcon={<RiListCheck size={18} />}
-            onClick={onPlacesOpen}
-            sx={{
-              minHeight: 40,
-              minWidth: 140,
-              flexShrink: 0,
-              bgcolor: '#293c34',
-              color: '#fff',
-              '&:hover': { bgcolor: '#3c5147' },
-            }}
-          >
-            ดูรายการข้อมูล
-          </Button>
-        </Stack>
-        <Typography sx={{ mt: 1.5, fontSize: 12, color: 'text.secondary' }} aria-live="polite">
-          {isRemoteLoading
-            ? 'กำลังโหลดข้อมูลจังหวัด…'
-            : `พบ ${filteredCount.toLocaleString('th-TH')} จาก ${totalCount.toLocaleString('th-TH')} รายการ`}{' '}
-          · เลือกอำเภอบนแผนที่เพื่อสำรวจพื้นที่
-        </Typography>
-      </Box>
+      {isVisible('places') && (
+        <ProvinceCultureMetrics
+          cultureMetrics={[
+            ...cultureMetrics,
+            {
+              label: 'การเข้าชมจังหวัดนี้',
+              value: viewsQuery.data
+                ? `${viewsQuery.data.views.toLocaleString('th-TH')} ครั้ง`
+                : '—',
+            },
+          ]}
+        />
+      )}
+      {isVisible('places') && (
+        <Box
+          sx={{
+            mt: 3,
+            p: { xs: 2, md: 2.5, lg: 2 },
+            bgcolor: '#fff',
+            border: '1px solid #e2e5de',
+            borderRadius: 2,
+          }}
+        >
+          <Stack direction={{ xs: 'column', sm: 'row', lg: 'column' }} spacing={1.5}>
+            <TextField
+              fullWidth
+              size="small"
+              label="ค้นหาสถานที่หรือเรื่องราว"
+              placeholder="ชื่อสถานที่ อำเภอ หรือคำที่สนใจ"
+              value={searchQuery}
+              onChange={(event) => onSearchQueryChange(event.target.value)}
+              slotProps={{
+                input: {
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <RiSearchLine size={19} />
+                    </InputAdornment>
+                  ),
+                },
+              }}
+            />
+            <Button
+              variant="outlined"
+              startIcon={<RiEqualizerLine size={18} />}
+              onClick={onFilterOpen}
+              sx={{
+                minHeight: 40,
+                minWidth: 120,
+                flexShrink: 0,
+                color: '#293c34',
+                borderColor: '#d7ded2',
+              }}
+            >
+              ตัวกรอง{activeFilterCount ? ` (${activeFilterCount})` : ''}
+            </Button>
+            <Button
+              variant="contained"
+              startIcon={<RiListCheck size={18} />}
+              onClick={onPlacesOpen}
+              sx={{
+                minHeight: 40,
+                minWidth: 140,
+                flexShrink: 0,
+                bgcolor: '#293c34',
+                color: '#fff',
+                '&:hover': { bgcolor: '#3c5147' },
+              }}
+            >
+              ดูรายการข้อมูล
+            </Button>
+          </Stack>
+          <Typography sx={{ mt: 1.5, fontSize: 12, color: 'text.secondary' }} aria-live="polite">
+            {isRemoteLoading
+              ? 'กำลังโหลดข้อมูลจังหวัด…'
+              : `พบ ${filteredCount.toLocaleString('th-TH')} จาก ${totalCount.toLocaleString('th-TH')} รายการ`}{' '}
+            · เลือกอำเภอบนแผนที่เพื่อสำรวจพื้นที่
+          </Typography>
+        </Box>
+      )}
     </Box>
   );
 }

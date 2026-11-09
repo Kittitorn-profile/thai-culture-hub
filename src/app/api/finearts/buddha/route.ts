@@ -2,14 +2,18 @@ import type { NextRequest } from 'next/server';
 
 import { NextResponse } from 'next/server';
 
+import { isDatasetVisible } from 'src/server/dataset-visibility';
+
 import { getFineArtsLimit, getFineArtsApiKey, fetchFineArtsPlaces } from '../fetch-finearts-places';
 
 // ----------------------------------------------------------------------
 
 export const runtime = 'nodejs';
-export const revalidate = 86400;
+export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
+  if (!(await isDatasetVisible('finearts_buddha')))
+    return NextResponse.json({ data: [] }, { headers: { 'Cache-Control': 'no-store' } });
   const provinceCode = request.nextUrl.searchParams.get('provinceCode');
   const limit = request.nextUrl.searchParams.has('limit')
     ? getFineArtsLimit(request.nextUrl.searchParams.get('limit'))

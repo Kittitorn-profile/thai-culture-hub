@@ -2,8 +2,9 @@
 
 import type { HeritageRecord } from 'src/server/cultural-heritage';
 
+import Link from 'next/link';
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -11,8 +12,10 @@ import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
 import Alert from '@mui/material/Alert';
 import Table from '@mui/material/Table';
+import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import Drawer from '@mui/material/Drawer';
+import Dialog from '@mui/material/Dialog';
 import TableRow from '@mui/material/TableRow';
 import MenuItem from '@mui/material/MenuItem';
 import TableCell from '@mui/material/TableCell';
@@ -21,7 +24,10 @@ import TableBody from '@mui/material/TableBody';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
+import DialogTitle from '@mui/material/DialogTitle';
 import Autocomplete from '@mui/material/Autocomplete';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
 import TableContainer from '@mui/material/TableContainer';
 import InputAdornment from '@mui/material/InputAdornment';
 import TablePagination from '@mui/material/TablePagination';
@@ -31,6 +37,7 @@ import { culturalTopics, culturalExploreUrl } from 'src/utils/cultural-explore';
 import { adminApiRequest } from 'src/lib/admin-api';
 import { DashboardContent } from 'src/layouts/dashboard';
 import provinces from 'src/data/thailand-culture/provinces';
+import { COMMUNITY_GROUPS } from 'src/lib/cultural-data-groups';
 
 import { Iconify } from 'src/components/iconify';
 
@@ -57,6 +64,7 @@ export function CulturalHeritageClient({
   initialCategory?: string;
 }) {
   const { user } = useAuthContext();
+  const queryClient = useQueryClient();
   const token = user?.accessToken ?? user?.access_token ?? '';
   const [search, setSearch] = useState(initialQuery);
   const [query, setQuery] = useState(initialQuery);
@@ -86,6 +94,14 @@ export function CulturalHeritageClient({
     staleTime: 60000,
     retry: 1,
   });
+  const editableGroup =
+    collection === 'community'
+      ? COMMUNITY_GROUPS.find((item) => item.category === category)?.key
+      : undefined;
+  const [deleting, setDeleting] = useState<HeritageRecord | null>(null);
+  const [deleteError, setDeleteError] = useState('');
+  const [deleteBusy, setDeleteBusy] = useState(false);
+  const canEdit = canAccessAdminPermission(user, ADMIN_PERMISSION.culturalHeritage);
   const searchRecords = () => {
     setPage(0);
     setQuery(search.trim());
@@ -103,6 +119,15 @@ export function CulturalHeritageClient({
             </Typography>
           </Box>
           <Stack direction="row" spacing={1} alignItems="center">
+            {editableGroup && canEdit && (
+              <Button
+                component={Link}
+                href={`/admin/cultural-heritage/group/${editableGroup}/new/`}
+                variant="contained"
+              >
+                เพิ่มข้อมูล
+              </Button>
+            )}
             <Button
               component="a"
               href={SOURCE_URL}
@@ -262,6 +287,14 @@ export function CulturalHeritageClient({
                 {(records.data?.data ?? []).map((item) => (
                   <TableRow key={item.id} hover>
                     <TableCell sx={{ maxWidth: 320 }}>
+                      {item.image && (
+                        <Avatar
+                          variant="rounded"
+                          src={item.image.url}
+                          alt={item.name}
+                          sx={{ width: 64, height: 64, mb: 1 }}
+                        />
+                      )}
                       <Typography sx={{ fontSize: 14, fontWeight: 600 }}>
                         {item.name || 'ไม่ระบุชื่อ'}
                       </Typography>
@@ -314,6 +347,29 @@ export function CulturalHeritageClient({
                       )}
                     </TableCell>
                     <TableCell align="right">
+                      {editableGroup && canEdit && (
+                        <Button
+                          component={Link}
+                          href={`/admin/cultural-heritage/group/${editableGroup}/${encodeURIComponent(item.id)}/`}
+                          size="small"
+                          sx={{ mr: 1 }}
+                        >
+                          แก้ไข
+                        </Button>
+                      )}
+                      {editableGroup && canEdit && (
+                        <Button
+                          size="small"
+                          color="error"
+                          disabled={deleteBusy}
+                          onClick={() => {
+                            setDeleteError('');
+                            setDeleting(item);
+                          }}
+                        >
+                          ลบ
+                        </Button>
+                      )}
                       <Button size="small" variant="outlined" onClick={() => setSelected(item)}>
                         ดูข้อมูล
                       </Button>
@@ -355,6 +411,56 @@ export function CulturalHeritageClient({
           · ข้อมูลในหน้านี้ยังไม่แสดงบนหน้าเว็บไซต์สาธารณะ
         </Typography>
       </Stack>
+      <Dialog
+        open={Boolean(deleting)}
+        onClose={() => {
+          if (!deleteBusy) setDeleting(null);
+        }}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle>ลบข้อมูล</DialogTitle>
+        <DialogContent>
+          <Typography>ยืนยันการลบ “{deleting?.name}” ออกจากรายการ?</Typography>
+          {deleteError && (
+            <Alert severity="error" sx={{ mt: 2 }}>
+              {deleteError}
+            </Alert>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button disabled={deleteBusy} onClick={() => setDeleting(null)}>
+            ยกเลิก
+          </Button>
+          <Button
+            color="error"
+            variant="contained"
+            loading={deleteBusy}
+            onClick={async () => {
+              if (!deleting || !editableGroup || deleteBusy) return;
+              setDeleteBusy(true);
+              setDeleteError('');
+              try {
+                await adminApiRequest('/api/admin/cultural-heritage/', {
+                  method: 'DELETE',
+                  accessToken: token,
+                  body: { id: deleting.id, group: editableGroup },
+                });
+                if (selected?.id === deleting.id) setSelected(null);
+                setDeleting(null);
+                if (page > 0 && records.data?.data.length === 1) setPage(page - 1);
+                else await queryClient.invalidateQueries({ queryKey: ['cultural-heritage'] });
+              } catch (cause) {
+                setDeleteError(cause instanceof Error ? cause.message : 'ลบข้อมูลไม่สำเร็จ');
+              } finally {
+                setDeleteBusy(false);
+              }
+            }}
+          >
+            ลบข้อมูล
+          </Button>
+        </DialogActions>
+      </Dialog>
       <Drawer
         anchor="right"
         open={Boolean(selected)}
@@ -373,6 +479,34 @@ export function CulturalHeritageClient({
                 <Iconify icon="mingcute:close-line" />
               </IconButton>
             </Stack>
+            {selected.image && (
+              <Box>
+                <Box
+                  component="img"
+                  src={selected.image.url}
+                  alt={selected.name}
+                  sx={{ width: '100%', maxHeight: 320, objectFit: 'contain', borderRadius: 2 }}
+                />
+                <Typography variant="caption" color="text.secondary">
+                  ภาพ: {selected.image.credit}
+                  {selected.image.sourceUrl && (
+                    <>
+                      {' '}
+                      ·{' '}
+                      <Box
+                        component="a"
+                        href={selected.image.sourceUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        sx={{ color: 'primary.main' }}
+                      >
+                        ที่มาของภาพ
+                      </Box>
+                    </>
+                  )}
+                </Typography>
+              </Box>
+            )}
             <Typography component="h2" sx={{ fontSize: 24, fontWeight: 600 }}>
               {selected.name}
             </Typography>

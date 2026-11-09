@@ -22,6 +22,7 @@ import { HomeFooter } from 'src/layouts/main/footer';
 import { HOME_SECTION_PX } from 'src/sections/home/components/home-constants';
 
 import { AboutSystem } from './about-system';
+import { ContactDevelopers } from '../contact/contact-developers';
 
 const FEATURES = [
   {
@@ -65,6 +66,51 @@ const SOURCES = [
     owner: 'กรมศิลปากร',
     detail: 'โบราณสถาน พิพิธภัณฑ์ และศิลปวัตถุ',
     href: 'https://api.finearts.go.th/',
+  },
+  {
+    name: 'ทะเบียนมรดกภูมิปัญญา',
+    owner: 'กรมส่งเสริมวัฒนธรรม · data.go.th',
+    detail: 'ข้อมูลมรดกภูมิปัญญาทางวัฒนธรรม ทั้งการแสดง ประเพณี ภาษา และงานช่าง',
+    href: 'https://data.go.th/dataset/ich_51_02',
+  },
+  {
+    name: 'ผลิตภัณฑ์วัฒนธรรมไทย (CPOT)',
+    owner: 'กระทรวงวัฒนธรรม',
+    detail: 'ข้อมูลผลิตภัณฑ์วัฒนธรรมและสินค้าจากชุมชนตามจังหวัด',
+    href: 'https://gdcatalog.m-culture.go.th/dataset/cpot',
+  },
+  {
+    name: 'ศาสนสถานและภูมิปัญญาผ้าไทย',
+    owner: 'บัญชีข้อมูลกระทรวงวัฒนธรรม',
+    detail: 'ชุดข้อมูลศาสนสถานและมรดกภูมิปัญญาผ้าไทย โดยแสดงแหล่งอ้างอิงของแต่ละรายการ',
+    href: 'https://gdcatalog.m-culture.go.th/',
+  },
+  {
+    name: 'กลุ่มชาติพันธุ์ในประเทศไทย',
+    owner: 'Open Development Thailand',
+    detail:
+      'ข้อมูลชุมชนและพิกัดอ้างอิงจากชุดข้อมูลเปิด ไม่ใช่ขอบเขตพื้นที่ทั้งหมดของกลุ่มชาติพันธุ์',
+    href: 'https://data.thailand.opendevelopmentmekong.net/th/',
+  },
+  {
+    name: 'ศิลปิน ผ้า และงานช่างท้องถิ่น',
+    owner: 'แหล่งอ้างอิงรายบุคคลและรายชุมชน',
+    detail:
+      'ข้อมูลที่รวบรวมจากหน่วยงานวัฒนธรรม เว็บไซต์ชุมชน และแหล่งข้อมูลผลงาน พร้อมลิงก์อ้างอิงในรายละเอียด',
+    href: '/cultural-data/',
+  },
+  {
+    name: 'Cultural Map Thailand',
+    owner: 'แผนที่วัฒนธรรมประเทศไทย',
+    detail:
+      'แหล่งอ้างอิงประกอบข้อมูลศิลปินและผู้สร้างสรรค์บางรายการ โดยระบุลิงก์ต้นทางในรายละเอียด',
+    href: 'https://culturalmapthailand.info/',
+  },
+  {
+    name: 'เรื่องเล่าและข้อมูลจากสมาชิก',
+    owner: 'Creator และทีมงาน Thailand Cultural Hub',
+    detail: 'บทความ ภาพ และข้อเสนอแก้ไขจากสมาชิก รวมถึงข้อมูลวงและกิจกรรมที่ทีมงานจัดการและเผยแพร่',
+    href: '/creator/register/',
   },
   {
     name: 'geoBoundaries',
@@ -245,10 +291,14 @@ export function AboutTeam({ sx, ...other }: BoxProps) {
               ข้อมูลมาจากไหน
             </Typography>
             <Typography sx={{ mt: 1.5, fontSize: 14, color: cultureUi.muted, lineHeight: 1.8 }}>
-              เรานำข้อมูลจากหลายแหล่งมาจัดระเบียบ โดยคงแหล่งอ้างอิงของแต่ละรายการไว้
+              เรารวบรวมข้อมูลจาก API และชุดข้อมูลเปิดของหน่วยงานภาครัฐ แหล่งข้อมูลรายบุคคลและชุมชน
+              รวมถึงเนื้อหาจากสมาชิก แล้วจัดหมวดหมู่และเชื่อมโยงกับจังหวัด
+              โดยแสดงแหล่งอ้างอิงในรายละเอียดของแต่ละรายการ
             </Typography>
             <Typography sx={{ mt: 2, fontSize: 12, color: cultureUi.muted, lineHeight: 1.8 }}>
-              รายละเอียดอาจเปลี่ยนแปลงได้ ควรตรวจสอบกับต้นทางก่อนเดินทาง พบข้อมูลคลาดเคลื่อน
+              รายการแหล่งข้อมูลในส่วนนี้ครอบคลุมข้อมูลหลักของเว็บไซต์
+              ข้อมูลแต่ละชุดอาจมีรอบอัปเดตต่างกัน และไม่ได้เชื่อมต่อแบบเรียลไทม์ทุกแหล่ง
+              โปรดตรวจสอบข้อมูล เวลาเปิด และกำหนดกิจกรรมกับต้นทางก่อนเดินทาง พบข้อมูลคลาดเคลื่อน
               แจ้งทีมงานได้ที่{' '}
               <Link component={RouterLink} href="/contact-us" color="inherit">
                 หน้าติดต่อเรา
@@ -274,8 +324,8 @@ export function AboutTeam({ sx, ...other }: BoxProps) {
               >
                 <Link
                   href={source.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  target={source.href.startsWith('http') ? '_blank' : undefined}
+                  rel={source.href.startsWith('http') ? 'noopener noreferrer' : undefined}
                   underline="none"
                   sx={{
                     display: 'block',
@@ -312,6 +362,7 @@ export function AboutTeam({ sx, ...other }: BoxProps) {
             ))}
           </Box>
         </Box>
+        <ContactDevelopers />
       </Box>
       <HomeFooter />
     </Box>

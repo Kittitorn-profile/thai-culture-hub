@@ -1,4 +1,5 @@
 import { publicPageMetadata } from 'src/lib/page-metadata';
+import { requireDatasetVisible } from 'src/server/dataset-visibility';
 
 import { CulturalHeritageView } from 'src/sections/cultural-heritage/view';
 
@@ -8,6 +9,9 @@ export const metadata = publicPageMetadata(
   '/cultural-heritage/'
 );
 
-export default function Page() {
+export const dynamic = 'force-dynamic';
+
+export default async function Page() {
+  await requireDatasetVisible('heritage');
   return <CulturalHeritageView />;
 }

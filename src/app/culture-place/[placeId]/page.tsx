@@ -6,7 +6,9 @@ import { notFound } from 'next/navigation';
 
 import provinces from 'src/data/thailand-culture/provinces';
 import { getSupabaseAdmin } from 'src/server/supabase-admin';
+import { isPublicPlaceVisible } from 'src/lib/dataset-visibility';
 import { getCultureCategoryLabel } from 'src/lib/culture-categories';
+import { getDatasetVisibility, requireDatasetVisible } from 'src/server/dataset-visibility';
 
 import { CulturePlaceDetailView } from 'src/sections/province/view/culture-place-detail-view';
 import {
@@ -265,10 +267,11 @@ function getSeoDescription(place: SharePlace) {
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  await requireDatasetVisible('places');
   const { placeId } = await params;
   const place = await getSharePlace(safeDecode(placeId));
 
-  if (!place) {
+  if (!place || !isPublicPlaceVisible(place.source, (await getDatasetVisibility()).hidden)) {
     return {
       title: 'Thailand Cultural Hub',
       description: 'สำรวจข้อมูลวัฒนธรรมไทยจากทุกจังหวัด',
@@ -312,11 +315,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
+export const dynamic = 'force-dynamic';
+
 export default async function Page({ params }: PageProps) {
+  await requireDatasetVisible('places');
   const { placeId } = await params;
   const place = await getSharePlace(safeDecode(placeId));
 
-  if (!place) {
+  if (!place || !isPublicPlaceVisible(place.source, (await getDatasetVisibility()).hidden)) {
     notFound();
   }
 

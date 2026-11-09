@@ -16,6 +16,8 @@ import Drawer from '@mui/material/Drawer';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 
+import { useDatasetVisibility } from 'src/lib/use-dataset-visibility';
+
 import { CulturalDataCardImage } from 'src/sections/cultural-data/cultural-data-card-image';
 
 const GROUPS: { key: ProvinceDataSection; label: string; description: string }[] = [
@@ -66,6 +68,7 @@ export function ProvinceCulturalSections({
   provinceCode: string;
   provinceName: string;
 }) {
+  const { isVisible } = useDatasetVisibility();
   return (
     <Box id="province-all-data" sx={{ mt: { xs: 5, md: 7 }, scrollMarginTop: 100 }}>
       <Typography component="h2" variant="h4" sx={{ mb: 1 }}>
@@ -76,16 +79,18 @@ export function ProvinceCulturalSections({
         ส่วนข้อมูลบุคคลและภูมิปัญญาอยู่ในหมวดด้านล่าง
       </Typography>
       <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 4 }}>
-        <Button
-          component="a"
-          href="#province-all-places"
-          variant="outlined"
-          size="small"
-          sx={{ borderRadius: 99 }}
-        >
-          สถานที่และเรื่องวัฒนธรรม
-        </Button>
-        {GROUPS.map((group) => (
+        {isVisible('places') && (
+          <Button
+            component="a"
+            href="#province-all-places"
+            variant="outlined"
+            size="small"
+            sx={{ borderRadius: 99 }}
+          >
+            สถานที่และเรื่องวัฒนธรรม
+          </Button>
+        )}
+        {GROUPS.filter((group) => isVisible(group.key)).map((group) => (
           <ProvinceDataGroupLink
             key={`${provinceCode}:${group.key}`}
             provinceCode={provinceCode}
@@ -93,7 +98,7 @@ export function ProvinceCulturalSections({
           />
         ))}
       </Box>
-      {GROUPS.map((group) => (
+      {GROUPS.filter((group) => isVisible(group.key)).map((group) => (
         <ProvinceDataGroup
           key={`${provinceCode}:${group.key}`}
           provinceCode={provinceCode}
@@ -107,8 +112,9 @@ export function ProvinceCulturalSections({
   );
 }
 function useProvinceDataQuery(provinceCode: string, section: ProvinceDataSection) {
+  const { data: visibility } = useDatasetVisibility();
   return useInfiniteQuery({
-    queryKey: ['public-province-data', provinceCode, section],
+    queryKey: ['public-province-data', provinceCode, section, visibility?.hidden.join(',')],
     initialPageParam: 0,
     queryFn: async ({ pageParam, signal }): Promise<ProvinceDataResult> => {
       const params = new URLSearchParams({

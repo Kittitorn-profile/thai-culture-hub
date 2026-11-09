@@ -1,4 +1,5 @@
 import { publicPageMetadata } from 'src/lib/page-metadata';
+import { requireDatasetVisible } from 'src/server/dataset-visibility';
 
 import { EthnicGroupsView } from 'src/sections/ethnic-groups/view';
 
@@ -8,6 +9,9 @@ export const metadata = publicPageMetadata(
   '/ethnic-groups/'
 );
 
-export default function Page() {
+export const dynamic = 'force-dynamic';
+
+export default async function Page() {
+  await requireDatasetVisible('ethnic-groups');
   return <EthnicGroupsView />;
 }

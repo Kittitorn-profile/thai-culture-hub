@@ -1,3 +1,5 @@
+'use client';
+
 import {
   RiGroupLine,
   RiDatabase2Line,
@@ -11,6 +13,8 @@ import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 
 import { RouterLink } from 'src/routes/components';
+
+import { PublicDatasetGate } from 'src/lib/use-dataset-visibility';
 
 import { HOME_TEXT, HOME_SECTION_PX, HOME_SECTION_MAX_WIDTH } from './home-constants';
 
@@ -76,25 +80,27 @@ export function HomeDataFlowSection() {
               อ่านข้อมูลพร้อมที่มา และช่วยเพิ่มเติมสิ่งที่คุณรู้ เพื่อให้ผู้อื่นได้เรียนรู้ต่อ
             </Typography>
           </Box>
-          <Button
-            component={RouterLink}
-            href="/culture-category"
-            endIcon={<RiArrowRightLine size={17} />}
-            sx={{
-              width: { xs: 1, sm: 'auto' },
-              minHeight: 44,
-              flexShrink: 0,
-              color: '#303b40',
-              border: '1px solid #d8deda',
-              borderRadius: 1.5,
-              px: 2.5,
-              py: 1,
-              fontWeight: 500,
-              '&:hover': { bgcolor: '#ecefeb', borderColor: '#aab5ae' },
-            }}
-          >
-            เริ่มค้นหาสถานที่
-          </Button>
+          <PublicDatasetGate dataset="places">
+            <Button
+              component={RouterLink}
+              href="/culture-category"
+              endIcon={<RiArrowRightLine size={17} />}
+              sx={{
+                width: { xs: 1, sm: 'auto' },
+                minHeight: 44,
+                flexShrink: 0,
+                color: '#303b40',
+                border: '1px solid #d8deda',
+                borderRadius: 1.5,
+                px: 2.5,
+                py: 1,
+                fontWeight: 500,
+                '&:hover': { bgcolor: '#ecefeb', borderColor: '#aab5ae' },
+              }}
+            >
+              เริ่มค้นหาสถานที่
+            </Button>
+          </PublicDatasetGate>
         </Stack>
         <Box
           component="ol"

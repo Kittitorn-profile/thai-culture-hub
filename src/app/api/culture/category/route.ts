@@ -6,7 +6,9 @@ import { NextResponse } from 'next/server';
 
 import provinces from 'src/data/thailand-culture/provinces';
 import { getSupabaseAdmin } from 'src/server/supabase-admin';
+import { getDatasetVisibility } from 'src/server/dataset-visibility';
 import { getCultureCategoryLabel } from 'src/lib/culture-categories';
+import { isDatasetEnabled, isPublicPlaceVisible } from 'src/lib/dataset-visibility';
 
 const PLACES_TABLE = process.env.CULTURAL_PLACES_TABLE ?? 'cultural_places';
 const OVERRIDES_TABLE = process.env.CULTURAL_PLACE_OVERRIDES_TABLE ?? 'cultural_place_overrides';
@@ -68,7 +70,7 @@ type EthnicGroupRow = {
   village_no: string | null;
 };
 
-function mapPlaceRow(row: CulturalPlaceRow): CulturalPlace & { provinceCode: string } | null {
+function mapPlaceRow(row: CulturalPlaceRow): (CulturalPlace & { provinceCode: string }) | null {
   if (!row.id || !row.name || row.lat == null || row.lng == null) {
     return null;
   }
@@ -125,8 +127,9 @@ function normalizePlaceKeyText(value?: string | null) {
 function getProvinceCodeFromName(provinceName?: string | null) {
   const normalizedProvinceName = normalizePlaceKeyText(provinceName);
 
-  return provinces.find((province) => normalizePlaceKeyText(province.name) === normalizedProvinceName)
-    ?.code;
+  return provinces.find(
+    (province) => normalizePlaceKeyText(province.name) === normalizedProvinceName
+  )?.code;
 }
 
 function getEthnicGroupPlaceId(row: EthnicGroupRow) {
@@ -300,12 +303,24 @@ async function fetchEthnicGroupPlaces({
 
 export const runtime = 'nodejs';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
+  const { hidden } = await getDatasetVisibility();
+  if (!isDatasetEnabled('places', hidden))
+    return NextResponse.json(
+      { data: [], total: 0, hasMore: false },
+      { headers: { 'Cache-Control': 'no-store' } }
+    );
   const categoryKey = request.nextUrl.searchParams.get('categoryKey')?.trim();
   const requestedProvinceCode = request.nextUrl.searchParams.get('provinceCode')?.trim();
   const provinceCode = requestedProvinceCode || (!categoryKey ? provinces[0]?.code : undefined);
   const query = request.nextUrl.searchParams.get('q')?.trim().toLowerCase() ?? '';
-  const limit = getPositiveInteger(request.nextUrl.searchParams.get('limit'), DEFAULT_LIMIT, MAX_LIMIT);
+  const limit = getPositiveInteger(
+    request.nextUrl.searchParams.get('limit'),
+    DEFAULT_LIMIT,
+    MAX_LIMIT
+  );
   const offset = getPositiveInteger(request.nextUrl.searchParams.get('offset'), 0);
 
   const supabase = getSupabaseAdmin();
@@ -339,17 +354,16 @@ export async function GET(request: NextRequest) {
     provinceCode,
   });
 
-  const overrideMap = new Map(
-    overrideRows.data.map((override) => [override.place_id, override])
-  );
+  const overrideMap = new Map(overrideRows.data.map((override) => [override.place_id, override]));
   const places = [
     ...placeRows.data
-    .map(mapPlaceRow)
-    .filter((place): place is CulturalPlace & { provinceCode: string } => Boolean(place))
-    .map((place) => applyOverride(place, overrideMap.get(place.id)))
-    .filter((place) => !categoryKey || place.category === categoryKey),
+      .map(mapPlaceRow)
+      .filter((place): place is CulturalPlace & { provinceCode: string } => Boolean(place))
+      .map((place) => applyOverride(place, overrideMap.get(place.id)))
+      .filter((place) => !categoryKey || place.category === categoryKey),
     ...ethnicGroupPlaces,
   ]
+    .filter((place) => isPublicPlaceVisible(place.source, hidden))
     .filter((place) => !categoryKey || place.category === categoryKey)
     .filter((place) => {
       if (!query) {

@@ -1,6 +1,8 @@
 import { z } from 'zod';
 import { cache } from 'react';
 
+import { artistBirthDateSchema } from 'src/lib/cultural-artist-form';
+
 import { getSupabaseAdmin } from './supabase-admin';
 
 export const ARTIST_DIRECTORY_SECTION_KEY = 'province-artists-v1';
@@ -20,6 +22,7 @@ const artistSchema = z.object({
       sourceUrl: z.string().url().optional(),
     })
     .optional(),
+  birthDate: artistBirthDateSchema.optional(),
   id: z.string().min(1),
   name: z.string().min(1),
   aliases: z.array(z.string()),
@@ -60,7 +63,7 @@ const artistSchema = z.object({
     z.object({ datasetKey: z.string(), recordIndex: z.number().optional(), url: z.string().url() })
   ),
 });
-const directorySchema = z.object({
+export const directorySchema = z.object({
   schemaVersion: z.literal(1),
   checkedAt: z.string(),
   nationalRegistryCoverage: z.object({ fromBE: z.number(), toBE: z.number() }),

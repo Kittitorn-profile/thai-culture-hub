@@ -1,4 +1,5 @@
 import { publicPageMetadata } from 'src/lib/page-metadata';
+import { requireDatasetVisible } from 'src/server/dataset-visibility';
 
 import { CultureCategoryView } from 'src/sections/culture-category/view';
 
@@ -8,6 +9,9 @@ export const metadata = publicPageMetadata(
   '/culture-category/'
 );
 
-export default function Page() {
+export const dynamic = 'force-dynamic';
+
+export default async function Page() {
+  await requireDatasetVisible('places');
   return <CultureCategoryView allCategories />;
 }

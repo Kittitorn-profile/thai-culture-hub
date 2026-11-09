@@ -52,3 +52,7 @@ To set up your local server:
 
 **NOTE:**
 _When copying folders remember to also copy hidden files like .env. This is important because .env files often contain environment variables that are crucial for the application to run correctly._
+
+## Form architecture
+
+แนวทางหน้าฟอร์ม: [React Hook Form + Zod + DatePicker](docs/form-architecture.md)

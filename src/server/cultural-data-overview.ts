@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 
+import { DATASET_SOURCES } from 'src/lib/dataset-visibility';
 import { SYSTEM_CULTURE_CATEGORIES } from 'src/lib/culture-categories';
 import { ARTIST_GROUPS, COMMUNITY_GROUPS } from 'src/lib/cultural-data-groups';
 
@@ -194,5 +195,37 @@ export async function getCulturalDataOverview(db: SupabaseClient) {
         ].join(' · '),
       })),
   });
-  return { sections, categorySettingsCount: countOf('categories'), checkedAt: inventory.checkedAt };
+  sections.push(
+    {
+      key: 'products',
+      title: 'ผลิตภัณฑ์วัฒนธรรมไทย (CPOT)',
+      permission: 'cultural_places',
+      total: countOf('cpot_raw'),
+      href: '/admin/cultural-places',
+      description: 'ข้อมูลผลิตภัณฑ์วัฒนธรรมและสินค้าชุมชน รวมถึงรายการที่นำเข้าเป็นสถานที่',
+      sources: [
+        { label: 'กระทรวงวัฒนธรรม', url: 'https://gdcatalog.m-culture.go.th/dataset/cpot' },
+      ],
+      rows: [],
+    },
+    {
+      key: 'crafts',
+      title: 'ผ้าและทักษะงานช่าง',
+      permission: 'cultural_heritage',
+      total: countOf('fabric_raw'),
+      href: '/admin/cultural-heritage',
+      description: 'ข้อมูลผ้าไทยต้นฉบับ ส่วนข้อมูลผ้าและงานช่างชุมชนมีแหล่งข้อมูลแยกกัน',
+      sources: [{ label: 'กระทรวงวัฒนธรรม', url: 'https://gdcatalog.m-culture.go.th/' }],
+      rows: [],
+    }
+  );
+  return {
+    sections,
+    sourceDatasets: DATASET_SOURCES.map((source) => ({
+      ...source,
+      count: countOf(source.inventory),
+    })),
+    categorySettingsCount: countOf('categories'),
+    checkedAt: inventory.checkedAt,
+  };
 }

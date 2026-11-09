@@ -25,6 +25,7 @@ export async function getCulturalDataInventory(
   const definitions = [
     ['places_all', 'สถานที่', 'สถานที่ทั้งหมด (แถวข้อมูลดิบ)', places, '', 'province_code'],
     ...[
+      ['local', 'สถานที่ที่ทีมงานเพิ่มเอง'],
       ['tat', 'ททท. — รวมสถานที่จาก API และ attraction.json'],
       ['culture_catalog', 'แค็ตตาล็อกวัฒนธรรม'],
       ['religious_places', 'ศาสนสถาน — กระทรวงวัฒนธรรม'],
@@ -122,7 +123,8 @@ export async function getCulturalDataInventory(
     definitions.map(
       async ([key, group, label, table, source, provinceField]): Promise<InventoryRow> => {
         let query = db.from(table).select('*', { head: true, count: 'exact' });
-        if (source) query = query.eq('source', source);
+        if (source === 'local') query = query.or('source.is.null,source.eq.local');
+        else if (source) query = query.eq('source', source);
         if (provinceCode && provinceField)
           query = query.eq(
             provinceField,

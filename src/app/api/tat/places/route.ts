@@ -4,6 +4,7 @@ import type { CulturalPlace, CulturalCategory } from 'src/sections/province/prov
 import { NextResponse } from 'next/server';
 
 import provinces from 'src/data/thailand-culture/provinces';
+import { isDatasetVisible } from 'src/server/dataset-visibility';
 
 // ----------------------------------------------------------------------
 
@@ -182,6 +183,8 @@ export const runtime = 'nodejs';
 export const revalidate = 3600;
 
 export async function GET(request: NextRequest) {
+  if (!(await isDatasetVisible('tat')))
+    return NextResponse.json({ data: [] }, { headers: { 'Cache-Control': 'no-store' } });
   const provinceCode = request.nextUrl.searchParams.get('provinceCode');
   const limitParam = request.nextUrl.searchParams.get('limit');
   const pageSizeParam = request.nextUrl.searchParams.get('pageSize');
@@ -234,7 +237,8 @@ export async function GET(request: NextRequest) {
   for (let page = 1; page <= maxPages; page += 1) {
     placesResponse = await tatFetch('/places', {
       page,
-      limit: requestedLimit == null ? pageSize : Math.min(requestedLimit - tatPlaces.length, pageSize),
+      limit:
+        requestedLimit == null ? pageSize : Math.min(requestedLimit - tatPlaces.length, pageSize),
       status: 'approved',
       province_id: tatProvinceId,
       has_name: 'true',
