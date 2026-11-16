@@ -76,13 +76,26 @@ export function HomePerformanceGroupsSection({ content, showAll = false }: Props
 
     const controller = new AbortController();
 
-    fetch(`/api/performance-groups/counts?groupIds=${encodeURIComponent(groupIds.join(','))}`, {
-      signal: controller.signal,
-    })
-      .then((response) => (response.ok ? response.json() : null))
-      .then((json: { data?: Record<string, { views: number; shares: number }> } | null) => {
-        if (json?.data) {
-          setCounts(json.data);
+    const batches = Array.from({ length: Math.ceil(groupIds.length / 20) }, (_, index) =>
+      groupIds.slice(index * 20, (index + 1) * 20)
+    );
+
+    Promise.all(
+      batches.map(async (batch) => {
+        const response = await fetch(
+          `/api/performance-groups/counts?groupIds=${encodeURIComponent(batch.join(','))}`,
+          { signal: controller.signal, cache: 'no-store' }
+        );
+        if (!response.ok) throw new Error('Unable to load performance group counts');
+        const json = (await response.json()) as {
+          data?: Record<string, { views: number; shares: number }>;
+        };
+        return json.data ?? {};
+      })
+    )
+      .then((results) => {
+        if (!controller.signal.aborted) {
+          setCounts(Object.assign({}, ...results));
         }
       })
       .catch((error) => {
@@ -471,6 +484,12 @@ export function HomePerformanceGroupsSection({ content, showAll = false }: Props
                       {group.description}
                     </Typography>
                   )}
+                  <Stack direction="row" alignItems="center" spacing={0.75} sx={{ mb: 1.25 }}>
+                    <Iconify icon="solar:eye-bold" width={16} />
+                    <Typography component="span" sx={{ fontSize: 12 }}>
+                      เข้าชม {(counts[groupId]?.views ?? 0).toLocaleString('th-TH')} ครั้ง
+                    </Typography>
+                  </Stack>
                   <Stack
                     direction="row"
                     alignItems="center"

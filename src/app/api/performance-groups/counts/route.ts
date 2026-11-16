@@ -1,4 +1,4 @@
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 
 import { NextResponse } from 'next/server';
 
@@ -38,11 +38,13 @@ export async function GET(request: NextRequest) {
   const entries = await Promise.all(
     groupIds.map(async (groupId) => {
       const path = `/performance-groups/${encodeURIComponent(groupId)}`;
+      // Escape LIKE metacharacters in encoded IDs (including percent-encoded Thai names).
+      const queryPath = `${path.replace(/[\\%_]/g, '\\$&')}?%`;
       const [viewsResult, sharesResult] = await Promise.all([
         supabase.client
           .from(PAGE_VIEW_TABLE)
           .select('id', { count: 'exact', head: true })
-          .eq('path', path),
+          .or(`path.eq.${JSON.stringify(path)},path.like.${JSON.stringify(queryPath)}`),
         supabase.client
           .from(EVENT_TABLE)
           .select('id', { count: 'exact', head: true })
@@ -50,15 +52,29 @@ export async function GET(request: NextRequest) {
           .eq('event_name', groupId),
       ]);
 
+      if (viewsResult.error || sharesResult.error) {
+        throw new Error('Unable to load performance group counts');
+      }
+
       return [
         groupId,
         {
-          views: viewsResult.error ? 0 : viewsResult.count ?? 0,
-          shares: sharesResult.error ? 0 : sharesResult.count ?? 0,
+          views: viewsResult.error ? 0 : (viewsResult.count ?? 0),
+          shares: sharesResult.error ? 0 : (sharesResult.count ?? 0),
         },
       ] as const;
     })
-  );
+  ).catch(() => null);
 
-  return NextResponse.json({ data: Object.fromEntries(entries) });
+  if (!entries) {
+    return NextResponse.json(
+      { message: 'Unable to load performance group counts' },
+      { status: 500 }
+    );
+  }
+
+  return NextResponse.json(
+    { data: Object.fromEntries(entries) },
+    { headers: { 'Cache-Control': 'no-store' } }
+  );
 }
